@@ -1,10 +1,12 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node --watch index.js"
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "format:backend": "prettier packages/backend --write",
+    "format:check": "prettier . --check"
   },
   "keywords": [],
   "author": "",
