@@ -1,7 +1,7 @@
-import js from "@eslint/js";
-import globals from "globals";
-import pluginReact from "eslint-plugin-react";
-import { defineConfig } from "eslint/config";
+import js from "@eslint/js"
+import globals from "globals"
+import pluginReact from "eslint-plugin-react"
+import { defineConfig } from "eslint/config"
 
 export default defineConfig([
   {
@@ -9,10 +9,13 @@ export default defineConfig([
     plugins: { js },
     extends: ["js/recommended"],
     languageOptions: { globals: globals.node },
+    rules: {
+      "no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+    },
   },
   {
     files: ["packages/frontend/src/**/*.{js,jsx,mjs,cjs}"],
     ...pluginReact.configs.flat.recommended,
     settings: { react: { version: "detect" } },
   },
-]);
+])

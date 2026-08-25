@@ -1,5 +1,6 @@
 import express from "express"
 import cors from "cors"
+import healthRoutes from "./routes/healthRoutes.js"
 
 const app = express()
 
@@ -11,6 +12,8 @@ app.use(
       : true,
   }),
 )
+
+app.use("/health", healthRoutes)
 
 app.get("/hello", (req, res) => {
   res.json({ message: "hello world" })
