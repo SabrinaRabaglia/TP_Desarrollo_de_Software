@@ -1,10 +1,13 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node --watch index.js"
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "format:backend": "prettier packages/backend --write",
+    "format:check": "prettier . --check"
   },
   "keywords": [],
   "author": "",
@@ -15,5 +18,8 @@
     "dotenv": "^17.2.0",
     "express": "^5.1.0"
   },
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "jest": "^30.4.2"
+  }
 }
