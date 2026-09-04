@@ -1,1 +1,5 @@
-export const UnidadCompromiso = Object.freeze({})
+export const UnidadCompromiso = Object.freeze({
+    HORAS_TOTALES: 'HORAS_TOTALES',
+    HORAS_SEMANALES: 'HORAS_SEMANALES',
+    HORAS_MENSUALES: 'HORAS_MENSUALES'
+})

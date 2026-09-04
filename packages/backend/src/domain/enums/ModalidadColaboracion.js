@@ -1,1 +1,5 @@
-export const ModalidadColaboracion = Object.freeze({})
+export const ModalidadColaboracion = Object.freeze({
+    GRATUITA: 'GRATUITA',
+    CON_INCENTIVO_ECONOMICO: 'CON_INCENTIVO_ECONOMICO',
+    CON_POSIBILIDAD_CONTRATACION: 'CON_POSIBILIDAD_CONTRATACION'
+})

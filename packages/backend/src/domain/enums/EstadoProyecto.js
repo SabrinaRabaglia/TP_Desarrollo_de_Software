@@ -1,1 +1,4 @@
-export const EstadoProyecto = Object.freeze({})
+export const EstadoProyecto = Object.freeze({
+    PUBLICADO: 'PUBLICADO',
+    CERRADO: 'CERRADO'
+})
