@@ -1,1 +1,10 @@
-export default class Colaboracion {}
+export default class Colaboracion {
+    constructor(fechaInscripcion = new Date(), personaColaboradora, proyecto) {
+        if (!personaColaboradora || !proyecto) {
+            throw new Error("La colaboración debe tener una persona colaboradora y un proyecto asociados");
+        }
+        this.fechaInscripcion = fechaInscripcion;
+        this.personaColaboradora = personaColaboradora;
+        this.proyecto = proyecto;
+    }
+}
