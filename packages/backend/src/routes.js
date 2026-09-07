@@ -9,6 +9,14 @@ import { PersonaColaboradoraRepository } from "./repositories/PersonaColaborador
 import { PersonaColaboradoraService } from "./services/PersonaColaboradoraService.js"
 import { PersonaColaboradoraController } from "./controllers/PersonaColaboradoraController.js"
 
+import ColectivoRepository from "./repositories/ColectivoRepository.js";
+import ColectivoService from "./services/ColectivoService.js";
+import ColectivoController from "./controllers/ColectivoController.js";
+
+import ProyectoRepository from "./repositories/ProyectoRepository.js";
+import ProyectoService from "./services/ProyectoService.js";
+import ProyectoController from "./controllers/ProyectoController.js";
+
 const routes = Router()
 
 routes.get("/health", getHealth)
@@ -26,5 +34,28 @@ const personaColaboradoraController = new PersonaColaboradoraController(personaC
  
 routes.post("/personas-colaboradoras", personaColaboradoraController.create)
 routes.get("/personas-colaboradoras", personaColaboradoraController.getAll)
+
+
+const colectivoRepository = new ColectivoRepository()
+const colectivoService = new ColectivoService(colectivoRepository)
+const colectivoController = new ColectivoController(colectivoService)
+
+routes.post("/colectivos", colectivoController.create);
+routes.get("/colectivos", colectivoController.getAll);
+routes.get("/colectivos/:id", colectivoController.getById);
+routes.put("/colectivos/:id", colectivoController.put);
+routes.patch("/colectivos/:id", colectivoController.patch);
+routes.delete("/colectivos/:id", colectivoController.delete);
+
+const proyectoRepository = new ProyectoRepository()
+const proyectoService = new ProyectoService(proyectoRepository)
+const proyectoController = new ProyectoController(proyectoService)
+
+routes.post("/proyectos", proyectoController.create);
+routes.get("/proyectos", proyectoController.getAll);
+routes.get("/proyectos/:id", proyectoController.getById);
+routes.put("/proyectos/:id", proyectoController.put);
+routes.delete("/proyectos/:id", proyectoController.delete);
+
 
 export default routes
