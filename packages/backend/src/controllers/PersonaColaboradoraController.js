@@ -17,7 +17,7 @@ const personaColaboradoraSchema = z
     pronombres: z.array(z.string()).optional(),
     presentacion: z.string().optional(),
     cuentas: z.array(cuentaSchema).optional(),
-    habilidades: z.array(z.string()).optional(),
+    habilidades: z.array(z.string().uuid()).optional(),
   }).strict()
 
 export default class PersonaColaboradoraController {
@@ -32,6 +32,25 @@ export default class PersonaColaboradoraController {
     }
     const personaColaboradora = this.personaColaboradoraService.create(resultado.data)
     res.status(201).json(personaColaboradora)
+  }
+
+  update = (req, res) => {
+    const resultado = personaColaboradoraSchema.safeParse(req.body)
+    if (resultado.error) {
+      throw new BadRequestError("Datos inválidos", resultado.error.issues)
+    }
+    const personaColaboradora = this.personaColaboradoraService.update(req.params.id, resultado.data)
+    res.status(200).json(personaColaboradora)
+  }
+
+  delete = (req, res) => {
+    this.personaColaboradoraService.delete(req.params.id)
+    res.status(204).send()
+  }
+
+  getById = (req, res) => {
+    const personaColaboradora = this.personaColaboradoraService.getById(req.params.id)
+    res.status(200).json(personaColaboradora)
   }
 
   getAll = (req, res) => {

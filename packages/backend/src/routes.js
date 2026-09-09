@@ -27,14 +27,19 @@ const habilidadController = new HabilidadController(habilidadService)
  
 routes.post("/habilidades", habilidadController.create)
 routes.get("/habilidades", habilidadController.getAll)
- 
+routes.get("/habilidades/:id", habilidadController.getById)
+routes.put("/habilidades/:id", habilidadController.update)
+routes.delete("/habilidades/:id", habilidadController.delete)
+
 const personaColaboradoraRepository = new PersonaColaboradoraRepository()
-const personaColaboradoraService = new PersonaColaboradoraService(personaColaboradoraRepository, habilidadRepository)
+const personaColaboradoraService = new PersonaColaboradoraService(personaColaboradoraRepository, habilidadService)
 const personaColaboradoraController = new PersonaColaboradoraController(personaColaboradoraService)
  
 routes.post("/personas-colaboradoras", personaColaboradoraController.create)
 routes.get("/personas-colaboradoras", personaColaboradoraController.getAll)
-
+routes.get("/personas-colaboradoras/:id", personaColaboradoraController.getById)
+routes.put("/personas-colaboradoras/:id", personaColaboradoraController.update)
+routes.delete("/personas-colaboradoras/:id", personaColaboradoraController.delete)
 
 const colectivoRepository = new ColectivoRepository()
 const colectivoService = new ColectivoService(colectivoRepository)

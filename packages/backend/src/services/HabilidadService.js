@@ -16,6 +16,40 @@ export default class HabilidadService {
     return this.habilidadRepository.save(habilidad)
   }
  
+  update = (id, actualizada) => {
+    const habilidadExistente = this.habilidadRepository.findById(id)
+    if (!habilidadExistente) {
+      throw new NotFoundError("Habilidad no encontrada")
+    }
+ 
+    const otraConMismoCodigo = this.habilidadRepository.findByCodigo(actualizada.codigo)
+    if (otraConMismoCodigo && otraConMismoCodigo.id !== id) {
+      throw new ConflictError(`Ya existe una habilidad con código: ${actualizada.codigo}`)
+    }
+ 
+    habilidadExistente.titulo = actualizada.titulo
+    habilidadExistente.codigo = actualizada.codigo
+    habilidadExistente.descripcion = actualizada.descripcion
+ 
+    return this.habilidadRepository.save(habilidadExistente)
+  }
+
+  delete = (id) => {
+    const habilidadExistente = this.habilidadRepository.findById(id)
+    if (!habilidadExistente) {
+      throw new NotFoundError("Habilidad no encontrada")
+    }
+    this.habilidadRepository.deleteById(id)
+  }
+
+  getById = (id) => {
+    const habilidad = this.habilidadRepository.findById(id)
+    if (!habilidad) {
+      throw new NotFoundError("Habilidad no encontrada")
+    }
+    return habilidad
+  }
+
   getAll = () => {
     return this.habilidadRepository.getAll()
   }

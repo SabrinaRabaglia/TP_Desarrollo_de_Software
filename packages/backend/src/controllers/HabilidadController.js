@@ -24,6 +24,25 @@ export default class HabilidadController {
     res.status(201).json(habilidad)
   }
  
+  update = (req, res) => {
+    const resultado = habilidadSchema.safeParse(req.body)
+    if (resultado.error) {
+      throw new BadRequestError("Datos inválidos", resultado.error.issues)
+    }
+    const habilidad = this.habilidadService.update(req.params.id, resultado.data)
+    res.status(200).json(habilidad)
+  }
+
+  delete = (req, res) => {
+    this.habilidadService.delete(req.params.id)
+    res.status(204).send()
+  }
+
+  getById = (req, res) => {
+    const habilidad = this.habilidadService.getById(req.params.id)
+    res.status(200).json(habilidad)
+  }
+
   getAll = (req, res) => {
     res.status(200).json(this.habilidadService.getAll())
   }

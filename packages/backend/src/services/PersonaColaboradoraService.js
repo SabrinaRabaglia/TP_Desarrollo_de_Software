@@ -1,5 +1,5 @@
 import { PersonaColaboradoraRepository } from "../repositories/PersonaColaboradoraRepository.js"
-import { HabilidadRepository } from "../repositories/HabilidadRepository.js"
+import { HabilidadService } from "./HabilidadService.js"
 import { NotFoundError } from "../errors/AppError.js"
 import { PersonaColaboradora } from "../domain/PersonaColaboradora.js"
 import { Cuenta } from "../domain/Cuenta.js"
@@ -7,23 +7,24 @@ import { Cuenta } from "../domain/Cuenta.js"
 export default class PersonaColaboradoraService {
   constructor(
     personaColaboradoraRepository = new PersonaColaboradoraRepository(),
-    habilidadRepository = new HabilidadRepository(),
+    habilidadService = new HabilidadService(),
   ) {
     this.personaColaboradoraRepository = personaColaboradoraRepository
-    this.habilidadRepository = habilidadRepository
+    this.habilidadService = habilidadService
+  }
+
+  buscarHabilidades = (ids) => {
+    return (ids ?? []).map((id) => this.habilidadService.getById(id))
+  }
+ 
+  crearCuentas = (cuentas) => {
+    return (cuentas ?? []).map((cuenta) => new Cuenta(cuenta.nombreUsuario, cuenta.tipo))
   }
 
   create = (nueva) => {
-    const codigosHabilidades = (nueva.habilidades ?? []).map((codigo) => { // si nueva.habilidades viene undefined, se queda con la lista vacía así map no rompe
-    const habilidad = this.habilidadRepository.findByCodigo(codigo)
-      if (!habilidad) {
-        throw new NotFoundError(`No existe una habilidad cuyo codigo sea: ${codigo}`)
-      }
-      return habilidad
-    })
-
-    const cuentas = (nueva.cuentas ?? []).map((cuenta) => new Cuenta(cuenta.nombreUsuario, cuenta.tipo))
-
+    const habilidades = this.buscarHabilidades(nueva.habilidades)
+    const cuentas = this.crearCuentas(nueva.cuentas)
+ 
     const personaColaboradora = new PersonaColaboradora(nueva.nombreFantasia, {
       nombre: nueva.nombre,
       apellido: nueva.apellido,
@@ -34,6 +35,31 @@ export default class PersonaColaboradoraService {
     })
 
     return this.personaColaboradoraRepository.save(personaColaboradora)
+  }
+
+  update = (id, actualizada) => {
+    const personaExistente = this.personaColaboradoraRepository.findById(id)
+    if (!personaExistente) {
+      throw new NotFoundError("Persona colaboradora no encontrada")
+    }
+ 
+    personaExistente.nombreFantasia = actualizada.nombreFantasia
+    personaExistente.nombre = actualizada.nombre ?? null
+    personaExistente.apellido = actualizada.apellido ?? null
+    personaExistente.pronombres = actualizada.pronombres ?? []
+    personaExistente.presentacion = actualizada.presentacion ?? null
+    personaExistente.cuentas = this.resolverCuentas(actualizada.cuentas)
+    personaExistente.habilidades = this.resolverHabilidades(actualizada.habilidades)
+ 
+    return this.personaColaboradoraRepository.save(personaExistente)
+  }
+
+  delete = (id) => {
+    const personaExistente = this.personaColaboradoraRepository.findById(id)
+    if (!personaExistente) {
+      throw new NotFoundError("Persona colaboradora no encontrada")
+    }
+    this.personaColaboradoraRepository.deleteById(id)
   }
 
   getAll = () => {
