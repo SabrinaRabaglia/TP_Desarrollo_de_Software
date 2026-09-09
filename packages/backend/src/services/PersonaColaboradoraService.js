@@ -1,8 +1,8 @@
-import { PersonaColaboradoraRepository } from "../repositories/PersonaColaboradoraRepository.js"
-import { HabilidadService } from "./HabilidadService.js"
+import PersonaColaboradoraRepository from "../repositories/PersonaColaboradoraRepository.js"
+import HabilidadService from "./HabilidadService.js"
 import { NotFoundError } from "../errors/AppError.js"
-import { PersonaColaboradora } from "../domain/PersonaColaboradora.js"
-import { Cuenta } from "../domain/Cuenta.js"
+import PersonaColaboradora from "../domain/PersonaColaboradora.js"
+import Cuenta from "../domain/Cuenta.js"
 
 export default class PersonaColaboradoraService {
   constructor(

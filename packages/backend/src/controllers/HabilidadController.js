@@ -1,4 +1,4 @@
-import { HabilidadService } from "../services/HabilidadService.js"
+import HabilidadService from "../services/HabilidadService.js"
 import { BadRequestError } from "../errors/AppError.js"
 import { z } from "zod"
  

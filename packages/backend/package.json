@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
     "format:backend": "prettier packages/backend --write",
     "format:check": "prettier . --check"
   },
@@ -20,6 +20,7 @@
   },
   "type": "module",
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "jest": "^30.4.2"
   }
 }

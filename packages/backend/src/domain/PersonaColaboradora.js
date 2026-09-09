@@ -1,6 +1,6 @@
 import { UnprocessableEntityError } from "../errors/AppError.js"
 export default class PersonaColaboradora {
-  constructor({ nombreFantasia, nombre = null, apellido = null, pronombres = [], presentacion = null, cuentas = [], habilidades = [] }) {
+  constructor(nombreFantasia, nombre = null, apellido = null, pronombres = [], presentacion = null, cuentas = [], habilidades = [] ) {
     if (!nombreFantasia) {
       throw new UnprocessableEntityError("La persona colaboradora debe tener un nombre de fantasia")
     }
@@ -19,7 +19,7 @@ export default class PersonaColaboradora {
     this.habilidades.push(habilidad);
   }
 
-  agrgegarCuenta(cuenta) {
+  agregarCuenta(cuenta) {
     this.cuentas.push(cuenta);
   }
 
