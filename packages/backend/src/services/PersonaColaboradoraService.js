@@ -25,15 +25,16 @@ export default class PersonaColaboradoraService {
     const habilidades = this.buscarHabilidades(nueva.habilidades)
     const cuentas = this.crearCuentas(nueva.cuentas)
  
-    const personaColaboradora = new PersonaColaboradora(nueva.nombreFantasia, {
-      nombre: nueva.nombre,
-      apellido: nueva.apellido,
-      pronombres: nueva.pronombres,
-      presentacion: nueva.presentacion,
+    const personaColaboradora = new PersonaColaboradora(
+      nueva.nombreFantasia,
+      nueva.nombre,
+      nueva.apellido,
+      nueva.pronombres,
+      nueva.presentacion,
       cuentas,
       habilidades,
-    })
-
+    )
+ 
     return this.personaColaboradoraRepository.save(personaColaboradora)
   }
 
@@ -48,8 +49,8 @@ export default class PersonaColaboradoraService {
     personaExistente.apellido = actualizada.apellido ?? null
     personaExistente.pronombres = actualizada.pronombres ?? []
     personaExistente.presentacion = actualizada.presentacion ?? null
-    personaExistente.cuentas = this.resolverCuentas(actualizada.cuentas)
-    personaExistente.habilidades = this.resolverHabilidades(actualizada.habilidades)
+    personaExistente.cuentas = this.crearCuentas(actualizada.cuentas)
+    personaExistente.habilidades = this.buscarHabilidades(actualizada.habilidades)
  
     return this.personaColaboradoraRepository.save(personaExistente)
   }
@@ -65,4 +66,13 @@ export default class PersonaColaboradoraService {
   getAll = () => {
     return this.personaColaboradoraRepository.getAll()
   }
+
+  getById = (id) => {
+    const personaColaboradora = this.personaColaboradoraRepository.findById(id)
+    if (!personaColaboradora) {
+      throw new NotFoundError("Persona colaboradora no encontrada")
+    }
+    return personaColaboradora
+  }
+
 }

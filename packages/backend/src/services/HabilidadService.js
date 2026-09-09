@@ -1,5 +1,5 @@
 import HabilidadRepository from "../repositories/HabilidadRepository.js"
-import { ConflictError } from "../errors/AppError.js"
+import { ConflictError, NotFoundError } from "../errors/AppError.js"
 import Habilidad from "../domain/Habilidad.js"
  
 export default class HabilidadService {

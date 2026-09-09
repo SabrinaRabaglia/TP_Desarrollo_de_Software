@@ -1,13 +1,13 @@
 import { Router } from "express"
 import { getHealth } from "./controllers/HealthController.js"
 
-import { HabilidadRepository } from "./repositories/HabilidadRepository.js"
-import { HabilidadService } from "./services/HabilidadService.js"
-import { HabilidadController } from "./controllers/HabilidadController.js"
+import HabilidadRepository from "./repositories/HabilidadRepository.js"
+import HabilidadService from "./services/HabilidadService.js"
+import HabilidadController from "./controllers/HabilidadController.js"
  
-import { PersonaColaboradoraRepository } from "./repositories/PersonaColaboradoraRepository.js"
-import { PersonaColaboradoraService } from "./services/PersonaColaboradoraService.js"
-import { PersonaColaboradoraController } from "./controllers/PersonaColaboradoraController.js"
+import PersonaColaboradoraRepository from "./repositories/PersonaColaboradoraRepository.js"
+import PersonaColaboradoraService from "./services/PersonaColaboradoraService.js"
+import PersonaColaboradoraController from "./controllers/PersonaColaboradoraController.js"
 
 import ColectivoRepository from "./repositories/ColectivoRepository.js";
 import ColectivoService from "./services/ColectivoService.js";
