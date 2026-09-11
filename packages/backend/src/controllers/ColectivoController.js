@@ -1,10 +1,10 @@
 import {z} from 'zod'
-import { BadRequestError } from '../errors/AppError';
-import ColectivoService from '../services/ColectivoService';
+import { BadRequestError } from '../errors/AppError.js';
+import ColectivoService from '../services/ColectivoService.js';
 
 const colectivoSchema = z.object({
     nombre: z.string(),
-    descripcion: z.string().min(2).max(15),
+    descripcion: z.string().min(2).max(500),
     tipo: z.string(),
     pais: z.string().nullable().optional(),
     provincia: z.string().nullable().optional(),

@@ -1,30 +1,33 @@
-
 export default class ProyectoRepository {
-     constructor(){
-            this.proyectos = []
-        }
-        
-    findAll() {
-        return this.proyectos;
-    }
+  constructor() {
+    this.proyectos = [];
+  }
 
-    findById(id){
-        return this.proyectos.find((c)=> c.id === id);
-    }
-     findByNombre(nombre) {
-        return this.proyectos.find((c) => c.nombre === nombre);
-    }
-    save(nuevo){
-            const indice = this.proyectos.findIndex((p)= p.id === nuevo.id)
-            if(indice === -1){
-                this.proyectos.push(nuevo)
-                return nuevo
-            }
-            this.proyectos[indice]= nuevo
-            return nuevo
-    }
+  findAll() {
+    return this.proyectos;
+  }
 
-     delete(id) {
-        this.colectivos = this.colectivos.filter((c) => c.id !== id);
+  findById(id) {
+    return this.proyectos.find((c) => c.id === id);
+  }
+
+  findByTitulo(titulo) {
+    return this.proyectos.find((c) => c.titulo === titulo);
+  }
+
+  save(nuevo) {
+    const indice = this.proyectos.findIndex((p) => p.id === nuevo.id);
+    if (indice === -1) {
+      this.proyectos.push(nuevo);
+      return nuevo;
     }
+    this.proyectos[indice] = nuevo;
+    return nuevo;
+  }
+
+  delete(id) {
+    this.proyectos = this.proyectos.filter((c) => c.id !== id);
+  }
 }
+
+export { ProyectoRepository };

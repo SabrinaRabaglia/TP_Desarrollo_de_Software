@@ -1,4 +1,4 @@
-import { UnprocessableEntityError } from "../errors/AppError";
+import { UnprocessableEntityError } from "../errors/AppError.js";
 
 export default class Colectivo {
     constructor(nombre,descripcion,tipo,pais =null,provincia =null, ciudad=null){
@@ -7,7 +7,7 @@ export default class Colectivo {
         }
         this.nombre = nombre;
         this.descripcion = descripcion;
-        this.tipo = TipoColectivo;
+        this.tipo = tipo;
         this.pais = pais;
         this.provincia = provincia;
         this.ciudad = ciudad;

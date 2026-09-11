@@ -1,4 +1,5 @@
 import { EstadoProyecto } from "./enums/EstadoProyecto.js";
+import { UnprocessableEntityError } from "../errors/AppError.js";
 
 export default class Proyecto {
     constructor(
@@ -12,6 +13,9 @@ export default class Proyecto {
         fechaAlta = new Date(),
         fechaCierre = null,
         habilidadesRequeridas = []){
+            if (!titulo || !descripcion || !unidadCompromiso || !cantHoras || !colectivo) {
+          throw new UnprocessableEntityError("Titulo, descripción, unidadCompromiso, cantHoras y colectivo son obligatorios.");
+        }
             this.titulo = titulo;
             this.descripcion = descripcion;
             this.unidadCompromiso = unidadCompromiso;
@@ -26,3 +30,5 @@ export default class Proyecto {
         }
 
 }
+
+export { Proyecto };

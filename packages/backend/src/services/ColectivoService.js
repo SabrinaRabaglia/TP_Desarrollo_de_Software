@@ -1,5 +1,6 @@
-import Colectivo from "../domain/Colectivo";
-import { ConflictError } from "../errors/AppError";
+import Colectivo from "../domain/Colectivo.js";
+import { ConflictError, NotFoundError } from "../errors/AppError.js";
+import ColectivoRepository from "../repositories/ColectivoRepository.js";
 
 export default class ColectivoService {
     constructor(colectivoRepository = new ColectivoRepository()){
@@ -17,7 +18,7 @@ export default class ColectivoService {
         return colectivo;
     };
     create = (nuevo) => {
-        // Validamos por nombre para evitar duplicados
+        
         const colectivoExistente = this.colectivoRepository.findByNombre(nuevo.nombre);
         if (colectivoExistente) {
             throw new ConflictError("COLECTIVO EXISTENTE!");
@@ -31,11 +32,12 @@ export default class ColectivoService {
             nuevo.provincia,
             nuevo.ciudad
         );
-
+        colectivo.id = nuevo.id || Date.now().toString();
+        console.log("OBJETO ANTES DE GUARDAR:", colectivo);
         return this.colectivoRepository.save(colectivo);
     };
      update = (id, colectivoActualizado) => {
-        const colectivoExistente = this.productoRepository.findById(id)
+        const colectivoExistente = this.colectivoRepository.findById(id)
 
         if(!colectivoExistente) throw new NotFoundError("Producto no encontrado")
         if (this.colectivoRepository.findByNombre(colectivoActualizado.nombre)) throw new ConflictError("COLECTIVO EXISTENTE!")
