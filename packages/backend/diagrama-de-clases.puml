@@ -1,0 +1,107 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+enum UnidadCompromiso {
+    HORAS_TOTALES
+    HORAS_SEMANALES
+    HORAS_MENSUALES
+}
+
+enum ModalidadColaboracion {
+    GRATUITA
+    CON_INCENTIVO_ECONOMICO
+    CON_POSIBILIDAD_CONTRATACION
+}
+
+enum TipoCuenta {
+    GITHUB
+    GITLAB
+}
+
+enum EstadoProyecto {
+    PUBLICADO
+    CERRADO
+}
+
+class Colectivo {
+    nombre: String
+    descripcion: String
+    tipo: TipoColectivo
+    pais: Pais
+    provincia: Provincia
+    ciudad: String
+    proyectos: Proyecto[]
+}
+
+class Proyecto {
+    titulo: String
+    descripcion: String
+    unidadCompromiso: UnidadCompromiso
+    cantidadHoras: int
+    modalidadesColaboracion: ModalidadColaboracion[]
+    estado: EstadoProyecto
+    fechaAlta: Date
+    fechaCierre: Date
+    colectivo: Colectivo
+    habilidadesRequeridas: Habilidad[]
+    colaboraciones: Colaboracion[]
+}
+
+class PersonaColaboradora {
+    nombreFantasia: String
+    nombre: String
+    apellido: String
+    pronombres: String[]
+    presentacion: String
+    cuentas: Cuenta[]
+    habilidades: Habilidad[]
+    colaboraciones: Colaboracion[]
+}
+
+class Colaboracion {
+    fechainscripcion: Date
+    personaColaboradora: PersonaColaboradora
+    proyecto: Proyecto
+}
+
+class Habilidad {
+    titulo: String
+    codigo: String
+    descripcion: String
+}
+
+class Cuenta {
+    nombreUsuario: String
+    tipo: TipoCuenta
+}
+
+class TipoColectivo {
+    nombre: String
+}
+
+class Pais {
+    nombre: String
+}
+
+class Provincia {
+    nombre: String
+}
+
+Colectivo --> TipoColectivo
+Colectivo --> Pais
+Colectivo --> Provincia
+Colectivo --> Proyecto 
+Proyecto --> Colectivo 
+Proyecto --> Habilidad
+Proyecto --> Colaboracion 
+Colaboracion --> PersonaColaboradora 
+Colaboracion --> Proyecto 
+PersonaColaboradora --> Cuenta 
+PersonaColaboradora --> Habilidad
+PersonaColaboradora --> Colaboracion 
+Proyecto --> UnidadCompromiso 
+Proyecto --> ModalidadColaboracion 
+Proyecto --> EstadoProyecto 
+Cuenta --> TipoCuenta
+
+@enduml
