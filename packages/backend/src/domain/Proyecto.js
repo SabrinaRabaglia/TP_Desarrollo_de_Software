@@ -12,6 +12,7 @@ export default class Proyecto {
         fechaAlta = new Date(),
         fechaCierre = null,
         habilidadesRequeridas = []){
+            this.id = crypto.randomUUID();
             this.titulo = titulo;
             this.descripcion = descripcion;
             this.unidadCompromiso = unidadCompromiso;
@@ -24,5 +25,15 @@ export default class Proyecto {
             this.habilidadesRequeridas = habilidadesRequeridas;
             this.colaboraciones=[];
         }
+    agregarColaboracion(colaboracion) {
+    this.colaboraciones.push(colaboracion);
+  }
 
+    poseeHabilidadNecesaria(personaColaboradora){
+        return this.habilidadesRequeridas.some(hReq=>personaColaboradora.habilidades.includes(hReq))
+    }
+
+    proyectoCerrado(){
+        return this.estado === EstadoProyecto.CERRADO;
+    }
 }
