@@ -1,5 +1,9 @@
 name: Backend deployment
 
+concurrency:
+  group: backend-deployment
+  cancel-in-progress: false
+
 on:
   push:
     branches:
@@ -46,3 +50,35 @@ jobs:
 
       - name: Push image
         run: docker push "$BACKEND_IMAGE"
+
+      - name: Deploy backend
+        run: |
+          az containerapp revision set-mode \
+            --name ca-ddso-backend \
+            --resource-group rg-ddso-backend \
+            --mode single \
+            --output none
+
+          az containerapp update \
+            --name ca-ddso-backend \
+            --resource-group rg-ddso-backend \
+            --image "$BACKEND_IMAGE" \
+            --min-replicas 1 \
+            --max-replicas 1 \
+            --output none
+
+      - name: Check backend health
+        run: |
+          app_domain="$(az containerapp show \
+            --name ca-ddso-backend \
+            --resource-group rg-ddso-backend \
+            --query properties.configuration.ingress.fqdn \
+            --output tsv)"
+
+          curl --fail --silent --show-error \
+            --retry 6 \
+            --retry-all-errors \
+            --retry-delay 10 \
+            --connect-timeout 10 \
+            --max-time 30 \
+            "https://${app_domain}/health"
