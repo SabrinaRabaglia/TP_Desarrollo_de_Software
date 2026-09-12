@@ -9,14 +9,40 @@ permissions:
   contents: read
   id-token: write
 
+env:
+  ACR_NAME: crddsobackend
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
       - name: Sign in to Azure
         uses: azure/login@v3
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Sign in to registry
+        run: az acr login --name "$ACR_NAME"
+
+      - name: Prepare image name
+        run: |
+          registry_server="$(az acr show \
+            --name "$ACR_NAME" \
+            --resource-group rg-ddso-backend \
+            --query loginServer \
+            --output tsv)"
+
+          echo "BACKEND_IMAGE=${registry_server}/ddso-backend:${GITHUB_SHA}" \
+            >> "$GITHUB_ENV"
+
+      - name: Build image
+        run: docker build --platform linux/amd64 -t "$BACKEND_IMAGE" .
+
+      - name: Push image
+        run: docker push "$BACKEND_IMAGE"
