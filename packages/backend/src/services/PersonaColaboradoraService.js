@@ -43,14 +43,17 @@ export default class PersonaColaboradoraService {
     if (!personaExistente) {
       throw new NotFoundError("Persona colaboradora no encontrada")
     }
+
+    const cuentas = this.crearCuentas(actualizada.cuentas)
+    const habilidades = this.buscarHabilidades(actualizada.habilidades)
  
     personaExistente.nombreFantasia = actualizada.nombreFantasia
     personaExistente.nombre = actualizada.nombre ?? null
     personaExistente.apellido = actualizada.apellido ?? null
     personaExistente.pronombres = actualizada.pronombres ?? []
     personaExistente.presentacion = actualizada.presentacion ?? null
-    personaExistente.cuentas = this.crearCuentas(actualizada.cuentas)
-    personaExistente.habilidades = this.buscarHabilidades(actualizada.habilidades)
+    personaExistente.cuentas = cuentas
+    personaExistente.habilidades = habilidades
  
     return this.personaColaboradoraRepository.save(personaExistente)
   }
