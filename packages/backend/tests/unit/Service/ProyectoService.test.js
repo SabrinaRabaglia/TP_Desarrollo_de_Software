@@ -43,6 +43,24 @@ describe("ProyectoService", () => {
     };
   });
 
+  test.each([
+    ["horas negativas", { cantHoras: -1 }],
+    ["modalidades vacías", { modalidadesColaboracion: [] }],
+  ])("rechaza %s al crear y actualizar sin alterar los datos", (_caso, cambios) => {
+    expect(() => service.create({ ...dtoProyectoValido, ...cambios }))
+      .toThrow(UnprocessableEntityError);
+    expect(service.getAll()).toEqual([]);
+
+    const proyecto = service.create(dtoProyectoValido);
+    const antes = structuredClone(proyecto);
+
+    expect(() => service.update(proyecto.id, {
+      titulo: "No debe guardarse",
+      ...cambios,
+    })).toThrow(UnprocessableEntityError);
+    expect(service.getById(proyecto.id)).toEqual(antes);
+  });
+
   describe("create", () => {
     test("crea y guarda un proyecto cuando el título no existe todavía", () => {
       const proyectoCreado = service.create(dtoProyectoValido);

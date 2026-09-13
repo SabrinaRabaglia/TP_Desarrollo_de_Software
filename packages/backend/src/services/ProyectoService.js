@@ -39,7 +39,7 @@ export default class ProyectoService {
             nuevo.titulo,
             nuevo.descripcion,
             nuevo.unidadCompromiso,
-            nuevo.cantHoras || nuevo.cantidadHoras,
+            nuevo.cantHoras ?? nuevo.cantidadHoras,
             nuevo.colectivo,
             nuevo.modalidadesColaboracion,
             nuevo.estado,

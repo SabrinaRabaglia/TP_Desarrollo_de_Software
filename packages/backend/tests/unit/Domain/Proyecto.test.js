@@ -15,7 +15,7 @@ describe("Proyecto",() =>{
     test("Se construye correctamente con valores por defecto",()=>{
 
         const fechaInicio = new Date();
-        const proyecto = new Proyecto("Limpieza del Río","Jornada de recoleccion de residuos",UnidadCompromiso.HORAS_SEMANALES,4,colectivo);
+        const proyecto = new Proyecto("Limpieza del Río","Jornada de recoleccion de residuos",UnidadCompromiso.HORAS_SEMANALES,4,colectivo,[ModalidadColaboracion.GRATUITA]);
 
         expect(proyecto.titulo).toBe("Limpieza del Río");
         expect(proyecto.descripcion).toBe("Jornada de recoleccion de residuos");
@@ -23,7 +23,7 @@ describe("Proyecto",() =>{
         expect(proyecto.cantHoras).toBe(4);
         expect(proyecto.colectivo).toBe(colectivo);
        
-        expect(proyecto.modalidadesColaboracion).toEqual([]);
+        expect(proyecto.modalidadesColaboracion).toEqual([ModalidadColaboracion.GRATUITA]);
         expect(proyecto.estado).toEqual(EstadoProyecto.PUBLICADO);
         expect(proyecto.fechaAlta.getTime()).toBeGreaterThanOrEqual(fechaInicio.getTime());
         expect(proyecto.fechaCierre).toBeNull();
@@ -66,7 +66,8 @@ describe("Proyecto",() =>{
             "Capacitación comunitaria",
             UnidadCompromiso.HORAS_MENSUALES,
             10,
-            colectivo
+            colectivo,
+            [ModalidadColaboracion.GRATUITA]
         )).toThrow(UnprocessableEntityError);
     });
 
@@ -76,7 +77,8 @@ describe("Proyecto",() =>{
             undefined,
             UnidadCompromiso.HORAS_MENSUALES,
             10,
-            colectivo
+            colectivo,
+            [ModalidadColaboracion.GRATUITA]
         )).toThrow(UnprocessableEntityError);
     });
 
@@ -86,7 +88,8 @@ describe("Proyecto",() =>{
             "Capacitación comunitaria",
             undefined,
             10,
-            colectivo
+            colectivo,
+            [ModalidadColaboracion.GRATUITA]
         )).toThrow(UnprocessableEntityError);
     });
 
@@ -96,7 +99,8 @@ describe("Proyecto",() =>{
             "Capacitación comunitaria",
             UnidadCompromiso.HORAS_MENSUALES,
             undefined,
-            colectivo
+            colectivo,
+            [ModalidadColaboracion.GRATUITA]
         )).toThrow(UnprocessableEntityError);
     });
 
@@ -106,7 +110,8 @@ describe("Proyecto",() =>{
             "Capacitación comunitaria",
             UnidadCompromiso.HORAS_MENSUALES,
             10,
-            undefined
+            undefined,
+            [ModalidadColaboracion.GRATUITA]
         )).toThrow(UnprocessableEntityError);
     });
 })
