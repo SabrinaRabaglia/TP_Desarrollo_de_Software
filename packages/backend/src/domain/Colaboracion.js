@@ -1,3 +1,5 @@
+import { UnprocessableEntityError } from "../errors/AppError.js";
+
 export default class Colaboracion {
     constructor(personaColaboradora, proyecto) {
         if (!personaColaboradora || !proyecto) {

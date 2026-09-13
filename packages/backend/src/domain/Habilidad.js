@@ -1,4 +1,4 @@
-import { UnprocessableEntityError } from "../errors/AppError";
+import { UnprocessableEntityError } from "../errors/AppError.js";
 
 export default class Habilidad {
     constructor(titulo, codigo, descripcion) {

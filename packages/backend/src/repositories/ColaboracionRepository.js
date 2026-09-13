@@ -16,7 +16,7 @@ export default class ColaboracionRepository {
     }
 
     findByPersonaAndProyecto(personaId,proyectoId){
-        return this.colaboraciones.filter((c)=> c.personaColaboradora.id === personaId && c.proyecto.id === proyectoId)
+        return this.colaboraciones.find((c)=> c.personaColaboradora.id === personaId && c.proyecto.id === proyectoId)
     }
 
     save(colaboracion){

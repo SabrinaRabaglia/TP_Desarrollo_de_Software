@@ -1,6 +1,6 @@
 import {z} from 'zod'
-import { BadRequestError } from '../errors/AppError';
-import ColectivoService from '../services/ColectivoService';
+import { BadRequestError } from '../errors/AppError.js';
+import ColectivoService from '../services/ColectivoService.js';
 
 const colectivoSchema = z.object({
     nombre: z.string(),

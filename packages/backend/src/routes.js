@@ -5,7 +5,7 @@ import HabilidadRepository from "./repositories/HabilidadRepository.js"
 import HabilidadService from "./services/HabilidadService.js"
 import HabilidadController from "./controllers/HabilidadController.js"
  
-import PersonaColaboradoraRepository from "./repositories/PersonaColaboradoraRepository.js"
+import personaColaboradoraRepository from "./repositories/PersonaColaboradoraRepository.js"
 import PersonaColaboradoraService from "./services/PersonaColaboradoraService.js"
 import PersonaColaboradoraController from "./controllers/PersonaColaboradoraController.js"
 
@@ -13,7 +13,7 @@ import ColectivoRepository from "./repositories/ColectivoRepository.js";
 import ColectivoService from "./services/ColectivoService.js";
 import ColectivoController from "./controllers/ColectivoController.js";
 
-import ProyectoRepository from "./repositories/ProyectoRepository.js";
+import proyectoRepository from "./repositories/ProyectoRepository.js";
 import ProyectoService from "./services/ProyectoService.js";
 import ProyectoController from "./controllers/ProyectoController.js";
 import ColaboracionController from "./controllers/ColaboracionController.js"
@@ -32,7 +32,7 @@ routes.get("/habilidades/:id", habilidadController.getById)
 routes.put("/habilidades/:id", habilidadController.update)
 routes.delete("/habilidades/:id", habilidadController.delete)
 
-const personaColaboradoraRepository = new PersonaColaboradoraRepository()
+//const personaColaboradoraRepository = new PersonaColaboradoraRepository()
 const personaColaboradoraService = new PersonaColaboradoraService(personaColaboradoraRepository, habilidadService)
 const personaColaboradoraController = new PersonaColaboradoraController(personaColaboradoraService)
  
@@ -53,7 +53,7 @@ routes.put("/colectivos/:id", colectivoController.put);
 routes.patch("/colectivos/:id", colectivoController.patch);
 routes.delete("/colectivos/:id", colectivoController.delete);
 
-const proyectoRepository = new ProyectoRepository()
+//const proyectoRepository = new ProyectoRepository()
 const proyectoService = new ProyectoService(proyectoRepository)
 const proyectoController = new ProyectoController(proyectoService)
 

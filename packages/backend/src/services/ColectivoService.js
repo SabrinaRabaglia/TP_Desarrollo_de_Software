@@ -1,5 +1,6 @@
-import Colectivo from "../domain/Colectivo";
-import { ConflictError } from "../errors/AppError";
+import Colectivo from "../domain/Colectivo.js";
+import ColectivoRepository from "../repositories/ColectivoRepository.js";
+import { ConflictError, NotFoundError } from "../errors/AppError.js";
 
 export default class ColectivoService {
     constructor(colectivoRepository = new ColectivoRepository()){

@@ -1,8 +1,9 @@
-import { EstadoProyecto } from "../domain/enums/EstadoProyecto";
+import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js";
 import {z} from 'zod'
-import {ModalidadColaboracion} from "../domain/enums/ModalidadColaboracion";
-import {UnidadCompromiso} from "../domain/enums/UnidadCompromiso";
-import ProyectoService from "../services/ProyectoService";
+import {ModalidadColaboracion} from "../domain/enums/ModalidadColaboracion.js";
+import {UnidadCompromiso} from "../domain/enums/UnidadCompromiso.js";
+import ProyectoService from "../services/ProyectoService.js";
+import { BadRequestError } from "../errors/AppError.js";
 
 const proyectoSchema = z.object({
     titulo: z.string(),

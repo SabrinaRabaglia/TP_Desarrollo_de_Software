@@ -1,16 +1,16 @@
-import Colaboracion from "../domain/Colaboracion";
-import { BadRequestError, UnprocessableEntityError } from "../errors/AppError";
-import ColaboracionRepository from "../repositories/ColaboracionRepository";
-import PersonaColaboradoraRepository from "../repositories/PersonaColaboradoraRepository";
-import ProyectoRepository from "../repositories/ProyectoRepository";
+import Colaboracion from "../domain/Colaboracion.js";
+import { BadRequestError, UnprocessableEntityError } from "../errors/AppError.js";
+import ColaboracionRepository from "../repositories/ColaboracionRepository.js";
+import personaColaboradoraRepository from "../repositories/PersonaColaboradoraRepository.js";
+import proyectoRepository from "../repositories/ProyectoRepository.js";
 export default class ColaboracionService {
     constructor(colaboracionRepository = new ColaboracionRepository(),
-    proyectoRepository = new ProyectoRepository(),
-    personaColaboradoraRepository = new PersonaColaboradoraRepository())
+    proyectoRepo = proyectoRepository,
+    personaColaboradoraRepo = personaColaboradoraRepository)
     {
         this.colaboracionRepository = colaboracionRepository;
-        this.proyectoRepository = proyectoRepository;
-        this.personaColaboradoraRepository = personaColaboradoraRepository;
+        this.proyectoRepository = proyectoRepo;
+        this.personaColaboradoraRepository = personaColaboradoraRepo;
     }
     create = (colaboracionDTO) => {
         const proyectoExistente = this.proyectoRepository.findById(colaboracionDTO.proyectoId);

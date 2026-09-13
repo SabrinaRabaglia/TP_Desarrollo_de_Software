@@ -16,7 +16,7 @@ export default class ColectivoRepository {
     }
 
     save(nuevo){
-        const indice = this.colectivos.findIndex((c)= c.id === nuevo.id)
+        const indice = this.colectivos.findIndex((c)=> c.id === nuevo.id)
         if(indice === -1){
             this.colectivos.push(nuevo)
             return nuevo

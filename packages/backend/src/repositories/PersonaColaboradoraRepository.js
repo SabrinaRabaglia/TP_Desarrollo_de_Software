@@ -1,4 +1,4 @@
-export default class PersonaColaboradoraRepository {
+class PersonaColaboradoraRepository {
   constructor() {
     this.personasColaboradoras = []
   }
@@ -30,3 +30,5 @@ export default class PersonaColaboradoraRepository {
     return personaColaboradora
   }
 }
+const personaColaboradoraRepository = new PersonaColaboradoraRepository();
+export default personaColaboradoraRepository;

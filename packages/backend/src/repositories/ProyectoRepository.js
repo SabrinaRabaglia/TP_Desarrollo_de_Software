@@ -1,5 +1,5 @@
 
-export default class ProyectoRepository {
+class ProyectoRepository {
      constructor(){
             this.proyectos = []
         }
@@ -15,7 +15,7 @@ export default class ProyectoRepository {
         return this.proyectos.find((c) => c.nombre === nombre);
     }
     save(nuevo){
-            const indice = this.proyectos.findIndex((p)= p.id === nuevo.id)
+            const indice = this.proyectos.findIndex((p) => p.id === nuevo.id);
             if(indice === -1){
                 this.proyectos.push(nuevo)
                 return nuevo
@@ -28,3 +28,6 @@ export default class ProyectoRepository {
         this.colectivos = this.colectivos.filter((c) => c.id !== id);
     }
 }
+
+const proyectoRepository = new ProyectoRepository();
+export default proyectoRepository;
