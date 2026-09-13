@@ -1,1 +1,5 @@
-export default class TipoColectivo {}
+export default class TipoColectivo {
+  constructor(nombre) {
+    this.nombre = nombre
+  }
+}

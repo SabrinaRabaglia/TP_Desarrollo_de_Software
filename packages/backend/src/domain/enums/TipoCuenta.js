@@ -1,1 +1,4 @@
-export const TipoCuenta = Object.freeze({})
+export const TipoCuenta = Object.freeze({
+  GITHUB: "GITHUB",
+  GITLAB: "GITLAB",
+})
