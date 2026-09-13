@@ -3,12 +3,19 @@ import Colectivo from "../domain/Colectivo.js";
 import { ConflictError, NotFoundError, UnprocessableEntityError } from "../errors/AppError.js";
 
 export default class ColectivoService {
-    constructor(colectivoRepository, tipoColectivoRepository){
+    constructor(colectivoRepository, tipoColectivoRepository, proyectoRepository){
         this.colectivoRepository = colectivoRepository;
         this.tipoColectivoRepository = tipoColectivoRepository;
+        this.proyectoRepository = proyectoRepository;
     }
+
+    incluirProyectos = (colectivo) => ({
+        ...colectivo,
+        proyectos: this.proyectoRepository.findByColectivoId(colectivo.id),
+    });
+
     getAll = () => {
-        return this.colectivoRepository.findAll();
+        return this.colectivoRepository.findAll().map(this.incluirProyectos);
     };
 
     getById = (id) => {
@@ -16,7 +23,7 @@ export default class ColectivoService {
         if (!colectivo) {
             throw new NotFoundError("COLECTIVO NO ENCONTRADO!");
         }
-        return colectivo;
+        return this.incluirProyectos(colectivo);
     };
     validarTipo = (tipo) => {
         if (!this.tipoColectivoRepository.findByNombre(tipo)) {
@@ -43,7 +50,7 @@ export default class ColectivoService {
         );
         colectivo.id = randomUUID();
         console.log("OBJETO ANTES DE GUARDAR:", colectivo);
-        return this.colectivoRepository.save(colectivo);
+        return this.incluirProyectos(this.colectivoRepository.save(colectivo));
     };
      update = (id, colectivoActualizado) => {
         const colectivoExistente = this.colectivoRepository.findById(id)
@@ -64,7 +71,7 @@ export default class ColectivoService {
         colectivoExistente.provincia = colectivoActualizado.provincia || null;
         colectivoExistente.ciudad = colectivoActualizado.ciudad || null;
 
-        return this.colectivoRepository.save(colectivoExistente)
+        return this.incluirProyectos(this.colectivoRepository.save(colectivoExistente))
     }
     patch = (id, cambios) => {
     const existente = this.getById(id);

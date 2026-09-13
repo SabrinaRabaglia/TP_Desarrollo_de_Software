@@ -44,7 +44,8 @@ routes.delete("/personas-colaboradoras/:id", personaColaboradoraController.delet
 
 const colectivoRepository = new ColectivoRepository()
 const tipoColectivoRepository = new TipoColectivoRepository()
-const colectivoService = new ColectivoService(colectivoRepository, tipoColectivoRepository)
+const proyectoRepository = new ProyectoRepository()
+const colectivoService = new ColectivoService(colectivoRepository, tipoColectivoRepository, proyectoRepository)
 const colectivoController = new ColectivoController(colectivoService)
 
 routes.post("/colectivos", colectivoController.create);
@@ -54,7 +55,6 @@ routes.put("/colectivos/:id", colectivoController.put);
 routes.patch("/colectivos/:id", colectivoController.patch);
 routes.delete("/colectivos/:id", colectivoController.delete);
 
-const proyectoRepository = new ProyectoRepository()
 const proyectoService = new ProyectoService(proyectoRepository, colectivoService, habilidadService)
 const proyectoController = new ProyectoController(proyectoService)
 

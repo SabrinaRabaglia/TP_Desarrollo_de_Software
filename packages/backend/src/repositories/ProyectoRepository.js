@@ -15,6 +15,10 @@ export default class ProyectoRepository {
     return this.proyectos.find((c) => c.titulo === titulo);
   }
 
+  findByColectivoId(colectivoId) {
+    return this.proyectos.filter((proyecto) => proyecto.colectivo === colectivoId);
+  }
+
   save(nuevo) {
     const indice = this.proyectos.findIndex((p) => p.id === nuevo.id);
     if (indice === -1) {

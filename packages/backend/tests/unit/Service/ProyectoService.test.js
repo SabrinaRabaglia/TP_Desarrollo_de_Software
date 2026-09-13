@@ -18,10 +18,11 @@ describe("ProyectoService", () => {
   let dtoProyectoValido;
 
   beforeEach(() => {
-    colectivoService = new ColectivoService(new ColectivoRepository(), new TipoColectivoRepository());
+    const proyectoRepository = new ProyectoRepository();
+    colectivoService = new ColectivoService(new ColectivoRepository(), new TipoColectivoRepository(), proyectoRepository);
     habilidadService = new HabilidadService(new HabilidadRepository());
     service = new ProyectoService(
-      new ProyectoRepository(), colectivoService, habilidadService
+      proyectoRepository, colectivoService, habilidadService
     );
     const colectivo = colectivoService.create({
       nombre: "Asamblea Ambiental",
@@ -42,6 +43,32 @@ describe("ProyectoService", () => {
       habilidadesRequeridas: habilidades.map((habilidad) => habilidad.id),
       estado: EstadoProyecto.PUBLICADO
     };
+  });
+
+  test("los colectivos reflejan el alta, traslado y eliminación de sus proyectos", () => {
+    const origenId = dtoProyectoValido.colectivo;
+    const destino = colectivoService.create({
+      nombre: "Otro colectivo", descripcion: "Descripción", tipo: "ONG",
+    });
+    const proyecto = service.create(dtoProyectoValido);
+
+    expect(colectivoService.getById(origenId).proyectos).toEqual([proyecto]);
+    expect(colectivoService.getById(destino.id).proyectos).toEqual([]);
+    expect(colectivoService.getAll().find((c) => c.id === origenId).proyectos).toEqual([proyecto]);
+
+    service.update(proyecto.id, { colectivo: destino.id });
+
+    expect(colectivoService.getById(origenId).proyectos).toEqual([]);
+    expect(colectivoService.getById(destino.id).proyectos).toEqual([proyecto]);
+    const actualizado = colectivoService.patch(destino.id, { descripcion: "Nueva descripción" });
+    expect(actualizado.proyectos).toEqual([proyecto]);
+    const respuesta = JSON.parse(JSON.stringify(colectivoService.getAll()));
+    expect(respuesta.find((c) => c.id === destino.id).proyectos[0].colectivo).toBe(destino.id);
+
+    service.delete(proyecto.id);
+
+    expect(colectivoService.getById(destino.id).proyectos).toEqual([]);
+    expect(colectivoService.getAll().every((c) => c.proyectos.length === 0)).toBe(true);
   });
 
   test.each([
