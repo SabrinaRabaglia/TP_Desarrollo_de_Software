@@ -53,7 +53,7 @@ routes.patch("/colectivos/:id", colectivoController.patch);
 routes.delete("/colectivos/:id", colectivoController.delete);
 
 const proyectoRepository = new ProyectoRepository()
-const proyectoService = new ProyectoService(proyectoRepository)
+const proyectoService = new ProyectoService(proyectoRepository, colectivoService, habilidadService)
 const proyectoController = new ProyectoController(proyectoService)
 
 routes.post("/proyectos", proyectoController.create);

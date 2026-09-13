@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import Colectivo from "../domain/Colectivo.js";
 import { ConflictError, NotFoundError } from "../errors/AppError.js";
 
@@ -31,7 +32,7 @@ export default class ColectivoService {
             nuevo.provincia,
             nuevo.ciudad
         );
-        colectivo.id = nuevo.id || Date.now().toString();
+        colectivo.id = randomUUID();
         console.log("OBJETO ANTES DE GUARDAR:", colectivo);
         return this.colectivoRepository.save(colectivo);
     };

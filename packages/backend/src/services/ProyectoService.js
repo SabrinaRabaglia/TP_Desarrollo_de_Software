@@ -1,9 +1,12 @@
+import { randomUUID } from "node:crypto";
 import { ConflictError, NotFoundError } from "../errors/AppError.js";
 import { Proyecto } from "../domain/Proyecto.js";
 
 export default class ProyectoService {
-    constructor(proyectoRepository) {
+    constructor(proyectoRepository, colectivoService, habilidadService) {
         this.proyectoRepository = proyectoRepository;
+        this.colectivoService = colectivoService;
+        this.habilidadService = habilidadService;
     }
 
     getAll = () => {
@@ -18,13 +21,19 @@ export default class ProyectoService {
         return proyecto;
     };
 
-    create = (nuevo) => {
-        if (nuevo.id && this.proyectoRepository.findById(nuevo.id)) {
-            throw new ConflictError("PROYECTO EXISTENTE!");
+    validarReferencias = (datos) => {
+        this.colectivoService.getById(datos.colectivo);
+        for (const id of datos.habilidadesRequeridas ?? []) {
+            this.habilidadService.getById(id);
         }
+    };
+
+    create = (nuevo) => {
         if (nuevo.titulo && this.proyectoRepository.findByTitulo?.(nuevo.titulo)) {
             throw new ConflictError("PROYECTO EXISTENTE!");
         }
+
+        this.validarReferencias(nuevo);
 
         const proyecto = new Proyecto(
             nuevo.titulo,
@@ -38,7 +47,7 @@ export default class ProyectoService {
             nuevo.fechaCierre,
             nuevo.habilidadesRequeridas
         );
-        proyecto.id = nuevo.id || Date.now().toString();
+        proyecto.id = randomUUID();
 
         return this.proyectoRepository.save(proyecto);
     };
@@ -53,6 +62,11 @@ export default class ProyectoService {
         ) {
             throw new ConflictError("PROYECTO EXISTENTE!");
         }
+
+        this.validarReferencias({
+            ...proyectoExistente,
+            ...proyectoActualizado,
+        });
 
         Object.assign(proyectoExistente, proyectoActualizado);
 
