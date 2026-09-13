@@ -42,6 +42,8 @@ export default class PersonaColaboradoraService {
       throw new NotFoundError("Persona colaboradora no encontrada")
     }
 
+    PersonaColaboradora.validarDatos(actualizada)
+
     const cuentas = this.crearCuentas(actualizada.cuentas)
     const habilidades = this.buscarHabilidades(actualizada.habilidades)
  

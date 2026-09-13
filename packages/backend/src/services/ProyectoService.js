@@ -63,10 +63,12 @@ export default class ProyectoService {
             throw new ConflictError("PROYECTO EXISTENTE!");
         }
 
-        this.validarReferencias({
+        const datosActualizados = {
             ...proyectoExistente,
             ...proyectoActualizado,
-        });
+        };
+        Proyecto.validarDatos(datosActualizados);
+        this.validarReferencias(datosActualizados);
 
         Object.assign(proyectoExistente, proyectoActualizado);
 

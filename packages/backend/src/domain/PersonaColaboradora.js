@@ -1,9 +1,7 @@
 import { UnprocessableEntityError } from "../errors/AppError.js"
 export default class PersonaColaboradora {
   constructor(nombreFantasia, nombre = null, apellido = null, pronombres = [], presentacion = null, cuentas = [], habilidades = [] ) {
-    if (!nombreFantasia) {
-      throw new UnprocessableEntityError("La persona colaboradora debe tener un nombre de fantasia")
-    }
+    PersonaColaboradora.validarDatos({ nombreFantasia })
     this.id = crypto.randomUUID()
     this.nombreFantasia = nombreFantasia;
     this.nombre = nombre;
@@ -13,6 +11,12 @@ export default class PersonaColaboradora {
     this.cuentas = cuentas;
     this.habilidades = habilidades;
     this.colaboraciones = [];
+  }
+
+  static validarDatos({ nombreFantasia }) {
+    if (!nombreFantasia) {
+      throw new UnprocessableEntityError("La persona colaboradora debe tener un nombre de fantasia")
+    }
   }
 
   agregarHabilidad(habilidad) {

@@ -13,9 +13,7 @@ export default class Proyecto {
         fechaAlta = new Date(),
         fechaCierre = null,
         habilidadesRequeridas = []){
-            if (!titulo || !descripcion || !unidadCompromiso || !cantHoras || !colectivo) {
-          throw new UnprocessableEntityError("Titulo, descripción, unidadCompromiso, cantHoras y colectivo son obligatorios.");
-        }
+            Proyecto.validarDatos({ titulo, descripcion, unidadCompromiso, cantHoras, colectivo });
             this.titulo = titulo;
             this.descripcion = descripcion;
             this.unidadCompromiso = unidadCompromiso;
@@ -29,6 +27,11 @@ export default class Proyecto {
             this.colaboraciones=[];
         }
 
+    static validarDatos({ titulo, descripcion, unidadCompromiso, cantHoras, colectivo }) {
+        if (!titulo || !descripcion || !unidadCompromiso || !cantHoras || !colectivo) {
+            throw new UnprocessableEntityError("Titulo, descripción, unidadCompromiso, cantHoras y colectivo son obligatorios.");
+        }
+    }
 }
 
 export { Proyecto };

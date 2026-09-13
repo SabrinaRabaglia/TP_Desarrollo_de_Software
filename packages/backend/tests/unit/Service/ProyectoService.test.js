@@ -5,7 +5,7 @@ import ColectivoService from "../../../src/services/ColectivoService.js";
 import ColectivoRepository from "../../../src/repositories/ColectivoRepository.js";
 import HabilidadService from "../../../src/services/HabilidadService.js";
 import HabilidadRepository from "../../../src/repositories/HabilidadRepository.js";
-import { ConflictError, NotFoundError } from "../../../src/errors/AppError.js";
+import { ConflictError, NotFoundError, UnprocessableEntityError } from "../../../src/errors/AppError.js";
 import { EstadoProyecto } from "../../../src/domain/enums/EstadoProyecto.js";
 import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColaboracion.js";
 import { UnidadCompromiso } from "../../../src/domain/enums/UnidadCompromiso.js";
@@ -115,6 +115,17 @@ describe("ProyectoService", () => {
   });
 
   describe("update", () => {
+    test("rechaza cero horas sin modificar el proyecto", () => {
+      const proyecto = service.create(dtoProyectoValido);
+      const antes = structuredClone(proyecto);
+
+      expect(() => service.update(proyecto.id, {
+        titulo: "No debe guardarse", cantHoras: 0,
+      })).toThrow(UnprocessableEntityError);
+
+      expect(service.getById(proyecto.id)).toEqual(antes);
+    });
+
     test("actualiza un proyecto existente correctamente", () => {
       const creado = service.create(dtoProyectoValido);
 

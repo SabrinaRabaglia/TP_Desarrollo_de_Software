@@ -1,6 +1,6 @@
 import { describe, expect, test } from "@jest/globals"
 import ColectivoService from "../../../src/services/ColectivoService.js";
-import { ConflictError, NotFoundError } from "../../../src/errors/AppError.js";
+import { ConflictError, NotFoundError, UnprocessableEntityError } from "../../../src/errors/AppError.js";
 import ColectivoRepository from "../../../src/repositories/ColectivoRepository.js";
 
 describe("ColectivoService", ()=>{
@@ -61,6 +61,20 @@ describe("ColectivoService", ()=>{
     });
 
     describe("update", () => {
+        test("rechaza un nombre vacío en una actualización parcial sin modificar el colectivo", () => {
+            const service = new ColectivoService(new ColectivoRepository());
+            const colectivo = service.create({
+                nombre: "Asamblea Ambiental", descripcion: "Descripción original", tipo: "Asamblea"
+            });
+            const antes = structuredClone(colectivo);
+
+            expect(() => service.patch(colectivo.id, {
+                nombre: "", descripcion: "No debe guardarse"
+            })).toThrow(UnprocessableEntityError);
+
+            expect(service.getById(colectivo.id)).toEqual(antes);
+        });
+
         test("lanza NotFoundError si intenta actualizar un colectivo inexistente", () => {
             const service = new ColectivoService(new ColectivoRepository());
             const datos = { nombre: "Nuevo", descripcion: "Desc", tipo: "ONG" };

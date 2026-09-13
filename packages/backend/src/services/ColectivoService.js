@@ -41,6 +41,8 @@ export default class ColectivoService {
 
         if(!colectivoExistente) throw new NotFoundError("Colectivo no encontrado")
 
+        Colectivo.validarDatos(colectivoActualizado);
+
         const otro = this.colectivoRepository.findByNombre(colectivoActualizado.nombre);
 
         if (otro && otro.id !== colectivoExistente.id) throw new ConflictError("COLECTIVO EXISTENTE!")

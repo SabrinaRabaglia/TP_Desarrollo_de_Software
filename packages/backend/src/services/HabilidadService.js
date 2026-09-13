@@ -21,7 +21,7 @@ export default class HabilidadService {
       throw new NotFoundError("Habilidad no encontrada")
     }
  
-    Habilidad.validarCodigo(actualizada.titulo, actualizada.codigo)
+    Habilidad.validarDatos(actualizada)
 
     const otraConMismoCodigo = this.habilidadRepository.findByCodigo(actualizada.codigo)
     if (otraConMismoCodigo && otraConMismoCodigo.id !== id) {

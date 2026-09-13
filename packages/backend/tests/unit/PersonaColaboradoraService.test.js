@@ -4,7 +4,7 @@ import PersonaColaboradoraRepository from "../../src/repositories/PersonaColabor
 import PersonaColaboradora from "../../src/domain/PersonaColaboradora.js"
 import Cuenta from "../../src/domain/Cuenta.js"
 import Habilidad from "../../src/domain/Habilidad.js"
-import { NotFoundError } from "../../src/errors/AppError.js"
+import { NotFoundError, UnprocessableEntityError } from "../../src/errors/AppError.js"
 
 describe("PersonaColaboradoraService", () => {
   let repository
@@ -76,6 +76,17 @@ describe("PersonaColaboradoraService", () => {
       nombreFantasia: "No debe guardarse",
       habilidades: ["habilidad-inexistente"],
     })).toThrow(NotFoundError)
+
+    expect(repository.findById(persona.id)).toEqual(antes)
+  })
+
+  test("rechaza un nombre de fantasía vacío sin modificar la persona", () => {
+    const persona = service.create(datos)
+    const antes = structuredClone(persona)
+
+    expect(() => service.update(persona.id, {
+      ...datos, nombreFantasia: "", presentacion: "No debe guardarse",
+    })).toThrow(UnprocessableEntityError)
 
     expect(repository.findById(persona.id)).toEqual(antes)
   })

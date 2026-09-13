@@ -38,6 +38,18 @@ describe("HabilidadService", () => {
   })
 
   describe("update", () => {
+    test("rechaza una descripción vacía sin modificar la habilidad", () => {
+      const service = new HabilidadService(new HabilidadRepository())
+      const habilidad = service.create({ titulo: "React", codigo: "react", descripcion: "desc" })
+      const antes = structuredClone(habilidad)
+
+      expect(() => service.update(habilidad.id, {
+        titulo: "Node", codigo: "node", descripcion: "",
+      })).toThrow(UnprocessableEntityError)
+
+      expect(service.getById(habilidad.id)).toEqual(antes)
+    })
+
     test("actualiza los datos de una habilidad existente, conservando su id", () => {
       const service = new HabilidadService(new HabilidadRepository())
       const habilidad = service.create({ titulo: "React", codigo: "react", descripcion: "desc" })
