@@ -7,14 +7,12 @@ import errorHandler from "./middlewares/errorHandler.js"
 const app = express()
 
 app.use(
-    cors({
-        origin: process.env.ALLOWED_ORIGINS
-            ? process.env.ALLOWED_ORIGINS
-                .split(",")
-                .map((origin) => origin.trim())
-            : true,
-    }),
-);
+  cors({
+    origin: process.env.ALLOWED_ORIGINS
+      ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
+      : true,
+  }),
+)
 
 app.use(express.json())
 app.use(routes)

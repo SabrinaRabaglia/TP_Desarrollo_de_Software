@@ -11,7 +11,12 @@ test("devuelve el status, mensaje y detalles del error de validación", () => {
   const details = [{ path: ["titulo"], message: "Campo obligatorio" }]
   const res = mockRes()
 
-  errorHandler(new BadRequestError("Datos inválidos", details), {}, res, jest.fn())
+  errorHandler(
+    new BadRequestError("Datos inválidos", details),
+    {},
+    res,
+    jest.fn(),
+  )
 
   expect(res.status).toHaveBeenCalledWith(400)
   expect(res.json).toHaveBeenCalledWith({ message: "Datos inválidos", details })
@@ -26,7 +31,10 @@ test("responde 400 en JSON para un body mal formado", () => {
   errorHandler(error, {}, res, jest.fn())
 
   expect(res.status).toHaveBeenCalledWith(400)
-  expect(res.json).toHaveBeenCalledWith({ message: "JSON inválido", details: [] })
+  expect(res.json).toHaveBeenCalledWith({
+    message: "JSON inválido",
+    details: [],
+  })
 })
 
 test("responde 500 sin exponer el mensaje de un error inesperado", () => {

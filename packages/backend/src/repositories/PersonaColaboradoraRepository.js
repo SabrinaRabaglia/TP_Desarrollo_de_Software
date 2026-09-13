@@ -21,7 +21,9 @@ export default class PersonaColaboradoraRepository {
   }
 
   save(personaColaboradora) {
-    const indice = this.personasColaboradoras.findIndex((p) => p.id === personaColaboradora.id)
+    const indice = this.personasColaboradoras.findIndex(
+      (p) => p.id === personaColaboradora.id,
+    )
     if (indice === -1) {
       this.personasColaboradoras.push(personaColaboradora)
       return personaColaboradora

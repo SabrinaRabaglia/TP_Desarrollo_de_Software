@@ -6,7 +6,8 @@ const cuentaSchema = z
   .object({
     nombreUsuario: z.string(),
     tipo: z.enum(Object.values(TipoCuenta)),
-  }).strict()
+  })
+  .strict()
 
 const personaColaboradoraSchema = z
   .object({
@@ -17,7 +18,8 @@ const personaColaboradoraSchema = z
     presentacion: z.string().optional(),
     cuentas: z.array(cuentaSchema).optional(),
     habilidades: z.array(z.string().uuid()).optional(),
-  }).strict()
+  })
+  .strict()
 
 export default class PersonaColaboradoraController {
   constructor(personaColaboradoraService) {
@@ -29,7 +31,9 @@ export default class PersonaColaboradoraController {
     if (resultado.error) {
       throw new BadRequestError("Datos inválidos", resultado.error.issues)
     }
-    const personaColaboradora = this.personaColaboradoraService.create(resultado.data)
+    const personaColaboradora = this.personaColaboradoraService.create(
+      resultado.data,
+    )
     res.status(201).json(personaColaboradora)
   }
 
@@ -38,7 +42,10 @@ export default class PersonaColaboradoraController {
     if (resultado.error) {
       throw new BadRequestError("Datos inválidos", resultado.error.issues)
     }
-    const personaColaboradora = this.personaColaboradoraService.update(req.params.id, resultado.data)
+    const personaColaboradora = this.personaColaboradoraService.update(
+      req.params.id,
+      resultado.data,
+    )
     res.status(200).json(personaColaboradora)
   }
 
@@ -48,7 +55,9 @@ export default class PersonaColaboradoraController {
   }
 
   getById = (req, res) => {
-    const personaColaboradora = this.personaColaboradoraService.getById(req.params.id)
+    const personaColaboradora = this.personaColaboradoraService.getById(
+      req.params.id,
+    )
     res.status(200).json(personaColaboradora)
   }
 

@@ -13,11 +13,18 @@ export default function errorHandler(error, _req, res, next) {
   }
 
   // Conserva los errores 4xx del parser de Express, como JSON inválido o un body demasiado grande.
-  if (Number.isInteger(error.status) && error.status >= 400 && error.status < 500) {
+  if (
+    Number.isInteger(error.status) &&
+    error.status >= 400 &&
+    error.status < 500
+  ) {
     return res.status(error.status).json({
-      message: error.type === "entity.parse.failed"
-        ? "JSON inválido"
-        : error.expose ? error.message : "Solicitud inválida",
+      message:
+        error.type === "entity.parse.failed"
+          ? "JSON inválido"
+          : error.expose
+            ? error.message
+            : "Solicitud inválida",
       details: [],
     })
   }

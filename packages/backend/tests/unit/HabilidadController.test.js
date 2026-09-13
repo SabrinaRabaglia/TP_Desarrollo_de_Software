@@ -19,11 +19,18 @@ const mockHabilidadService = () => ({
 describe("HabilidadController", () => {
   describe("create", () => {
     test("con body válido, delega en el service y responde 201 con la habilidad creada", () => {
-      const habilidadCreada = { id: "1", titulo: "React", codigo: "react", descripcion: "desc" }
+      const habilidadCreada = {
+        id: "1",
+        titulo: "React",
+        codigo: "react",
+        descripcion: "desc",
+      }
       const habilidadServiceMock = mockHabilidadService()
       habilidadServiceMock.create.mockReturnValue(habilidadCreada)
       const controller = new HabilidadController(habilidadServiceMock)
-      const req = { body: { titulo: "React", codigo: "react", descripcion: "desc" } }
+      const req = {
+        body: { titulo: "React", codigo: "react", descripcion: "desc" },
+      }
       const res = mockRes()
 
       controller.create(req, res)
@@ -48,7 +55,14 @@ describe("HabilidadController", () => {
     test("con un campo extra no declarado en el schema, tira BadRequestError", () => {
       const habilidadServiceMock = mockHabilidadService()
       const controller = new HabilidadController(habilidadServiceMock)
-      const req = { body: { titulo: "React", codigo: "react", descripcion: "desc", extra: "no debería estar" } }
+      const req = {
+        body: {
+          titulo: "React",
+          codigo: "react",
+          descripcion: "desc",
+          extra: "no debería estar",
+        },
+      }
       const res = mockRes()
 
       const crearConCampoExtra = () => controller.create(req, res)
@@ -59,11 +73,23 @@ describe("HabilidadController", () => {
 
   describe("update", () => {
     test("con body válido, delega en el service pasando el id de la ruta y responde 200", () => {
-      const habilidadActualizada = { id: "1", titulo: "React actualizado", codigo: "react_actualizado", descripcion: "desc" }
+      const habilidadActualizada = {
+        id: "1",
+        titulo: "React actualizado",
+        codigo: "react_actualizado",
+        descripcion: "desc",
+      }
       const habilidadServiceMock = mockHabilidadService()
       habilidadServiceMock.update.mockReturnValue(habilidadActualizada)
       const controller = new HabilidadController(habilidadServiceMock)
-      const req = { params: { id: "1" }, body: { titulo: "React actualizado", codigo: "react_actualizado", descripcion: "desc" } }
+      const req = {
+        params: { id: "1" },
+        body: {
+          titulo: "React actualizado",
+          codigo: "react_actualizado",
+          descripcion: "desc",
+        },
+      }
       const res = mockRes()
 
       controller.update(req, res)
@@ -103,7 +129,12 @@ describe("HabilidadController", () => {
 
   describe("getById", () => {
     test("delega en el service con el id de la ruta y responde 200 con la habilidad", () => {
-      const habilidad = { id: "1", titulo: "React", codigo: "react", descripcion: "desc" }
+      const habilidad = {
+        id: "1",
+        titulo: "React",
+        codigo: "react",
+        descripcion: "desc",
+      }
       const habilidadServiceMock = mockHabilidadService()
       habilidadServiceMock.getById.mockReturnValue(habilidad)
       const controller = new HabilidadController(habilidadServiceMock)
@@ -120,7 +151,9 @@ describe("HabilidadController", () => {
 
   describe("getAll", () => {
     test("responde 200 con el listado que devuelve el service", () => {
-      const habilidades = [{ id: "1", titulo: "React", codigo: "react", descripcion: "desc" }]
+      const habilidades = [
+        { id: "1", titulo: "React", codigo: "react", descripcion: "desc" },
+      ]
       const habilidadServiceMock = mockHabilidadService()
       habilidadServiceMock.getAll.mockReturnValue(habilidades)
       const controller = new HabilidadController(habilidadServiceMock)

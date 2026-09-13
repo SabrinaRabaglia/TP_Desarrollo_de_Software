@@ -21,13 +21,15 @@ describe("Cuenta", () => {
   })
 
   test("tira UnprocessableEntityError si falta el nombre de usuario", () => {
-    const construirCuentaSinNombreUsuario = () => new Cuenta(undefined, TipoCuenta.GITHUB)
+    const construirCuentaSinNombreUsuario = () =>
+      new Cuenta(undefined, TipoCuenta.GITHUB)
 
     expect(construirCuentaSinNombreUsuario).toThrow(UnprocessableEntityError)
   })
 
   test("tira UnprocessableEntityError si el tipo no es GITHUB ni GITLAB", () => {
-    const construirCuentaConTipoInvalido = () => new Cuenta("juanpedro", "MASTODON")
+    const construirCuentaConTipoInvalido = () =>
+      new Cuenta("juanpedro", "MASTODON")
 
     expect(construirCuentaConTipoInvalido).toThrow(UnprocessableEntityError)
   })

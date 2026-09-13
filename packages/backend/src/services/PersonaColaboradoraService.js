@@ -3,10 +3,7 @@ import PersonaColaboradora from "../domain/PersonaColaboradora.js"
 import Cuenta from "../domain/Cuenta.js"
 
 export default class PersonaColaboradoraService {
-  constructor(
-    personaColaboradoraRepository,
-    habilidadService,
-  ) {
+  constructor(personaColaboradoraRepository, habilidadService) {
     this.personaColaboradoraRepository = personaColaboradoraRepository
     this.habilidadService = habilidadService
   }
@@ -14,15 +11,17 @@ export default class PersonaColaboradoraService {
   buscarHabilidades = (ids) => {
     return (ids ?? []).map((id) => this.habilidadService.getById(id))
   }
- 
+
   crearCuentas = (cuentas) => {
-    return (cuentas ?? []).map((cuenta) => new Cuenta(cuenta.nombreUsuario, cuenta.tipo))
+    return (cuentas ?? []).map(
+      (cuenta) => new Cuenta(cuenta.nombreUsuario, cuenta.tipo),
+    )
   }
 
   create = (nueva) => {
     const habilidades = this.buscarHabilidades(nueva.habilidades)
     const cuentas = this.crearCuentas(nueva.cuentas)
- 
+
     const personaColaboradora = new PersonaColaboradora(
       nueva.nombreFantasia,
       nueva.nombre,
@@ -32,7 +31,7 @@ export default class PersonaColaboradoraService {
       cuentas,
       habilidades,
     )
- 
+
     return this.personaColaboradoraRepository.save(personaColaboradora)
   }
 
@@ -46,7 +45,7 @@ export default class PersonaColaboradoraService {
 
     const cuentas = this.crearCuentas(actualizada.cuentas)
     const habilidades = this.buscarHabilidades(actualizada.habilidades)
- 
+
     personaExistente.nombreFantasia = actualizada.nombreFantasia
     personaExistente.nombre = actualizada.nombre ?? null
     personaExistente.apellido = actualizada.apellido ?? null
@@ -54,7 +53,7 @@ export default class PersonaColaboradoraService {
     personaExistente.presentacion = actualizada.presentacion ?? null
     personaExistente.cuentas = cuentas
     personaExistente.habilidades = habilidades
- 
+
     return this.personaColaboradoraRepository.save(personaExistente)
   }
 
@@ -77,5 +76,4 @@ export default class PersonaColaboradoraService {
     }
     return personaColaboradora
   }
-
 }

@@ -4,7 +4,10 @@ import PersonaColaboradoraRepository from "../../src/repositories/PersonaColabor
 import PersonaColaboradora from "../../src/domain/PersonaColaboradora.js"
 import Cuenta from "../../src/domain/Cuenta.js"
 import Habilidad from "../../src/domain/Habilidad.js"
-import { NotFoundError, UnprocessableEntityError } from "../../src/errors/AppError.js"
+import {
+  NotFoundError,
+  UnprocessableEntityError,
+} from "../../src/errors/AppError.js"
 
 describe("PersonaColaboradoraService", () => {
   let repository
@@ -44,10 +47,12 @@ describe("PersonaColaboradoraService", () => {
   })
 
   test("rechaza una habilidad inexistente sin guardar la persona", () => {
-    expect(() => service.create({
-      ...datos,
-      habilidades: [habilidad.id, "habilidad-inexistente"],
-    })).toThrow(NotFoundError)
+    expect(() =>
+      service.create({
+        ...datos,
+        habilidades: [habilidad.id, "habilidad-inexistente"],
+      }),
+    ).toThrow(NotFoundError)
 
     expect(repository.getAll()).toEqual([])
   })
@@ -72,10 +77,12 @@ describe("PersonaColaboradoraService", () => {
     const persona = service.create(datos)
     const antes = structuredClone(persona)
 
-    expect(() => service.update(persona.id, {
-      nombreFantasia: "No debe guardarse",
-      habilidades: ["habilidad-inexistente"],
-    })).toThrow(NotFoundError)
+    expect(() =>
+      service.update(persona.id, {
+        nombreFantasia: "No debe guardarse",
+        habilidades: ["habilidad-inexistente"],
+      }),
+    ).toThrow(NotFoundError)
 
     expect(repository.findById(persona.id)).toEqual(antes)
   })
@@ -84,9 +91,13 @@ describe("PersonaColaboradoraService", () => {
     const persona = service.create(datos)
     const antes = structuredClone(persona)
 
-    expect(() => service.update(persona.id, {
-      ...datos, nombreFantasia: "", presentacion: "No debe guardarse",
-    })).toThrow(UnprocessableEntityError)
+    expect(() =>
+      service.update(persona.id, {
+        ...datos,
+        nombreFantasia: "",
+        presentacion: "No debe guardarse",
+      }),
+    ).toThrow(UnprocessableEntityError)
 
     expect(repository.findById(persona.id)).toEqual(antes)
   })
