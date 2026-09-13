@@ -88,3 +88,15 @@ Para iniciar el backend en modo `dev` y el frontend simultáneamente, usá:
 ```bash
 npm run start:dev
 ```
+
+## Código de habilidades
+
+En `POST /habilidades` y `PUT /habilidades/:id`, el campo `codigo` debe coincidir
+con el título normalizado: minúsculas, sin tildes, con grupos de caracteres distintos
+de `a-z` y `0-9` reemplazados por `_`, y sin guiones bajos al principio o al final.
+El resultado debe contener al menos una letra o un número. Por ejemplo,
+`Programación Web / React` corresponde a `programacion_web_react`.
+
+Si no coincide, la API responde `422` sin guardar cambios. Al cambiar el título,
+se debe enviar su código correspondiente; si ese código ya pertenece a otra
+habilidad, la respuesta es `409`.

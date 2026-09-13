@@ -4,10 +4,10 @@ import { UnprocessableEntityError } from "../../src/errors/AppError.js"
  
 describe("Habilidad", () => {
   test("se construye correctamente con datos válidos", () => {
-    const habilidad = new Habilidad("Desarrollo Web React", "react", "Desarrollo de interfaces con React")
+    const habilidad = new Habilidad("Desarrollo Web React", "desarrollo_web_react", "Desarrollo de interfaces con React")
  
     expect(habilidad.titulo).toBe("Desarrollo Web React")
-    expect(habilidad.codigo).toBe("react")
+    expect(habilidad.codigo).toBe("desarrollo_web_react")
     expect(habilidad.descripcion).toBe("Desarrollo de interfaces con React")
   })
  

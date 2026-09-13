@@ -1,13 +1,13 @@
 import { describe, expect, test } from "@jest/globals"
 import HabilidadService from "../../src/services/HabilidadService.js"
 import HabilidadRepository from "../../src/repositories/HabilidadRepository.js"
-import { ConflictError, NotFoundError } from "../../src/errors/AppError.js"
+import { ConflictError, NotFoundError, UnprocessableEntityError } from "../../src/errors/AppError.js"
 
 describe("HabilidadService", () => {
   describe("create", () => {
     test("crea y guarda una habilidad cuando el código no existe todavía", () => {
       const service = new HabilidadService(new HabilidadRepository())
-      const nueva = { titulo: "React", codigo: "react", descripcion: "desc" }
+      const nueva = { titulo: "  Programación   Web / React  ", codigo: "programacion_web_react", descripcion: "desc" }
       const habilidad = service.create(nueva)
 
       expect(habilidad.titulo).toBe(nueva.titulo)
@@ -20,10 +20,20 @@ describe("HabilidadService", () => {
       const service = new HabilidadService(new HabilidadRepository())
       service.create({ titulo: "React", codigo: "react", descripcion: "desc" })
       const crearHabilidadConCodigoRepetido = () =>
-        service.create({ titulo: "React de nuevo", codigo: "react", descripcion: "otra desc" })
+        service.create({ titulo: "REACT", codigo: "react", descripcion: "otra desc" })
 
       expect(crearHabilidadConCodigoRepetido).toThrow(ConflictError)
       expect(service.getAll()).toHaveLength(1)
+    })
+
+    test("rechaza un código que no corresponde al título sin guardar la habilidad", () => {
+      const service = new HabilidadService(new HabilidadRepository())
+
+      expect(() => service.create({
+        titulo: "Desarrollo Web React", codigo: "react", descripcion: "desc",
+      })).toThrow(UnprocessableEntityError)
+
+      expect(service.getAll()).toEqual([])
     })
   })
 
@@ -33,12 +43,13 @@ describe("HabilidadService", () => {
       const habilidad = service.create({ titulo: "React", codigo: "react", descripcion: "desc" })
       const actualizada = service.update(habilidad.id, {
         titulo: "React actualizado",
-        codigo: "react",
+        codigo: "react_actualizado",
         descripcion: "nueva desc",
       })
 
       expect(actualizada.id).toBe(habilidad.id)
       expect(actualizada.titulo).toBe("React actualizado")
+      expect(actualizada.codigo).toBe("react_actualizado")
       expect(actualizada.descripcion).toBe("nueva desc")
     })
 
@@ -56,7 +67,7 @@ describe("HabilidadService", () => {
       service.create({ titulo: "Node", codigo: "node", descripcion: "desc" })
 
       const actualizarConCodigoDeOtra = () =>
-        service.update(react.id, { titulo: "React", codigo: "node", descripcion: "desc" })
+        service.update(react.id, { titulo: "Node", codigo: "node", descripcion: "desc" })
 
       expect(actualizarConCodigoDeOtra).toThrow(ConflictError)
     })
@@ -66,13 +77,25 @@ describe("HabilidadService", () => {
       const habilidad = service.create({ titulo: "React", codigo: "react", descripcion: "desc" })
 
       const actualizada = service.update(habilidad.id, {
-        titulo: "React (nuevo título)",
+        titulo: "REACT",
         codigo: "react",
         descripcion: "desc",
       })
 
       expect(actualizada.codigo).toBe("react")
-      expect(actualizada.titulo).toBe("React (nuevo título)")
+      expect(actualizada.titulo).toBe("REACT")
+    })
+
+    test("rechaza un código incorrecto al actualizar sin modificar la habilidad", () => {
+      const service = new HabilidadService(new HabilidadRepository())
+      const habilidad = service.create({ titulo: "React", codigo: "react", descripcion: "desc" })
+      const antes = structuredClone(habilidad)
+
+      expect(() => service.update(habilidad.id, {
+        titulo: "Desarrollo Web React", codigo: "react", descripcion: "Nueva descripción",
+      })).toThrow(UnprocessableEntityError)
+
+      expect(service.getById(habilidad.id)).toEqual(antes)
     })
   })
 

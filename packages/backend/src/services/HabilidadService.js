@@ -7,11 +7,11 @@ export default class HabilidadService {
   }
  
   create = (nueva) => {
+    const habilidad = new Habilidad(nueva.titulo, nueva.codigo, nueva.descripcion)
     const habilidadExistente = this.habilidadRepository.findByCodigo(nueva.codigo)
     if (habilidadExistente) {
       throw new ConflictError(`Ya existe una habilidad con código: ${nueva.codigo}`)
     }
-    const habilidad = new Habilidad(nueva.titulo, nueva.codigo, nueva.descripcion)
     return this.habilidadRepository.save(habilidad)
   }
  
@@ -21,6 +21,8 @@ export default class HabilidadService {
       throw new NotFoundError("Habilidad no encontrada")
     }
  
+    Habilidad.validarCodigo(actualizada.titulo, actualizada.codigo)
+
     const otraConMismoCodigo = this.habilidadRepository.findByCodigo(actualizada.codigo)
     if (otraConMismoCodigo && otraConMismoCodigo.id !== id) {
       throw new ConflictError(`Ya existe una habilidad con código: ${actualizada.codigo}`)

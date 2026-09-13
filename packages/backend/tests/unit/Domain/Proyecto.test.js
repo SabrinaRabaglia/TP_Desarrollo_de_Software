@@ -34,8 +34,8 @@ describe("Proyecto",() =>{
         const fechaAlta = new Date("2026-09-11");
         const fechaCierre = new Date("2026-12-31");
         const modalidades = [ModalidadColaboracion.GRATUITA, ModalidadColaboracion.CON_POSIBILIDAD_CONTRATACION];
-        const hab1 = new Habilidad("Java", "JAVA_01", "Programación en Java");
-        const hab2 = new Habilidad("Gestión de Residuos", "RES_01", "Manejo de residuos urbanos");
+        const hab1 = new Habilidad("Java", "java", "Programación en Java");
+        const hab2 = new Habilidad("Gestión de Residuos", "gestion_de_residuos", "Manejo de residuos urbanos");
         const habilidades = [hab1, hab2];
 
         const proyecto = new Proyecto(

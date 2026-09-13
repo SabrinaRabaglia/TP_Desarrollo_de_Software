@@ -59,11 +59,11 @@ describe("HabilidadController", () => {
 
   describe("update", () => {
     test("con body válido, delega en el service pasando el id de la ruta y responde 200", () => {
-      const habilidadActualizada = { id: "1", titulo: "React actualizado", codigo: "react", descripcion: "desc" }
+      const habilidadActualizada = { id: "1", titulo: "React actualizado", codigo: "react_actualizado", descripcion: "desc" }
       const habilidadServiceMock = mockHabilidadService()
       habilidadServiceMock.update.mockReturnValue(habilidadActualizada)
       const controller = new HabilidadController(habilidadServiceMock)
-      const req = { params: { id: "1" }, body: { titulo: "React actualizado", codigo: "react", descripcion: "desc" } }
+      const req = { params: { id: "1" }, body: { titulo: "React actualizado", codigo: "react_actualizado", descripcion: "desc" } }
       const res = mockRes()
 
       controller.update(req, res)
