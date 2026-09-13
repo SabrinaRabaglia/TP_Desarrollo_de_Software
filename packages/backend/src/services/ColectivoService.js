@@ -51,6 +51,19 @@ export default class ColectivoService {
 
         return this.colectivoRepository.save(colectivoExistente)
     }
+    patch = (id, cambios) => {
+    const existente = this.getById(id);
+
+    return this.update(id, {
+        nombre: existente.nombre,
+        descripcion: existente.descripcion,
+        tipo: existente.tipo,
+        pais: existente.pais,
+        provincia: existente.provincia,
+        ciudad: existente.ciudad,
+        ...cambios,
+    });
+    };
     delete = (id) => {
         this.getById(id);
         this.colectivoRepository.delete(id);
