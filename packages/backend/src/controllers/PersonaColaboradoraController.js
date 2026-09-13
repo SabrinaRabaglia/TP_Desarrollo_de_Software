@@ -1,4 +1,3 @@
-import PersonaColaboradoraService from "../services/PersonaColaboradoraService.js"
 import { BadRequestError } from "../errors/AppError.js"
 import { TipoCuenta } from "../domain/enums/TipoCuenta.js"
 import { z } from "zod"
@@ -21,7 +20,7 @@ const personaColaboradoraSchema = z
   }).strict()
 
 export default class PersonaColaboradoraController {
-  constructor(personaColaboradoraService = new PersonaColaboradoraService()) {
+  constructor(personaColaboradoraService) {
     this.personaColaboradoraService = personaColaboradoraService
   }
 

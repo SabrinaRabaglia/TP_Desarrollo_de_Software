@@ -1,9 +1,8 @@
 import Colectivo from "../domain/Colectivo.js";
 import { ConflictError, NotFoundError } from "../errors/AppError.js";
-import ColectivoRepository from "../repositories/ColectivoRepository.js";
 
 export default class ColectivoService {
-    constructor(colectivoRepository = new ColectivoRepository()){
+    constructor(colectivoRepository){
         this.colectivoRepository = colectivoRepository;
     }
     getAll = () => {

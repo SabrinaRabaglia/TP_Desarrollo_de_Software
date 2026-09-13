@@ -1,6 +1,5 @@
 import {z} from 'zod'
 import { BadRequestError } from '../errors/AppError.js';
-import ColectivoService from '../services/ColectivoService.js';
 
 const colectivoSchema = z.object({
     nombre: z.string(),
@@ -11,7 +10,7 @@ const colectivoSchema = z.object({
     ciudad: z.string().nullable().optional()
 }).strict();
 export default class ColectivoController {
-    constructor(colectivoService = new ColectivoService()){
+    constructor(colectivoService){
         this.colectivoService = colectivoService;
     }
 

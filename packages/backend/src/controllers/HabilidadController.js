@@ -1,4 +1,3 @@
-import HabilidadService from "../services/HabilidadService.js"
 import { BadRequestError } from "../errors/AppError.js"
 import { z } from "zod"
  
@@ -11,7 +10,7 @@ const habilidadSchema = z
   .strict()
 
 export default class HabilidadController {
-  constructor(habilidadService = new HabilidadService()) {
+  constructor(habilidadService) {
     this.habilidadService = habilidadService
   }
  

@@ -1,9 +1,8 @@
-import ProyectoRepository from "../repositories/ProyectoRepository.js";
 import { ConflictError, NotFoundError } from "../errors/AppError.js";
 import { Proyecto } from "../domain/Proyecto.js";
 
 export default class ProyectoService {
-    constructor(proyectoRepository = new ProyectoRepository()) {
+    constructor(proyectoRepository) {
         this.proyectoRepository = proyectoRepository;
     }
 
