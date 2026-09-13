@@ -39,9 +39,12 @@ export default class ColectivoService {
      update = (id, colectivoActualizado) => {
         const colectivoExistente = this.colectivoRepository.findById(id)
 
-        if(!colectivoExistente) throw new NotFoundError("Producto no encontrado")
-        if (this.colectivoRepository.findByNombre(colectivoActualizado.nombre)) throw new ConflictError("COLECTIVO EXISTENTE!")
-        
+        if(!colectivoExistente) throw new NotFoundError("Colectivo no encontrado")
+
+        const otro = this.colectivoRepository.findByNombre(colectivoActualizado.nombre);
+
+        if (otro && otro.id !== colectivoExistente.id) throw new ConflictError("COLECTIVO EXISTENTE!")
+
         colectivoExistente.nombre = colectivoActualizado.nombre;
         colectivoExistente.descripcion = colectivoActualizado.descripcion;
         colectivoExistente.tipo = colectivoActualizado.tipo;
