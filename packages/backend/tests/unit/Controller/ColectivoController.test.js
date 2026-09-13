@@ -12,6 +12,7 @@ const mockRes = () => ({
 const mockColectivoService = () => ({
   create: jest.fn(),
   update: jest.fn(),
+  patch: jest.fn(),
   delete: jest.fn(),
   getById: jest.fn(),
   getAll: jest.fn(),
@@ -148,7 +149,7 @@ describe("ColectivoController",()=>{
         test("con actualización parcial valida delega en el service y responde con 200", () => {
             const colectivoServiceMock = mockColectivoService();
             const actualizado = { nombre: "Nuevo Nombre" };
-            colectivoServiceMock.update.mockReturnValue(actualizado);
+            colectivoServiceMock.patch.mockReturnValue(actualizado);
 
             const controller = new ColectivoController(colectivoServiceMock);
             const req = { params: { id: "1" }, body: { nombre: "Nuevo Nombre" } };
@@ -156,7 +157,7 @@ describe("ColectivoController",()=>{
 
             controller.patch(req, res);
 
-            expect(colectivoServiceMock.update).toHaveBeenCalledWith("1", { nombre: "Nuevo Nombre" });
+            expect(colectivoServiceMock.patch).toHaveBeenCalledWith("1", { nombre: "Nuevo Nombre" });
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith(actualizado);
         });
