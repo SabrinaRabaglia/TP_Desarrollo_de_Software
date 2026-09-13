@@ -36,11 +36,9 @@ export default class ColectivoController {
         if(resultado.error){
             throw new BadRequestError("Datos inválidos", resultado.error.issues)
         }
-        const update = resultado.data;
         const id = req.params.id;
-        if (this.colectivoService.update(id, update)) {
-            res.status(200).json(update);
-        }
+        const actualizado = this.colectivoService.update(id, resultado.data);
+        res.status(200).json(actualizado);
     }
     patch = (req, res) => {
         const { id } = req.params;

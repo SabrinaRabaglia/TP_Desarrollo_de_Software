@@ -47,11 +47,9 @@ export default class ProyectoController {
         if (resultado.error) {
             throw new BadRequestError("Datos inválidos", resultado.error.issues);
         }
-        const update = resultado.data;
         const id = req.params.id;
-        if (this.proyectoService.update(id, update)) {
-            res.status(200).json(update);
-        }
+        const actualizado = this.proyectoService.update(id, resultado.data);
+        res.status(200).json(actualizado);
     }
 
     patch = (req, res) => {

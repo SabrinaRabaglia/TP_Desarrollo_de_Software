@@ -112,7 +112,6 @@ describe("ColectivoController",()=>{
     describe("put", () => {
         test("con body valido actualiza el colectivo y responde con 200", () => {
             const colectivoServiceMock = mockColectivoService();
-            colectivoServiceMock.update.mockReturnValue(true);
 
             const controller = new ColectivoController(colectivoServiceMock);
             const colectivoActualizado = {
@@ -124,13 +123,15 @@ describe("ColectivoController",()=>{
             ciudad: "Palermo"
         };
             const req = { params: { id: "1" }, body: colectivoActualizado};
+            const colectivoGuardado = { ...colectivoActualizado, id: "1" };
+            colectivoServiceMock.update.mockReturnValue(colectivoGuardado);
             const res = mockRes();
 
             controller.put(req, res);
 
             expect(colectivoServiceMock.update).toHaveBeenCalledWith("1", req.body);
             expect(res.status).toHaveBeenCalledWith(200);
-            expect(res.json).toHaveBeenCalledWith(colectivoActualizado);
+            expect(res.json).toHaveBeenCalledWith(colectivoGuardado);
         });
 
         test("con body invalido tira BadRequestError", () => {

@@ -119,7 +119,8 @@ describe("ProyectoController", () => {
   describe("put", () => {
     test("con body valido actualiza el proyecto y responde con 200", () => {
       const proyectoServiceMock = mockProyectoService();
-      proyectoServiceMock.update.mockReturnValue(true);
+      const proyectoGuardado = { ...proyectoValido, id: "1" };
+      proyectoServiceMock.update.mockReturnValue(proyectoGuardado);
 
       const controller = new ProyectoController(proyectoServiceMock);
       const req = { params: { id: "1" }, body: { ...proyectoValido } };
@@ -129,6 +130,7 @@ describe("ProyectoController", () => {
 
       expect(proyectoServiceMock.update).toHaveBeenCalledWith("1", expect.any(Object));
       expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(proyectoGuardado);
     });
 
     test("con body invalido tira BadRequestError y no llama al service", () => {
