@@ -37,9 +37,8 @@ export default class ProyectoController {
         if (resultado.error) {
             throw new BadRequestError("Datos inválidos", resultado.error.issues);
         }
-        const nuevo = resultado.data;
-        this.proyectoService.create(nuevo);
-        res.status(201).json(nuevo);
+        const creado = this.proyectoService.create(resultado.data);
+        res.status(201).json(creado);
     } 
 
     put = (req, res) => {

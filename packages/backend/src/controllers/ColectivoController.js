@@ -27,9 +27,8 @@ export default class ColectivoController {
         if(resultado.error){
             throw new BadRequestError("Datos inválidos",resultado.error.issues)
         }
-        const nuevo = resultado.data
-        this.colectivoService.create(nuevo)
-        res.status(201).json(nuevo)
+        const creado = this.colectivoService.create(resultado.data)
+        res.status(201).json(creado)
     } 
     put = (req, res) => {
         const body = req.body;

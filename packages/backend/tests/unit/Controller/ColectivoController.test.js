@@ -55,6 +55,7 @@ describe("ColectivoController",()=>{
     describe("create",()=>{
         test("Con body valido, delega en el service y responde con 201 el colectivo creado",()=>{
             const colectivoCreado = {
+                id: "colectivo-1",
                 nombre: "Asamblea Ambiental del Sur",
                 descripcion: "Grupo autoconvocado para la protección de la cuenca y humedales locales.",
                 tipo: "asamblea",

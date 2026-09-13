@@ -71,7 +71,8 @@ describe("ProyectoController", () => {
   describe("create", () => {
     test("con body valido, delega en el service y responde con 201 el proyecto creado", () => {
       const proyectoServiceMock = mockProyectoService();
-      proyectoServiceMock.create.mockReturnValue(proyectoValido);
+      const proyectoCreado = { ...proyectoValido, id: "proyecto-1" };
+      proyectoServiceMock.create.mockReturnValue(proyectoCreado);
 
       const controller = new ProyectoController(proyectoServiceMock);
       const req = { body: { ...proyectoValido } };
@@ -81,6 +82,7 @@ describe("ProyectoController", () => {
 
       expect(proyectoServiceMock.create).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith(proyectoCreado);
     });
 
     test("con body inválido (falta un campo obligatorio), tira BadRequestError y no llama al service", () => {
