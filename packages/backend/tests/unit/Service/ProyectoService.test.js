@@ -3,6 +3,7 @@ import ProyectoService from "../../../src/services/ProyectoService.js";
 import ProyectoRepository from "../../../src/repositories/ProyectoRepository.js";
 import ColectivoService from "../../../src/services/ColectivoService.js";
 import ColectivoRepository from "../../../src/repositories/ColectivoRepository.js";
+import TipoColectivoRepository from "../../../src/repositories/TipoColectivoRepository.js";
 import HabilidadService from "../../../src/services/HabilidadService.js";
 import HabilidadRepository from "../../../src/repositories/HabilidadRepository.js";
 import { ConflictError, NotFoundError, UnprocessableEntityError } from "../../../src/errors/AppError.js";
@@ -17,7 +18,7 @@ describe("ProyectoService", () => {
   let dtoProyectoValido;
 
   beforeEach(() => {
-    colectivoService = new ColectivoService(new ColectivoRepository());
+    colectivoService = new ColectivoService(new ColectivoRepository(), new TipoColectivoRepository());
     habilidadService = new HabilidadService(new HabilidadRepository());
     service = new ProyectoService(
       new ProyectoRepository(), colectivoService, habilidadService

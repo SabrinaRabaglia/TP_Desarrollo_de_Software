@@ -1,10 +1,11 @@
 import { randomUUID } from "node:crypto";
 import Colectivo from "../domain/Colectivo.js";
-import { ConflictError, NotFoundError } from "../errors/AppError.js";
+import { ConflictError, NotFoundError, UnprocessableEntityError } from "../errors/AppError.js";
 
 export default class ColectivoService {
-    constructor(colectivoRepository){
+    constructor(colectivoRepository, tipoColectivoRepository){
         this.colectivoRepository = colectivoRepository;
+        this.tipoColectivoRepository = tipoColectivoRepository;
     }
     getAll = () => {
         return this.colectivoRepository.findAll();
@@ -17,12 +18,20 @@ export default class ColectivoService {
         }
         return colectivo;
     };
+    validarTipo = (tipo) => {
+        if (!this.tipoColectivoRepository.findByNombre(tipo)) {
+            throw new UnprocessableEntityError("El tipo de colectivo no pertenece al catálogo.");
+        }
+    };
+
     create = (nuevo) => {
         
         const colectivoExistente = this.colectivoRepository.findByNombre(nuevo.nombre);
         if (colectivoExistente) {
             throw new ConflictError("COLECTIVO EXISTENTE!");
         }
+
+        this.validarTipo(nuevo.tipo);
 
         const colectivo = new Colectivo(
             nuevo.nombre,
@@ -42,6 +51,7 @@ export default class ColectivoService {
         if(!colectivoExistente) throw new NotFoundError("Colectivo no encontrado")
 
         Colectivo.validarDatos(colectivoActualizado);
+        this.validarTipo(colectivoActualizado.tipo);
 
         const otro = this.colectivoRepository.findByNombre(colectivoActualizado.nombre);
 

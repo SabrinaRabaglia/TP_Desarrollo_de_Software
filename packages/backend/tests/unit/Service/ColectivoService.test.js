@@ -2,24 +2,58 @@ import { describe, expect, test } from "@jest/globals"
 import ColectivoService from "../../../src/services/ColectivoService.js";
 import { ConflictError, NotFoundError, UnprocessableEntityError } from "../../../src/errors/AppError.js";
 import ColectivoRepository from "../../../src/repositories/ColectivoRepository.js";
+import TipoColectivoRepository from "../../../src/repositories/TipoColectivoRepository.js";
+import TipoColectivo from "../../../src/domain/TipoColectivo.js";
 
 describe("ColectivoService", ()=>{
+    test.each([
+        ["tipo desconocido", { tipo: "Tipo inexistente" }],
+        ["provincia desconocida", { provincia: "Provincia inexistente" }],
+    ])("rechaza %s al crear, actualizar y aplicar patch sin modificar datos", (_caso, cambios) => {
+        const service = new ColectivoService(new ColectivoRepository(), new TipoColectivoRepository());
+        const datos = { nombre: "Asamblea Ambiental", descripcion: "Descripción", tipo: "Asamblea", provincia: "CABA" };
+
+        expect(() => service.create({ ...datos, ...cambios })).toThrow(UnprocessableEntityError);
+        expect(service.getAll()).toEqual([]);
+
+        const colectivo = service.create(datos);
+        const antes = structuredClone(colectivo);
+        expect(() => service.update(colectivo.id, { ...datos, ...cambios }))
+            .toThrow(UnprocessableEntityError);
+        expect(service.getById(colectivo.id)).toEqual(antes);
+        expect(() => service.patch(colectivo.id, cambios)).toThrow(UnprocessableEntityError);
+        expect(service.getById(colectivo.id)).toEqual(antes);
+    });
+
+    test("permite ampliar el catálogo de tipos", () => {
+        const catalogo = new TipoColectivoRepository();
+        const service = new ColectivoService(new ColectivoRepository(), catalogo);
+        catalogo.save(new TipoColectivo("Cooperativa"));
+
+        const colectivo = service.create({
+            nombre: "Cooperativa del barrio", descripcion: "Descripción", tipo: "cooperativa",
+        });
+
+        expect(service.getById(colectivo.id).tipo).toBe("cooperativa");
+    });
+
     describe("create",()=>{
         test("crea y guarda un colectivo cuando el nombre no existe todavia",()=>{
-            const service = new ColectivoService(new ColectivoRepository())
+            const service = new ColectivoService(new ColectivoRepository(), new TipoColectivoRepository())
             const nueva = {
                 nombre: "Asamblea Ambiental",
                 descripcion: "Protección de humedales locales",
-                tipo: "Asamblea" }
+                tipo: "asamblea", provincia: "  cordoba  " }
             const colectivoCreado = service.create(nueva)
             
             expect(colectivoCreado.nombre).toBe(nueva.nombre)
             expect(colectivoCreado.descripcion).toBe(nueva.descripcion)
             expect(colectivoCreado.tipo).toBe(nueva.tipo)
+            expect(colectivoCreado.provincia).toBe(nueva.provincia)
             expect(service.getAll()).toEqual([colectivoCreado])
         })
         test("tira ConflictError si ya existe un colectivo con el mismo nombre", () => {
-            const service = new ColectivoService(new ColectivoRepository());
+            const service = new ColectivoService(new ColectivoRepository(), new TipoColectivoRepository());
             
             service.create({
                 nombre: "Asamblea Ambiental",
@@ -39,7 +73,7 @@ describe("ColectivoService", ()=>{
         });
         describe("getById", () => {
         test("devuelve el colectivo correspondiente cuando se encuentra por ID", () => {
-            const service = new ColectivoService(new ColectivoRepository());
+            const service = new ColectivoService(new ColectivoRepository(), new TipoColectivoRepository());
             const colectivoCreado = service.create({
                 nombre: "Asamblea Ambiental",
                 descripcion: "Protección de humedales locales",
@@ -54,7 +88,7 @@ describe("ColectivoService", ()=>{
         });
 
         test("lanza NotFoundError si el colectivo no existe", () => {
-            const service = new ColectivoService(new ColectivoRepository());
+            const service = new ColectivoService(new ColectivoRepository(), new TipoColectivoRepository());
 
             expect(() => service.getById("id-inexistente")).toThrow(NotFoundError);
         });
@@ -62,7 +96,7 @@ describe("ColectivoService", ()=>{
 
     describe("update", () => {
         test("rechaza un nombre vacío en una actualización parcial sin modificar el colectivo", () => {
-            const service = new ColectivoService(new ColectivoRepository());
+            const service = new ColectivoService(new ColectivoRepository(), new TipoColectivoRepository());
             const colectivo = service.create({
                 nombre: "Asamblea Ambiental", descripcion: "Descripción original", tipo: "Asamblea"
             });
@@ -76,7 +110,7 @@ describe("ColectivoService", ()=>{
         });
 
         test("lanza NotFoundError si intenta actualizar un colectivo inexistente", () => {
-            const service = new ColectivoService(new ColectivoRepository());
+            const service = new ColectivoService(new ColectivoRepository(), new TipoColectivoRepository());
             const datos = { nombre: "Nuevo", descripcion: "Desc", tipo: "ONG" };
 
             expect(() => service.update("id-inexistente", datos)).toThrow(NotFoundError);
@@ -85,7 +119,7 @@ describe("ColectivoService", ()=>{
 
     describe("delete", () => {
         test("elimina el colectivo correctamente si existe", () => {
-            const service = new ColectivoService(new ColectivoRepository());
+            const service = new ColectivoService(new ColectivoRepository(), new TipoColectivoRepository());
             const colectivo = service.create({
                 nombre: "Asamblea Ambiental",
                 descripcion: "Protección de humedales locales",

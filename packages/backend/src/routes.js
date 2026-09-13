@@ -10,6 +10,7 @@ import PersonaColaboradoraService from "./services/PersonaColaboradoraService.js
 import PersonaColaboradoraController from "./controllers/PersonaColaboradoraController.js"
 
 import ColectivoRepository from "./repositories/ColectivoRepository.js";
+import TipoColectivoRepository from "./repositories/TipoColectivoRepository.js";
 import ColectivoService from "./services/ColectivoService.js";
 import ColectivoController from "./controllers/ColectivoController.js";
 
@@ -42,7 +43,8 @@ routes.put("/personas-colaboradoras/:id", personaColaboradoraController.update)
 routes.delete("/personas-colaboradoras/:id", personaColaboradoraController.delete)
 
 const colectivoRepository = new ColectivoRepository()
-const colectivoService = new ColectivoService(colectivoRepository)
+const tipoColectivoRepository = new TipoColectivoRepository()
+const colectivoService = new ColectivoService(colectivoRepository, tipoColectivoRepository)
 const colectivoController = new ColectivoController(colectivoService)
 
 routes.post("/colectivos", colectivoController.create);

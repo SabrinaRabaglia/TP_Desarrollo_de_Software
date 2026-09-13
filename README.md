@@ -100,3 +100,18 @@ El resultado debe contener al menos una letra o un número. Por ejemplo,
 Si no coincide, la API responde `422` sin guardar cambios. Al cambiar el título,
 se debe enviar su código correspondiente; si ese código ya pertenece a otra
 habilidad, la respuesta es `409`.
+
+## Tipo de colectivo y provincia
+
+La creación y actualización de colectivos valida el tipo contra un catálogo en
+memoria, precargado con `Fundación`, `Asociación barrial`, `ONG` y `Asamblea`.
+El catálogo puede ampliarse desde el código con
+`tipoColectivoRepository.save(new TipoColectivo("Cooperativa"))`, usando la misma
+instancia inyectada en `ColectivoService`. No hay un endpoint de administración del catálogo.
+
+La provincia es opcional y puede omitirse o ser `null`. Si se informa, debe ser
+una de las 23 provincias argentinas o la Ciudad Autónoma de Buenos Aires.
+Se aceptan los alias `CABA` y `Tierra del Fuego` para los nombres completos.
+Las comparaciones de tipos y provincias ignoran mayúsculas, tildes y espacios
+sobrantes; se conserva el texto recibido. Un valor desconocido devuelve `422`
+sin guardar cambios, también en `PUT` y `PATCH`. La ciudad o barrio sigue siendo texto libre.
