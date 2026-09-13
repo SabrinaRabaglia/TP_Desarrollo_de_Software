@@ -12,7 +12,6 @@ export default function errorHandler(error, _req, res, next) {
     })
   }
 
-  // Conserva los errores 4xx del parser de Express, como JSON inválido o un body demasiado grande.
   if (
     Number.isInteger(error.status) &&
     error.status >= 400 &&
