@@ -1,4 +1,4 @@
 export const EstadoProyecto = Object.freeze({
-    PUBLICADO: 'PUBLICADO',
-    CERRADO: 'CERRADO'
+  PUBLICADO: "PUBLICADO",
+  CERRADO: "CERRADO",
 })

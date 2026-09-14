@@ -1,0 +1,53 @@
+@startuml
+title Backend DDSO · Arquitectura del despliegue
+
+left to right direction
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam roundcorner 14
+skinparam componentStyle rectangle
+skinparam ArrowColor #64748B
+skinparam packageStyle rectangle
+
+actor "Usuario" as usuario #DBEAFE
+component "GitHub Actions\nMerge a main" as github #EDE9FE
+
+rectangle "Azure" #F8FAFC {
+  component "Microsoft Entra ID\nIdentidad de GitHub" as entra #DCFCE7
+
+  rectangle "rg-ddso-backend" #FFFFFF {
+    storage "Container Registry\ncrddsobackend" as acr #EDE9FE
+
+    rectangle "Container Apps Environment\ncae-ddso-backend-eastus2 · East US 2" as entorno #EFF6FF {
+      component "Ingreso HTTPS\nAdministrado por Azure" as ingreso #DBEAFE
+      component "Backend Express\nca-ddso-backend" as backend #BFDBFE
+    }
+
+    artifact "Log Analytics\nlog-ddso-backend" as logs #FEF3C7
+  }
+}
+
+github -[#16A34A,dashed]-> entra : Autentica con OIDC
+github -[#7C3AED]-> acr : Construye y publica imagen
+github -[#7C3AED,dashed]-> backend : Despliega nueva versión
+
+backend -[#16A34A,dashed]-> acr : Descarga imagen\nIdentidad del entorno · AcrPull
+
+usuario -[#2563EB]-> ingreso : HTTPS
+ingreso -[#2563EB]-> backend : Puerto 8000
+
+backend -[#D97706]-> logs : Logs de aplicación
+entorno -[#D97706,dashed]-> logs : Logs de plataforma
+
+legend bottom
+  |= Color |= Qué representa |
+  | <#EDE9FE> Morado | Publicación y despliegue |
+  | <#DBEAFE> Azul | Tráfico de usuarios |
+  | <#DCFCE7> Verde | Autenticación y acceso |
+  | <#FEF3C7> Naranja | Registro de logs |
+endlegend
+
+@enduml

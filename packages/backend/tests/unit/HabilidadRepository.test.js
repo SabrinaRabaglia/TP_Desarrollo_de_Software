@@ -22,7 +22,11 @@ describe("HabilidadRepository", () => {
     const repository = new HabilidadRepository()
     const habilidadOriginal = { id: "1", codigo: "react", titulo: "React" }
     repository.save(habilidadOriginal)
-    const habilidadActualizada = { id: "1", codigo: "react", titulo: "React actualizado" }
+    const habilidadActualizada = {
+      id: "1",
+      codigo: "react",
+      titulo: "React actualizado",
+    }
     repository.save(habilidadActualizada)
 
     expect(repository.getAll()).toHaveLength(1)

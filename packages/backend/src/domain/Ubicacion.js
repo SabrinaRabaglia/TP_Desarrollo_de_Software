@@ -1,3 +1,1 @@
-export default class Ubicacion{
-    
-}
+export default class Ubicacion {}

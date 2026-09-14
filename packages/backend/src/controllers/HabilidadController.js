@@ -1,7 +1,6 @@
-import HabilidadService from "../services/HabilidadService.js"
 import { BadRequestError } from "../errors/AppError.js"
 import { z } from "zod"
- 
+
 const habilidadSchema = z
   .object({
     titulo: z.string().min(1),
@@ -11,10 +10,10 @@ const habilidadSchema = z
   .strict()
 
 export default class HabilidadController {
-  constructor(habilidadService = new HabilidadService()) {
+  constructor(habilidadService) {
     this.habilidadService = habilidadService
   }
- 
+
   create = (req, res) => {
     const resultado = habilidadSchema.safeParse(req.body)
     if (resultado.error) {
@@ -23,13 +22,16 @@ export default class HabilidadController {
     const habilidad = this.habilidadService.create(resultado.data)
     res.status(201).json(habilidad)
   }
- 
+
   update = (req, res) => {
     const resultado = habilidadSchema.safeParse(req.body)
     if (resultado.error) {
       throw new BadRequestError("Datos inválidos", resultado.error.issues)
     }
-    const habilidad = this.habilidadService.update(req.params.id, resultado.data)
+    const habilidad = this.habilidadService.update(
+      req.params.id,
+      resultado.data,
+    )
     res.status(200).json(habilidad)
   }
 
