@@ -102,4 +102,35 @@ describe("ProyectoService", () => {
       expect(() => service.delete("id-inexistente")).toThrow(NotFoundError);
     });
   });
+
+  describe("cerrarProyecto", () => {
+    test("cierra un proyecto exitosamente actualizando su estado y fecha", () => {
+      const service = new ProyectoService(new ProyectoRepository());
+      const creado = service.create(dtoProyectoValido);
+
+      const cerrado = service.cerrarProyecto(creado.id);
+
+      expect(cerrado.estado).toBe(EstadoProyecto.CERRADO);
+      expect(cerrado.fechaCierre).toBeInstanceOf(Date);
+    });
+
+    test("lanza NotFoundError si se intenta cerrar un proyecto que no existe", () => {
+      const service = new ProyectoService(new ProyectoRepository());
+
+      expect(() => service.cerrarProyecto("id-inexistente")).toThrow(NotFoundError);
+    });
+
+    test("lanza ConflictError si se intenta cerrar un proyecto que ya está cerrado", () => {
+      const service = new ProyectoService(new ProyectoRepository());
+      const creado = service.create(dtoProyectoValido);
+      
+      
+      service.cerrarProyecto(creado.id); 
+
+      expect(() => service.cerrarProyecto(creado.id)).toThrow(ConflictError);
+    });
+  });
+
+
+
 });

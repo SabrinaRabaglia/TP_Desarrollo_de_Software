@@ -109,4 +109,19 @@ describe("Proyecto",() =>{
             undefined
         )).toThrow(UnprocessableEntityError);
     });
+
+    test("Se cierra correctamente el proyecto, actualizando su estado y fecha de cierre",()=>{
+        const unProyecto =  new Proyecto(
+            "Taller de Reciclaje",
+            "Capacitación comunitaria",
+            UnidadCompromiso.HORAS_MENSUALES,
+            10,
+            colectivo)
+
+            unProyecto.cerrar();
+            expect(unProyecto.estado).toEqual(EstadoProyecto.CERRADO);
+            expect(unProyecto.fechaCierre).toBeInstanceOf(Date);
+    });
+
+
 })
