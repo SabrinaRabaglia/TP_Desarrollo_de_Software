@@ -1,11 +1,11 @@
 import { describe, expect, test } from "@jest/globals"
-import HabilidadService from "../../src/services/HabilidadService.js"
-import HabilidadRepository from "../../src/repositories/HabilidadRepository.js"
+import HabilidadService from "../../../src/services/HabilidadService.js"
+import HabilidadRepository from "../../../src/repositories/HabilidadRepository.js"
 import {
   ConflictError,
   NotFoundError,
   UnprocessableEntityError,
-} from "../../src/errors/AppError.js"
+} from "../../../src/errors/AppError.js"
 
 describe("HabilidadService", () => {
   describe("create", () => {

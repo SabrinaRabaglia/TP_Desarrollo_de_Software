@@ -1,5 +1,5 @@
 import { describe, expect, test } from "@jest/globals"
-import PersonaColaboradoraRepository from "../../src/repositories/PersonaColaboradoraRepository.js"
+import PersonaColaboradoraRepository from "../../../src/repositories/PersonaColaboradoraRepository.js"
 
 describe("PersonaColaboradoraRepository", () => {
   test("getAll devuelve un array vacío si no se guardó nada", () => {

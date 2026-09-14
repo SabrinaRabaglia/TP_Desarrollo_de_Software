@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, jest, test } from "@jest/globals"
-import PersonaColaboradoraService from "../../src/services/PersonaColaboradoraService.js"
-import PersonaColaboradoraRepository from "../../src/repositories/PersonaColaboradoraRepository.js"
-import PersonaColaboradora from "../../src/domain/PersonaColaboradora.js"
-import Cuenta from "../../src/domain/Cuenta.js"
-import Habilidad from "../../src/domain/Habilidad.js"
+import PersonaColaboradoraService from "../../../src/services/PersonaColaboradoraService.js"
+import PersonaColaboradoraRepository from "../../../src/repositories/PersonaColaboradoraRepository.js"
+import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
+import Cuenta from "../../../src/domain/Cuenta.js"
+import Habilidad from "../../../src/domain/Habilidad.js"
 import {
   NotFoundError,
   UnprocessableEntityError,
-} from "../../src/errors/AppError.js"
+} from "../../../src/errors/AppError.js"
 
 describe("PersonaColaboradoraService", () => {
   let repository

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "@jest/globals"
-import HabilidadRepository from "../../src/repositories/HabilidadRepository.js"
+import HabilidadRepository from "../../../src/repositories/HabilidadRepository.js"
 
 describe("HabilidadRepository", () => {
   test("getAll devuelve un array vacío si no se guardó nada", () => {

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "@jest/globals"
-import Cuenta from "../../src/domain/Cuenta.js"
-import { TipoCuenta } from "../../src/domain/enums/TipoCuenta.js"
-import { UnprocessableEntityError } from "../../src/errors/AppError.js"
+import Cuenta from "../../../src/domain/Cuenta.js"
+import { TipoCuenta } from "../../../src/domain/enums/TipoCuenta.js"
+import { UnprocessableEntityError } from "../../../src/errors/AppError.js"
 
 describe("Cuenta", () => {
   test("se construye correctamente con un tipo válido (GITHUB)", () => {

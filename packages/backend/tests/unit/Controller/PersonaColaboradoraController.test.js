@@ -1,6 +1,6 @@
 import { describe, expect, test, jest } from "@jest/globals"
-import PersonaColaboradoraController from "../../src/controllers/PersonaColaboradoraController.js"
-import { BadRequestError } from "../../src/errors/AppError.js"
+import PersonaColaboradoraController from "../../../src/controllers/PersonaColaboradoraController.js"
+import { BadRequestError } from "../../../src/errors/AppError.js"
 
 const UUID_VALIDO = "b8c65bfd-1234-4a12-8b12-abcdef123456"
 

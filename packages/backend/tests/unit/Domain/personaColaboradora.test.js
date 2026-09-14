@@ -1,9 +1,9 @@
 import { describe, expect, test } from "@jest/globals"
-import PersonaColaboradora from "../../src/domain/PersonaColaboradora.js"
-import Habilidad from "../../src/domain/Habilidad.js"
-import Cuenta from "../../src/domain/Cuenta.js"
-import { TipoCuenta } from "../../src/domain/enums/TipoCuenta.js"
-import { UnprocessableEntityError } from "../../src/errors/AppError.js"
+import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
+import Habilidad from "../../../src/domain/Habilidad.js"
+import Cuenta from "../../../src/domain/Cuenta.js"
+import { TipoCuenta } from "../../../src/domain/enums/TipoCuenta.js"
+import { UnprocessableEntityError } from "../../../src/errors/AppError.js"
 
 describe("PersonaColaboradora", () => {
   test("se construye solo con nombreFantasia, con el resto en sus valores por defecto", () => {

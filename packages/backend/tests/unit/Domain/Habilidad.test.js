@@ -1,6 +1,6 @@
 import { describe, expect, test } from "@jest/globals"
-import Habilidad from "../../src/domain/Habilidad.js"
-import { UnprocessableEntityError } from "../../src/errors/AppError.js"
+import Habilidad from "../../../src/domain/Habilidad.js"
+import { UnprocessableEntityError } from "../../../src/errors/AppError.js"
 
 describe("Habilidad", () => {
   test("se construye correctamente con datos válidos", () => {
