@@ -1,0 +1,84 @@
+name: Backend deployment
+
+concurrency:
+  group: backend-deployment
+  cancel-in-progress: false
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  ACR_NAME: crddsobackend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Sign in to Azure
+        uses: azure/login@v3
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Sign in to registry
+        run: az acr login --name "$ACR_NAME"
+
+      - name: Prepare image name
+        run: |
+          registry_server="$(az acr show \
+            --name "$ACR_NAME" \
+            --resource-group rg-ddso-backend \
+            --query loginServer \
+            --output tsv)"
+
+          echo "BACKEND_IMAGE=${registry_server}/ddso-backend:${GITHUB_SHA}" \
+            >> "$GITHUB_ENV"
+
+      - name: Build image
+        run: docker build --platform linux/amd64 -t "$BACKEND_IMAGE" .
+
+      - name: Push image
+        run: docker push "$BACKEND_IMAGE"
+
+      - name: Deploy backend
+        run: |
+          az containerapp revision set-mode \
+            --name ca-ddso-backend \
+            --resource-group rg-ddso-backend \
+            --mode single \
+            --output none
+
+          az containerapp update \
+            --name ca-ddso-backend \
+            --resource-group rg-ddso-backend \
+            --image "$BACKEND_IMAGE" \
+            --min-replicas 1 \
+            --max-replicas 1 \
+            --output none
+
+      - name: Check backend health
+        run: |
+          app_domain="$(az containerapp show \
+            --name ca-ddso-backend \
+            --resource-group rg-ddso-backend \
+            --query properties.configuration.ingress.fqdn \
+            --output tsv)"
+
+          curl --fail --silent --show-error \
+            --retry 6 \
+            --retry-all-errors \
+            --retry-delay 10 \
+            --connect-timeout 10 \
+            --max-time 30 \
+            "https://${app_domain}/health"

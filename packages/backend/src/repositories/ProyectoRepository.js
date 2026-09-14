@@ -1,33 +1,39 @@
+export default class ProyectoRepository {
+  constructor() {
+    this.proyectos = []
+  }
 
-class ProyectoRepository {
-     constructor(){
-            this.proyectos = []
-        }
-        
-    findAll() {
-        return this.proyectos;
-    }
+  findAll() {
+    return this.proyectos
+  }
 
-    findById(id){
-        return this.proyectos.find((c)=> c.id === id);
-    }
-     findByNombre(nombre) {
-        return this.proyectos.find((c) => c.nombre === nombre);
-    }
-    save(nuevo){
-            const indice = this.proyectos.findIndex((p) => p.id === nuevo.id);
-            if(indice === -1){
-                this.proyectos.push(nuevo)
-                return nuevo
-            }
-            this.proyectos[indice]= nuevo
-            return nuevo
-    }
+  findById(id) {
+    return this.proyectos.find((c) => c.id === id)
+  }
 
-     delete(id) {
-        this.colectivos = this.colectivos.filter((c) => c.id !== id);
+  findByTitulo(titulo) {
+    return this.proyectos.find((c) => c.titulo === titulo)
+  }
+
+  findByColectivoId(colectivoId) {
+    return this.proyectos.filter(
+      (proyecto) => proyecto.colectivo === colectivoId,
+    )
+  }
+
+  save(nuevo) {
+    const indice = this.proyectos.findIndex((p) => p.id === nuevo.id)
+    if (indice === -1) {
+      this.proyectos.push(nuevo)
+      return nuevo
     }
+    this.proyectos[indice] = nuevo
+    return nuevo
+  }
+
+  delete(id) {
+    this.proyectos = this.proyectos.filter((c) => c.id !== id)
+  }
 }
 
-const proyectoRepository = new ProyectoRepository();
-export default proyectoRepository;
+export { ProyectoRepository }

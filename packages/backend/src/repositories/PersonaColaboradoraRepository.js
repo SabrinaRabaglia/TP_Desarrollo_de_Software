@@ -1,4 +1,4 @@
-class PersonaColaboradoraRepository {
+export default class PersonaColaboradoraRepository {
   constructor() {
     this.personasColaboradoras = []
   }
@@ -21,7 +21,9 @@ class PersonaColaboradoraRepository {
   }
 
   save(personaColaboradora) {
-    const indice = this.personasColaboradoras.findIndex((p) => p.id === personaColaboradora.id)
+    const indice = this.personasColaboradoras.findIndex(
+      (p) => p.id === personaColaboradora.id,
+    )
     if (indice === -1) {
       this.personasColaboradoras.push(personaColaboradora)
       return personaColaboradora
@@ -30,5 +32,3 @@ class PersonaColaboradoraRepository {
     return personaColaboradora
   }
 }
-const personaColaboradoraRepository = new PersonaColaboradoraRepository();
-export default personaColaboradoraRepository;

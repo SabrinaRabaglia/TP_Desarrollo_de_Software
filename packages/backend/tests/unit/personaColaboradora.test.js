@@ -29,8 +29,16 @@ describe("PersonaColaboradora", () => {
     const presentacion = "Desarrollador frontend"
     const cuentas = [cuenta]
     const habilidades = [habilidad]
-    
-    const persona = new PersonaColaboradora("anon123", nombre, apellido, pronombres, presentacion, cuentas, habilidades)
+
+    const persona = new PersonaColaboradora(
+      "anon123",
+      nombre,
+      apellido,
+      pronombres,
+      presentacion,
+      cuentas,
+      habilidades,
+    )
 
     expect(persona.nombre).toBe("Juan")
     expect(persona.apellido).toBe("Pedro")
@@ -49,15 +57,19 @@ describe("PersonaColaboradora", () => {
   })
 
   test("tira UnprocessableEntityError si falta nombreFantasia", () => {
-    const construirPersonaSinNombreFantasia = () => new PersonaColaboradora(undefined)
+    const construirPersonaSinNombreFantasia = () =>
+      new PersonaColaboradora(undefined)
 
     expect(construirPersonaSinNombreFantasia).toThrow(UnprocessableEntityError)
   })
 
   test("tira UnprocessableEntityError si nombreFantasia es un string vacío", () => {
-    const construirPersonaConNombreFantasiaVacio = () => new PersonaColaboradora("")
+    const construirPersonaConNombreFantasiaVacio = () =>
+      new PersonaColaboradora("")
 
-    expect(construirPersonaConNombreFantasiaVacio).toThrow(UnprocessableEntityError)
+    expect(construirPersonaConNombreFantasiaVacio).toThrow(
+      UnprocessableEntityError,
+    )
   })
 
   test("agregarHabilidad agrega una habilidad al array existente", () => {

@@ -69,7 +69,9 @@ describe("PersonaColaboradoraController", () => {
     test("con un id de habilidad que no tiene formato UUID, tira BadRequestError", () => {
       const service = crearPersonaColaboradoraServiceFalso()
       const controller = new PersonaColaboradoraController(service)
-      const req = { body: { nombreFantasia: "anon123", habilidades: ["react"] } }
+      const req = {
+        body: { nombreFantasia: "anon123", habilidades: ["react"] },
+      }
       const res = crearResFalso()
 
       const crearConIdInvalido = () => controller.create(req, res)
@@ -82,7 +84,10 @@ describe("PersonaColaboradoraController", () => {
       const service = crearPersonaColaboradoraServiceFalso()
       const controller = new PersonaColaboradoraController(service)
       const req = {
-        body: { nombreFantasia: "anon123", cuentas: [{ nombreUsuario: "anagomez", tipo: "MASTODON" }] },
+        body: {
+          nombreFantasia: "anon123",
+          cuentas: [{ nombreUsuario: "anagomez", tipo: "MASTODON" }],
+        },
       }
       const res = crearResFalso()
 
@@ -95,7 +100,9 @@ describe("PersonaColaboradoraController", () => {
     test("con un campo extra no declarado en el schema, tira BadRequestError", () => {
       const service = crearPersonaColaboradoraServiceFalso()
       const controller = new PersonaColaboradoraController(service)
-      const req = { body: { nombreFantasia: "anon123", extra: "no debería estar" } }
+      const req = {
+        body: { nombreFantasia: "anon123", extra: "no debería estar" },
+      }
       const res = crearResFalso()
 
       const crearConCampoExtra = () => controller.create(req, res)
@@ -110,7 +117,10 @@ describe("PersonaColaboradoraController", () => {
       const service = crearPersonaColaboradoraServiceFalso()
       service.update.mockReturnValue(personaActualizada)
       const controller = new PersonaColaboradoraController(service)
-      const req = { params: { id: "1" }, body: { nombreFantasia: "anon123-editado" } }
+      const req = {
+        params: { id: "1" },
+        body: { nombreFantasia: "anon123-editado" },
+      }
       const res = crearResFalso()
 
       controller.update(req, res)
