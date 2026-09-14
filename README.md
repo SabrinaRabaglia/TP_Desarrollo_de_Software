@@ -89,11 +89,6 @@ Para iniciar el backend en modo `dev` y el frontend simultáneamente, usá:
 npm run start:dev
 ```
 
-## API de colaboraciones
-
-La inscripción de personas a proyectos y sus respuestas están documentadas en
-[docs/api-colaboraciones.md](docs/api-colaboraciones.md).
-
 ## Código de habilidades
 
 En `POST /habilidades` y `PUT /habilidades/:id`, el campo `codigo` debe coincidir
