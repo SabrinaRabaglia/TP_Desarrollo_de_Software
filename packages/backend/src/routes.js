@@ -17,6 +17,9 @@ import ColectivoController from "./controllers/ColectivoController.js"
 import ProyectoRepository from "./repositories/ProyectoRepository.js"
 import ProyectoService from "./services/ProyectoService.js"
 import ProyectoController from "./controllers/ProyectoController.js"
+import ColaboracionRepository from "./repositories/ColaboracionRepository.js"
+import ColaboracionService from "./services/ColaboracionService.js"
+import ColaboracionController from "./controllers/ColaboracionController.js"
 
 const routes = Router()
 
@@ -79,5 +82,15 @@ routes.get("/proyectos", proyectoController.getAll)
 routes.get("/proyectos/:id", proyectoController.getById)
 routes.put("/proyectos/:id", proyectoController.put)
 routes.delete("/proyectos/:id", proyectoController.delete)
+
+const colaboracionService = new ColaboracionService(
+  new ColaboracionRepository(),
+  proyectoRepository,
+  personaColaboradoraRepository,
+)
+const colaboracionController = new ColaboracionController(colaboracionService)
+
+routes.post("/colaboraciones", colaboracionController.create)
+routes.get("/colaboraciones", colaboracionController.getAll)
 
 export default routes

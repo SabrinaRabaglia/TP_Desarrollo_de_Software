@@ -36,6 +36,22 @@ export default class Proyecto {
     this.colaboraciones = []
   }
 
+  agregarColaboracion(colaboracion) {
+    this.colaboraciones.push(colaboracion)
+  }
+
+  poseeHabilidadNecesaria(personaColaboradora) {
+    return this.habilidadesRequeridas.some((idRequerido) =>
+      personaColaboradora.habilidades.some(
+        (habilidad) => habilidad.id === idRequerido,
+      ),
+    )
+  }
+
+  proyectoCerrado() {
+    return this.estado === EstadoProyecto.CERRADO
+  }
+
   static validarDatos({
     titulo,
     descripcion,

@@ -80,6 +80,26 @@ describe("Proyecto", () => {
     expect(proyecto.fechaCierre).toEqual(fechaCierre)
     expect(proyecto.habilidadesRequeridas).toEqual([hab1, hab2])
   })
+  test("compara las habilidades requeridas por ID y exige una coincidencia", () => {
+    const proyecto = new Proyecto(
+      "Plataforma",
+      "Desarrollo web",
+      UnidadCompromiso.HORAS_TOTALES,
+      5,
+      colectivo,
+      [ModalidadColaboracion.GRATUITA],
+    )
+    const habilidad = new Habilidad("JavaScript", "javascript", "Desarrollo")
+    const persona = { habilidades: [habilidad] }
+
+    proyecto.habilidadesRequeridas = ["otra-habilidad", habilidad.id]
+    expect(proyecto.poseeHabilidadNecesaria(persona)).toBe(true)
+    proyecto.habilidadesRequeridas = ["otra-habilidad"]
+    expect(proyecto.poseeHabilidadNecesaria(persona)).toBe(false)
+    proyecto.habilidadesRequeridas = []
+    expect(proyecto.poseeHabilidadNecesaria(persona)).toBe(false)
+  })
+
   test("Falta el título del proyecto", () => {
     expect(
       () =>
