@@ -29,6 +29,11 @@ export default class Proyecto {
             this.colaboraciones=[];
         }
 
+        cerrar(){
+            this.estado=EstadoProyecto.CERRADO;
+            this.fechaCierre= new Date();
+        }
+
 }
 
 export { Proyecto };

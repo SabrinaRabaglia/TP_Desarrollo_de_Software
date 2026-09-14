@@ -62,5 +62,7 @@ routes.get("/proyectos/:id", proyectoController.getById);
 routes.put("/proyectos/:id", proyectoController.put);
 routes.delete("/proyectos/:id", proyectoController.delete);
 
+routes.put("/proyectos/:id/cierre",proyectoController.cerrar);
+
 
 export default routes

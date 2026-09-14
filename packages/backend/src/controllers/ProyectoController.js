@@ -71,4 +71,13 @@ export default class ProyectoController {
         this.proyectoService.delete(id);
         res.status(204).send();
     };
+
+    cerrar = (req, res) => {
+        const {id} = req.params;
+
+        const proyectoCerrado = this.proyectoService.cerrarProyecto(id);
+
+        res.status(200).json(proyectoCerrado);
+
+    }
 }

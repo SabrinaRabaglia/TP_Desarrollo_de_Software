@@ -64,4 +64,15 @@ export default class ProyectoService {
         this.getById(id);
         this.proyectoRepository.delete(id);
     };
+
+    cerrarProyecto = (id) =>{
+        const proyecto = this.getById(id);
+
+        if (proyecto.estado === 'CERRADO') {
+            throw new ConflictError("EL PROYECTO YA SE ESTÁ CERRADO!");
+        }
+
+        proyecto.cerrar();
+        return this.proyectoRepository.save(proyecto);
+    }
 }
