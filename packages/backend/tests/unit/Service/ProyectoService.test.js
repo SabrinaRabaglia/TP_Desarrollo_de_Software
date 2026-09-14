@@ -293,4 +293,51 @@ describe("ProyectoService", () => {
       expect(() => service.delete("id-inexistente")).toThrow(NotFoundError)
     })
   })
+  describe("cerrarProyecto", () => {
+    test("cierra y guarda el proyecto actualizando su estado y fecha", () => {
+      const creado = service.create(dtoProyectoValido)
+
+      const cerrado = service.cerrarProyecto(creado.id)
+
+      expect(cerrado.estado).toBe(EstadoProyecto.CERRADO)
+      expect(cerrado.fechaCierre).toBeInstanceOf(Date)
+      expect(service.getById(creado.id)).toBe(cerrado)
+    })
+
+    test("lanza NotFoundError si el proyecto no existe", () => {
+      expect(() => service.cerrarProyecto("id-inexistente")).toThrow(
+        NotFoundError,
+      )
+    })
+
+    test("rechaza un segundo cierre sin alterar la fecha", () => {
+      const creado = service.create(dtoProyectoValido)
+      const cerrado = service.cerrarProyecto(creado.id)
+      const fechaCierre = cerrado.fechaCierre
+
+      expect(() => service.cerrarProyecto(creado.id)).toThrow(ConflictError)
+      expect(service.getById(creado.id).fechaCierre).toBe(fechaCierre)
+    })
+
+    test("rechaza reabrir un proyecto sin aplicar cambios parciales", () => {
+      const creado = service.create(dtoProyectoValido)
+      service.cerrarProyecto(creado.id)
+      const antes = structuredClone(creado)
+
+      expect(() =>
+        service.update(creado.id, {
+          titulo: "No debe guardarse",
+          estado: EstadoProyecto.PUBLICADO,
+          fechaCierre: null,
+        }),
+      ).toThrow(ConflictError)
+      expect(service.getById(creado.id)).toEqual(antes)
+
+      const editado = service.update(creado.id, {
+        descripcion: "Descripción actualizada",
+      })
+      expect(editado.estado).toBe(EstadoProyecto.CERRADO)
+      expect(editado.fechaCierre).toEqual(antes.fechaCierre)
+    })
+  })
 })

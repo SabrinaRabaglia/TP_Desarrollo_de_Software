@@ -66,6 +66,11 @@ export default class ProyectoController {
     res.status(200).json(proyectoActualizado)
   }
 
+  cerrar = (req, res) => {
+    const proyecto = this.proyectoService.cerrarProyecto(req.params.id)
+    res.status(200).json(proyecto)
+  }
+
   delete = (req, res) => {
     const { id } = req.params
     this.proyectoService.delete(id)

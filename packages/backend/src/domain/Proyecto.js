@@ -1,6 +1,6 @@
 import { EstadoProyecto } from "./enums/EstadoProyecto.js"
 import { ModalidadColaboracion } from "./enums/ModalidadColaboracion.js"
-import { UnprocessableEntityError } from "../errors/AppError.js"
+import { ConflictError, UnprocessableEntityError } from "../errors/AppError.js"
 
 export default class Proyecto {
   constructor(
@@ -34,6 +34,14 @@ export default class Proyecto {
     this.colectivo = colectivo
     this.habilidadesRequeridas = habilidadesRequeridas
     this.colaboraciones = []
+  }
+
+  cerrar() {
+    if (this.proyectoCerrado()) {
+      throw new ConflictError("El proyecto ya está cerrado")
+    }
+    this.estado = EstadoProyecto.CERRADO
+    this.fechaCierre = new Date()
   }
 
   agregarColaboracion(colaboracion) {

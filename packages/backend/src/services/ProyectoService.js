@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto"
 import { ConflictError, NotFoundError } from "../errors/AppError.js"
 import { Proyecto } from "../domain/Proyecto.js"
+import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
 
 export default class ProyectoService {
   constructor(proyectoRepository, colectivoService, habilidadService) {
@@ -56,6 +57,14 @@ export default class ProyectoService {
     const proyectoExistente = this.getById(id)
 
     if (
+      proyectoExistente.proyectoCerrado() &&
+      proyectoActualizado.estado !== undefined &&
+      proyectoActualizado.estado !== EstadoProyecto.CERRADO
+    ) {
+      throw new ConflictError("No se puede reabrir un proyecto cerrado")
+    }
+
+    if (
       proyectoActualizado.titulo &&
       proyectoActualizado.titulo !== proyectoExistente.titulo &&
       this.proyectoRepository.findByTitulo?.(proyectoActualizado.titulo)
@@ -73,6 +82,12 @@ export default class ProyectoService {
     Object.assign(proyectoExistente, proyectoActualizado)
 
     return this.proyectoRepository.save(proyectoExistente)
+  }
+
+  cerrarProyecto = (id) => {
+    const proyecto = this.getById(id)
+    proyecto.cerrar()
+    return this.proyectoRepository.save(proyecto)
   }
 
   delete = (id) => {
