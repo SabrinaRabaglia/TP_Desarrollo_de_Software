@@ -1,14 +1,14 @@
 import Colaboracion from "../domain/Colaboracion.js";
 import { BadRequestError, UnprocessableEntityError } from "../errors/AppError.js";
-import ColaboracionRepository from "../repositories/ColaboracionRepository.js";
+import colaboracionRepository from "../repositories/ColaboracionRepository.js";
 import personaColaboradoraRepository from "../repositories/PersonaColaboradoraRepository.js";
 import proyectoRepository from "../repositories/ProyectoRepository.js";
 export default class ColaboracionService {
-    constructor(colaboracionRepository = new ColaboracionRepository(),
+    constructor(colaboracionRepo = colaboracionRepository,
     proyectoRepo = proyectoRepository,
     personaColaboradoraRepo = personaColaboradoraRepository)
     {
-        this.colaboracionRepository = colaboracionRepository;
+        this.colaboracionRepository = colaboracionRepo;
         this.proyectoRepository = proyectoRepo;
         this.personaColaboradoraRepository = personaColaboradoraRepo;
     }
@@ -30,7 +30,7 @@ export default class ColaboracionService {
         if (colaboracionExistente) {
             throw new BadRequestError("La persona ya colabora en este proyecto");
         }
-        if (!proyectoExistente.poseeHabilidadNecesaria(personaColaboradoraExistente)){
+        if (!proyectoExistente.poseeHabilidadNecesaria(personaColaboradoraExistente)&&proyectoExistente.proyectoRequiereHabilidades()){
             throw new BadRequestError("La persona no posee las habilidades requeridas");
         }
         if(proyectoExistente.proyectoCerrado()){
@@ -40,5 +40,9 @@ export default class ColaboracionService {
         personaColaboradoraExistente.agregarColaboracion(colaboracion);
         proyectoExistente.agregarColaboracion(colaboracion);
         return this.colaboracionRepository.save(colaboracion);
+    }
+
+    getAll = () => {
+        return this.colaboracionRepository.getAll();
     }
 }

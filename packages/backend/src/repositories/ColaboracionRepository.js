@@ -1,4 +1,4 @@
-export default class ColaboracionRepository {
+class ColaboracionRepository {
     constructor(){
         this.colaboraciones = [];
     }
@@ -24,3 +24,6 @@ export default class ColaboracionRepository {
         return colaboracion;
     }
 }
+
+const colaboracionRepository = new ColaboracionRepository()
+export default colaboracionRepository

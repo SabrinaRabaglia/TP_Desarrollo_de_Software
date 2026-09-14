@@ -36,4 +36,8 @@ export default class Proyecto {
     proyectoCerrado(){
         return this.estado === EstadoProyecto.CERRADO;
     }
+
+    proyectoRequiereHabilidades(){
+        return this.habilidadesRequeridas.length > 0;
+    }
 }
