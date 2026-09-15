@@ -1,4 +1,4 @@
-@startuml
+@startuml backend-diagrama-de-clases
 skinparam classAttributeIconSize 0
 
 enum UnidadCompromiso {
@@ -45,6 +45,12 @@ class Proyecto {
     colectivo: Colectivo
     habilidadesRequeridas: Habilidad[]
     colaboraciones: Colaboracion[]
+
+    cerrar():void
+    agregarColaboracion(colaboracion: Colaboracion): void
+    poseeHabilidadNecesaria(personaColaboradora: PersonaColaboradora): boolean
+    proyectoCerrado(): boolean
+
 }
 
 class PersonaColaboradora {
@@ -80,10 +86,12 @@ class TipoColectivo {
 }
 
 class Pais {
+    id: int
     nombre: String
 }
 
-class Provincia {
+class Provincia {  
+    id: int
     nombre: String
 }
 

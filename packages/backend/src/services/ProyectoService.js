@@ -2,6 +2,9 @@ import { randomUUID } from "node:crypto"
 import { ConflictError, NotFoundError } from "../errors/AppError.js"
 import { Proyecto } from "../domain/Proyecto.js"
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
+import { ModalidadColaboracion } from "../domain/enum/ModalidadColaboracion.js"
+import {  UnprocessableEntityError } from "../errors/AppError.js"
+
 
 export default class ProyectoService {
   constructor(proyectoRepository, colectivoService, habilidadService) {
@@ -26,6 +29,19 @@ export default class ProyectoService {
     this.colectivoService.getById(datos.colectivo)
     for (const id of datos.habilidadesRequeridas ?? []) {
       this.habilidadService.getById(id)
+    }
+  }
+
+  validarDatos(modalidadesColaboracion) {
+    if (
+      modalidadesColaboracion.some(
+        (modalidad) =>
+          !Object.values(ModalidadColaboracion).includes(modalidad),
+      )
+    ) {
+      throw new UnprocessableEntityError(
+        "La modalidad de colaboración es inválida.",
+      )
     }
   }
 

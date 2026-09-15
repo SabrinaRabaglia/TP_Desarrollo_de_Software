@@ -1,5 +1,4 @@
 import { EstadoProyecto } from "./enums/EstadoProyecto.js"
-import { ModalidadColaboracion } from "./enums/ModalidadColaboracion.js"
 import { ConflictError, UnprocessableEntityError } from "../errors/AppError.js"
 
 export default class Proyecto {
@@ -92,17 +91,15 @@ export default class Proyecto {
         "El proyecto debe tener al menos una modalidad de colaboración.",
       )
     }
-    if (
-      modalidadesColaboracion.some(
-        (modalidad) =>
-          !Object.values(ModalidadColaboracion).includes(modalidad),
-      )
-    ) {
-      throw new UnprocessableEntityError(
-        "La modalidad de colaboración es inválida.",
-      )
-    }
+    
   }
+
+
+
+
+
+
+  
 }
 
 export { Proyecto }

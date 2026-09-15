@@ -1,6 +1,8 @@
-import { NotFoundError } from "../errors/AppError.js"
+import { NotFoundError,UnprocessableEntityError } from "../errors/AppError.js"
 import PersonaColaboradora from "../domain/PersonaColaboradora.js"
 import Cuenta from "../domain/Cuenta.js"
+import { TipoCuenta } from "../domain/enums/TipoCuenta.js"
+
 
 export default class PersonaColaboradoraService {
   constructor(personaColaboradoraRepository, habilidadService) {
@@ -21,6 +23,14 @@ export default class PersonaColaboradoraService {
   create = (nueva) => {
     const habilidades = this.buscarHabilidades(nueva.habilidades)
     const cuentas = this.crearCuentas(nueva.cuentas)
+    if (nueva.cuentas && nueva.cuentas.length > 0) {
+      nueva.cuentas.forEach(cuenta => {
+        // VALIDACIÓN DEL SERVICIO: Chequeamos el Enum acá
+        if (!Object.values(TipoCuenta).includes(cuenta.tipo)) {
+            throw new UnprocessableEntityError(`Tipo de cuenta inválido: ${cuenta.tipo}`);
+        }
+    });
+
 
     const personaColaboradora = new PersonaColaboradora(
       nueva.nombreFantasia,
@@ -33,7 +43,7 @@ export default class PersonaColaboradoraService {
     )
 
     return this.personaColaboradoraRepository.save(personaColaboradora)
-  }
+  }}
 
   update = (id, actualizada) => {
     const personaExistente = this.personaColaboradoraRepository.findById(id)
