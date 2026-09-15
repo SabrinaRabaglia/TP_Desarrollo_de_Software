@@ -21,6 +21,7 @@ export default class Proyecto {
       cantHoras,
       colectivo,
       modalidadesColaboracion,
+      fechaAlta, fechaCierre
     })
     this.titulo = titulo
     this.descripcion = descripcion
@@ -66,6 +67,7 @@ export default class Proyecto {
     cantHoras,
     colectivo,
     modalidadesColaboracion,
+    fechaAlta, fechaCierre
   }) {
     if (
       !titulo ||
@@ -91,7 +93,11 @@ export default class Proyecto {
         "El proyecto debe tener al menos una modalidad de colaboración.",
       )
     }
-    
+    if (fechaCierre && fechaCierre < fechaAlta) {
+       throw new Error(
+         "La fecha de cierre no puede ser anterior a la fecha de alta."
+       )
+      }
   }
 
 
