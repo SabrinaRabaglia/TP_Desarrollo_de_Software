@@ -1,9 +1,9 @@
-import { UnprocessableEntityError } from "../errors/AppError.js"
+import { DomainValidationError } from "../errors/DomainValidationError.js"
 
 export default class Colaboracion {
   constructor(personaColaboradora, proyecto) {
     if (!personaColaboradora || !proyecto) {
-      throw new UnprocessableEntityError(
+      throw new DomainValidationError(
         "La colaboración debe tener una persona colaboradora y un proyecto asociados",
       )
     }

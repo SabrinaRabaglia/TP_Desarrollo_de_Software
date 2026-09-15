@@ -1,5 +1,4 @@
-import { UnprocessableEntityError } from "../errors/AppError.js"
-
+import { DomainValidationError } from "../errors/DomainErrors.js"
 export default class Colectivo {
   constructor(
     nombre,
@@ -20,7 +19,7 @@ export default class Colectivo {
   }
   static validarDatos({ nombre, descripcion, tipo}) {
     if (!nombre || !descripcion || !tipo) {
-      throw new UnprocessableEntityError( 
+      throw new DomainValidationError( 
         "Nombre, descripción y tipo son obligatorios.",
       )
     }

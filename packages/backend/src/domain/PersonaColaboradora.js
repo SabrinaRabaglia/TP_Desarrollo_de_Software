@@ -1,4 +1,4 @@
-import { UnprocessableEntityError } from "../errors/AppError.js"
+import { DomainValidationError } from "../errors/DomainErrors.js"
 export default class PersonaColaboradora {
   constructor(
     nombreFantasia,
@@ -23,7 +23,7 @@ export default class PersonaColaboradora {
 
   static validarDatos({ nombreFantasia }) {
     if (!nombreFantasia) {
-      throw new UnprocessableEntityError(
+      throw new DomainValidationError(
         "La persona colaboradora debe tener un nombre de fantasia",
       )
     }

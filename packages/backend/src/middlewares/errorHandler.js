@@ -1,6 +1,24 @@
 import { AppError } from "../errors/AppError.js"
+import { DomainValidationError, DomainRuleError } from "../domain/errors/DomainErrors.js"
 
 export default function errorHandler(error, _req, res, next) {
+
+
+  if (error instanceof DomainValidationError) {
+    return res.status(422).json({
+      message: error.message,
+      details: [], 
+    })
+  }
+
+  // 2. Si se rompió una regla de negocio o estado -> 409
+  if (error instanceof DomainRuleError) {
+    return res.status(409).json({
+      message: error.message,
+      details: [], 
+    })
+  }
+
   if (res.headersSent) {
     return next(error)
   }

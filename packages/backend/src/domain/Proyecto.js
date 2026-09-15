@@ -1,5 +1,5 @@
 import { EstadoProyecto } from "./enums/EstadoProyecto.js"
-import { ConflictError, UnprocessableEntityError } from "../errors/AppError.js"
+import { DomainValidationError,DomainRuleError } from "../errors/DomainErrors.js"
 
 export default class Proyecto {
   constructor(
@@ -38,7 +38,7 @@ export default class Proyecto {
 
   cerrar() {
     if (this.proyectoCerrado()) {
-      throw new ConflictError("El proyecto ya está cerrado")
+      throw new DomainRuleError("El proyecto ya está cerrado")
     }
     this.estado = EstadoProyecto.CERRADO
     this.fechaCierre = new Date()
@@ -76,12 +76,12 @@ export default class Proyecto {
       !cantHoras ||
       !colectivo
     ) {
-      throw new UnprocessableEntityError(
+      throw new DomainValidationError(
         "Titulo, descripción, unidadCompromiso, cantHoras y colectivo son obligatorios.",
       )
     }
     if (!Number.isInteger(cantHoras) || cantHoras <= 0) {
-      throw new UnprocessableEntityError(
+      throw new DomainValidationError(
         "La cantidad de horas debe ser un entero mayor que cero.",
       )
     }
@@ -89,12 +89,12 @@ export default class Proyecto {
       !Array.isArray(modalidadesColaboracion) ||
       modalidadesColaboracion.length === 0
     ) {
-      throw new UnprocessableEntityError(
+      throw new DomainValidationError(
         "El proyecto debe tener al menos una modalidad de colaboración.",
       )
     }
     if (fechaCierre && fechaCierre < fechaAlta) {
-       throw new Error(
+       throw new DomainValidationError(
          "La fecha de cierre no puede ser anterior a la fecha de alta."
        )
       }

@@ -1,5 +1,4 @@
-import { UnprocessableEntityError } from "../errors/AppError.js"
-
+import { DomainValidationError } from "../errors/DomainErrors.js"
 export default class Habilidad {
   constructor(titulo, codigo, descripcion) {
     Habilidad.validarDatos({ titulo, codigo, descripcion })
@@ -11,7 +10,7 @@ export default class Habilidad {
 
   static validarDatos({ titulo, codigo, descripcion }) {
     if (!titulo || !codigo || !descripcion) {
-      throw new UnprocessableEntityError("Todos los campos son requeridos")
+      throw new DomainValidationError("Todos los campos son requeridos")
     }
     Habilidad.validarCodigo(titulo, codigo)
   }
@@ -29,7 +28,7 @@ export default class Habilidad {
         : ""
 
     if (!esperado || codigo !== esperado) {
-      throw new UnprocessableEntityError(
+      throw new DomainValidationError(
         "El código debe coincidir con el título normalizado en snake_case, en minúsculas y sin tildes",
       )
     }

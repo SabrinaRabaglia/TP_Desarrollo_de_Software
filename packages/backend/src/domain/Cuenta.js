@@ -1,9 +1,9 @@
-import { UnprocessableEntityError } from "../errors/AppError.js"
+import { DomainValidationError } from "../errors/DomainErrors.js"
 
 export default class Cuenta {
   constructor(nombreUsuario, tipo) {
     if (!nombreUsuario) {
-      throw new UnprocessableEntityError("El nombre de usuario es obligatorio")
+      throw new DomainValidationError("El nombre de usuario es obligatorio")
     }
     
     this.nombreUsuario = nombreUsuario
