@@ -1,6 +1,7 @@
+import Pais from '../domain/Pais.js';
 export default class PaisRepository {
   constructor() {
-    this.paises = []
+    this.paises = [new Pais("1", "Argentina")]
   }
 
 
