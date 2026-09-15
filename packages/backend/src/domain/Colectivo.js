@@ -1,5 +1,4 @@
 import { UnprocessableEntityError } from "../errors/AppError.js"
-import Provincia from "./Provincia.js"
 
 export default class Colectivo {
   constructor(
@@ -10,7 +9,7 @@ export default class Colectivo {
     provincia = null,
     ciudad = null,
   ) {
-    Colectivo.validarDatos({ nombre, descripcion, tipo, provincia })
+    Colectivo.validarDatos({ nombre, descripcion, tipo })
     this.nombre = nombre
     this.descripcion = descripcion
     this.tipo = tipo
@@ -19,15 +18,10 @@ export default class Colectivo {
     this.ciudad = ciudad
     this.proyectos = []
   }
-  static validarDatos({ nombre, descripcion, tipo, provincia }) {
+  static validarDatos({ nombre, descripcion, tipo}) {
     if (!nombre || !descripcion || !tipo) {
-      throw new UnprocessableEntityError(
+      throw new UnprocessableEntityError( 
         "Nombre, descripción y tipo son obligatorios.",
-      )
-    }
-    if (provincia !== undefined && provincia !== null) {
-      Provincia.validar(
-        provincia instanceof Provincia ? provincia.nombre : provincia,
       )
     }
   }

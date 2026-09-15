@@ -11,10 +11,12 @@ export default class ColectivoService {
     colectivoRepository,
     tipoColectivoRepository,
     proyectoRepository,
+    provinciaRepository,
   ) {
     this.colectivoRepository = colectivoRepository
     this.tipoColectivoRepository = tipoColectivoRepository
     this.proyectoRepository = proyectoRepository
+    this.provinciaRepository = provinciaRepository
   }
 
   incluirProyectos = (colectivo) => ({
@@ -61,7 +63,8 @@ export default class ColectivoService {
     )
     colectivo.id = randomUUID()
     console.log("OBJETO ANTES DE GUARDAR:", colectivo)
-    return this.incluirProyectos(this.colectivoRepository.save(colectivo))
+    //return this.incluirProyectos(this.colectivoRepository.save(colectivo))
+    return this.colectivoRepository.save(colectivo);
   }
   update = (id, colectivoActualizado) => {
     const colectivoExistente = this.colectivoRepository.findById(id)
