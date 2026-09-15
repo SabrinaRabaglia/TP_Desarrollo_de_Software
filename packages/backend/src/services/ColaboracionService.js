@@ -2,8 +2,7 @@ import Colaboracion from "../domain/Colaboracion.js"
 import {
   BadRequestError,
   ConflictError,
-  NotFoundError,
-  UnprocessableEntityError,
+  NotFoundError
 } from "../errors/AppError.js"
 
 export default class ColaboracionService {
@@ -31,7 +30,7 @@ export default class ColaboracionService {
       throw new ConflictError("La persona ya colabora en este proyecto")
     }
     if (proyecto.proyectoCerrado()) {
-      throw new UnprocessableEntityError(
+      throw new ConflictError(
         "El proyecto no acepta nuevos colaboradores",
       )
     }
