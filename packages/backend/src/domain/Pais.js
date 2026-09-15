@@ -1,5 +1,6 @@
 export default class Pais {
-  constructor(nombre) {
+  constructor(id, nombre) {
+    this.id = id
     this.nombre = nombre
   }
 }

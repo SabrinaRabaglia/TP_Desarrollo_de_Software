@@ -53,12 +53,25 @@ export default class ColectivoService {
 
     this.validarTipo(nuevo.tipo)
 
+
+    let instanciaProvincia = null;
+    if (nuevo.provincia) {
+      instanciaProvincia = this.provinciaRepository.findById(nuevo.provincia);
+      if (!instanciaProvincia) throw new NotFoundError("PROVINCIA NO ENCONTRADA!");
+    }
+
+    let instanciaPais = null;
+    if (nuevo.pais) {
+      instanciaPais = this.paisRepository.findById(nuevo.pais);
+      if (!instanciaPais) throw new NotFoundError("PAÍS NO ENCONTRADO!");
+    }
+
     const colectivo = new Colectivo(
       nuevo.nombre,
       nuevo.descripcion,
       nuevo.tipo,
-      nuevo.pais,
-      nuevo.provincia,
+      instanciaPais,
+      instanciaProvincia,
       nuevo.ciudad,
     )
     colectivo.id = randomUUID()
