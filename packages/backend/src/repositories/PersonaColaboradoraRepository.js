@@ -3,15 +3,15 @@ export default class PersonaColaboradoraRepository {
     this.personasColaboradoras = []
   }
 
-  getAll() {
+  async getAll() {
     return this.personasColaboradoras
   }
 
-  findById(id) {
+  async findById(id) {
     return this.personasColaboradoras.find((p) => p.id === id)
   }
 
-  deleteById(id) {
+  async deleteById(id) {
     const indice = this.personasColaboradoras.findIndex((p) => p.id === id)
     if (indice === -1) {
       return false
@@ -20,7 +20,7 @@ export default class PersonaColaboradoraRepository {
     return true
   }
 
-  save(personaColaboradora) {
+  async save(personaColaboradora) {
     const indice = this.personasColaboradoras.findIndex(
       (p) => p.id === personaColaboradora.id,
     )

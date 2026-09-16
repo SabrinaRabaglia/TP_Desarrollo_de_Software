@@ -14,38 +14,58 @@ export default class HabilidadController {
     this.habilidadService = habilidadService
   }
 
-  create = (req, res) => {
-    const resultado = habilidadSchema.safeParse(req.body)
-    if (resultado.error) {
-      throw new BadRequestError("Datos inválidos", resultado.error.issues)
+  create = async (req, res, next) => {
+    try {
+      const resultado = habilidadSchema.safeParse(req.body)
+      if (resultado.error) {
+        throw new BadRequestError("Datos inválidos", resultado.error.issues)
+      }
+      const habilidad = await this.habilidadService.create(resultado.data)
+      res.status(201).json(habilidad)
+    } catch (error) {
+      next(error)
     }
-    const habilidad = this.habilidadService.create(resultado.data)
-    res.status(201).json(habilidad)
   }
 
-  update = (req, res) => {
-    const resultado = habilidadSchema.safeParse(req.body)
-    if (resultado.error) {
-      throw new BadRequestError("Datos inválidos", resultado.error.issues)
+  update = async (req, res, next) => {
+    try {
+      const resultado = habilidadSchema.safeParse(req.body)
+      if (resultado.error) {
+        throw new BadRequestError("Datos inválidos", resultado.error.issues)
+      }
+      const habilidad = await this.habilidadService.update(
+        req.params.id,
+        resultado.data
+      )
+      res.status(200).json(habilidad)
+    } catch (error) {
+      next(error)
     }
-    const habilidad = this.habilidadService.update(
-      req.params.id,
-      resultado.data,
-    )
-    res.status(200).json(habilidad)
   }
 
-  delete = (req, res) => {
-    this.habilidadService.delete(req.params.id)
-    res.status(204).send()
+  delete = async (req, res, next) => {
+    try {
+      await this.habilidadService.delete(req.params.id)
+      res.status(204).send()
+    } catch (error) {
+      next(error)
+    }
   }
 
-  getById = (req, res) => {
-    const habilidad = this.habilidadService.getById(req.params.id)
-    res.status(200).json(habilidad)
+  getById = async (req, res, next) => {
+    try {
+      const habilidad = await this.habilidadService.getById(req.params.id)
+      res.status(200).json(habilidad)
+    } catch (error) {
+      next(error)
+    }
   }
 
-  getAll = (req, res) => {
-    res.status(200).json(this.habilidadService.getAll())
+  getAll = async (req, res, next) => {
+    try {
+      res.status(200).json(await this.habilidadService.getAll())
+    } catch (error) {
+      next(error)
+    }
   }
 }

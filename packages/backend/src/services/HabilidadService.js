@@ -6,13 +6,13 @@ export default class HabilidadService {
     this.habilidadRepository = habilidadRepository
   }
 
-  create = (nueva) => {
+  create = async(nueva) => {
     const habilidad = new Habilidad(
       nueva.titulo,
       nueva.codigo,
       nueva.descripcion,
     )
-    const habilidadExistente = this.habilidadRepository.findByCodigo(
+    const habilidadExistente = await this.habilidadRepository.findByCodigo(
       nueva.codigo,
     )
     if (habilidadExistente) {
@@ -20,18 +20,18 @@ export default class HabilidadService {
         `Ya existe una habilidad con código: ${nueva.codigo}`,
       )
     }
-    return this.habilidadRepository.save(habilidad)
+    return await this.habilidadRepository.save(habilidad)
   }
 
-  update = (id, actualizada) => {
-    const habilidadExistente = this.habilidadRepository.findById(id)
+  update = async (id, actualizada) => {
+    const habilidadExistente = await this.habilidadRepository.findById(id)
     if (!habilidadExistente) {
       throw new NotFoundError("Habilidad no encontrada")
     }
 
     Habilidad.validarDatos(actualizada)
 
-    const otraConMismoCodigo = this.habilidadRepository.findByCodigo(
+    const otraConMismoCodigo = await this.habilidadRepository.findByCodigo(
       actualizada.codigo,
     )
     if (otraConMismoCodigo && otraConMismoCodigo.id !== id) {
@@ -44,26 +44,26 @@ export default class HabilidadService {
     habilidadExistente.codigo = actualizada.codigo
     habilidadExistente.descripcion = actualizada.descripcion
 
-    return this.habilidadRepository.save(habilidadExistente)
+    return await this.habilidadRepository.save(habilidadExistente)
   }
 
-  delete = (id) => {
-    const habilidadExistente = this.habilidadRepository.findById(id)
+  delete = async (id) => {
+    const habilidadExistente = await this.habilidadRepository.findById(id)
     if (!habilidadExistente) {
       throw new NotFoundError("Habilidad no encontrada")
     }
-    this.habilidadRepository.deleteById(id)
+    await this.habilidadRepository.deleteById(id)
   }
 
-  getById = (id) => {
-    const habilidad = this.habilidadRepository.findById(id)
+  getById = async (id) => {
+    const habilidad = await this.habilidadRepository.findById(id)
     if (!habilidad) {
       throw new NotFoundError("Habilidad no encontrada")
     }
     return habilidad
   }
 
-  getAll = () => {
-    return this.habilidadRepository.getAll()
+  getAll = async () => {
+    return await this.habilidadRepository.getAll()
   }
 }

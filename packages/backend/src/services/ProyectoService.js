@@ -13,22 +13,22 @@ export default class ProyectoService {
     this.habilidadService = habilidadService
   }
 
-  getAll = () => {
-    return this.proyectoRepository.findAll()
+  getAll = async () => {
+    return await this.proyectoRepository.findAll()
   }
 
-  getById = (id) => {
-    const proyecto = this.proyectoRepository.findById(id)
+  getById = async (id) => {
+    const proyecto = await this.proyectoRepository.findById(id)
     if (!proyecto) {
       throw new NotFoundError("PROYECTO NO ENCONTRADO!")
     }
     return proyecto
   }
 
-  validarReferencias = (datos) => {
-    this.colectivoService.getById(datos.colectivo)
+  validarReferencias = async (datos) => {
+    await this.colectivoService.getById(datos.colectivo)
     for (const id of datos.habilidadesRequeridas ?? []) {
-      this.habilidadService.getById(id)
+      await this.habilidadService.getById(id)
     }
   }
 
@@ -45,7 +45,7 @@ export default class ProyectoService {
     }
   }
 
-  create = (nuevo) => {
+  create = async (nuevo) => {
     if (nuevo.titulo && this.proyectoRepository.findByTitulo?.(nuevo.titulo)) {
       throw new ConflictError("PROYECTO EXISTENTE!")
     }
@@ -66,11 +66,11 @@ export default class ProyectoService {
     )
     proyecto.id = randomUUID()
 
-    return this.proyectoRepository.save(proyecto)
+    return await this.proyectoRepository.save(proyecto)
   }
 
-  update = (id, proyectoActualizado) => {
-    const proyectoExistente = this.getById(id)
+  update = async (id, proyectoActualizado) => {
+    const proyectoExistente = await  this.getById(id)
 
     if (
       proyectoExistente.proyectoCerrado() &&
@@ -97,17 +97,17 @@ export default class ProyectoService {
 
     Object.assign(proyectoExistente, proyectoActualizado)
 
-    return this.proyectoRepository.save(proyectoExistente)
+    return await this.proyectoRepository.save(proyectoExistente)
   }
 
-  cerrarProyecto = (id) => {
-    const proyecto = this.getById(id)
+  cerrarProyecto = async (id) => {
+    const proyecto = await this.getById(id)
     proyecto.cerrar()
-    return this.proyectoRepository.save(proyecto)
+    return await this.proyectoRepository.save(proyecto)
   }
 
-  delete = (id) => {
-    this.getById(id)
-    this.proyectoRepository.delete(id)
+  delete = async (id) => {
+    await this.getById(id)
+    await this.proyectoRepository.delete(id)
   }
 }

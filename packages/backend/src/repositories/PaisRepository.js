@@ -5,11 +5,11 @@ export default class PaisRepository {
   }
 
 
-  findById(id) {
+  async findById(id) {
     return this.paises.find((pais) => pais.id === id)
   }
 
-  save(pais) {
+  async save(pais) {
     const indice = this.paises.findIndex((p) => p.id === pais.id)
     if(indice === -1) {
       this.paises.push(pais)

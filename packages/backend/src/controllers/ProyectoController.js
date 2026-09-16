@@ -26,54 +26,82 @@ export default class ProyectoController {
     this.proyectoService = proyectoService
   }
 
-  getAll = (req, res) => {
-    res.status(200).json(this.proyectoService.getAll())
-  }
-
-  getById = (req, res) => {
-    const { id } = req.params
-    res.status(200).json(this.proyectoService.getById(id))
-  }
-
-  create = (req, res) => {
-    const body = req.body
-    const resultado = proyectoSchema.safeParse(body)
-    if (resultado.error) {
-      throw new BadRequestError("Datos inválidos", resultado.error.issues)
+  getAll = async (req, res, next) => {
+    try {
+      res.status(200).json(await this.proyectoService.getAll())
+    } catch (error) {
+      next(error)
     }
-    const creado = this.proyectoService.create(resultado.data)
-    res.status(201).json(creado)
   }
 
-  put = (req, res) => {
-    const body = req.body
-    const resultado = proyectoSchema.safeParse(body)
-    if (resultado.error) {
-      throw new BadRequestError("Datos inválidos", resultado.error.issues)
+  getById = async (req, res, next) => {
+    try {
+      const { id } = req.params
+      res.status(200).json(await this.proyectoService.getById(id))
+    } catch (error) {
+      next(error)
     }
-    const id = req.params.id
-    const actualizado = this.proyectoService.update(id, resultado.data)
+  }
+
+  create = async (req, res, next) => {
+    try {
+      const body = req.body
+      const resultado = proyectoSchema.safeParse(body)
+      if (resultado.error) {
+        throw new BadRequestError("Datos inválidos", resultado.error.issues)
+      }
+      const creado = await this.proyectoService.create(resultado.data)
+      res.status(201).json(creado)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  put = async (req, res, next) => {
+    try {
+      const body = req.body
+      const resultado = proyectoSchema.safeParse(body)
+      if (resultado.error) {
+        throw new BadRequestError("Datos inválidos", resultado.error.issues)
+      }
+      const id = req.params.id
+    const actualizado = await this.proyectoService.update(id, resultado.data)
     res.status(200).json(actualizado)
-  }
-
-  patch = (req, res) => {
-    const { id } = req.params
-    const resultado = proyectoSchema.partial().safeParse(req.body)
-    if (resultado.error) {
-      throw new BadRequestError("Datos inválidos", resultado.error.issues)
+    } catch (error) {
+      next(error)
     }
-    const proyectoActualizado = this.proyectoService.update(id, resultado.data)
+  }
+
+  patch = async (req, res, next) => {
+    try {
+      const { id } = req.params
+      const resultado = proyectoSchema.partial().safeParse(req.body)
+      if (resultado.error) {
+        throw new BadRequestError("Datos inválidos", resultado.error.issues)
+      }
+    const proyectoActualizado = await this.proyectoService.update(id, resultado.data)
     res.status(200).json(proyectoActualizado)
+    } catch (error) {
+      next(error)
+    }
   }
 
-  cerrar = (req, res) => {
-    const proyecto = this.proyectoService.cerrarProyecto(req.params.id)
-    res.status(200).json(proyecto)
+  cerrar = async (req, res, next) => {
+    try {
+      const proyecto = await this.proyectoService.cerrarProyecto(req.params.id)
+      res.status(200).json(proyecto)
+    } catch (error) {
+      next(error)
+    }
   }
 
-  delete = (req, res) => {
-    const { id } = req.params
-    this.proyectoService.delete(id)
-    res.status(204).send()
+  delete = async (req, res, next) => {
+    try {
+      const { id } = req.params
+      await this.proyectoService.delete(id)
+      res.status(204).send()
+    } catch (error) {
+      next(error)
+    }
   }
 }

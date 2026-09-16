@@ -9,12 +9,12 @@ export default class TipoColectivoRepository {
     )
   }
 
-  findByNombre(nombre) {
+  async findByNombre(nombre) {
     const buscado = normalizarNombre(nombre)
     return this.tipos.find((tipo) => normalizarNombre(tipo.nombre) === buscado)
   }
 
-  save(tipo) {
+  async save(tipo) {
     if (!normalizarNombre(tipo.nombre)) {
       throw new UnprocessableEntityError(
         "El tipo de colectivo debe tener un nombre.",

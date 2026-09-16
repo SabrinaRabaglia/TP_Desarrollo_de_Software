@@ -31,11 +31,11 @@ export default class ProvinciaRepository {
   }
 
 
-  findById(id) {
+  async findById(id) {
     return this.provincias.find((provincia) => provincia.id === id)
   }
 
-  save(provincia) {
+  async save(provincia) {
     const indice = this.provincias.findIndex((p) => p.id === provincia.id)
     if(indice === -1) {
       this.provincias.push(provincia)

@@ -16,45 +16,74 @@ export default class ColectivoController {
     this.colectivoService = colectivoService
   }
 
-  getAll = (req, res) => {
-    res.status(200).json(this.colectivoService.getAll())
+  getAll = async (req, res, next) => {
+    try {
+      res.status(200).json(await this.colectivoService.getAll())
+    } catch (error) {
+      next(error)
+    }
   }
-  getById = (req, res) => {
+  getById = async (req, res, next) => {
     const { id } = req.params
-    res.status(200).json(this.colectivoService.getById(id))
+    try {
+      res.status(200).json(await this.colectivoService.getById(id))
+    } catch (error) {
+      next(error)
+    }
   }
-  create = (req, res) => {
-    const body = req.body
+  create = async (req, res, next) => {
+    try{
+      const body = req.body
     const resultado = colectivoSchema.safeParse(body)
     if (resultado.error) {
       throw new BadRequestError("Datos inválidos", resultado.error.issues)
     }
-    const creado = this.colectivoService.create(resultado.data)
+    const creado = await this.colectivoService.create(resultado.data)
     res.status(201).json(creado)
+    }
+    catch(error){
+      next(error)
+    }
+    
   }
-  put = (req, res) => {
-    const body = req.body
+  put = async (req, res, next) => {
+    try{
+      const body = req.body
     const resultado = colectivoSchema.safeParse(body)
     if (resultado.error) {
       throw new BadRequestError("Datos inválidos", resultado.error.issues)
     }
     const id = req.params.id
-    const actualizado = this.colectivoService.update(id, resultado.data)
+    const actualizado = await this.colectivoService.update(id, resultado.data)
     res.status(200).json(actualizado)
+    }
+    catch(error){
+      next(error)
+    }
   }
-  patch = (req, res) => {
+  patch = async (req, res, next) => {
+    try{
     const { id } = req.params
     const resultado = colectivoSchema.partial().safeParse(req.body)
     if (resultado.error) {
       throw new BadRequestError("Datos inválidos", resultado.error.issues)
     }
-    const colectivoActualizado = this.colectivoService.patch(id, resultado.data)
+    const colectivoActualizado = await this.colectivoService.patch(id, resultado.data)
     res.status(200).json(colectivoActualizado)
+    }
+    catch(error){
+      next(error)
+    }
   }
 
-  delete = (req, res) => {
-    const { id } = req.params
-    this.colectivoService.delete(id)
-    res.status(204).send()
+  delete = async (req, res, next) => {
+    try{
+      const { id } = req.params
+      await this.colectivoService.delete(id)
+      res.status(204).send()
+    }
+    catch(error){
+      next(error)
+    }
   }
 }

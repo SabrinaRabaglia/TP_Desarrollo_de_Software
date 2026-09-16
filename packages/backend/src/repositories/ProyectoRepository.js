@@ -3,25 +3,25 @@ export default class ProyectoRepository {
     this.proyectos = []
   }
 
-  findAll() {
+  async findAll() {
     return this.proyectos
   }
 
-  findById(id) {
+  async findById(id) {
     return this.proyectos.find((c) => c.id === id)
   }
 
-  findByTitulo(titulo) {
+  async   findByTitulo(titulo) {
     return this.proyectos.find((c) => c.titulo === titulo)
   }
 
-  findByColectivoId(colectivoId) {
+  async findByColectivoId(colectivoId) {
     return this.proyectos.filter(
       (proyecto) => proyecto.colectivo === colectivoId,
     )
   }
 
-  save(nuevo) {
+  async save(nuevo) {
     const indice = this.proyectos.findIndex((p) => p.id === nuevo.id)
     if (indice === -1) {
       this.proyectos.push(nuevo)
@@ -31,7 +31,7 @@ export default class ProyectoRepository {
     return nuevo
   }
 
-  delete(id) {
+  async delete(id) {
     this.proyectos = this.proyectos.filter((c) => c.id !== id)
   }
 }

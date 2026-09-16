@@ -19,50 +19,45 @@ export default class ColectivoService {
     this.provinciaRepository = provinciaRepository
   }
 
-  incluirProyectos = (colectivo) => ({
-    ...colectivo,
-    proyectos: this.proyectoRepository.findByColectivoId(colectivo.id),
-  })
-
-  getAll = () => {
-    return this.colectivoRepository.findAll().map(this.incluirProyectos)
+  getAll = async () => {
+    return (await this.colectivoRepository.findAll()).map(this.incluirProyectos)
   }
 
-  getById = (id) => {
-    const colectivo = this.colectivoRepository.findById(id)
+  getById = async (id) => {
+    const colectivo = await this.colectivoRepository.findById(id)
     if (!colectivo) {
       throw new NotFoundError("COLECTIVO NO ENCONTRADO!")
     }
     return this.incluirProyectos(colectivo)
   }
-  validarTipo = (tipo) => {
-    if (!this.tipoColectivoRepository.findByNombre(tipo)) {
+  validarTipo = async(tipo) => {
+    if (!await this.tipoColectivoRepository.findByNombre(tipo)) {
       throw new UnprocessableEntityError(
         "El tipo de colectivo no pertenece al catálogo.",
       )
     }
   }
 
-  create = (nuevo) => {
-    const colectivoExistente = this.colectivoRepository.findByNombre(
+  create = async (nuevo) => {
+    const colectivoExistente = await this.colectivoRepository.findByNombre(
       nuevo.nombre,
     )
     if (colectivoExistente) {
       throw new ConflictError("COLECTIVO EXISTENTE!")
     }
 
-    this.validarTipo(nuevo.tipo)
+    await this.validarTipo(nuevo.tipo)
 
 
     let instanciaProvincia = null;
     if (nuevo.provincia) {
-      instanciaProvincia = this.provinciaRepository.findById(nuevo.provincia);
+      instanciaProvincia = await this.provinciaRepository.findById(nuevo.provincia);
       if (!instanciaProvincia) throw new NotFoundError("PROVINCIA NO ENCONTRADA!");
     }
 
     let instanciaPais = null;
     if (nuevo.pais) {
-      instanciaPais = this.paisRepository.findById(nuevo.pais);
+      instanciaPais = await this.paisRepository.findById(nuevo.pais);
       if (!instanciaPais) throw new NotFoundError("PAÍS NO ENCONTRADO!");
     }
 
@@ -77,17 +72,17 @@ export default class ColectivoService {
     colectivo.id = randomUUID()
     console.log("OBJETO ANTES DE GUARDAR:", colectivo)
     //return this.incluirProyectos(this.colectivoRepository.save(colectivo))
-    return this.colectivoRepository.save(colectivo);
+    return await this.colectivoRepository.save(colectivo);
   }
-  update = (id, colectivoActualizado) => {
-    const colectivoExistente = this.colectivoRepository.findById(id)
+  update = async (id, colectivoActualizado) => {
+    const colectivoExistente = await this.colectivoRepository.findById(id)
 
     if (!colectivoExistente) throw new NotFoundError("Colectivo no encontrado")
 
     Colectivo.validarDatos(colectivoActualizado)
-    this.validarTipo(colectivoActualizado.tipo)
+    await this.validarTipo(colectivoActualizado.tipo)
 
-    const otro = this.colectivoRepository.findByNombre(
+    const otro = await this.colectivoRepository.findByNombre(
       colectivoActualizado.nombre,
     )
 
@@ -101,12 +96,12 @@ export default class ColectivoService {
     colectivoExistente.provincia = colectivoActualizado.provincia || null
     colectivoExistente.ciudad = colectivoActualizado.ciudad || null
 
-    return this.incluirProyectos(
+    return await this.incluirProyectos(
       this.colectivoRepository.save(colectivoExistente),
     )
   }
-  patch = (id, cambios) => {
-    const existente = this.getById(id)
+  patch = async (id, cambios) => {
+    const existente = await this.colectivoRepository.findById(id)
 
     return this.update(id, {
       nombre: existente.nombre,
@@ -118,8 +113,8 @@ export default class ColectivoService {
       ...cambios,
     })
   }
-  delete = (id) => {
-    this.getById(id)
-    this.colectivoRepository.delete(id)
+  delete = async (id) => {
+    await this.colectivoRepository.findById(id)
+    await this.colectivoRepository.delete(id)
   }
 }

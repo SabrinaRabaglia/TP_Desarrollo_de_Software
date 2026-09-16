@@ -3,28 +3,28 @@ export default class ColaboracionRepository {
     this.colaboraciones = []
   }
 
-  getAll() {
+  async getAll() {
     return this.colaboraciones
   }
 
-  getAllFilteredByProyecto(titulo) {
+  async getAllFilteredByProyecto(titulo) {
     return this.colaboraciones.filter((c) => c.proyecto.titulo.includes(titulo))
   }
 
-  getAllFilteredByColaborador(nombre) {
+  async getAllFilteredByColaborador(nombre) {
     return this.colaboraciones.filter(
       (c) => c.personaColaboradora.nombre === nombre,
     )
   }
 
-  findByPersonaAndProyecto(personaId, proyectoId) {
+  async findByPersonaAndProyecto(personaId, proyectoId) {
     return this.colaboraciones.find(
       (c) =>
         c.personaColaboradora.id === personaId && c.proyecto.id === proyectoId,
     )
   }
 
-  save(colaboracion) {
+  async save(colaboracion) {
     this.colaboraciones.push(colaboracion)
     return colaboracion
   }

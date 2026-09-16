@@ -26,42 +26,62 @@ export default class PersonaColaboradoraController {
     this.personaColaboradoraService = personaColaboradoraService
   }
 
-  create = (req, res) => {
-    const resultado = personaColaboradoraSchema.safeParse(req.body)
-    if (resultado.error) {
-      throw new BadRequestError("Datos inválidos", resultado.error.issues)
+  create = async (req, res, next) => {
+    try {
+      const resultado = personaColaboradoraSchema.safeParse(req.body)
+      if (resultado.error) {
+        throw new BadRequestError("Datos inválidos", resultado.error.issues)
+      }
+      const personaColaboradora = await this.personaColaboradoraService.create(
+        resultado.data,
+      )
+      res.status(201).json(personaColaboradora)
+    } catch (error) {
+      next(error)
     }
-    const personaColaboradora = this.personaColaboradoraService.create(
-      resultado.data,
-    )
-    res.status(201).json(personaColaboradora)
   }
 
-  update = (req, res) => {
-    const resultado = personaColaboradoraSchema.safeParse(req.body)
-    if (resultado.error) {
-      throw new BadRequestError("Datos inválidos", resultado.error.issues)
+  update = async (req, res, next) => {
+    try {
+      const resultado = personaColaboradoraSchema.safeParse(req.body)
+      if (resultado.error) {
+        throw new BadRequestError("Datos inválidos", resultado.error.issues)
+      }
+      const personaColaboradora = await this.personaColaboradoraService.update(
+        req.params.id,
+        resultado.data,
+      )
+      res.status(200).json(personaColaboradora)
+    } catch (error) {
+      next(error)
     }
-    const personaColaboradora = this.personaColaboradoraService.update(
-      req.params.id,
-      resultado.data,
-    )
-    res.status(200).json(personaColaboradora)
   }
 
-  delete = (req, res) => {
-    this.personaColaboradoraService.delete(req.params.id)
-    res.status(204).send()
+  delete = async (req, res, next) => {
+    try {
+      await this.personaColaboradoraService.delete(req.params.id)
+      res.status(204).send()
+    } catch (error) {
+      next(error)
+    }
   }
 
-  getById = (req, res) => {
-    const personaColaboradora = this.personaColaboradoraService.getById(
-      req.params.id,
-    )
-    res.status(200).json(personaColaboradora)
+  getById = async (req, res, next) => {
+    try {
+      const personaColaboradora = await this.personaColaboradoraService.getById(
+        req.params.id,
+      )
+      res.status(200).json(personaColaboradora)
+    } catch (error) {
+      next(error)
+    }
   }
 
-  getAll = (req, res) => {
-    res.status(200).json(this.personaColaboradoraService.getAll())
+  getAll = async (req, res, next) => {
+    try {
+      res.status(200).json(await this.personaColaboradoraService.getAll())
+    } catch (error) {
+      next(error)
+    }
   }
 }

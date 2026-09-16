@@ -10,17 +10,19 @@ export default class PersonaColaboradoraService {
     this.habilidadService = habilidadService
   }
 
-  buscarHabilidades = (ids) => {
-    return (ids ?? []).map((id) => this.habilidadService.getById(id))
+  buscarHabilidades = async (ids) => {
+    return await Promise.all(
+      (ids ?? []).map((id) => this.habilidadService.getById(id))
+    );
   }
 
-  crearCuentas = (cuentas) => {
+  crearCuentas = async (cuentas) => {
     return (cuentas ?? []).map(
       (cuenta) => new Cuenta(cuenta.nombreUsuario, cuenta.tipo),
     )
   }
 
-  create = (nueva) => {
+  create = async(nueva) => {
     const habilidades = this.buscarHabilidades(nueva.habilidades)
     const cuentas = this.crearCuentas(nueva.cuentas)
     if (nueva.cuentas && nueva.cuentas.length > 0) {
@@ -42,11 +44,11 @@ export default class PersonaColaboradoraService {
       habilidades,
     )
 
-    return this.personaColaboradoraRepository.save(personaColaboradora)
+    return await this.personaColaboradoraRepository.save(personaColaboradora)
   }}
 
-  update = (id, actualizada) => {
-    const personaExistente = this.personaColaboradoraRepository.findById(id)
+  update = async (id, actualizada) => {
+    const personaExistente = await this.personaColaboradoraRepository.findById(id)
     if (!personaExistente) {
       throw new NotFoundError("Persona colaboradora no encontrada")
     }
@@ -64,23 +66,23 @@ export default class PersonaColaboradoraService {
     personaExistente.cuentas = cuentas
     personaExistente.habilidades = habilidades
 
-    return this.personaColaboradoraRepository.save(personaExistente)
+    return await this.personaColaboradoraRepository.save(personaExistente)
   }
 
-  delete = (id) => {
-    const personaExistente = this.personaColaboradoraRepository.findById(id)
+  delete = async (id) => {
+    const personaExistente = await this.personaColaboradoraRepository.findById(id)
     if (!personaExistente) {
       throw new NotFoundError("Persona colaboradora no encontrada")
     }
-    this.personaColaboradoraRepository.deleteById(id)
+    await this.personaColaboradoraRepository.deleteById(id)
   }
 
-  getAll = () => {
-    return this.personaColaboradoraRepository.getAll()
+  getAll = async () => {
+    return await this.personaColaboradoraRepository.getAll()
   }
 
-  getById = (id) => {
-    const personaColaboradora = this.personaColaboradoraRepository.findById(id)
+  getById = async (id) => {
+    const personaColaboradora = await this.personaColaboradoraRepository.findById(id)
     if (!personaColaboradora) {
       throw new NotFoundError("Persona colaboradora no encontrada")
     }

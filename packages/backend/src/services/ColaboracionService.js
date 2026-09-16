@@ -12,17 +12,17 @@ export default class ColaboracionService {
     this.personaRepository = personaRepository
   }
 
-  create = ({ proyectoId, personaColaboradoraId }) => {
-    const proyecto = this.proyectoRepository.findById(proyectoId)
+  create = async ({ proyectoId, personaColaboradoraId }) => {
+    const proyecto = await this.proyectoRepository.findById(proyectoId)
     if (!proyecto) {
       throw new NotFoundError("Proyecto no encontrado")
     }
-    const persona = this.personaRepository.findById(personaColaboradoraId)
+    const persona = await this.personaRepository.findById(personaColaboradoraId)
     if (!persona) {
       throw new NotFoundError("Persona colaboradora no encontrada")
     }
     if (
-      this.colaboracionRepository.findByPersonaAndProyecto(
+      await this.colaboracionRepository.findByPersonaAndProyecto(
         personaColaboradoraId,
         proyectoId,
       )
@@ -43,8 +43,8 @@ export default class ColaboracionService {
     const colaboracion = new Colaboracion(persona, proyecto)
     persona.agregarColaboracion(colaboracion)
     proyecto.agregarColaboracion(colaboracion)
-    return this.colaboracionRepository.save(colaboracion)
+    return await this.colaboracionRepository.save(colaboracion)
   }
 
-  getAll = () => this.colaboracionRepository.getAll()
+  getAll = async () => await this.colaboracionRepository.getAll()
 }

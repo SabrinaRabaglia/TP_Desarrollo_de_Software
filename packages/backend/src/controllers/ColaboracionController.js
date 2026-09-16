@@ -13,16 +13,27 @@ export default class ColaboracionController {
     this.colaboracionService = colaboracionService
   }
 
-  create = (req, res) => {
-    const resultado = colaboracionSchema.safeParse(req.body)
+  create  = async (req, res, next) => {
+    try{
+      const resultado = colaboracionSchema.safeParse(req.body)
     if (resultado.error) {
       throw new BadRequestError("Datos inválidos", resultado.error.issues)
     }
-    const colaboracion = this.colaboracionService.create(resultado.data)
+    const colaboracion = await this.colaboracionService.create(resultado.data)
     res.status(201).json(colaboracion)
+    }
+    catch (error) {
+      next(error)
+    }
+
+    
   }
 
-  getAll = (_req, res) => {
-    res.status(200).json(this.colaboracionService.getAll())
+  getAll = async (_req, res, next) => {
+    try {
+      res.status(200).json(await this.colaboracionService.getAll())
+    } catch (error) {
+      next(error)
+    }
   }
 }
