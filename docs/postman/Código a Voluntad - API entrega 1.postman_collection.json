@@ -1,0 +1,1213 @@
+{
+  "info": {
+    "_postman_id": "bb5d863c-3e0f-4862-aa6f-25598aed665c",
+    "name": "Código a Voluntad - API entrega 1",
+    "description": "Importar este archivo desde Postman > Import > Files. No hace falta un environment: la colección incluye baseUrl (http://localhost:8000) y las variables para los IDs.\n\nCon el backend iniciado, ejecutar las carpetas en el orden mostrado. Las altas guardan automáticamente los IDs para las solicitudes siguientes. Los ejemplos usan nombres únicos y se pueden volver a ejecutar. Ajustar baseUrl si se usa otro puerto o servidor.\n\nIncluye healthcheck, CRUD de habilidades, personas, colectivos y proyectos, inscripción/listado de colaboraciones y cierre manual. La API no requiere autenticación y mantiene los datos en memoria.\n\nEl cierre se ejecuta después de inscribir a la persona. Una vez cerrado, el proyecto no admite nuevas inscripciones ni reapertura. Para repetir ese flujo hay que crear un proyecto nuevo.\n\nLa carpeta final Limpieza elimina el proyecto, la persona, el colectivo y la habilidad creados en la ejecución. Las colaboraciones no tienen endpoint DELETE y se conservan en memoria hasta reiniciar el backend. Omitir Limpieza si se quieren conservar los datos de ejemplo para probar manualmente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "50555524",
+    "_collection_link": "https://go.postman.co/collection/50555524-bb5d863c-3e0f-4862-aa6f-25598aed665c?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"status es ok\", () => pm.expect(pm.response.json().status).to.eql(\"ok\"))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Comprueba que la API responde con `{ status: \"ok\" }`."
+          },
+          "response": []
+        },
+        {
+          "name": "Hello",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/hello",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "hello"
+              ]
+            },
+            "description": "Endpoint de saludo disponible en el backend."
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints simples para comprobar que el backend está disponible."
+    },
+    {
+      "name": "Habilidades",
+      "item": [
+        {
+          "name": "Listar habilidades",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"devuelve un array\", () => pm.expect(pm.response.json()).to.be.an(\"array\"))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/habilidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "habilidades"
+              ]
+            },
+            "description": "Devuelve todas las habilidades almacenadas."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear habilidad",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
+                  "const respuesta = pm.response.json()",
+                  "pm.test(\"la respuesta contiene un id\", () => pm.expect(respuesta.id).to.be.a(\"string\"))",
+                  "pm.collectionVariables.set(\"habilidadId\", respuesta.id)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Programación Web / React {{runSuffix}}\",\n  \"codigo\": \"programacion_web_react_{{runSuffix}}\",\n  \"descripcion\": \"Desarrollo de interfaces web con React.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/habilidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "habilidades"
+              ]
+            },
+            "description": "Crea una habilidad y guarda su ID en `habilidadId`. El título y el código se generan con el mismo sufijo para que el request se pueda repetir."
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener habilidad",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"habilidadId\")) {",
+                  "  throw new Error(\"Ejecutá primero Habilidades > Crear habilidad.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/habilidades/{{habilidadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "habilidades",
+                "{{habilidadId}}"
+              ]
+            },
+            "description": "Obtiene la habilidad creada en el request anterior."
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar habilidad",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"habilidadId\")) {",
+                  "  throw new Error(\"Ejecutá primero Habilidades > Crear habilidad.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Diseño de APIs REST {{runSuffix}}\",\n  \"codigo\": \"diseno_de_apis_rest_{{runSuffix}}\",\n  \"descripcion\": \"Diseño y documentación de APIs REST.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/habilidades/{{habilidadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "habilidades",
+                "{{habilidadId}}"
+              ]
+            },
+            "description": "Reemplaza todos los campos de la habilidad. El código sigue coincidiendo con el título normalizado."
+          },
+          "response": []
+        }
+      ],
+      "description": "CRUD de habilidades. El código debe ser el título normalizado en minúsculas y snake_case."
+    },
+    {
+      "name": "Personas colaboradoras",
+      "item": [
+        {
+          "name": "Listar personas colaboradoras",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"devuelve un array\", () => pm.expect(pm.response.json()).to.be.an(\"array\"))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/personas-colaboradoras",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "personas-colaboradoras"
+              ]
+            },
+            "description": "Devuelve todas las personas colaboradoras almacenadas."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear persona colaboradora",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"habilidadId\")) {",
+                  "  throw new Error(\"Ejecutá primero Habilidades > Crear habilidad.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
+                  "const respuesta = pm.response.json()",
+                  "pm.test(\"la respuesta contiene un id\", () => pm.expect(respuesta.id).to.be.a(\"string\"))",
+                  "pm.collectionVariables.set(\"personaId\", respuesta.id)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreFantasia\": \"Colaborador {{runSuffix}}\",\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Gómez\",\n  \"pronombres\": [\n    \"ella\"\n  ],\n  \"presentacion\": \"Desarrolladora frontend interesada en proyectos sociales.\",\n  \"cuentas\": [\n    {\n      \"nombreUsuario\": \"ana_gomez_{{runSuffix}}\",\n      \"tipo\": \"GITHUB\"\n    }\n  ],\n  \"habilidades\": [\n    \"{{habilidadId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/personas-colaboradoras",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "personas-colaboradoras"
+              ]
+            },
+            "description": "Crea una persona, resuelve la habilidad referenciada y guarda el ID en `personaId`."
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener persona colaboradora",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"personaId\")) {",
+                  "  throw new Error(\"Ejecutá primero Personas colaboradoras > Crear persona colaboradora.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/personas-colaboradoras/{{personaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "personas-colaboradoras",
+                "{{personaId}}"
+              ]
+            },
+            "description": "Obtiene la persona creada en el request anterior."
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar persona colaboradora",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"personaId\")) {",
+                  "  throw new Error(\"Ejecutá primero Personas colaboradoras > Crear persona colaboradora.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"habilidadId\")) {",
+                  "  throw new Error(\"Ejecutá primero Habilidades > Crear habilidad.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreFantasia\": \"Colaborador actualizado {{runSuffix}}\",\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Gómez\",\n  \"pronombres\": [\n    \"ella\",\n    \"elle\"\n  ],\n  \"presentacion\": \"Desarrolladora frontend y colaboradora comunitaria.\",\n  \"cuentas\": [\n    {\n      \"nombreUsuario\": \"ana_gomez_actualizada_{{runSuffix}}\",\n      \"tipo\": \"GITLAB\"\n    }\n  ],\n  \"habilidades\": [\n    \"{{habilidadId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/personas-colaboradoras/{{personaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "personas-colaboradoras",
+                "{{personaId}}"
+              ]
+            },
+            "description": "Reemplaza todos los campos editables de la persona."
+          },
+          "response": []
+        }
+      ],
+      "description": "CRUD de personas colaboradoras. La solicitud de alta usa la habilidad creada en la carpeta anterior."
+    },
+    {
+      "name": "Colectivos",
+      "item": [
+        {
+          "name": "Listar colectivos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"devuelve un array\", () => pm.expect(pm.response.json()).to.be.an(\"array\"))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/colectivos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "colectivos"
+              ]
+            },
+            "description": "Devuelve todos los colectivos e incluye sus proyectos."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear colectivo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))\nconst respuesta = pm.response.json()\npm.test(\"la respuesta contiene un id\", () => pm.expect(respuesta.id).to.be.a(\"string\"))\npm.collectionVariables.set(\"colectivoId\", respuesta.id)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Asamblea Ambiental {{runSuffix}}\",\n  \"descripcion\": \"Grupo comunitario para la protección de humedales locales.\",\n  \"tipo\": \"Asamblea\",\n  \"pais\": \"1\"\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/colectivos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "colectivos"
+              ]
+            },
+            "description": "Crea un colectivo y guarda el ID en `colectivoId`. El tipo debe pertenecer al catálogo en memoria."
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener colectivo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"colectivoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Colectivos > Crear colectivo.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/colectivos/{{colectivoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "colectivos",
+                "{{colectivoId}}"
+              ]
+            },
+            "description": "Obtiene el colectivo creado en el request anterior."
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar colectivo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"colectivoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Colectivos > Crear colectivo.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Asamblea Ambiental Actualizada {{runSuffix}}\",\n  \"descripcion\": \"Grupo comunitario actualizado para la protección de humedales.\",\n  \"tipo\": \"Asamblea\",\n  \"pais\": \"Argentina\",\n  \"provincia\": \"Buenos Aires\",\n  \"ciudad\": \"La Plata\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/colectivos/{{colectivoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "colectivos",
+                "{{colectivoId}}"
+              ]
+            },
+            "description": "Reemplaza todos los campos del colectivo."
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar parcialmente colectivo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"colectivoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Colectivos > Crear colectivo.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ciudad\": \"Lanús\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/colectivos/{{colectivoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "colectivos",
+                "{{colectivoId}}"
+              ]
+            },
+            "description": "Actualiza solo la ciudad del colectivo."
+          },
+          "response": []
+        }
+      ],
+      "description": "CRUD de colectivos. Los tipos precargados incluyen `Fundación`, `Asociación barrial`, `ONG` y `Asamblea`. La provincia acepta `CABA`."
+    },
+    {
+      "name": "Proyectos",
+      "item": [
+        {
+          "name": "Listar proyectos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"devuelve un array\", () => pm.expect(pm.response.json()).to.be.an(\"array\"))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/proyectos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos"
+              ]
+            },
+            "description": "Devuelve todos los proyectos almacenados."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear proyecto",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"colectivoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Colectivos > Crear colectivo.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"habilidadId\")) {",
+                  "  throw new Error(\"Ejecutá primero Habilidades > Crear habilidad.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
+                  "const respuesta = pm.response.json()",
+                  "pm.test(\"la respuesta contiene un id\", () => pm.expect(respuesta.id).to.be.a(\"string\"))",
+                  "pm.collectionVariables.set(\"proyectoId\", respuesta.id)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Plataforma de Colaboración {{runSuffix}}\",\n  \"descripcion\": \"Plataforma para conectar colectivos sociales y personas voluntarias.\",\n  \"unidadCompromiso\": \"HORAS_SEMANALES\",\n  \"cantHoras\": 10,\n  \"colectivo\": \"{{colectivoId}}\",\n  \"modalidadesColaboracion\": [\n    \"GRATUITA\"\n  ],\n  \"habilidadesRequeridas\": [\n    \"{{habilidadId}}\"\n  ],\n  \"estado\": \"PUBLICADO\",\n  \"fechaAlta\": \"{{$isoTimestamp}}\",\n  \"fechaCierre\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/proyectos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos"
+              ]
+            },
+            "description": "Crea un proyecto, valida las referencias y guarda el ID en `proyectoId`."
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener proyecto",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"proyectoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Proyectos > Crear proyecto.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoId}}"
+              ]
+            },
+            "description": "Obtiene el proyecto creado en el request anterior."
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar proyecto",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"proyectoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Proyectos > Crear proyecto.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"colectivoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Colectivos > Crear colectivo.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"habilidadId\")) {",
+                  "  throw new Error(\"Ejecutá primero Habilidades > Crear habilidad.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Plataforma de Colaboración Actualizada {{runSuffix}}\",\n  \"descripcion\": \"Proyecto actualizado para conectar organizaciones y voluntariado.\",\n  \"unidadCompromiso\": \"HORAS_MENSUALES\",\n  \"cantHoras\": 20,\n  \"colectivo\": \"{{colectivoId}}\",\n  \"modalidadesColaboracion\": [\n    \"GRATUITA\",\n    \"CON_POSIBILIDAD_CONTRATACION\"\n  ],\n  \"habilidadesRequeridas\": [\n    \"{{habilidadId}}\"\n  ],\n  \"estado\": \"PUBLICADO\",\n  \"fechaAlta\": \"{{$isoTimestamp}}\",\n  \"fechaCierre\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoId}}"
+              ]
+            },
+            "description": "Reemplaza todos los campos del proyecto."
+          },
+          "response": []
+        }
+      ],
+      "description": "CRUD de proyectos. La solicitud de alta requiere un colectivo y una habilidad existentes."
+    },
+    {
+      "name": "Colaboraciones",
+      "item": [
+        {
+          "name": "Inscribir persona al proyecto",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"personaId\")) throw new Error(\"Ejecutá primero las altas de persona y proyecto.\")",
+                  "if (!pm.collectionVariables.get(\"proyectoId\")) throw new Error(\"Ejecutá primero las altas de persona y proyecto.\")"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
+                  "const respuesta = pm.response.json()",
+                  "pm.test(\"asocia la persona y el proyecto\", () => {",
+                  "  pm.expect(respuesta.personaColaboradora.id).to.eql(pm.collectionVariables.get(\"personaId\"))",
+                  "  pm.expect(respuesta.proyecto.id).to.eql(pm.collectionVariables.get(\"proyectoId\"))",
+                  "})",
+                  "pm.test(\"registra la fecha de inscripción\", () => pm.expect(respuesta.fechaInscripcion).to.be.a(\"string\"))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personaColaboradoraId\": \"{{personaId}}\",\n  \"proyectoId\": \"{{proyectoId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/colaboraciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "colaboraciones"
+              ]
+            },
+            "description": "Exige al menos una habilidad coincidente. Devuelve 409 si ya está inscripta, 422 si el proyecto está cerrado y 404 si falta alguna entidad."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar colaboraciones",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "const respuesta = pm.response.json()",
+                  "pm.test(\"devuelve un array\", () => pm.expect(respuesta).to.be.an(\"array\"))",
+                  "pm.test(\"incluye la inscripción creada\", () => pm.expect(respuesta.some(c => c.personaColaboradora.id === pm.collectionVariables.get(\"personaId\") && c.proyecto.id === pm.collectionVariables.get(\"proyectoId\"))).to.eql(true))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/colaboraciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "colaboraciones"
+              ]
+            },
+            "description": "Devuelve las colaboraciones con referencias resumidas a la persona y al proyecto."
+          },
+          "response": []
+        }
+      ],
+      "description": "Ejecutar después de crear y actualizar la persona y el proyecto. Ambos comparten la habilidad creada al comienzo."
+    },
+    {
+      "name": "Cierre del proyecto",
+      "item": [
+        {
+          "name": "Cerrar proyecto",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"proyectoId\")) throw new Error(\"Ejecutá primero las altas de persona y proyecto.\")"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))\nconst respuesta = pm.response.json()\npm.test(\"proyecto cerrado\", () => pm.expect(respuesta.estado).to.eql(\"CERRADO\"))\npm.test(\"registra la fecha de cierre\", () => pm.expect(respuesta.fechaCierre).to.be.a(\"string\"))\npm.test(\"conserva la colaboración\", () => pm.expect(respuesta.colaboraciones.some(c => c.personaColaboradora.id === pm.collectionVariables.get(\"personaId\"))).to.eql(true))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoId}}"
+              ]
+            },
+            "description": "No requiere body. Responde 200 al cerrar, 409 si ya estaba cerrado y 404 si el proyecto no existe. La fecha la genera el servidor."
+          },
+          "response": []
+        }
+      ],
+      "description": "Ejecutar después de la inscripción. Conserva las colaboraciones existentes y bloquea nuevas inscripciones."
+    },
+    {
+      "name": "Limpieza",
+      "item": [
+        {
+          "name": "Eliminar proyecto",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"proyectoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Proyectos > Crear proyecto.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 204\", () => pm.response.to.have.status(204))",
+                  "pm.collectionVariables.unset(\"proyectoId\")"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoId}}"
+              ]
+            },
+            "description": "Elimina el proyecto y limpia `proyectoId`."
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar persona colaboradora",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"personaId\")) {",
+                  "  throw new Error(\"Ejecutá primero Personas colaboradoras > Crear persona colaboradora.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 204\", () => pm.response.to.have.status(204))",
+                  "pm.collectionVariables.unset(\"personaId\")"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/personas-colaboradoras/{{personaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "personas-colaboradoras",
+                "{{personaId}}"
+              ]
+            },
+            "description": "Elimina la persona y limpia `personaId`."
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar colectivo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"colectivoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Colectivos > Crear colectivo.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 204\", () => pm.response.to.have.status(204))",
+                  "pm.collectionVariables.unset(\"colectivoId\")"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/colectivos/{{colectivoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "colectivos",
+                "{{colectivoId}}"
+              ]
+            },
+            "description": "Elimina el colectivo y limpia `colectivoId`."
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar habilidad",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"habilidadId\")) {",
+                  "  throw new Error(\"Ejecutá primero Habilidades > Crear habilidad.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 204\", () => pm.response.to.have.status(204))",
+                  "pm.collectionVariables.unset(\"habilidadId\")"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/habilidades/{{habilidadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "habilidades",
+                "{{habilidadId}}"
+              ]
+            },
+            "description": "Elimina la habilidad y limpia `habilidadId`."
+          },
+          "response": []
+        }
+      ],
+      "description": "Solicitudes DELETE para limpiar los recursos creados por la ejecución. Ejecutá esta carpeta al final y en el orden mostrado."
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const suffix = `${Date.now()}_${Math.floor(Math.random() * 100000)}`",
+          "pm.collectionVariables.set(\"runSuffix\", suffix)"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "runSuffix",
+      "value": ""
+    }
+  ]
+}
