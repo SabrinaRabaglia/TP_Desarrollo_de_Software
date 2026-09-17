@@ -57,6 +57,7 @@ export default class HabilidadService {
 
   getById = async (id) => {
     const habilidad = await this.habilidadRepository.findById(id)
+    
     if (!habilidad) {
       throw new NotFoundError("Habilidad no encontrada")
     }

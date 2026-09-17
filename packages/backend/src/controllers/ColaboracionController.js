@@ -11,6 +11,7 @@ const colaboracionSchema = z
 export default class ColaboracionController {
   constructor(colaboracionService) {
     this.colaboracionService = colaboracionService
+    
   }
 
   create  = async (req, res, next) => {

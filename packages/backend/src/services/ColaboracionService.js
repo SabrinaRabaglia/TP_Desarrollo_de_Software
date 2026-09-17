@@ -1,4 +1,7 @@
 import Colaboracion from "../domain/Colaboracion.js"
+import ColaboracionRepository from "../repositories/ColaboracionRepository.js"
+import ProyectoRepository from "../repositories/ProyectoRepository.js"
+import PersonaColaboradoraRepository from "../repositories/PersonaColaboradoraRepository.js"
 import {
   BadRequestError,
   ConflictError,
@@ -6,8 +9,9 @@ import {
 } from "../errors/AppError.js"
 
 export default class ColaboracionService {
-  constructor(colaboracionRepository, proyectoRepository, personaRepository) {
-    this.colaboracionRepository = colaboracionRepository
+  constructor(colaboracionRepository = new ColaboracionRepository()
+    , proyectoRepository = new ProyectoRepository(), personaRepository = new PersonaColaboradoraRepository()) {
+    this.colaboracionRepository = colaboracionRepository 
     this.proyectoRepository = proyectoRepository
     this.personaRepository = personaRepository
   }

@@ -23,7 +23,7 @@ export default class PersonaColaboradoraService {
   }
 
   create = async(nueva) => {
-    const habilidades = this.buscarHabilidades(nueva.habilidades)
+    const habilidades = await this.buscarHabilidades(nueva.habilidades)
     const cuentas = this.crearCuentas(nueva.cuentas)
     if (nueva.cuentas && nueva.cuentas.length > 0) {
       nueva.cuentas.forEach(cuenta => {

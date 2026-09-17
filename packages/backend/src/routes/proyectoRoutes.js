@@ -8,8 +8,6 @@ import ColectivoRepository from "../repositories/ColectivoRepository.js"
 import HabilidadService from "../services/HabilidadService.js"
 import HabilidadRepository from "../repositories/HabilidadRepository.js"
 
-//Falta agregar de pais y provincias
-
 const routes = Router()
 
 const proyectoRepository = new ProyectoRepository()
@@ -32,3 +30,4 @@ routes.get("/proyectos/:id", proyectoController.getById)
 routes.put("/proyectos/:id", proyectoController.put)
 routes.delete("/proyectos/:id", proyectoController.delete)
 routes.patch("/proyectos/:id", proyectoController.cerrar)
+export default routes

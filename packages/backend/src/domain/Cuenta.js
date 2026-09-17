@@ -1,4 +1,4 @@
-import { DomainValidationError } from "../errors/DomainErrors.js"
+import { DomainValidationError } from "./errors/DomainErrors.js"
 
 export default class Cuenta {
   constructor(nombreUsuario, tipo) {

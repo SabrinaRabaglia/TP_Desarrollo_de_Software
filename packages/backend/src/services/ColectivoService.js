@@ -1,5 +1,10 @@
 import { randomUUID } from "node:crypto"
 import Colectivo from "../domain/Colectivo.js"
+import  ColectivoRepository  from "../repositories/ColectivoRepository.js"
+import  TipoColectivoRepository  from "../repositories/TipoColectivoRepository.js"
+import  ProyectoRepository  from "../repositories/ProyectoRepository.js"
+import  ProvinciaRepository  from "../repositories/ProvinciaRepository.js"
+import  PaisRepository  from "../repositories/PaisRepository.js"
 import {
   ConflictError,
   NotFoundError,
@@ -8,16 +13,22 @@ import {
 
 export default class ColectivoService {
   constructor(
-    colectivoRepository,
-    tipoColectivoRepository,
-    proyectoRepository,
-    provinciaRepository,
+    colectivoRepository = new ColectivoRepository(),
+    tipoColectivoRepository = new TipoColectivoRepository(),
+    proyectoRepository = new ProyectoRepository(),
+    provinciaRepository = new ProvinciaRepository(),
+    paisRepository = new PaisRepository()
   ) {
     this.colectivoRepository = colectivoRepository
     this.tipoColectivoRepository = tipoColectivoRepository
     this.proyectoRepository = proyectoRepository
     this.provinciaRepository = provinciaRepository
+    this.paisRepository = paisRepository
   }
+  incluirProyectos = (colectivo) => ({
+    ...colectivo,
+    proyectos: this.proyectoRepository.findByColectivoId(colectivo.id),
+  })
 
   getAll = async () => {
     return (await this.colectivoRepository.findAll()).map(this.incluirProyectos)

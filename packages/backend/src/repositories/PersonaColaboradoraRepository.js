@@ -1,34 +1,35 @@
 export default class PersonaColaboradoraRepository {
+  static personas = [];
   constructor() {
-    this.personasColaboradoras = []
+    //this.personasColaboradoras = []
   }
 
   async getAll() {
-    return this.personasColaboradoras
+    return PersonaColaboradoraRepository.personas
   }
 
   async findById(id) {
-    return this.personasColaboradoras.find((p) => p.id === id)
+    return PersonaColaboradoraRepository.personas.find((p) => p.id === id)
   }
 
   async deleteById(id) {
-    const indice = this.personasColaboradoras.findIndex((p) => p.id === id)
+    const indice = PersonaColaboradoraRepository.personas.findIndex((p) => p.id === id)
     if (indice === -1) {
       return false
     }
-    this.personasColaboradoras.splice(indice, 1)
+    PersonaColaboradoraRepository.personas.splice(indice, 1)
     return true
   }
 
   async save(personaColaboradora) {
-    const indice = this.personasColaboradoras.findIndex(
+    const indice = PersonaColaboradoraRepository.personas.findIndex(
       (p) => p.id === personaColaboradora.id,
     )
     if (indice === -1) {
-      this.personasColaboradoras.push(personaColaboradora)
+      PersonaColaboradoraRepository.personas.push(personaColaboradora)
       return personaColaboradora
     }
-    this.personasColaboradoras[indice] = personaColaboradora
+    PersonaColaboradoraRepository.personas[indice] = personaColaboradora
     return personaColaboradora
   }
 }

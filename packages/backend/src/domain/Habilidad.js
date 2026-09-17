@@ -1,4 +1,4 @@
-import { DomainValidationError } from "../errors/DomainErrors.js"
+import { DomainValidationError } from "./errors/DomainErrors.js"
 export default class Habilidad {
   constructor(titulo, codigo, descripcion) {
     Habilidad.validarDatos({ titulo, codigo, descripcion })

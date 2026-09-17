@@ -1,6 +1,11 @@
 import express from "express"
 import cors from "cors"
-import routes from "./routes.js"
+import routes from "./routes/routes.js"
+import colaboracionRoutes from "./routes/colaboracionRoutes.js"
+import colectivoRoutes from "./routes/colectivoRoutes.js"
+import habilidadRoutes from "./routes/habilidadRoutes.js"
+import personaColaboradoraRoutes from "./routes/personaColaboradoraRoutes.js"
+import proyectoRoutes from "./routes/proyectoRoutes.js"
 import { NotFoundError } from "./errors/AppError.js"
 import errorHandler from "./middlewares/errorHandler.js"
 import Colaboracion from "./domain/Colaboracion.js"
@@ -32,6 +37,11 @@ app.use(
 
 app.use(express.json())
 app.use(routes)
+app.use(colaboracionRoutes)
+app.use(colectivoRoutes)
+app.use(habilidadRoutes)
+app.use(personaColaboradoraRoutes)
+app.use(proyectoRoutes)
 
 app.use("/health", routes)
 

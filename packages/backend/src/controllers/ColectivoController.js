@@ -1,6 +1,14 @@
 import { z } from "zod"
 import { BadRequestError } from "../errors/AppError.js"
 
+
+//import ColectivoRepository from "../repositories/ColectivoRepository.js"
+//import TipoColectivoRepository from "../repositories/TipoColectivoRepository.js"
+//import ProyectoRepository from "../repositories/ProyectoRepository.js"
+//import ProvinciaRepository from "../repositories/ProvinciaRepository.js"
+//import PaisRepository from "../repositories/PaisRepository.js"
+
+
 const colectivoSchema = z
   .object({
     nombre: z.string(),
@@ -14,6 +22,11 @@ const colectivoSchema = z
 export default class ColectivoController {
   constructor(colectivoService) {
     this.colectivoService = colectivoService
+    //new ColectivoRepository(),
+    //  new TipoColectivoRepository(),
+    //  new ProyectoRepository(),
+    //  new ProvinciaRepository(),
+    //  new PaisRepository()
   }
 
   getAll = async (req, res, next) => {

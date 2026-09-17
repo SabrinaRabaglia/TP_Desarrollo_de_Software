@@ -15,3 +15,4 @@ routes.get("/habilidades", habilidadController.getAll)
 routes.get("/habilidades/:id", habilidadController.getById)
 routes.put("/habilidades/:id", habilidadController.update)
 routes.delete("/habilidades/:id", habilidadController.delete)
+export default routes

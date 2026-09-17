@@ -2,15 +2,22 @@ import { randomUUID } from "node:crypto"
 import { ConflictError, NotFoundError } from "../errors/AppError.js"
 import { Proyecto } from "../domain/Proyecto.js"
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
-import { ModalidadColaboracion } from "../domain/enum/ModalidadColaboracion.js"
+import { ModalidadColaboracion } from "../domain/enums/ModalidadColaboracion.js"
 import {  UnprocessableEntityError } from "../errors/AppError.js"
+
+import  ProyectoRepository  from "../repositories/ProyectoRepository.js"
+import  ColectivoService  from "./ColectivoService.js"
+import  HabilidadService  from "./HabilidadService.js"
 
 
 export default class ProyectoService {
-  constructor(proyectoRepository, colectivoService, habilidadService) {
+  constructor(proyectoRepository = new ProyectoRepository(),
+    colectivoService = new ColectivoService(),
+    habilidadService = new HabilidadService()) {
     this.proyectoRepository = proyectoRepository
     this.colectivoService = colectivoService
     this.habilidadService = habilidadService
+
   }
 
   getAll = async () => {
@@ -46,11 +53,11 @@ export default class ProyectoService {
   }
 
   create = async (nuevo) => {
-    if (nuevo.titulo && this.proyectoRepository.findByTitulo?.(nuevo.titulo)) {
+    if (nuevo.titulo && await this.proyectoRepository.findByTitulo?.(nuevo.titulo)) {
       throw new ConflictError("PROYECTO EXISTENTE!")
     }
 
-    this.validarReferencias(nuevo)
+    await this.validarReferencias(nuevo)
 
     const proyecto = new Proyecto(
       nuevo.titulo,

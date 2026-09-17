@@ -1,5 +1,5 @@
 import { EstadoProyecto } from "./enums/EstadoProyecto.js"
-import { DomainValidationError,DomainRuleError } from "../errors/DomainErrors.js"
+import { DomainValidationError,DomainRuleError } from "./errors/DomainErrors.js"
 
 export default class Proyecto {
   constructor(

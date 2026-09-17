@@ -1,36 +1,36 @@
 export default class HabilidadRepository {
+  static habilidades = []
   constructor() {
-    this.habilidades = []
   }
 
   async getAll() {
-    return this.habilidades
+    return HabilidadRepository.habilidades
   }
 
   async findByCodigo(codigo) {
-    return this.habilidades.find((h) => h.codigo === codigo)
+    return HabilidadRepository.habilidades.find((h) => h.codigo === codigo)
   }
 
   async findById(id) {
-    return this.habilidades.find((h) => h.id === id)
+    return HabilidadRepository.habilidades.find((h) => h.id === id)
   }
 
   async deleteById(id) {
-    const indice = this.habilidades.findIndex((h) => h.id === id)
+    const indice = HabilidadRepository.habilidades.findIndex((h) => h.id === id)
     if (indice === -1) {
       return false
     }
-    this.habilidades.splice(indice, 1)
+    HabilidadRepository.habilidades.splice(indice, 1)
     return true
   }
 
   async save(habilidad) {
-    const indice = this.habilidades.findIndex((h) => h.id === habilidad.id)
+    const indice = HabilidadRepository.habilidades.findIndex((h) => h.id === habilidad.id)
     if (indice === -1) {
-      this.habilidades.push(habilidad)
+      HabilidadRepository.habilidades.push(habilidad)
       return habilidad
     }
-    this.habilidades[indice] = habilidad
+    HabilidadRepository.habilidades[indice] = habilidad
     return habilidad
   }
 }

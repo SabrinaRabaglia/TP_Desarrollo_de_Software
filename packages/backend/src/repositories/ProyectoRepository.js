@@ -1,38 +1,42 @@
 export default class ProyectoRepository {
+  
+  static proyectos = []
+  
   constructor() {
-    this.proyectos = []
+
+    //this.proyectos = []
   }
 
   async findAll() {
-    return this.proyectos
+    return ProyectoRepository.proyectos
   }
 
   async findById(id) {
-    return this.proyectos.find((c) => c.id === id)
+    return ProyectoRepository.proyectos.find((c) => c.id === id)
   }
 
   async   findByTitulo(titulo) {
-    return this.proyectos.find((c) => c.titulo === titulo)
+    return ProyectoRepository.proyectos.find((c) => c.titulo === titulo)
   }
 
   async findByColectivoId(colectivoId) {
-    return this.proyectos.filter(
+    return ProyectoRepository.proyectos.filter(
       (proyecto) => proyecto.colectivo === colectivoId,
     )
   }
 
   async save(nuevo) {
-    const indice = this.proyectos.findIndex((p) => p.id === nuevo.id)
+    const indice = ProyectoRepository.proyectos.findIndex((p) => p.id === nuevo.id)
     if (indice === -1) {
-      this.proyectos.push(nuevo)
+      ProyectoRepository.proyectos.push(nuevo)
       return nuevo
     }
-    this.proyectos[indice] = nuevo
+    ProyectoRepository.proyectos[indice] = nuevo
     return nuevo
   }
 
   async delete(id) {
-    this.proyectos = this.proyectos.filter((c) => c.id !== id)
+    ProyectoRepository.proyectos = ProyectoRepository.proyectos.filter((c) => c.id !== id)
   }
 }
 

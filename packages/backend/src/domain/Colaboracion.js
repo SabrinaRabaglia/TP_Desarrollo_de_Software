@@ -1,4 +1,4 @@
-import { DomainValidationError } from "../errors/DomainValidationError.js"
+import { DomainValidationError } from "./errors/DomainErrors.js"
 
 export default class Colaboracion {
   constructor(personaColaboradora, proyecto) {
