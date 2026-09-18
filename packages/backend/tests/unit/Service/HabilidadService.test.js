@@ -1,4 +1,4 @@
-import { describe, expect, test } from "@jest/globals"
+import { describe, expect, test, beforeEach } from "@jest/globals"
 import HabilidadService from "../../../src/services/HabilidadService.js"
 import HabilidadRepository from "../../../src/repositories/HabilidadRepository.js"
 import {
@@ -8,11 +8,17 @@ import {
 import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 
 describe("HabilidadService", () => {
+
+  // Limpiamos la memoria estática antes de cada test para evitar colisiones
+  beforeEach(() => {
+    new HabilidadRepository().deleteAll()
+  })
+
   describe("create", () => {
     test("crea y guarda una habilidad cuando el código no existe todavía", async () => {
       const service = new HabilidadService(new HabilidadRepository())
       const nueva = {
-        titulo: "  Programación   Web / React  ",
+        titulo: "   Programación    Web / React   ",
         codigo: "programacion_web_react",
         descripcion: "desc",
       }
@@ -27,14 +33,15 @@ describe("HabilidadService", () => {
     test("tira ConflictError si ya existe una habilidad con el mismo código", async () => {
       const service = new HabilidadService(new HabilidadRepository())
       await service.create({ titulo: "React", codigo: "react", descripcion: "desc" })
-      const crearHabilidadConCodigoRepetido = () =>
-        service.create({
+      
+      const crearHabilidadConCodigoRepetido = async () =>
+        await service.create({
           titulo: "REACT",
           codigo: "react",
           descripcion: "otra desc",
         })
 
-      expect(await crearHabilidadConCodigoRepetido).rejects.toThrow(ConflictError)
+      await expect(crearHabilidadConCodigoRepetido()).rejects.toThrow(ConflictError)
       expect(await service.getAll()).toHaveLength(1)
     })
 
@@ -42,12 +49,12 @@ describe("HabilidadService", () => {
       const service = new HabilidadService(new HabilidadRepository())
 
       await expect(
-  service.create({
-    titulo: "Desarrollo Web React",
-    codigo: "react",
-    descripcion: "desc",
-  })
-).rejects.toThrow(DomainValidationError)
+        service.create({
+          titulo: "Desarrollo Web React",
+          codigo: "react",
+          descripcion: "desc",
+        })
+      ).rejects.toThrow(DomainValidationError)
 
       expect(await service.getAll()).toEqual([])
     })
@@ -93,16 +100,16 @@ describe("HabilidadService", () => {
       expect(actualizada.descripcion).toBe("nueva desc")
     })
 
-    test("tira NotFoundError si el id no corresponde a ninguna habilidad", async  () => {
+    test("tira NotFoundError si el id no corresponde a ninguna habilidad", async () => {
       const service = new HabilidadService(new HabilidadRepository())
-      const actualizarHabilidadInexistente = () =>
+      
+      await expect(
         service.update("id-inexistente", {
           titulo: "x",
           codigo: "y",
           descripcion: "z",
         })
-
-      expect(actualizarHabilidadInexistente).rejects.toThrow(NotFoundError)
+      ).rejects.toThrow(NotFoundError)
     })
 
     test("tira ConflictError si el nuevo código pertenece a OTRA habilidad existente", async () => {
@@ -114,15 +121,15 @@ describe("HabilidadService", () => {
       })
       await service.create({ titulo: "Node", codigo: "node", descripcion: "desc" })
 
-      const actualizarConCodigoDeOtra = () =>
+      await expect(
         service.update(react.id, {
           titulo: "Node",
           codigo: "node",
           descripcion: "desc",
         })
-
-      expect(actualizarConCodigoDeOtra).rejects.toThrow(DomainValidationError)
+      ).rejects.toThrow(ConflictError) // Ajustado a ConflictError que es el que lanza el servicio por duplicado
     })
+
     test("permite actualizar una habilidad conservando su propio código (no es conflicto consigo misma)", async () => {
       const service = new HabilidadService(new HabilidadRepository())
       const habilidad = await service.create({
@@ -151,14 +158,14 @@ describe("HabilidadService", () => {
       const antes = { ...habilidad }
 
       await expect(
-  service.update(habilidad.id, {
-    titulo: "Desarrollo Web React",
-    codigo: "react",
-    descripcion: "Nueva descripción",
-  })
-).rejects.toThrow(DomainValidationError)
+        service.update(habilidad.id, {
+          titulo: "Desarrollo Web React",
+          codigo: "react",
+          descripcion: "Nueva descripción",
+        })
+      ).rejects.toThrow(DomainValidationError)
 
-      expect( await service.getById(habilidad.id)).toEqual(antes)
+      expect(await service.getById(habilidad.id)).toEqual(antes)
     })
   })
 
@@ -178,9 +185,8 @@ describe("HabilidadService", () => {
 
     test("tira NotFoundError si el id no corresponde a ninguna habilidad", async () => {
       const service = new HabilidadService(new HabilidadRepository())
-      const borrarHabilidadInexistente = () => service.delete("id-inexistente")
-
-      expect(await borrarHabilidadInexistente).rejects.toThrow(NotFoundError)
+      
+      await expect(service.delete("id-inexistente")).rejects.toThrow(NotFoundError)
     })
   })
 
@@ -195,14 +201,13 @@ describe("HabilidadService", () => {
 
       const encontrada = await service.getById(habilidad.id)
 
-      expect(encontrada).toBe(habilidad)
+      expect(encontrada).toEqual(habilidad)
     })
 
     test("tira NotFoundError si el id no corresponde a ninguna habilidad", async () => {
       const service = new HabilidadService(new HabilidadRepository())
-      const buscarHabilidadInexistente = async () => await service.getById("id-inexistente")
 
-      expect(await buscarHabilidadInexistente).rejects.toThrow(NotFoundError)
+      await expect(service.getById("id-inexistente")).rejects.toThrow(NotFoundError)
     })
   })
 

@@ -22,18 +22,20 @@ export default class PersonaColaboradoraService {
     )
   }
 
-  create = async(nueva) => {
+  create = async (nueva) => {
+   
     const habilidades = await this.buscarHabilidades(nueva.habilidades)
     const cuentas = this.crearCuentas(nueva.cuentas)
-    if (nueva.cuentas && nueva.cuentas.length > 0) {
-      nueva.cuentas.forEach(cuenta => {
-        
-        if (!Object.values(TipoCuenta).includes(cuenta.tipo)) {
-            throw new UnprocessableEntityError(`Tipo de cuenta inválido: ${cuenta.tipo}`);
-        }
-    });
 
+    if (nueva.cuentas && nueva.cuentas.length > 0) {
+      nueva.cuentas.forEach((cuenta) => {
+        if (!Object.values(TipoCuenta).includes(cuenta.tipo)) {
+          throw new UnprocessableEntityError(`Tipo de cuenta inválido: ${cuenta.tipo}`)
+        }
+      })
     }
+
+   
     const personaColaboradora = new PersonaColaboradora(
       nueva.nombreFantasia,
       nueva.nombre,

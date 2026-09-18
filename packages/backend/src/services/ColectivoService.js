@@ -25,13 +25,14 @@ export default class ColectivoService {
     this.provinciaRepository = provinciaRepository
     this.paisRepository = paisRepository
   }
-  incluirProyectos = (colectivo) => ({
+  incluirProyectos = async (colectivo) => ({
     ...colectivo,
-    proyectos: this.proyectoRepository.findByColectivoId(colectivo.id),
+    proyectos: await this.proyectoRepository.findByColectivoId(colectivo.id),
   })
 
   getAll = async () => {
-    return (await this.colectivoRepository.findAll()).map(this.incluirProyectos)
+    const colectivos = await this.colectivoRepository.findAll()
+    return await Promise.all(colectivos.map(this.incluirProyectos))
   }
 
   getById = async (id) => {
@@ -39,7 +40,7 @@ export default class ColectivoService {
     if (!colectivo) {
       throw new NotFoundError("COLECTIVO NO ENCONTRADO!")
     }
-    return this.incluirProyectos(colectivo)
+    return await this.incluirProyectos(colectivo)
   }
   validarTipo = async(tipo) => {
     if (!await this.tipoColectivoRepository.findByNombre(tipo)) {
@@ -81,8 +82,7 @@ export default class ColectivoService {
       nuevo.ciudad,
     )
     colectivo.id = randomUUID()
-    console.log("OBJETO ANTES DE GUARDAR:", colectivo)
-    //return this.incluirProyectos(this.colectivoRepository.save(colectivo))
+    
     return await this.colectivoRepository.save(colectivo);
   }
   update = async (id, colectivoActualizado) => {
@@ -99,7 +99,11 @@ export default class ColectivoService {
 
     if (otro && otro.id !== colectivoExistente.id)
       throw new ConflictError("COLECTIVO EXISTENTE!")
-
+    let instanciaProvincia = null;
+    if (colectivoActualizado.provincia) {
+      instanciaProvincia = await this.provinciaRepository.findById(colectivoActualizado.provincia);
+      if (!instanciaProvincia) throw new UnprocessableEntityError("PROVINCIA NO ENCONTRADA!");
+    }
     colectivoExistente.nombre = colectivoActualizado.nombre
     colectivoExistente.descripcion = colectivoActualizado.descripcion
     colectivoExistente.tipo = colectivoActualizado.tipo
@@ -107,9 +111,8 @@ export default class ColectivoService {
     colectivoExistente.provincia = colectivoActualizado.provincia || null
     colectivoExistente.ciudad = colectivoActualizado.ciudad || null
 
-    return await this.incluirProyectos(
-      this.colectivoRepository.save(colectivoExistente),
-    )
+    const colectivoGuardado = await this.colectivoRepository.save(colectivoExistente)
+    return await this.incluirProyectos(colectivoGuardado)
   }
   patch = async (id, cambios) => {
     const existente = await this.colectivoRepository.findById(id)

@@ -8,6 +8,7 @@ import {
   NotFoundError,
   UnprocessableEntityError,
 } from "../../../src/errors/AppError.js"
+import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 
 describe("PersonaColaboradoraService", () => {
   let repository
@@ -17,6 +18,8 @@ describe("PersonaColaboradoraService", () => {
 
   beforeEach(() => {
     repository = new PersonaColaboradoraRepository()
+    repository.deleteAll() // Limpiamos la memoria estática antes de cada test
+    
     habilidad = new Habilidad("React", "react", "Desarrollo web")
     const habilidadService = {
       getById: jest.fn(async (id) => {
@@ -47,7 +50,7 @@ describe("PersonaColaboradoraService", () => {
   })
 
   test("rechaza una habilidad inexistente sin guardar la persona", async () => {
-    await expect(() =>
+    await expect(
       service.create({
         ...datos,
         habilidades: [habilidad.id, "habilidad-inexistente"],
@@ -77,7 +80,7 @@ describe("PersonaColaboradoraService", () => {
     const persona = await service.create(datos)
     const antes = { ...persona }
 
-    expect(() =>
+    await expect(
       service.update(persona.id, {
         nombreFantasia: "No debe guardarse",
         habilidades: ["habilidad-inexistente"],
@@ -91,13 +94,13 @@ describe("PersonaColaboradoraService", () => {
     const persona = await service.create(datos)
     const antes = { ...persona }
 
-    await expect(() =>
+    await expect(
       service.update(persona.id, {
         ...datos,
         nombreFantasia: "",
         presentacion: "No debe guardarse",
       }),
-    ).rejects.toThrow(UnprocessableEntityError)
+    ).rejects.toThrow(DomainValidationError)
 
     expect(await repository.findById(persona.id)).toEqual(antes)
   })

@@ -20,7 +20,7 @@ export default class TipoColectivoRepository {
         "El tipo de colectivo debe tener un nombre.",
       )
     }
-    const existente = this.findByNombre(tipo.nombre)
+    const existente = await this.findByNombre(tipo.nombre)
     if (existente) return existente
 
     this.tipos.push(tipo)

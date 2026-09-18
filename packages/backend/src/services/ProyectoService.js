@@ -86,11 +86,12 @@ export default class ProyectoService {
     ) {
       throw new ConflictError("No se puede reabrir un proyecto cerrado")
     }
-
+    const existenteConMismoTitulo = await this.proyectoRepository.findByTitulo?.(proyectoActualizado.titulo)
     if (
       proyectoActualizado.titulo &&
       proyectoActualizado.titulo !== proyectoExistente.titulo &&
-      this.proyectoRepository.findByTitulo?.(proyectoActualizado.titulo)
+      existenteConMismoTitulo &&
+      existenteConMismoTitulo.id !== id
     ) {
       throw new ConflictError("PROYECTO EXISTENTE!")
     }
@@ -100,7 +101,7 @@ export default class ProyectoService {
       ...proyectoActualizado,
     }
     Proyecto.validarDatos(datosActualizados)
-    this.validarReferencias(datosActualizados)
+    await this.validarReferencias(datosActualizados)
 
     Object.assign(proyectoExistente, proyectoActualizado)
 

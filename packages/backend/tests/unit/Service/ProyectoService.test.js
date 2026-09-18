@@ -11,6 +11,7 @@ import {
   NotFoundError,
   UnprocessableEntityError,
 } from "../../../src/errors/AppError.js"
+import { DomainValidationError, DomainRuleError } from "../../../src/domain/errors/DomainErrors.js"
 import { EstadoProyecto } from "../../../src/domain/enums/EstadoProyecto.js"
 import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColaboracion.js"
 import { UnidadCompromiso } from "../../../src/domain/enums/UnidadCompromiso.js"
@@ -19,33 +20,46 @@ describe("ProyectoService", () => {
   let service
   let colectivoService
   let habilidadService
+  let proyectoRepository
   let dtoProyectoValido
 
   beforeEach(async () => {
-    const proyectoRepository = new ProyectoRepository()
+    proyectoRepository = new ProyectoRepository()
+    const colectivoRepository = new ColectivoRepository()
+    const tipoColectivoRepository = new TipoColectivoRepository()
+    const habilidadRepository = new HabilidadRepository()
+
+    proyectoRepository.deleteAll()
+    colectivoRepository.deleteAll()
+    habilidadRepository.deleteAll()
+
     colectivoService = new ColectivoService(
-      new ColectivoRepository(),
-      new TipoColectivoRepository(),
+      colectivoRepository,
+      tipoColectivoRepository,
       proyectoRepository,
     )
-    habilidadService = new HabilidadService(new HabilidadRepository())
+    habilidadService = new HabilidadService(habilidadRepository)
     service = new ProyectoService(
       proyectoRepository,
       colectivoService,
       habilidadService,
     )
+
     const colectivo = await colectivoService.create({
       nombre: "Asamblea Ambiental",
       descripcion: "Protección de humedales",
       tipo: "Asamblea",
     })
-    const habilidades = ["JavaScript", "Node"].map((titulo) =>
-      habilidadService.create({
+    
+    const habilidades = []
+    for (const titulo of ["JavaScript", "Node"]) {
+      const h = await habilidadService.create({
         titulo,
         codigo: titulo.toLowerCase(),
         descripcion: titulo,
-      }),
-    )
+      })
+      habilidades.push(h)
+    }
 
     dtoProyectoValido = {
       titulo: "Plataforma de Colaboración",
@@ -68,28 +82,31 @@ describe("ProyectoService", () => {
     })
     const proyecto = await service.create(dtoProyectoValido)
 
-    expect( await colectivoService.getById(origenId).proyectos).toEqual([proyecto])
-    expect(await colectivoService.getById(destino.id).proyectos).toEqual([])
+    const colectivoOrigen = await colectivoService.getById(origenId)
+expect(colectivoOrigen.proyectos).toEqual([proyecto])
+    expect((await colectivoService.getById(destino.id)).proyectos).toEqual([])
     expect(
       (await colectivoService.getAll()).find((c) => c.id === origenId).proyectos,
     ).toEqual([proyecto])
 
-    service.update(proyecto.id, { colectivo: destino.id })
+    await service.update(proyecto.id, { colectivo: destino.id })
 
-    expect(await colectivoService.getById(origenId).proyectos).toEqual([])
-    expect(await colectivoService.getById(destino.id).proyectos).toEqual([proyecto])
+    expect((await colectivoService.getById(origenId)).proyectos).toEqual([])
+    expect((await colectivoService.getById(destino.id)).proyectos).toEqual([proyecto])
+    
     const actualizado = await colectivoService.patch(destino.id, {
       descripcion: "Nueva descripción",
     })
     expect(actualizado.proyectos).toEqual([proyecto])
+    
     const respuesta = JSON.parse(JSON.stringify(await colectivoService.getAll()))
     expect(
       respuesta.find((c) => c.id === destino.id).proyectos[0].colectivo,
     ).toBe(destino.id)
 
-    service.delete(proyecto.id)
+    await service.delete(proyecto.id)
 
-    expect(await colectivoService.getById(destino.id).proyectos).toEqual([])
+    expect((await colectivoService.getById(destino.id)).proyectos).toEqual([])
     expect(
       (await colectivoService.getAll()).every((c) => c.proyectos.length === 0),
     ).toBe(true)
@@ -100,22 +117,22 @@ describe("ProyectoService", () => {
     ["modalidades vacías", { modalidadesColaboracion: [] }],
   ])(
     "rechaza %s al crear y actualizar sin alterar los datos",
-    (_caso, cambios) => {
-      expect(() =>
+    async (_caso, cambios) => {
+      await expect(
         service.create({ ...dtoProyectoValido, ...cambios }),
-      ).rejects.toThrow(UnprocessableEntityError)
-      expect(service.getAll()).toEqual([])
+      ).rejects.toThrow(DomainValidationError)
+      expect(await service.getAll()).toEqual([])
 
-      const proyecto = service.create(dtoProyectoValido)
-      const antes = {... proyecto }
+      const proyecto = await service.create(dtoProyectoValido)
+      const antes = { ...proyecto }
 
-      expect(() =>
-         service.update(proyecto.id, {
+      await expect(
+        service.update(proyecto.id, {
           titulo: "No debe guardarse",
           ...cambios,
         }),
-      ).rejects.toThrow(UnprocessableEntityError)
-      expect(service.getById(proyecto.id)).toEqual(antes)
+      ).rejects.toThrow(DomainValidationError)
+      expect(await service.getById(proyecto.id)).toEqual(antes)
     },
   )
 
@@ -134,8 +151,8 @@ describe("ProyectoService", () => {
     })
 
     test("rechaza un colectivo inexistente sin guardar el proyecto", async () => {
-      expect(async () =>
-        await service.create({
+      await expect(
+        service.create({
           ...dtoProyectoValido,
           colectivo: "colectivo-inexistente",
         }),
@@ -145,8 +162,8 @@ describe("ProyectoService", () => {
     })
 
     test("rechaza una habilidad inexistente aunque las anteriores existan", async () => {
-      expect(async () =>
-        await service.create({
+      await expect(
+        service.create({
           ...dtoProyectoValido,
           habilidadesRequeridas: [
             dtoProyectoValido.habilidadesRequeridas[0],
@@ -164,19 +181,19 @@ describe("ProyectoService", () => {
         habilidadesRequeridas: [],
       })
 
-      expect(await service.getById(creado.id).habilidadesRequeridas).toEqual([])
+      expect((await service.getById(creado.id)).habilidadesRequeridas).toEqual([])
     })
 
     test("tira ConflictError si ya existe un proyecto con el mismo título", async () => {
       await service.create(dtoProyectoValido)
 
-      const crearDuplicado = () =>
+      await expect(
         service.create({
           ...dtoProyectoValido,
           descripcion: "Otra descripción",
-        })
-
-      expect(crearDuplicado).rejects.toThrow(ConflictError)
+        }),
+      ).rejects.toThrow(ConflictError)
+      
       expect(await service.getAll()).toHaveLength(1)
     })
   })
@@ -200,14 +217,14 @@ describe("ProyectoService", () => {
   describe("update", () => {
     test("rechaza cero horas sin modificar el proyecto", async () => {
       const proyecto = await service.create(dtoProyectoValido)
-      const antes = {... proyecto }
+      const antes = { ...proyecto }
 
-      expect(() =>
+      await expect(
         service.update(proyecto.id, {
           titulo: "No debe guardarse",
           cantHoras: 0,
         }),
-      ).rejects.toThrow(UnprocessableEntityError)
+      ).rejects.toThrow(DomainValidationError)
 
       expect(await service.getById(proyecto.id)).toEqual(antes)
     })
@@ -235,9 +252,9 @@ describe("ProyectoService", () => {
       "rechaza un cambio con %s inexistente sin modificar ningún campo",
       async (_tipo, cambios) => {
         const creado = await service.create(dtoProyectoValido)
-        const antes = {... creado}
+        const antes = { ...creado }
 
-        await expect(() =>
+        await expect(
           service.update(creado.id, {
             titulo: "Este título no debe guardarse",
             cantHoras: 20,
@@ -274,7 +291,7 @@ describe("ProyectoService", () => {
     })
 
     test("lanza NotFoundError si intenta actualizar un proyecto inexistente", async () => {
-      await expect(() =>
+      await expect(
         service.update("id-inexistente", { titulo: "Nuevo" }),
       ).rejects.toThrow(NotFoundError)
     })
@@ -290,9 +307,10 @@ describe("ProyectoService", () => {
     })
 
     test("lanza NotFoundError al intentar eliminar un proyecto inexistente", async () => {
-      await expect(() => service.delete("id-inexistente")).rejects.toThrow(NotFoundError)
+      await expect(service.delete("id-inexistente")).rejects.toThrow(NotFoundError)
     })
   })
+
   describe("cerrarProyecto", () => {
     test("cierra y guarda el proyecto actualizando su estado y fecha", async () => {
       const creado = await service.create(dtoProyectoValido)
@@ -305,7 +323,7 @@ describe("ProyectoService", () => {
     })
 
     test("lanza NotFoundError si el proyecto no existe", async () => {
-      await expect(() => service.cerrarProyecto("id-inexistente")).rejects.toThrow(
+      await expect(service.cerrarProyecto("id-inexistente")).rejects.toThrow(
         NotFoundError,
       )
     })
@@ -315,8 +333,8 @@ describe("ProyectoService", () => {
       const cerrado = await service.cerrarProyecto(creado.id)
       const fechaCierre = cerrado.fechaCierre
 
-      await expect(() => service.cerrarProyecto(creado.id)).rejects.toThrow(ConflictError)
-      expect(await service.getById(creado.id).fechaCierre).toBe(fechaCierre)
+      await expect(service.cerrarProyecto(creado.id)).rejects.toThrow(DomainRuleError)
+      expect((await service.getById(creado.id)).fechaCierre).toBe(fechaCierre)
     })
 
     test("rechaza reabrir un proyecto sin aplicar cambios parciales", async () => {
@@ -324,7 +342,7 @@ describe("ProyectoService", () => {
       await service.cerrarProyecto(creado.id)
       const antes = { ...creado }
 
-      await   expect(() =>
+      await expect(
         service.update(creado.id, {
           titulo: "No debe guardarse",
           estado: EstadoProyecto.PUBLICADO,

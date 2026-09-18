@@ -34,5 +34,6 @@ export default class PersonaColaboradoraRepository {
   }
   deleteAll() {
    PersonaColaboradoraRepository.personas.length = 0; 
-}
+  }
+  
 }
