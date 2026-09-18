@@ -16,7 +16,7 @@ export default class PersonaColaboradoraService {
     );
   }
 
-  crearCuentas = async (cuentas) => {
+  crearCuentas = (cuentas) => {
     return (cuentas ?? []).map(
       (cuenta) => new Cuenta(cuenta.nombreUsuario, cuenta.tipo),
     )
@@ -27,13 +27,13 @@ export default class PersonaColaboradoraService {
     const cuentas = this.crearCuentas(nueva.cuentas)
     if (nueva.cuentas && nueva.cuentas.length > 0) {
       nueva.cuentas.forEach(cuenta => {
-        // VALIDACIÓN DEL SERVICIO: Chequeamos el Enum acá
+        
         if (!Object.values(TipoCuenta).includes(cuenta.tipo)) {
             throw new UnprocessableEntityError(`Tipo de cuenta inválido: ${cuenta.tipo}`);
         }
     });
 
-
+    }
     const personaColaboradora = new PersonaColaboradora(
       nueva.nombreFantasia,
       nueva.nombre,
@@ -45,7 +45,7 @@ export default class PersonaColaboradoraService {
     )
 
     return await this.personaColaboradoraRepository.save(personaColaboradora)
-  }}
+  }
 
   update = async (id, actualizada) => {
     const personaExistente = await this.personaColaboradoraRepository.findById(id)
@@ -56,7 +56,8 @@ export default class PersonaColaboradoraService {
     PersonaColaboradora.validarDatos(actualizada)
 
     const cuentas = this.crearCuentas(actualizada.cuentas)
-    const habilidades = this.buscarHabilidades(actualizada.habilidades)
+
+    const habilidades = await this.buscarHabilidades(actualizada.habilidades)
 
     personaExistente.nombreFantasia = actualizada.nombreFantasia
     personaExistente.nombre = actualizada.nombre ?? null

@@ -6,10 +6,8 @@ import { EstadoProyecto } from "../../../src/domain/enums/EstadoProyecto.js"
 import Colectivo from "../../../src/domain/Colectivo.js"
 import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColaboracion.js"
 import Habilidad from "../../../src/domain/Habilidad.js"
-import {
-  ConflictError,
-  UnprocessableEntityError,
-} from "../../../src/errors/AppError.js"
+import { DomainValidationError, DomainRuleError } from "../../../src/domain/errors/DomainErrors.js"
+
 describe("Proyecto", () => {
   const tipoColectivo = new TipoColectivo("Asamblea")
   const colectivo = new Colectivo(
@@ -114,7 +112,7 @@ describe("Proyecto", () => {
           colectivo,
           [ModalidadColaboracion.GRATUITA],
         ),
-    ).toThrow(UnprocessableEntityError)
+    ).toThrow(DomainValidationError)
   })
 
   test("Falta la descripción del proyecto", () => {
@@ -128,7 +126,7 @@ describe("Proyecto", () => {
           colectivo,
           [ModalidadColaboracion.GRATUITA],
         ),
-    ).toThrow(UnprocessableEntityError)
+    ).toThrow(DomainValidationError)
   })
 
   test("Falta la unidad de compromiso del proyecto", () => {
@@ -142,7 +140,7 @@ describe("Proyecto", () => {
           colectivo,
           [ModalidadColaboracion.GRATUITA],
         ),
-    ).toThrow(UnprocessableEntityError)
+    ).toThrow(DomainValidationError)
   })
 
   test("Falta la cantidad de horas del proyecto", () => {
@@ -156,7 +154,7 @@ describe("Proyecto", () => {
           colectivo,
           [ModalidadColaboracion.GRATUITA],
         ),
-    ).toThrow(UnprocessableEntityError)
+    ).toThrow(DomainValidationError)
   })
 
   test("Falta el colectivo del proyecto", () => {
@@ -170,7 +168,7 @@ describe("Proyecto", () => {
           undefined,
           [ModalidadColaboracion.GRATUITA],
         ),
-    ).toThrow(UnprocessableEntityError)
+    ).toThrow(DomainValidationError)
   })
   test("cierra el proyecto conservando sus colaboraciones y la fecha del primer cierre", () => {
     const proyecto = new Proyecto(
@@ -192,7 +190,7 @@ describe("Proyecto", () => {
     expect(proyecto.fechaCierre.getTime()).toBeLessThanOrEqual(Date.now())
     expect(proyecto.colaboraciones).toEqual([colaboracion])
     const fechaCierre = proyecto.fechaCierre
-    expect(() => proyecto.cerrar()).toThrow(ConflictError)
+    expect(() => proyecto.cerrar()).toThrow(DomainRuleError)
     expect(proyecto.fechaCierre).toBe(fechaCierre)
   })
 })

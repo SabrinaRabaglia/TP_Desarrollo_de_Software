@@ -13,6 +13,7 @@ export default class Habilidad {
       throw new DomainValidationError("Todos los campos son requeridos")
     }
     Habilidad.validarCodigo(titulo, codigo)
+    
   }
 
   static validarCodigo(titulo, codigo) {

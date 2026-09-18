@@ -32,4 +32,7 @@ export default class PersonaColaboradoraRepository {
     PersonaColaboradoraRepository.personas[indice] = personaColaboradora
     return personaColaboradora
   }
+  deleteAll() {
+   PersonaColaboradoraRepository.personas.length = 0; 
+}
 }

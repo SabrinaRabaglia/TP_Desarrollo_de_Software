@@ -38,6 +38,9 @@ export default class ProyectoRepository {
   async delete(id) {
     ProyectoRepository.proyectos = ProyectoRepository.proyectos.filter((c) => c.id !== id)
   }
+  deleteAll() {
+   ProyectoRepository.proyectos.length = 0; 
+}
 }
 
 export { ProyectoRepository }

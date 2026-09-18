@@ -16,7 +16,7 @@ describe("ColectivoService", () => {
     ["provincia desconocida", { provincia: "Provincia inexistente" }],
   ])(
     "rechaza %s al crear, actualizar y aplicar patch sin modificar datos",
-    (_caso, cambios) => {
+    async (_caso, cambios) => {
       const service = new ColectivoService(
         new ColectivoRepository(),
         new TipoColectivoRepository(),
@@ -29,44 +29,44 @@ describe("ColectivoService", () => {
         provincia: "CABA",
       }
 
-      expect(() => service.create({ ...datos, ...cambios })).toThrow(
+      expect(() => service.create({ ...datos, ...cambios })).rejects.toThrow(
         UnprocessableEntityError,
       )
-      expect(service.getAll()).toEqual([])
+      expect(await service.getAll()).toEqual([])
 
-      const colectivo = service.create(datos)
-      const antes = structuredClone(colectivo)
-      expect(() =>
-        service.update(colectivo.id, { ...datos, ...cambios }),
-      ).toThrow(UnprocessableEntityError)
-      expect(service.getById(colectivo.id)).toEqual(antes)
-      expect(() => service.patch(colectivo.id, cambios)).toThrow(
+      const colectivo = await service.create(datos)
+      const antes = {... colectivo}
+      expect(async () =>
+        await service.update(colectivo.id, { ...datos, ...cambios }),
+      ).rejects.toThrow(UnprocessableEntityError)
+      expect(await service.getById(colectivo.id)).toEqual(antes)
+      expect(() => service.patch(colectivo.id, cambios)).rejects.toThrow(
         UnprocessableEntityError,
       )
-      expect(service.getById(colectivo.id)).toEqual(antes)
+      expect(await service.getById(colectivo.id)).toEqual(antes)
     },
   )
 
-  test("permite ampliar el catálogo de tipos", () => {
+  test("permite ampliar el catálogo de tipos", async () => {
     const catalogo = new TipoColectivoRepository()
     const service = new ColectivoService(
       new ColectivoRepository(),
       catalogo,
       new ProyectoRepository(),
     )
-    catalogo.save(new TipoColectivo("Cooperativa"))
+    await catalogo.save(new TipoColectivo("Cooperativa"))
 
-    const colectivo = service.create({
+    const colectivo = await service.create({
       nombre: "Cooperativa del barrio",
       descripcion: "Descripción",
       tipo: "cooperativa",
     })
 
-    expect(service.getById(colectivo.id).tipo).toBe("cooperativa")
+    expect(await service.getById(colectivo.id)).toEqual({ ...colectivo, tipo: "cooperativa" })
   })
 
   describe("create", () => {
-    test("crea y guarda un colectivo cuando el nombre no existe todavia", () => {
+    test("crea y guarda un colectivo cuando el nombre no existe todavia", async () => {
       const service = new ColectivoService(
         new ColectivoRepository(),
         new TipoColectivoRepository(),
@@ -78,22 +78,22 @@ describe("ColectivoService", () => {
         tipo: "asamblea",
         provincia: "  cordoba  ",
       }
-      const colectivoCreado = service.create(nueva)
+      const colectivoCreado = await service.create(nueva)
 
       expect(colectivoCreado.nombre).toBe(nueva.nombre)
       expect(colectivoCreado.descripcion).toBe(nueva.descripcion)
       expect(colectivoCreado.tipo).toBe(nueva.tipo)
       expect(colectivoCreado.provincia).toBe(nueva.provincia)
-      expect(service.getAll()).toEqual([colectivoCreado])
+      expect(await service.getAll()).toEqual([colectivoCreado])
     })
-    test("tira ConflictError si ya existe un colectivo con el mismo nombre", () => {
+    test("tira ConflictError si ya existe un colectivo con el mismo nombre", async () => {
       const service = new ColectivoService(
         new ColectivoRepository(),
         new TipoColectivoRepository(),
         new ProyectoRepository(),
       )
 
-      service.create({
+      await service.create({
         nombre: "Asamblea Ambiental",
         descripcion: "Protección de humedales locales",
         tipo: "Asamblea",
@@ -106,65 +106,65 @@ describe("ColectivoService", () => {
           tipo: "ONG",
         })
 
-      expect(crearColectivoDuplicado).toThrow(ConflictError)
-      expect(service.getAll()).toHaveLength(1)
+      expect(crearColectivoDuplicado).rejects.toThrow(ConflictError)
+      expect(await service.getAll()).toHaveLength(1)
     })
     describe("getById", () => {
-      test("devuelve el colectivo correspondiente cuando se encuentra por ID", () => {
+      test("devuelve el colectivo correspondiente cuando se encuentra por ID", async () => {
         const service = new ColectivoService(
           new ColectivoRepository(),
           new TipoColectivoRepository(),
           new ProyectoRepository(),
         )
-        const colectivoCreado = service.create({
+        const colectivoCreado = await service.create({
           nombre: "Asamblea Ambiental",
           descripcion: "Protección de humedales locales",
           tipo: "Asamblea",
         })
 
-        const colectivoEncontrado = service.getById(colectivoCreado.id)
+        const colectivoEncontrado = await service.getById(colectivoCreado.id)
 
         expect(colectivoEncontrado).toBeDefined()
         expect(colectivoEncontrado.id).toBe(colectivoCreado.id)
         expect(colectivoEncontrado.nombre).toBe("Asamblea Ambiental")
       })
 
-      test("lanza NotFoundError si el colectivo no existe", () => {
+      test("lanza NotFoundError si el colectivo no existe", async () => {
         const service = new ColectivoService(
           new ColectivoRepository(),
           new TipoColectivoRepository(),
           new ProyectoRepository(),
         )
 
-        expect(() => service.getById("id-inexistente")).toThrow(NotFoundError)
+        expect(() => service.getById("id-inexistente")).rejects.toThrow(NotFoundError)
       })
     })
 
     describe("update", () => {
-      test("rechaza un nombre vacío en una actualización parcial sin modificar el colectivo", () => {
+      test("rechaza un nombre vacío en una actualización parcial sin modificar el colectivo", async () => {
         const service = new ColectivoService(
           new ColectivoRepository(),
           new TipoColectivoRepository(),
           new ProyectoRepository(),
         )
-        const colectivo = service.create({
+        const colectivo = await service.create({
           nombre: "Asamblea Ambiental",
           descripcion: "Descripción original",
           tipo: "Asamblea",
         })
-        const antes = structuredClone(colectivo)
+        const antes = {... colectivo}
 
         expect(() =>
           service.patch(colectivo.id, {
             nombre: "",
             descripcion: "No debe guardarse",
           }),
-        ).toThrow(UnprocessableEntityError)
+        ).rejects.toThrow(UnprocessableEntityError)
 
-        expect(service.getById(colectivo.id)).toEqual(antes)
+        expect(await service.getById(colectivo.id)).toEqual(antes)
       })
 
-      test("lanza NotFoundError si intenta actualizar un colectivo inexistente", () => {
+      test("lanza NotFoundError si intenta actualizar un colectivo inexistente", async () => {
         const service = new ColectivoService(
           new ColectivoRepository(),
           new TipoColectivoRepository(),
@@ -172,28 +172,28 @@ describe("ColectivoService", () => {
         )
         const datos = { nombre: "Nuevo", descripcion: "Desc", tipo: "ONG" }
 
-        expect(() => service.update("id-inexistente", datos)).toThrow(
+        expect(() => service.update("id-inexistente", datos)).rejects.toThrow(
           NotFoundError,
         )
       })
     })
 
     describe("delete", () => {
-      test("elimina el colectivo correctamente si existe", () => {
+      test("elimina el colectivo correctamente si existe", async () => {
         const service = new ColectivoService(
           new ColectivoRepository(),
           new TipoColectivoRepository(),
           new ProyectoRepository(),
         )
-        const colectivo = service.create({
+        const colectivo = await service.create({
           nombre: "Asamblea Ambiental",
           descripcion: "Protección de humedales locales",
           tipo: "Asamblea",
         })
 
-        service.delete(colectivo.id)
+        await service.delete(colectivo.id)
 
-        expect(service.getAll()).toHaveLength(0)
+        expect(await service.getAll()).toHaveLength(0)
       })
     })
   })

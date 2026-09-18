@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals"
 import Colaboracion from "../../../src/domain/Colaboracion.js"
-import { UnprocessableEntityError } from "../../../src/errors/AppError.js"
+import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 
 test("la colaboración exige ambas entidades y registra la fecha de inscripción", () => {
   const persona = { id: "persona-1" }
@@ -15,9 +15,9 @@ test("la colaboración exige ambas entidades y registra la fecha de inscripción
     Date.now(),
   )
   expect(() => new Colaboracion(null, proyecto)).toThrow(
-    UnprocessableEntityError,
+    DomainValidationError,
   )
   expect(() => new Colaboracion(persona, null)).toThrow(
-    UnprocessableEntityError,
+    DomainValidationError,
   )
 })

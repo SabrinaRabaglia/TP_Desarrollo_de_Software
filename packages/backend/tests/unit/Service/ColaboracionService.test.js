@@ -10,7 +10,6 @@ import {
   BadRequestError,
   ConflictError,
   NotFoundError,
-  UnprocessableEntityError,
 } from "../../../src/errors/AppError.js"
 
 describe("ColaboracionService", () => {
@@ -46,13 +45,13 @@ describe("ColaboracionService", () => {
     datos = { proyectoId: proyecto.id, personaColaboradoraId: persona.id }
   })
 
-  test("registra una única colaboración y la vincula con ambas entidades", () => {
-    const colaboracion = service.create(datos)
+  test("registra una única colaboración y la vincula con ambas entidades", async () => {
+    const colaboracion = await service.create(datos)
 
     expect(colaboracion.personaColaboradora).toBe(persona)
     expect(colaboracion.proyecto).toBe(proyecto)
-    expect(() => service.create(datos)).toThrow(ConflictError)
-    expect(service.getAll()).toEqual([colaboracion])
+    await expect(service.create(datos)).rejects.toThrow(ConflictError)
+    expect(await service.getAll()).toEqual([colaboracion])
     expect(persona.colaboraciones).toEqual([colaboracion])
     expect(proyecto.colaboraciones).toEqual([colaboracion])
   })
@@ -60,42 +59,42 @@ describe("ColaboracionService", () => {
   test.each([
     [
       "proyecto inexistente",
-      () => proyectoRepository.delete(proyecto.id),
+      async () => await proyectoRepository.delete(proyecto.id),
       NotFoundError,
     ],
     [
       "persona inexistente",
-      () => personaRepository.deleteById(persona.id),
+      async () => await personaRepository.deleteById(persona.id),
       NotFoundError,
     ],
     [
       "proyecto cerrado",
-      () => {
+      async () => {
         proyecto.estado = "CERRADO"
       },
-      UnprocessableEntityError,
+      ConflictError,
     ],
     [
       "habilidades sin coincidencia",
-      () => {
+      async () => {
         persona.habilidades = []
       },
       BadRequestError,
     ],
     [
       "proyecto sin habilidades requeridas",
-      () => {
+      async () => {
         proyecto.habilidadesRequeridas = []
       },
       BadRequestError,
     ],
   ])(
     "rechaza %s sin registrar ni asociar la colaboración",
-    (_caso, preparar, error) => {
+    async (_caso, preparar, error) => {
       preparar()
 
-      expect(() => service.create(datos)).toThrow(error)
-      expect(service.getAll()).toEqual([])
+      await expect(service.create(datos)).rejects.toThrow(error)
+      expect(await service.getAll()).toEqual([])
       expect(persona.colaboraciones).toEqual([])
       expect(proyecto.colaboraciones).toEqual([])
     },

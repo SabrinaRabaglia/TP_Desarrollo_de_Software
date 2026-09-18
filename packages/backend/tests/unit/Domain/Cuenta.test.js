@@ -1,7 +1,8 @@
 import { describe, expect, test } from "@jest/globals"
 import Cuenta from "../../../src/domain/Cuenta.js"
 import { TipoCuenta } from "../../../src/domain/enums/TipoCuenta.js"
-import { UnprocessableEntityError } from "../../../src/errors/AppError.js"
+import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
+
 
 describe("Cuenta", () => {
   test("se construye correctamente con un tipo válido (GITHUB)", () => {
@@ -20,23 +21,23 @@ describe("Cuenta", () => {
     expect(cuenta.tipo).toBe("GITLAB")
   })
 
-  test("tira UnprocessableEntityError si falta el nombre de usuario", () => {
+  test("tira DomainValidationError si falta el nombre de usuario", () => {
     const construirCuentaSinNombreUsuario = () =>
       new Cuenta(undefined, TipoCuenta.GITHUB)
 
-    expect(construirCuentaSinNombreUsuario).toThrow(UnprocessableEntityError)
+    expect(construirCuentaSinNombreUsuario).toThrow(DomainValidationError)
   })
 
-  test("tira UnprocessableEntityError si el tipo no es GITHUB ni GITLAB", () => {
+  test("tira DomainValidationError si el tipo no es GITHUB ni GITLAB", () => {
     const construirCuentaConTipoInvalido = () =>
       new Cuenta("juanpedro", "MASTODON")
 
-    expect(construirCuentaConTipoInvalido).toThrow(UnprocessableEntityError)
+    expect(construirCuentaConTipoInvalido).toThrow(DomainValidationError)
   })
 
-  test("tira UnprocessableEntityError si no se indica ningún tipo", () => {
+  test("tira DomainValidationError si no se indica ningún tipo", () => {
     const construirCuentaSinTipo = () => new Cuenta("juanpedro", undefined)
 
-    expect(construirCuentaSinTipo).toThrow(UnprocessableEntityError)
+    expect(construirCuentaSinTipo).toThrow(DomainValidationError)
   })
 })

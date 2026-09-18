@@ -27,4 +27,8 @@ export default class ColectivoRepository {
   async delete(id) {
     ColectivoRepository.colectivos = ColectivoRepository.colectivos.filter((c) => c.id !== id)
   }
+
+  deleteAll() {
+   ColectivoRepository.colectivos.length = 0; 
+}
 }

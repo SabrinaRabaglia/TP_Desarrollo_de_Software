@@ -3,7 +3,7 @@ import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import Habilidad from "../../../src/domain/Habilidad.js"
 import Cuenta from "../../../src/domain/Cuenta.js"
 import { TipoCuenta } from "../../../src/domain/enums/TipoCuenta.js"
-import { UnprocessableEntityError } from "../../../src/errors/AppError.js"
+import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 
 describe("PersonaColaboradora", () => {
   test("se construye solo con nombreFantasia, con el resto en sus valores por defecto", () => {
@@ -56,19 +56,19 @@ describe("PersonaColaboradora", () => {
     expect(persona1.id).not.toBe(persona2.id)
   })
 
-  test("tira UnprocessableEntityError si falta nombreFantasia", () => {
+  test("tira DomainValidationError si falta nombreFantasia", () => {
     const construirPersonaSinNombreFantasia = () =>
       new PersonaColaboradora(undefined)
 
-    expect(construirPersonaSinNombreFantasia).toThrow(UnprocessableEntityError)
+    expect(construirPersonaSinNombreFantasia).toThrow(DomainValidationError)
   })
 
-  test("tira UnprocessableEntityError si nombreFantasia es un string vacío", () => {
+  test("tira DomainValidationError si nombreFantasia es un string vacío", () => {
     const construirPersonaConNombreFantasiaVacio = () =>
       new PersonaColaboradora("")
 
     expect(construirPersonaConNombreFantasiaVacio).toThrow(
-      UnprocessableEntityError,
+      DomainValidationError,
     )
   })
 

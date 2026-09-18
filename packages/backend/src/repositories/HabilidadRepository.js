@@ -33,4 +33,7 @@ export default class HabilidadRepository {
     HabilidadRepository.habilidades[indice] = habilidad
     return habilidad
   }
+  deleteAll() {
+   HabilidadRepository.habilidades.length = 0; 
+}
 }

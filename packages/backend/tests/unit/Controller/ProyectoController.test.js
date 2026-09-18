@@ -18,6 +18,7 @@ const mockProyectoService = () => ({
   getAll: jest.fn(),
 })
 
+
 describe("ProyectoController", () => {
   const proyectoValido = {
     titulo: "Plataforma de Colaboración",
@@ -34,7 +35,7 @@ describe("ProyectoController", () => {
   }
 
   describe("getAll", () => {
-    test("responde con 200 y la lista de proyectos devuelta por el service", () => {
+    test("responde con 200 y la lista de proyectos devuelta por el service", async () => {
       const proyectoServiceMock = mockProyectoService()
       const lista = [proyectoValido]
       proyectoServiceMock.getAll.mockReturnValue(lista)
@@ -42,8 +43,9 @@ describe("ProyectoController", () => {
       const controller = new ProyectoController(proyectoServiceMock)
       const req = {}
       const res = mockRes()
+        const next = jest.fn()
 
-      controller.getAll(req, res)
+      await controller.getAll(req, res, next)
 
       expect(proyectoServiceMock.getAll).toHaveBeenCalled()
       expect(res.status).toHaveBeenCalledWith(200)
@@ -52,15 +54,16 @@ describe("ProyectoController", () => {
   })
 
   describe("getById", () => {
-    test("responde con 200 y el proyecto obtenido según el id", () => {
+    test("responde con 200 y el proyecto obtenido según el id", async () => {
       const proyectoServiceMock = mockProyectoService()
       proyectoServiceMock.getById.mockReturnValue(proyectoValido)
 
       const controller = new ProyectoController(proyectoServiceMock)
       const req = { params: { id: "1" } }
       const res = mockRes()
+      const next = jest.fn()
 
-      controller.getById(req, res)
+      await controller.getById(req, res, next)
 
       expect(proyectoServiceMock.getById).toHaveBeenCalledWith("1")
       expect(res.status).toHaveBeenCalledWith(200)
@@ -69,7 +72,7 @@ describe("ProyectoController", () => {
   })
 
   describe("create", () => {
-    test("con body valido, delega en el service y responde con 201 el proyecto creado", () => {
+    test("con body valido, delega en el service y responde con 201 el proyecto creado",async  () => {
       const proyectoServiceMock = mockProyectoService()
       const proyectoCreado = { ...proyectoValido, id: "proyecto-1" }
       proyectoServiceMock.create.mockReturnValue(proyectoCreado)
@@ -77,15 +80,16 @@ describe("ProyectoController", () => {
       const controller = new ProyectoController(proyectoServiceMock)
       const req = { body: { ...proyectoValido } }
       const res = mockRes()
+      const next = jest.fn()
 
-      controller.create(req, res)
+      await controller.create(req, res, next)
 
       expect(proyectoServiceMock.create).toHaveBeenCalled()
       expect(res.status).toHaveBeenCalledWith(201)
       expect(res.json).toHaveBeenCalledWith(proyectoCreado)
     })
 
-    test("con body inválido (falta un campo obligatorio), tira BadRequestError y no llama al service", () => {
+    test("con body inválido (falta un campo obligatorio), tira BadRequestError y no llama al service", async () => {
       const proyectoServiceMock = mockProyectoService()
       const controller = new ProyectoController(proyectoServiceMock)
       const req = {
@@ -95,12 +99,15 @@ describe("ProyectoController", () => {
         },
       }
       const res = mockRes()
+      const next = jest.fn()
 
-      expect(() => controller.create(req, res)).toThrow(BadRequestError)
-      expect(proyectoServiceMock.create).not.toHaveBeenCalled()
+        await controller.create(req, res, next);
+        expect(next).toHaveBeenCalledWith(expect.any(BadRequestError));
+        expect(proyectoServiceMock.create).not.toHaveBeenCalled();
+
     })
 
-    test("con un campo extra no declarado en el schema, tira BadRequestError", () => {
+    test("con un campo extra no declarado en el schema, tira BadRequestError", async () => {
       const proyectoServiceMock = mockProyectoService()
       const controller = new ProyectoController(proyectoServiceMock)
       const req = {
@@ -110,14 +117,16 @@ describe("ProyectoController", () => {
         },
       }
       const res = mockRes()
+      const next = jest.fn()
 
-      expect(() => controller.create(req, res)).toThrow(BadRequestError)
-      expect(proyectoServiceMock.create).not.toHaveBeenCalled()
+      await controller.create(req, res, next);
+        expect(next).toHaveBeenCalledWith(expect.any(BadRequestError));
+        expect(proyectoServiceMock.create).not.toHaveBeenCalled();
     })
   })
 
   describe("put", () => {
-    test("con body valido actualiza el proyecto y responde con 200", () => {
+    test("con body valido actualiza el proyecto y responde con 200", async () => {
       const proyectoServiceMock = mockProyectoService()
       const proyectoGuardado = { ...proyectoValido, id: "1" }
       proyectoServiceMock.update.mockReturnValue(proyectoGuardado)
@@ -125,8 +134,9 @@ describe("ProyectoController", () => {
       const controller = new ProyectoController(proyectoServiceMock)
       const req = { params: { id: "1" }, body: { ...proyectoValido } }
       const res = mockRes()
+      const next = jest.fn()
 
-      controller.put(req, res)
+      await controller.put(req, res, next)
 
       expect(proyectoServiceMock.update).toHaveBeenCalledWith(
         "1",
@@ -136,19 +146,21 @@ describe("ProyectoController", () => {
       expect(res.json).toHaveBeenCalledWith(proyectoGuardado)
     })
 
-    test("con body invalido tira BadRequestError y no llama al service", () => {
+    test("con body invalido tira BadRequestError y no llama al service", async () => {
       const proyectoServiceMock = mockProyectoService()
       const controller = new ProyectoController(proyectoServiceMock)
       const req = { params: { id: "1" }, body: { titulo: "Solo título" } }
       const res = mockRes()
+      const next = jest.fn()
 
-      expect(() => controller.put(req, res)).toThrow(BadRequestError)
-      expect(proyectoServiceMock.update).not.toHaveBeenCalled()
+      await controller.put(req, res, next);
+        expect(next).toHaveBeenCalledWith(expect.any(BadRequestError));
+        expect(proyectoServiceMock.update).not.toHaveBeenCalled();
     })
   })
 
   describe("patch", () => {
-    test("con actualización parcial valida delega en el service y responde con 200", () => {
+    test("con actualización parcial valida delega en el service y responde con 200", async () => {
       const proyectoServiceMock = mockProyectoService()
       const cambiosParciales = { titulo: "Título Modificado" }
       const proyectoActualizado = { ...proyectoValido, ...cambiosParciales }
@@ -157,8 +169,9 @@ describe("ProyectoController", () => {
       const controller = new ProyectoController(proyectoServiceMock)
       const req = { params: { id: "1" }, body: cambiosParciales }
       const res = mockRes()
+      const next = jest.fn()
 
-      controller.patch(req, res)
+      await controller.patch(req, res, next)
 
       expect(proyectoServiceMock.update).toHaveBeenCalledWith(
         "1",
@@ -170,13 +183,14 @@ describe("ProyectoController", () => {
   })
 
   describe("delete", () => {
-    test("llama al delete del service y responde con 204", () => {
+    test("llama al delete del service y responde con 204", async () => {
       const proyectoServiceMock = mockProyectoService()
       const controller = new ProyectoController(proyectoServiceMock)
       const req = { params: { id: "1" } }
       const res = mockRes()
+      const next = jest.fn()
 
-      controller.delete(req, res)
+      await controller.delete(req, res, next)
 
       expect(proyectoServiceMock.delete).toHaveBeenCalledWith("1")
       expect(res.status).toHaveBeenCalledWith(204)

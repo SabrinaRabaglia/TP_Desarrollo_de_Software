@@ -1,69 +1,76 @@
-import { describe, expect, test } from "@jest/globals"
+import { describe, expect, test, beforeEach } from "@jest/globals"
 import PersonaColaboradoraRepository from "../../../src/repositories/PersonaColaboradoraRepository.js"
 
 describe("PersonaColaboradoraRepository", () => {
-  test("getAll devuelve un array vacío si no se guardó nada", () => {
+  let repository
+
+  beforeEach(async () => {
+    repository = new PersonaColaboradoraRepository()
+    await repository.deleteAll()
+  })
+
+  test("getAll devuelve un array vacío si no se guardó nada", async () => {
     const repository = new PersonaColaboradoraRepository()
-    const personas = repository.getAll()
+    const personas = await repository.getAll()
 
     expect(personas).toEqual([])
   })
 
-  test("save agrega una persona nueva si su id no existe todavía", () => {
+  test("save agrega una persona nueva si su id no existe todavía", async () => {
     const repository = new PersonaColaboradoraRepository()
     const persona = { id: "1", nombreFantasia: "anon1" }
-    const guardada = repository.save(persona)
+    const guardada = await repository.save(persona)
 
     expect(guardada).toBe(persona)
-    expect(repository.getAll()).toEqual([persona])
+    expect(await repository.getAll()).toEqual([persona])
   })
 
-  test("save pisa la persona existente si el id ya está guardado (upsert)", () => {
+  test("save pisa la persona existente si el id ya está guardado (upsert)", async () => {
     const repository = new PersonaColaboradoraRepository()
     const personaOriginal = { id: "1", nombreFantasia: "anon1" }
-    repository.save(personaOriginal)
+    await repository.save(personaOriginal)
     const personaActualizada = { id: "1", nombreFantasia: "anon1-editado" }
-    repository.save(personaActualizada)
+    await repository.save(personaActualizada)
 
-    expect(repository.getAll()).toHaveLength(1)
-    expect(repository.getAll()[0].nombreFantasia).toBe("anon1-editado")
+    expect(await repository.getAll()).toHaveLength(1)
+    expect((await repository.getAll())[0].nombreFantasia).toBe("anon1-editado")
   })
 
-  test("findById encuentra la persona correcta por id", () => {
+  test("findById encuentra la persona correcta por id", async () => {
     const repository = new PersonaColaboradoraRepository()
     const persona1 = { id: "1", nombreFantasia: "anon1" }
     const persona2 = { id: "2", nombreFantasia: "anon2" }
-    repository.save(persona1)
-    repository.save(persona2)
-    const encontrada = repository.findById("2")
+    await repository.save(persona1)
+    await repository.save(persona2)
+    const encontrada = await repository.findById("2")
 
     expect(encontrada).toBe(persona2)
   })
 
-  test("findById devuelve undefined si no existe ninguna con ese id", () => {
+  test("findById devuelve undefined si no existe ninguna con ese id", async () => {
     const repository = new PersonaColaboradoraRepository()
-    const encontrada = repository.findById("id-inexistente")
+    const encontrada = await repository.findById("id-inexistente")
 
     expect(encontrada).toBeUndefined()
   })
 
-  test("deleteById borra la persona y devuelve true", () => {
+  test("deleteById borra la persona y devuelve true", async () => {
     const repository = new PersonaColaboradoraRepository()
     const persona = { id: "1", nombreFantasia: "anon1" }
-    repository.save(persona)
-    const resultado = repository.deleteById("1")
+    await repository.save(persona)
+    const resultado = await repository.deleteById("1")
 
     expect(resultado).toBe(true)
-    expect(repository.getAll()).toEqual([])
+    expect(await repository.getAll()).toEqual([])
   })
 
-  test("deleteById devuelve false si el id no existe, sin modificar la colección", () => {
+  test("deleteById devuelve false si el id no existe, sin modificar la colección", async () => {
     const repository = new PersonaColaboradoraRepository()
     const persona = { id: "1", nombreFantasia: "anon1" }
-    repository.save(persona)
-    const resultado = repository.deleteById("id-inexistente")
+    await repository.save(persona)
+    const resultado = await repository.deleteById("id-inexistente")
 
     expect(resultado).toBe(false)
-    expect(repository.getAll()).toEqual([persona])
+    expect(await repository.getAll()).toEqual([persona])
   })
 })

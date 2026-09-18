@@ -3,30 +3,30 @@ import HabilidadService from "../../../src/services/HabilidadService.js"
 import HabilidadRepository from "../../../src/repositories/HabilidadRepository.js"
 import {
   ConflictError,
-  NotFoundError,
-  UnprocessableEntityError,
+  NotFoundError
 } from "../../../src/errors/AppError.js"
+import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 
 describe("HabilidadService", () => {
   describe("create", () => {
-    test("crea y guarda una habilidad cuando el código no existe todavía", () => {
+    test("crea y guarda una habilidad cuando el código no existe todavía", async () => {
       const service = new HabilidadService(new HabilidadRepository())
       const nueva = {
         titulo: "  Programación   Web / React  ",
         codigo: "programacion_web_react",
         descripcion: "desc",
       }
-      const habilidad = service.create(nueva)
+      const habilidad = await service.create(nueva)
 
       expect(habilidad.titulo).toBe(nueva.titulo)
       expect(habilidad.codigo).toBe(nueva.codigo)
       expect(habilidad.descripcion).toBe(nueva.descripcion)
-      expect(service.getAll()).toEqual([habilidad])
+      expect(await service.getAll()).toEqual([habilidad])
     })
 
-    test("tira ConflictError si ya existe una habilidad con el mismo código", () => {
+    test("tira ConflictError si ya existe una habilidad con el mismo código", async () => {
       const service = new HabilidadService(new HabilidadRepository())
-      service.create({ titulo: "React", codigo: "react", descripcion: "desc" })
+      await service.create({ titulo: "React", codigo: "react", descripcion: "desc" })
       const crearHabilidadConCodigoRepetido = () =>
         service.create({
           titulo: "REACT",
@@ -34,54 +34,54 @@ describe("HabilidadService", () => {
           descripcion: "otra desc",
         })
 
-      expect(crearHabilidadConCodigoRepetido).toThrow(ConflictError)
-      expect(service.getAll()).toHaveLength(1)
+      expect(await crearHabilidadConCodigoRepetido).rejects.toThrow(ConflictError)
+      expect(await service.getAll()).toHaveLength(1)
     })
 
-    test("rechaza un código que no corresponde al título sin guardar la habilidad", () => {
+    test("rechaza un código que no corresponde al título sin guardar la habilidad", async () => {
       const service = new HabilidadService(new HabilidadRepository())
 
-      expect(() =>
-        service.create({
-          titulo: "Desarrollo Web React",
-          codigo: "react",
-          descripcion: "desc",
-        }),
-      ).toThrow(UnprocessableEntityError)
+      await expect(
+  service.create({
+    titulo: "Desarrollo Web React",
+    codigo: "react",
+    descripcion: "desc",
+  })
+).rejects.toThrow(DomainValidationError)
 
-      expect(service.getAll()).toEqual([])
+      expect(await service.getAll()).toEqual([])
     })
   })
 
   describe("update", () => {
-    test("rechaza una descripción vacía sin modificar la habilidad", () => {
+    test("rechaza una descripción vacía sin modificar la habilidad", async () => {
       const service = new HabilidadService(new HabilidadRepository())
-      const habilidad = service.create({
+      const habilidad = await service.create({
         titulo: "React",
         codigo: "react",
         descripcion: "desc",
       })
-      const antes = structuredClone(habilidad)
+      const antes = { ...habilidad }
 
-      expect(() =>
+      await expect(
         service.update(habilidad.id, {
           titulo: "Node",
           codigo: "node",
           descripcion: "",
         }),
-      ).toThrow(UnprocessableEntityError)
+      ).rejects.toThrow(DomainValidationError)
 
-      expect(service.getById(habilidad.id)).toEqual(antes)
+      expect(await service.getById(habilidad.id)).toEqual(antes)
     })
 
-    test("actualiza los datos de una habilidad existente, conservando su id", () => {
+    test("actualiza los datos de una habilidad existente, conservando su id", async () => {
       const service = new HabilidadService(new HabilidadRepository())
-      const habilidad = service.create({
+      const habilidad = await service.create({
         titulo: "React",
         codigo: "react",
         descripcion: "desc",
       })
-      const actualizada = service.update(habilidad.id, {
+      const actualizada = await service.update(habilidad.id, {
         titulo: "React actualizado",
         codigo: "react_actualizado",
         descripcion: "nueva desc",
@@ -93,7 +93,7 @@ describe("HabilidadService", () => {
       expect(actualizada.descripcion).toBe("nueva desc")
     })
 
-    test("tira NotFoundError si el id no corresponde a ninguna habilidad", () => {
+    test("tira NotFoundError si el id no corresponde a ninguna habilidad", async  () => {
       const service = new HabilidadService(new HabilidadRepository())
       const actualizarHabilidadInexistente = () =>
         service.update("id-inexistente", {
@@ -102,17 +102,17 @@ describe("HabilidadService", () => {
           descripcion: "z",
         })
 
-      expect(actualizarHabilidadInexistente).toThrow(NotFoundError)
+      expect(actualizarHabilidadInexistente).rejects.toThrow(NotFoundError)
     })
 
-    test("tira ConflictError si el nuevo código pertenece a OTRA habilidad existente", () => {
+    test("tira ConflictError si el nuevo código pertenece a OTRA habilidad existente", async () => {
       const service = new HabilidadService(new HabilidadRepository())
-      const react = service.create({
+      const react = await service.create({
         titulo: "React",
         codigo: "react",
         descripcion: "desc",
       })
-      service.create({ titulo: "Node", codigo: "node", descripcion: "desc" })
+      await service.create({ titulo: "Node", codigo: "node", descripcion: "desc" })
 
       const actualizarConCodigoDeOtra = () =>
         service.update(react.id, {
@@ -121,18 +121,17 @@ describe("HabilidadService", () => {
           descripcion: "desc",
         })
 
-      expect(actualizarConCodigoDeOtra).toThrow(ConflictError)
+      expect(actualizarConCodigoDeOtra).rejects.toThrow(DomainValidationError)
     })
-
-    test("permite actualizar una habilidad conservando su propio código (no es conflicto consigo misma)", () => {
+    test("permite actualizar una habilidad conservando su propio código (no es conflicto consigo misma)", async () => {
       const service = new HabilidadService(new HabilidadRepository())
-      const habilidad = service.create({
+      const habilidad = await service.create({
         titulo: "React",
         codigo: "react",
         descripcion: "desc",
       })
 
-      const actualizada = service.update(habilidad.id, {
+      const actualizada = await service.update(habilidad.id, {
         titulo: "REACT",
         codigo: "react",
         descripcion: "desc",
@@ -142,86 +141,86 @@ describe("HabilidadService", () => {
       expect(actualizada.titulo).toBe("REACT")
     })
 
-    test("rechaza un código incorrecto al actualizar sin modificar la habilidad", () => {
+    test("rechaza un código incorrecto al actualizar sin modificar la habilidad", async () => {
       const service = new HabilidadService(new HabilidadRepository())
-      const habilidad = service.create({
+      const habilidad = await service.create({
         titulo: "React",
         codigo: "react",
         descripcion: "desc",
       })
-      const antes = structuredClone(habilidad)
+      const antes = { ...habilidad }
 
-      expect(() =>
-        service.update(habilidad.id, {
-          titulo: "Desarrollo Web React",
-          codigo: "react",
-          descripcion: "Nueva descripción",
-        }),
-      ).toThrow(UnprocessableEntityError)
+      await expect(
+  service.update(habilidad.id, {
+    titulo: "Desarrollo Web React",
+    codigo: "react",
+    descripcion: "Nueva descripción",
+  })
+).rejects.toThrow(DomainValidationError)
 
-      expect(service.getById(habilidad.id)).toEqual(antes)
+      expect( await service.getById(habilidad.id)).toEqual(antes)
     })
   })
 
   describe("delete", () => {
-    test("elimina una habilidad existente", () => {
+    test("elimina una habilidad existente", async () => {
       const service = new HabilidadService(new HabilidadRepository())
-      const habilidad = service.create({
+      const habilidad = await service.create({
         titulo: "React",
         codigo: "react",
         descripcion: "desc",
       })
 
-      service.delete(habilidad.id)
+      await service.delete(habilidad.id)
 
-      expect(service.getAll()).toEqual([])
+      expect(await service.getAll()).toEqual([])
     })
 
-    test("tira NotFoundError si el id no corresponde a ninguna habilidad", () => {
+    test("tira NotFoundError si el id no corresponde a ninguna habilidad", async () => {
       const service = new HabilidadService(new HabilidadRepository())
       const borrarHabilidadInexistente = () => service.delete("id-inexistente")
 
-      expect(borrarHabilidadInexistente).toThrow(NotFoundError)
+      expect(await borrarHabilidadInexistente).rejects.toThrow(NotFoundError)
     })
   })
 
   describe("getById", () => {
-    test("devuelve la habilidad correcta cuando existe", () => {
+    test("devuelve la habilidad correcta cuando existe", async () => {
       const service = new HabilidadService(new HabilidadRepository())
-      const habilidad = service.create({
+      const habilidad = await service.create({
         titulo: "React",
         codigo: "react",
         descripcion: "desc",
       })
 
-      const encontrada = service.getById(habilidad.id)
+      const encontrada = await service.getById(habilidad.id)
 
       expect(encontrada).toBe(habilidad)
     })
 
-    test("tira NotFoundError si el id no corresponde a ninguna habilidad", () => {
+    test("tira NotFoundError si el id no corresponde a ninguna habilidad", async () => {
       const service = new HabilidadService(new HabilidadRepository())
-      const buscarHabilidadInexistente = () => service.getById("id-inexistente")
+      const buscarHabilidadInexistente = async () => await service.getById("id-inexistente")
 
-      expect(buscarHabilidadInexistente).toThrow(NotFoundError)
+      expect(await buscarHabilidadInexistente).rejects.toThrow(NotFoundError)
     })
   })
 
   describe("getAll", () => {
-    test("devuelve todas las habilidades guardadas", () => {
+    test("devuelve todas las habilidades guardadas", async () => {
       const service = new HabilidadService(new HabilidadRepository())
-      const react = service.create({
+      const react = await service.create({
         titulo: "React",
         codigo: "react",
         descripcion: "desc",
       })
-      const node = service.create({
+      const node = await service.create({
         titulo: "Node",
         codigo: "node",
         descripcion: "desc",
       })
 
-      const habilidades = service.getAll()
+      const habilidades = await service.getAll()
 
       expect(habilidades).toEqual([react, node])
     })

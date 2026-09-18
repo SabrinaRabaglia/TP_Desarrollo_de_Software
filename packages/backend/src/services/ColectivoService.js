@@ -63,13 +63,13 @@ export default class ColectivoService {
     let instanciaProvincia = null;
     if (nuevo.provincia) {
       instanciaProvincia = await this.provinciaRepository.findById(nuevo.provincia);
-      if (!instanciaProvincia) throw new NotFoundError("PROVINCIA NO ENCONTRADA!");
+      if (!instanciaProvincia) throw new UnprocessableEntityError("PROVINCIA NO ENCONTRADA!");
     }
 
     let instanciaPais = null;
     if (nuevo.pais) {
       instanciaPais = await this.paisRepository.findById(nuevo.pais);
-      if (!instanciaPais) throw new NotFoundError("PAÍS NO ENCONTRADO!");
+      if (!instanciaPais) throw new UnprocessableEntityError("PAÍS NO ENCONTRADO!");
     }
 
     const colectivo = new Colectivo(

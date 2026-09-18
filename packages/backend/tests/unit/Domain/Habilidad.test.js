@@ -1,6 +1,6 @@
 import { describe, expect, test } from "@jest/globals"
 import Habilidad from "../../../src/domain/Habilidad.js"
-import { UnprocessableEntityError } from "../../../src/errors/AppError.js"
+import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 
 describe("Habilidad", () => {
   test("se construye correctamente con datos válidos", () => {
@@ -24,27 +24,27 @@ describe("Habilidad", () => {
     expect(habilidad1.id).not.toBe(habilidad2.id)
   })
 
-  test("tira UnprocessableEntityError si falta el título", () => {
+  test("tira DomainValidationError si falta el título", () => {
     expect(() => new Habilidad(undefined, "react", "desc")).toThrow(
-      UnprocessableEntityError,
+      DomainValidationError,
     )
   })
 
-  test("tira UnprocessableEntityError si falta el código", () => {
+  test("tira DomainValidationError si falta el código", () => {
     expect(() => new Habilidad("React", undefined, "desc")).toThrow(
-      UnprocessableEntityError,
+      DomainValidationError,
     )
   })
 
-  test("tira UnprocessableEntityError si falta la descripción", () => {
+  test("tira DomainValidationError si falta la descripción", () => {
     expect(() => new Habilidad("React", "react", undefined)).toThrow(
-      UnprocessableEntityError,
+      DomainValidationError,
     )
   })
 
-  test("tira UnprocessableEntityError si el título es un string vacío", () => {
+  test("tira DomainValidationError si el título es un string vacío", () => {
     expect(() => new Habilidad("", "react", "desc")).toThrow(
-      UnprocessableEntityError,
+      DomainValidationError,
     )
   })
 })

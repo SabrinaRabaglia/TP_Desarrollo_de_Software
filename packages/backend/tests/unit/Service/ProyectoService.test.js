@@ -21,7 +21,7 @@ describe("ProyectoService", () => {
   let habilidadService
   let dtoProyectoValido
 
-  beforeEach(() => {
+  beforeEach(async () => {
     const proyectoRepository = new ProyectoRepository()
     colectivoService = new ColectivoService(
       new ColectivoRepository(),
@@ -34,7 +34,7 @@ describe("ProyectoService", () => {
       colectivoService,
       habilidadService,
     )
-    const colectivo = colectivoService.create({
+    const colectivo = await colectivoService.create({
       nombre: "Asamblea Ambiental",
       descripcion: "Protección de humedales",
       tipo: "Asamblea",
@@ -59,39 +59,39 @@ describe("ProyectoService", () => {
     }
   })
 
-  test("los colectivos reflejan el alta, traslado y eliminación de sus proyectos", () => {
+  test("los colectivos reflejan el alta, traslado y eliminación de sus proyectos", async () => {
     const origenId = dtoProyectoValido.colectivo
-    const destino = colectivoService.create({
+    const destino = await colectivoService.create({
       nombre: "Otro colectivo",
       descripcion: "Descripción",
       tipo: "ONG",
     })
-    const proyecto = service.create(dtoProyectoValido)
+    const proyecto = await service.create(dtoProyectoValido)
 
-    expect(colectivoService.getById(origenId).proyectos).toEqual([proyecto])
-    expect(colectivoService.getById(destino.id).proyectos).toEqual([])
+    expect( await colectivoService.getById(origenId).proyectos).toEqual([proyecto])
+    expect(await colectivoService.getById(destino.id).proyectos).toEqual([])
     expect(
-      colectivoService.getAll().find((c) => c.id === origenId).proyectos,
+      (await colectivoService.getAll()).find((c) => c.id === origenId).proyectos,
     ).toEqual([proyecto])
 
     service.update(proyecto.id, { colectivo: destino.id })
 
-    expect(colectivoService.getById(origenId).proyectos).toEqual([])
-    expect(colectivoService.getById(destino.id).proyectos).toEqual([proyecto])
-    const actualizado = colectivoService.patch(destino.id, {
+    expect(await colectivoService.getById(origenId).proyectos).toEqual([])
+    expect(await colectivoService.getById(destino.id).proyectos).toEqual([proyecto])
+    const actualizado = await colectivoService.patch(destino.id, {
       descripcion: "Nueva descripción",
     })
     expect(actualizado.proyectos).toEqual([proyecto])
-    const respuesta = JSON.parse(JSON.stringify(colectivoService.getAll()))
+    const respuesta = JSON.parse(JSON.stringify(await colectivoService.getAll()))
     expect(
       respuesta.find((c) => c.id === destino.id).proyectos[0].colectivo,
     ).toBe(destino.id)
 
     service.delete(proyecto.id)
 
-    expect(colectivoService.getById(destino.id).proyectos).toEqual([])
+    expect(await colectivoService.getById(destino.id).proyectos).toEqual([])
     expect(
-      colectivoService.getAll().every((c) => c.proyectos.length === 0),
+      (await colectivoService.getAll()).every((c) => c.proyectos.length === 0),
     ).toBe(true)
   })
 
@@ -103,25 +103,25 @@ describe("ProyectoService", () => {
     (_caso, cambios) => {
       expect(() =>
         service.create({ ...dtoProyectoValido, ...cambios }),
-      ).toThrow(UnprocessableEntityError)
+      ).rejects.toThrow(UnprocessableEntityError)
       expect(service.getAll()).toEqual([])
 
       const proyecto = service.create(dtoProyectoValido)
-      const antes = structuredClone(proyecto)
+      const antes = {... proyecto }
 
       expect(() =>
-        service.update(proyecto.id, {
+         service.update(proyecto.id, {
           titulo: "No debe guardarse",
           ...cambios,
         }),
-      ).toThrow(UnprocessableEntityError)
+      ).rejects.toThrow(UnprocessableEntityError)
       expect(service.getById(proyecto.id)).toEqual(antes)
     },
   )
 
   describe("create", () => {
-    test("crea y guarda un proyecto cuando el título no existe todavía", () => {
-      const proyectoCreado = service.create(dtoProyectoValido)
+    test("crea y guarda un proyecto cuando el título no existe todavía", async () => {
+      const proyectoCreado = await service.create(dtoProyectoValido)
 
       expect(proyectoCreado.titulo).toBe(dtoProyectoValido.titulo)
       expect(proyectoCreado.descripcion).toBe(dtoProyectoValido.descripcion)
@@ -130,45 +130,45 @@ describe("ProyectoService", () => {
       expect(proyectoCreado.habilidadesRequeridas).toEqual(
         dtoProyectoValido.habilidadesRequeridas,
       )
-      expect(service.getAll()).toEqual([proyectoCreado])
+      expect(await service.getAll()).toEqual([proyectoCreado])
     })
 
-    test("rechaza un colectivo inexistente sin guardar el proyecto", () => {
-      expect(() =>
-        service.create({
+    test("rechaza un colectivo inexistente sin guardar el proyecto", async () => {
+      expect(async () =>
+        await service.create({
           ...dtoProyectoValido,
           colectivo: "colectivo-inexistente",
         }),
-      ).toThrow(NotFoundError)
+      ).rejects.toThrow(NotFoundError)
 
-      expect(service.getAll()).toHaveLength(0)
+      expect(await service.getAll()).toHaveLength(0)
     })
 
-    test("rechaza una habilidad inexistente aunque las anteriores existan", () => {
-      expect(() =>
-        service.create({
+    test("rechaza una habilidad inexistente aunque las anteriores existan", async () => {
+      expect(async () =>
+        await service.create({
           ...dtoProyectoValido,
           habilidadesRequeridas: [
             dtoProyectoValido.habilidadesRequeridas[0],
             "habilidad-inexistente",
           ],
         }),
-      ).toThrow(NotFoundError)
+      ).rejects.toThrow(NotFoundError)
 
-      expect(service.getAll()).toHaveLength(0)
+      expect(await service.getAll()).toHaveLength(0)
     })
 
-    test("permite crear un proyecto sin habilidades requeridas", () => {
-      const creado = service.create({
+    test("permite crear un proyecto sin habilidades requeridas", async () => {
+      const creado = await service.create({
         ...dtoProyectoValido,
         habilidadesRequeridas: [],
       })
 
-      expect(service.getById(creado.id).habilidadesRequeridas).toEqual([])
+      expect(await service.getById(creado.id).habilidadesRequeridas).toEqual([])
     })
 
-    test("tira ConflictError si ya existe un proyecto con el mismo título", () => {
-      service.create(dtoProyectoValido)
+    test("tira ConflictError si ya existe un proyecto con el mismo título", async () => {
+      await service.create(dtoProyectoValido)
 
       const crearDuplicado = () =>
         service.create({
@@ -176,46 +176,46 @@ describe("ProyectoService", () => {
           descripcion: "Otra descripción",
         })
 
-      expect(crearDuplicado).toThrow(ConflictError)
-      expect(service.getAll()).toHaveLength(1)
+      expect(crearDuplicado).rejects.toThrow(ConflictError)
+      expect(await service.getAll()).toHaveLength(1)
     })
   })
 
   describe("getById", () => {
-    test("devuelve el proyecto correspondiente cuando se encuentra por ID", () => {
-      const creado = service.create(dtoProyectoValido)
+    test("devuelve el proyecto correspondiente cuando se encuentra por ID", async () => {
+      const creado = await service.create(dtoProyectoValido)
 
-      const encontrado = service.getById(creado.id)
+      const encontrado = await service.getById(creado.id)
 
       expect(encontrado).toBeDefined()
       expect(encontrado.id).toBe(creado.id)
       expect(encontrado.titulo).toBe(dtoProyectoValido.titulo)
     })
 
-    test("lanza NotFoundError si el proyecto no existe", () => {
-      expect(() => service.getById("id-inexistente")).toThrow(NotFoundError)
+    test("lanza NotFoundError si el proyecto no existe", async () => {
+      await expect(service.getById("id-inexistente")).rejects.toThrow(NotFoundError)
     })
   })
 
   describe("update", () => {
-    test("rechaza cero horas sin modificar el proyecto", () => {
-      const proyecto = service.create(dtoProyectoValido)
-      const antes = structuredClone(proyecto)
+    test("rechaza cero horas sin modificar el proyecto", async () => {
+      const proyecto = await service.create(dtoProyectoValido)
+      const antes = {... proyecto }
 
       expect(() =>
         service.update(proyecto.id, {
           titulo: "No debe guardarse",
           cantHoras: 0,
         }),
-      ).toThrow(UnprocessableEntityError)
+      ).rejects.toThrow(UnprocessableEntityError)
 
-      expect(service.getById(proyecto.id)).toEqual(antes)
+      expect(await service.getById(proyecto.id)).toEqual(antes)
     })
 
-    test("actualiza un proyecto existente correctamente", () => {
-      const creado = service.create(dtoProyectoValido)
+    test("actualiza un proyecto existente correctamente", async () => {
+      const creado = await service.create(dtoProyectoValido)
 
-      const actualizado = service.update(creado.id, {
+      const actualizado = await service.update(creado.id, {
         titulo: "Nuevo Título",
         cantHoras: 20,
       })
@@ -233,107 +233,107 @@ describe("ProyectoService", () => {
       ["habilidad", { habilidadesRequeridas: ["habilidad-inexistente"] }],
     ])(
       "rechaza un cambio con %s inexistente sin modificar ningún campo",
-      (_tipo, cambios) => {
-        const creado = service.create(dtoProyectoValido)
-        const antes = structuredClone(creado)
+      async (_tipo, cambios) => {
+        const creado = await service.create(dtoProyectoValido)
+        const antes = {... creado}
 
-        expect(() =>
+        await expect(() =>
           service.update(creado.id, {
             titulo: "Este título no debe guardarse",
             cantHoras: 20,
             ...cambios,
           }),
-        ).toThrow(NotFoundError)
+        ).rejects.toThrow(NotFoundError)
 
-        expect(service.getById(creado.id)).toEqual(antes)
-        expect(service.getAll()).toHaveLength(1)
+        expect(await service.getById(creado.id)).toEqual(antes)
+        expect(await service.getAll()).toHaveLength(1)
       },
     )
 
-    test("permite cambiar el colectivo y las habilidades por otros existentes", () => {
-      const creado = service.create(dtoProyectoValido)
-      const colectivo = colectivoService.create({
+    test("permite cambiar el colectivo y las habilidades por otros existentes", async () => {
+      const creado = await service.create(dtoProyectoValido)
+      const colectivo = await colectivoService.create({
         nombre: "Otra organización",
         descripcion: "Proyecto comunitario",
         tipo: "ONG",
       })
-      const habilidad = habilidadService.create({
+      const habilidad = await habilidadService.create({
         titulo: "React",
         codigo: "react",
         descripcion: "Desarrollo web",
       })
 
-      service.update(creado.id, {
+      await service.update(creado.id, {
         colectivo: colectivo.id,
         habilidadesRequeridas: [habilidad.id],
       })
 
-      const actualizado = service.getById(creado.id)
+      const actualizado = await service.getById(creado.id)
       expect(actualizado.colectivo).toBe(colectivo.id)
       expect(actualizado.habilidadesRequeridas).toEqual([habilidad.id])
     })
 
-    test("lanza NotFoundError si intenta actualizar un proyecto inexistente", () => {
-      expect(() =>
+    test("lanza NotFoundError si intenta actualizar un proyecto inexistente", async () => {
+      await expect(() =>
         service.update("id-inexistente", { titulo: "Nuevo" }),
-      ).toThrow(NotFoundError)
+      ).rejects.toThrow(NotFoundError)
     })
   })
 
   describe("delete", () => {
-    test("elimina el proyecto correctamente si existe", () => {
-      const creado = service.create(dtoProyectoValido)
+    test("elimina el proyecto correctamente si existe", async () => {
+      const creado = await service.create(dtoProyectoValido)
 
-      service.delete(creado.id)
+      await service.delete(creado.id)
 
-      expect(service.getAll()).toHaveLength(0)
+      expect(await service.getAll()).toHaveLength(0)
     })
 
-    test("lanza NotFoundError al intentar eliminar un proyecto inexistente", () => {
-      expect(() => service.delete("id-inexistente")).toThrow(NotFoundError)
+    test("lanza NotFoundError al intentar eliminar un proyecto inexistente", async () => {
+      await expect(() => service.delete("id-inexistente")).rejects.toThrow(NotFoundError)
     })
   })
   describe("cerrarProyecto", () => {
-    test("cierra y guarda el proyecto actualizando su estado y fecha", () => {
-      const creado = service.create(dtoProyectoValido)
+    test("cierra y guarda el proyecto actualizando su estado y fecha", async () => {
+      const creado = await service.create(dtoProyectoValido)
 
-      const cerrado = service.cerrarProyecto(creado.id)
+      const cerrado = await service.cerrarProyecto(creado.id)
 
       expect(cerrado.estado).toBe(EstadoProyecto.CERRADO)
       expect(cerrado.fechaCierre).toBeInstanceOf(Date)
-      expect(service.getById(creado.id)).toBe(cerrado)
+      expect(await service.getById(creado.id)).toBe(cerrado)
     })
 
-    test("lanza NotFoundError si el proyecto no existe", () => {
-      expect(() => service.cerrarProyecto("id-inexistente")).toThrow(
+    test("lanza NotFoundError si el proyecto no existe", async () => {
+      await expect(() => service.cerrarProyecto("id-inexistente")).rejects.toThrow(
         NotFoundError,
       )
     })
 
-    test("rechaza un segundo cierre sin alterar la fecha", () => {
-      const creado = service.create(dtoProyectoValido)
-      const cerrado = service.cerrarProyecto(creado.id)
+    test("rechaza un segundo cierre sin alterar la fecha", async () => {
+      const creado = await service.create(dtoProyectoValido)
+      const cerrado = await service.cerrarProyecto(creado.id)
       const fechaCierre = cerrado.fechaCierre
 
-      expect(() => service.cerrarProyecto(creado.id)).toThrow(ConflictError)
-      expect(service.getById(creado.id).fechaCierre).toBe(fechaCierre)
+      await expect(() => service.cerrarProyecto(creado.id)).rejects.toThrow(ConflictError)
+      expect(await service.getById(creado.id).fechaCierre).toBe(fechaCierre)
     })
 
-    test("rechaza reabrir un proyecto sin aplicar cambios parciales", () => {
-      const creado = service.create(dtoProyectoValido)
-      service.cerrarProyecto(creado.id)
-      const antes = structuredClone(creado)
+    test("rechaza reabrir un proyecto sin aplicar cambios parciales", async () => {
+      const creado = await service.create(dtoProyectoValido)
+      await service.cerrarProyecto(creado.id)
+      const antes = { ...creado }
 
-      expect(() =>
+      await   expect(() =>
         service.update(creado.id, {
           titulo: "No debe guardarse",
           estado: EstadoProyecto.PUBLICADO,
           fechaCierre: null,
         }),
-      ).toThrow(ConflictError)
-      expect(service.getById(creado.id)).toEqual(antes)
+      ).rejects.toThrow(ConflictError)
+      expect(await service.getById(creado.id)).toEqual(antes)
 
-      const editado = service.update(creado.id, {
+      const editado = await service.update(creado.id, {
         descripcion: "Descripción actualizada",
       })
       expect(editado.estado).toBe(EstadoProyecto.CERRADO)

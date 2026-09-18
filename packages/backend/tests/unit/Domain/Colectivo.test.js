@@ -1,7 +1,7 @@
 import { describe, expect, test } from "@jest/globals"
 import Colectivo from "../../../src/domain/Colectivo"
 import TipoColectivo from "../../../src/domain/TipoColectivo"
-import { UnprocessableEntityError } from "../../../src/errors/AppError"
+import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 
 describe("Colectivo", () => {
   test("Se construye correctamente con datos validos", () => {
@@ -46,12 +46,12 @@ describe("Colectivo", () => {
           "Organización dedicada al reciclaje e inclusión social.",
           "ONGs",
         ),
-    ).toThrow(UnprocessableEntityError)
+    ).toThrow(DomainValidationError)
   })
   test("Falta descripçion del colectivo", () => {
     expect(
       () => new Colectivo("Fundacion EcoFuturo", undefined, "ONGs"),
-    ).toThrow(UnprocessableEntityError)
+    ).toThrow(DomainValidationError)
   })
   test("Falta tipo del colectivo", () => {
     expect(
@@ -61,6 +61,6 @@ describe("Colectivo", () => {
           "Organización dedicada al reciclaje e inclusión social.",
           undefined,
         ),
-    ).toThrow(UnprocessableEntityError)
+    ).toThrow(DomainValidationError)
   })
 })
