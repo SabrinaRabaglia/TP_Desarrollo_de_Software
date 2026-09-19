@@ -50,6 +50,24 @@ export default class ColectivoService {
     }
   }
 
+  resolverUbicacion = async ({ pais, provincia }) => {
+    const provinciaId = provincia?.id ?? provincia
+    let instanciaProvincia = null
+    if (provinciaId) {
+      instanciaProvincia = await this.provinciaRepository.findById(provinciaId)
+      if (!instanciaProvincia) throw new InvalidReference("Provincia no encontrada")
+    }
+
+    const paisId = pais?.id ?? pais
+    let instanciaPais = null
+    if (paisId) {
+      instanciaPais = await this.paisRepository.findById(paisId)
+      if (!instanciaPais) throw new InvalidReference("País no encontrado")
+    }
+
+    return { pais: instanciaPais, provincia: instanciaProvincia }
+  }
+
   create = async (nuevo) => {
     const colectivoExistente = await this.colectivoRepository.findByNombre(
       nuevo.nombre,
@@ -59,26 +77,14 @@ export default class ColectivoService {
     }
 
     await this.validarTipo(nuevo.tipo)
-
-
-    let instanciaProvincia = null;
-    if (nuevo.provincia) {
-      instanciaProvincia = await this.provinciaRepository.findById(nuevo.provincia);
-      if (!instanciaProvincia) throw new InvalidReference("Provincia no encontrada")
-    }
-
-    let instanciaPais = null;
-    if (nuevo.pais) {
-      instanciaPais = await this.paisRepository.findById(nuevo.pais);
-      if (!instanciaPais) throw new InvalidReference("País no encontrado")
-    }
+    const { pais, provincia } = await this.resolverUbicacion(nuevo)
 
     const colectivo = new Colectivo(
       nuevo.nombre,
       nuevo.descripcion,
       nuevo.tipo,
-      instanciaPais,
-      instanciaProvincia,
+      pais,
+      provincia,
       nuevo.ciudad,
     )
     colectivo.id = randomUUID()
@@ -99,16 +105,12 @@ export default class ColectivoService {
 
     if (otro && otro.id !== colectivoExistente.id)
       throw new AlreadyExists("Ya existe un colectivo con ese nombre")
-    let instanciaProvincia = null;
-    if (colectivoActualizado.provincia) {
-      instanciaProvincia = await this.provinciaRepository.findById(colectivoActualizado.provincia);
-      if (!instanciaProvincia) throw new InvalidReference("Provincia no encontrada")
-    }
+    const { pais, provincia } = await this.resolverUbicacion(colectivoActualizado)
     colectivoExistente.nombre = colectivoActualizado.nombre
     colectivoExistente.descripcion = colectivoActualizado.descripcion
     colectivoExistente.tipo = colectivoActualizado.tipo
-    colectivoExistente.pais = colectivoActualizado.pais || null
-    colectivoExistente.provincia = colectivoActualizado.provincia || null
+    colectivoExistente.pais = pais
+    colectivoExistente.provincia = provincia
     colectivoExistente.ciudad = colectivoActualizado.ciudad || null
 
     const colectivoGuardado = await this.colectivoRepository.save(colectivoExistente)

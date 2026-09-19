@@ -20,6 +20,7 @@ describe("ColectivoService", () => {
   test.each([
     ["tipo desconocido", { tipo: "Tipo inexistente" }],
     ["provincia desconocida", { provincia: "999" }],
+    ["país desconocido", { pais: "999" }],
   ])(
     "rechaza %s al crear, actualizar y aplicar patch sin modificar datos",
     async (_caso, cambios) => {
@@ -168,6 +169,35 @@ describe("ColectivoService", () => {
     })
 
     describe("update", () => {
+      test("persiste país y provincia como objetos de catálogo", async () => {
+        const service = new ColectivoService(
+          new ColectivoRepository(),
+          new TipoColectivoRepository(),
+          new ProyectoRepository(),
+          new ProvinciaRepository(),
+          new PaisRepository()
+        )
+        const colectivo = await service.create({
+          nombre: "Asamblea Ambiental",
+          descripcion: "Descripción original",
+          tipo: "Asamblea",
+        })
+
+        const actualizado = await service.update(colectivo.id, {
+          nombre: "Asamblea Ambiental",
+          descripcion: "Descripción original",
+          tipo: "Asamblea",
+          pais: "1",
+          provincia: "2",
+        })
+
+        expect(actualizado.pais).toMatchObject({ id: "1", nombre: "Argentina" })
+        expect(actualizado.provincia).toMatchObject({
+          id: "2",
+          nombre: "Ciudad Autónoma de Buenos Aires (CABA)",
+        })
+      })
+
       test("rechaza un nombre vacío en una actualización parcial sin modificar el colectivo", async () => {
         const service = new ColectivoService(
           new ColectivoRepository(),
