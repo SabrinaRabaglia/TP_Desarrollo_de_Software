@@ -40,7 +40,7 @@ export default class ColectivoService {
   validarTipo = async(tipo) => {
     if (!await this.tipoColectivoRepository.findByNombre(tipo)) {
       throw new InvalidReference(
-        "El tipo de colectivo no pertenece al catálogo.",
+        "El tipo de colectivo no pertenece al catálogo",
       )
     }
   }

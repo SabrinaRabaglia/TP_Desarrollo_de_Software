@@ -16,9 +16,7 @@ export default class HabilidadService {
       nueva.codigo,
     )
     if (habilidadExistente) {
-      throw new AlreadyExists(
-        `Ya existe una habilidad con código: ${nueva.codigo}`,
-      )
+      throw new AlreadyExists("Ya existe una habilidad con ese código")
     }
     return await this.habilidadRepository.save(habilidad)
   }
@@ -35,9 +33,7 @@ export default class HabilidadService {
       actualizada.codigo,
     )
     if (otraConMismoCodigo && otraConMismoCodigo.id !== id) {
-      throw new AlreadyExists(
-        `Ya existe una habilidad con código: ${actualizada.codigo}`,
-      )
+      throw new AlreadyExists("Ya existe una habilidad con ese código")
     }
 
     habilidadExistente.titulo = actualizada.titulo
