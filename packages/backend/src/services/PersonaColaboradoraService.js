@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto"
 import { EntityNotFound, InvalidReference } from "../errors/ApplicationErrors.js"
 import PersonaColaboradora from "../domain/PersonaColaboradora.js"
 import Cuenta from "../domain/Cuenta.js"
@@ -40,6 +41,7 @@ export default class PersonaColaboradoraService {
       cuentas,
       habilidades,
     )
+    personaColaboradora.id = randomUUID()
 
     return await this.personaColaboradoraRepository.save(personaColaboradora)
   }

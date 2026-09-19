@@ -1,5 +1,6 @@
 import { EstadoProyecto } from "./enums/EstadoProyecto.js"
 import { ModalidadColaboracion } from "./enums/ModalidadColaboracion.js"
+import { UnidadCompromiso } from "./enums/UnidadCompromiso.js"
 import { DomainValidationError,DomainRuleError } from "./errors/DomainErrors.js"
 
 export default class Proyecto {
@@ -22,6 +23,7 @@ export default class Proyecto {
       cantHoras,
       colectivo,
       modalidadesColaboracion,
+      estado,
       fechaAlta, fechaCierre
     })
     this.titulo = titulo
@@ -78,6 +80,7 @@ export default class Proyecto {
     cantHoras,
     colectivo,
     modalidadesColaboracion,
+    estado,
     fechaAlta, fechaCierre
   }) {
     if (
@@ -89,6 +92,11 @@ export default class Proyecto {
     ) {
       throw new DomainValidationError(
         "Título, descripción, unidad de compromiso, cantidad de horas y colectivo son obligatorios.",
+      )
+    }
+    if (!Object.values(UnidadCompromiso).includes(unidadCompromiso)) {
+      throw new DomainValidationError(
+        "La unidad de compromiso es inválida.",
       )
     }
     if (!Number.isInteger(cantHoras) || cantHoras <= 0) {
@@ -113,6 +121,12 @@ export default class Proyecto {
       throw new DomainValidationError(
         "La modalidad de colaboración es inválida.",
       )
+    }
+    if (
+      estado != null &&
+      !Object.values(EstadoProyecto).includes(estado)
+    ) {
+      throw new DomainValidationError("El estado del proyecto es inválido.")
     }
     if (fechaCierre && fechaCierre < fechaAlta) {
        throw new DomainValidationError(

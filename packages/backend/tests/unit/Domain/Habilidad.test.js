@@ -15,13 +15,10 @@ describe("Habilidad", () => {
     expect(habilidad.descripcion).toBe("Desarrollo de interfaces con React")
   })
 
-  test("genera un id único por instancia", () => {
-    const habilidad1 = new Habilidad("React", "react", "desc")
-    const habilidad2 = new Habilidad("Node", "node", "desc")
+  test("no asigna id: eso corresponde a persistencia", () => {
+    const habilidad = new Habilidad("React", "react", "desc")
 
-    expect(habilidad1.id).toBeDefined()
-    expect(habilidad2.id).toBeDefined()
-    expect(habilidad1.id).not.toBe(habilidad2.id)
+    expect(habilidad.id).toBeUndefined()
   })
 
   test("tira DomainValidationError si falta el título", () => {

@@ -25,7 +25,9 @@ describe("ColaboracionService", () => {
       "javascript",
       "Desarrollo web",
     )
+    habilidad.id = "habilidad-1"
     persona = new PersonaColaboradora("Ana")
+    persona.id = "persona-1"
     persona.agregarHabilidad(habilidad)
     personaRepository.save(persona)
     proyecto = new Proyecto(

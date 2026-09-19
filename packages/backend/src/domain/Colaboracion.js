@@ -7,13 +7,10 @@ export default class Colaboracion {
         "La colaboración debe tener una persona colaboradora y un proyecto asociados.",
       )
     }
-    if (typeof proyecto.proyectoCerrado === "function" && proyecto.proyectoCerrado()) {
+    if (proyecto.proyectoCerrado()) {
       throw new DomainRuleError("El proyecto no acepta nuevos colaboradores.")
     }
-    if (
-      typeof proyecto.poseeHabilidadNecesaria === "function" &&
-      !proyecto.poseeHabilidadNecesaria(personaColaboradora)
-    ) {
+    if (!proyecto.poseeHabilidadNecesaria(personaColaboradora)) {
       throw new DomainRuleError(
         "La persona debe poseer al menos una habilidad requerida.",
       )

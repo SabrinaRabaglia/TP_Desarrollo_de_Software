@@ -2,7 +2,6 @@ import { DomainValidationError } from "./errors/DomainErrors.js"
 export default class Habilidad {
   constructor(titulo, codigo, descripcion) {
     Habilidad.validarDatos({ titulo, codigo, descripcion })
-    this.id = crypto.randomUUID()
     this.titulo = titulo
     this.codigo = codigo
     this.descripcion = descripcion

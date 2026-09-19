@@ -18,6 +18,7 @@ describe("PersonaColaboradoraService", () => {
     repository.deleteAll() // Limpiamos la memoria estática antes de cada test
     
     habilidad = new Habilidad("React", "react", "Desarrollo web")
+    habilidad.id = "habilidad-1"
     const habilidadService = {
       getById: jest.fn(async (id) => {
         if (id !== habilidad.id) {

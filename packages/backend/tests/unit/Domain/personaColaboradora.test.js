@@ -48,12 +48,10 @@ describe("PersonaColaboradora", () => {
     expect(persona.habilidades).toEqual([habilidad])
   })
 
-  test("genera un id único por instancia", () => {
-    const persona1 = new PersonaColaboradora("anon1")
-    const persona2 = new PersonaColaboradora("anon2")
+  test("no asigna id: eso corresponde a persistencia", () => {
+    const persona = new PersonaColaboradora("anon1")
 
-    expect(persona1.id).toBeDefined()
-    expect(persona1.id).not.toBe(persona2.id)
+    expect(persona.id).toBeUndefined()
   })
 
   test("tira DomainValidationError si falta nombreFantasia", () => {

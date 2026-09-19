@@ -1,13 +1,43 @@
 import { expect, test } from "@jest/globals"
 import Colaboracion from "../../../src/domain/Colaboracion.js"
+import Proyecto from "../../../src/domain/Proyecto.js"
+import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
+import Habilidad from "../../../src/domain/Habilidad.js"
+import { UnidadCompromiso } from "../../../src/domain/enums/UnidadCompromiso.js"
+import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColaboracion.js"
 import {
   DomainRuleError,
   DomainValidationError,
 } from "../../../src/domain/errors/DomainErrors.js"
 
+const habilidadConId = () => {
+  const habilidad = new Habilidad("JavaScript", "javascript", "Desarrollo web")
+  habilidad.id = "hab-1"
+  return habilidad
+}
+
+const personaConHabilidad = () => {
+  const persona = new PersonaColaboradora("Ana")
+  persona.agregarHabilidad(habilidadConId())
+  return persona
+}
+
+const proyectoAbierto = (habilidadesRequeridas = ["hab-1"]) => {
+  const proyecto = new Proyecto(
+    "Plataforma",
+    "Desarrollo web",
+    UnidadCompromiso.HORAS_TOTALES,
+    5,
+    "colectivo-1",
+    [ModalidadColaboracion.GRATUITA],
+  )
+  proyecto.habilidadesRequeridas = habilidadesRequeridas
+  return proyecto
+}
+
 test("la colaboración exige ambas entidades y registra la fecha de inscripción", () => {
-  const persona = { id: "persona-1" }
-  const proyecto = { id: "proyecto-1" }
+  const persona = personaConHabilidad()
+  const proyecto = proyectoAbierto()
   const antes = Date.now()
   const colaboracion = new Colaboracion(persona, proyecto)
 
@@ -26,23 +56,16 @@ test("la colaboración exige ambas entidades y registra la fecha de inscripción
 })
 
 test("rechaza colaborar en un proyecto cerrado", () => {
-  const persona = { id: "persona-1", habilidades: [{ id: "hab-1" }] }
-  const proyecto = {
-    id: "proyecto-1",
-    proyectoCerrado: () => true,
-    poseeHabilidadNecesaria: () => true,
-  }
+  const persona = personaConHabilidad()
+  const proyecto = proyectoAbierto()
+  proyecto.cerrar()
 
   expect(() => new Colaboracion(persona, proyecto)).toThrow(DomainRuleError)
 })
 
 test("rechaza colaborar sin una habilidad requerida", () => {
-  const persona = { id: "persona-1", habilidades: [] }
-  const proyecto = {
-    id: "proyecto-1",
-    proyectoCerrado: () => false,
-    poseeHabilidadNecesaria: () => false,
-  }
+  const persona = new PersonaColaboradora("Ana")
+  const proyecto = proyectoAbierto()
 
   expect(() => new Colaboracion(persona, proyecto)).toThrow(DomainRuleError)
 })

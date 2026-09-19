@@ -91,6 +91,7 @@ describe("Proyecto", () => {
       [ModalidadColaboracion.GRATUITA],
     )
     const habilidad = new Habilidad("JavaScript", "javascript", "Desarrollo")
+    habilidad.id = "javascript"
     const persona = { habilidades: [habilidad] }
 
     proyecto.habilidadesRequeridas = ["otra-habilidad", habilidad.id]
@@ -208,5 +209,34 @@ describe("Proyecto", () => {
     expect(() =>
       proyecto.assertPuedeActualizarEstado(EstadoProyecto.PUBLICADO),
     ).toThrow(DomainRuleError)
+  })
+
+  test("rechaza una unidad de compromiso inválida", () => {
+    expect(
+      () =>
+        new Proyecto(
+          "Taller de Reciclaje",
+          "Capacitación comunitaria",
+          "HORAS_ANUALES",
+          10,
+          colectivo,
+          [ModalidadColaboracion.GRATUITA],
+        ),
+    ).toThrow(DomainValidationError)
+  })
+
+  test("rechaza un estado inválido", () => {
+    expect(
+      () =>
+        new Proyecto(
+          "Taller de Reciclaje",
+          "Capacitación comunitaria",
+          UnidadCompromiso.HORAS_MENSUALES,
+          10,
+          colectivo,
+          [ModalidadColaboracion.GRATUITA],
+          "BORRADOR",
+        ),
+    ).toThrow(DomainValidationError)
   })
 })

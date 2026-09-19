@@ -10,7 +10,6 @@ export default class PersonaColaboradora {
     habilidades = [],
   ) {
     PersonaColaboradora.validarDatos({ nombreFantasia })
-    this.id = crypto.randomUUID()
     this.nombreFantasia = nombreFantasia
     this.nombre = nombre
     this.apellido = apellido
