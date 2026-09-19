@@ -3,15 +3,8 @@ import { AlreadyExists, EntityNotFound, InvalidReference } from "../errors/Appli
 import { Proyecto } from "../domain/Proyecto.js"
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
 
-import  ProyectoRepository  from "../repositories/ProyectoRepository.js"
-import  ColectivoService  from "./ColectivoService.js"
-import  HabilidadService  from "./HabilidadService.js"
-
-
 export default class ProyectoService {
-  constructor(proyectoRepository = new ProyectoRepository(),
-    colectivoService = new ColectivoService(),
-    habilidadService = new HabilidadService()) {
+  constructor(proyectoRepository, colectivoService, habilidadService) {
     this.proyectoRepository = proyectoRepository
     this.colectivoService = colectivoService
     this.habilidadService = habilidadService

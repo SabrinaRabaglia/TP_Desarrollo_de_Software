@@ -4,6 +4,8 @@ import ProyectoRepository from "../../../src/repositories/ProyectoRepository.js"
 import ColectivoService from "../../../src/services/ColectivoService.js"
 import ColectivoRepository from "../../../src/repositories/ColectivoRepository.js"
 import TipoColectivoRepository from "../../../src/repositories/TipoColectivoRepository.js"
+import ProvinciaRepository from "../../../src/repositories/ProvinciaRepository.js"
+import PaisRepository from "../../../src/repositories/PaisRepository.js"
 import HabilidadService from "../../../src/services/HabilidadService.js"
 import HabilidadRepository from "../../../src/repositories/HabilidadRepository.js"
 import {
@@ -37,6 +39,8 @@ describe("ProyectoService", () => {
       colectivoRepository,
       tipoColectivoRepository,
       proyectoRepository,
+      new ProvinciaRepository(),
+      new PaisRepository(),
     )
     habilidadService = new HabilidadService(habilidadRepository)
     service = new ProyectoService(

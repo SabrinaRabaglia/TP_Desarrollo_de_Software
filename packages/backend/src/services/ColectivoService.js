@@ -1,10 +1,5 @@
 import { randomUUID } from "node:crypto"
 import Colectivo from "../domain/Colectivo.js"
-import  ColectivoRepository  from "../repositories/ColectivoRepository.js"
-import  TipoColectivoRepository  from "../repositories/TipoColectivoRepository.js"
-import  ProyectoRepository  from "../repositories/ProyectoRepository.js"
-import  ProvinciaRepository  from "../repositories/ProvinciaRepository.js"
-import  PaisRepository  from "../repositories/PaisRepository.js"
 import {
   AlreadyExists,
   EntityNotFound,
@@ -13,11 +8,11 @@ import {
 
 export default class ColectivoService {
   constructor(
-    colectivoRepository = new ColectivoRepository(),
-    tipoColectivoRepository = new TipoColectivoRepository(),
-    proyectoRepository = new ProyectoRepository(),
-    provinciaRepository = new ProvinciaRepository(),
-    paisRepository = new PaisRepository()
+    colectivoRepository,
+    tipoColectivoRepository,
+    proyectoRepository,
+    provinciaRepository,
+    paisRepository,
   ) {
     this.colectivoRepository = colectivoRepository
     this.tipoColectivoRepository = tipoColectivoRepository
