@@ -2,7 +2,7 @@ import Colaboracion from "../domain/Colaboracion.js"
 import ColaboracionRepository from "../repositories/ColaboracionRepository.js"
 import ProyectoRepository from "../repositories/ProyectoRepository.js"
 import PersonaColaboradoraRepository from "../repositories/PersonaColaboradoraRepository.js"
-import { AlreadyExists, EntityNotFound } from "../errors/ApplicationErrors.js"
+import { AlreadyExists, InvalidReference } from "../errors/ApplicationErrors.js"
 
 export default class ColaboracionService {
   constructor(colaboracionRepository = new ColaboracionRepository()
@@ -15,11 +15,11 @@ export default class ColaboracionService {
   create = async ({ proyectoId, personaColaboradoraId }) => {
     const proyecto = await this.proyectoRepository.findById(proyectoId)
     if (!proyecto) {
-      throw new EntityNotFound("Proyecto no encontrado")
+      throw new InvalidReference("Proyecto no encontrado")
     }
     const persona = await this.personaRepository.findById(personaColaboradoraId)
     if (!persona) {
-      throw new EntityNotFound("Persona colaboradora no encontrada")
+      throw new InvalidReference("Persona colaboradora no encontrada")
     }
     if (
       await this.colaboracionRepository.findByPersonaAndProyecto(

@@ -6,7 +6,7 @@ import PersonaColaboradoraRepository from "../../../src/repositories/PersonaCola
 import Proyecto from "../../../src/domain/Proyecto.js"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import Habilidad from "../../../src/domain/Habilidad.js"
-import { AlreadyExists, EntityNotFound } from "../../../src/errors/ApplicationErrors.js"
+import { AlreadyExists, InvalidReference } from "../../../src/errors/ApplicationErrors.js"
 import { DomainRuleError } from "../../../src/domain/errors/DomainErrors.js"
 
 describe("ColaboracionService", () => {
@@ -57,12 +57,12 @@ describe("ColaboracionService", () => {
     [
       "proyecto inexistente",
       async () => await proyectoRepository.delete(proyecto.id),
-      EntityNotFound,
+      InvalidReference,
     ],
     [
       "persona inexistente",
       async () => await personaRepository.deleteById(persona.id),
-      EntityNotFound,
+      InvalidReference,
     ],
     [
       "proyecto cerrado",
