@@ -29,5 +29,5 @@ routes.get("/proyectos", proyectoController.getAll)
 routes.get("/proyectos/:id", proyectoController.getById)
 routes.put("/proyectos/:id", proyectoController.put)
 routes.delete("/proyectos/:id", proyectoController.delete)
-routes.patch("/proyectos/:id", proyectoController.cerrar)
+routes.patch("/proyectos/:id", proyectoController.patch)
 export default routes

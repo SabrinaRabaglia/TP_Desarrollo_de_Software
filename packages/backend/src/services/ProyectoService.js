@@ -1,9 +1,7 @@
 import { randomUUID } from "node:crypto"
-import { ConflictError, NotFoundError } from "../errors/AppError.js"
+import { AlreadyExists, EntityNotFound, InvalidReference } from "../errors/ApplicationErrors.js"
 import { Proyecto } from "../domain/Proyecto.js"
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
-import { ModalidadColaboracion } from "../domain/enums/ModalidadColaboracion.js"
-import {  UnprocessableEntityError } from "../errors/AppError.js"
 
 import  ProyectoRepository  from "../repositories/ProyectoRepository.js"
 import  ColectivoService  from "./ColectivoService.js"
@@ -27,34 +25,35 @@ export default class ProyectoService {
   getById = async (id) => {
     const proyecto = await this.proyectoRepository.findById(id)
     if (!proyecto) {
-      throw new NotFoundError("PROYECTO NO ENCONTRADO!")
+      throw new EntityNotFound("Proyecto no encontrado")
     }
     return proyecto
   }
 
   validarReferencias = async (datos) => {
-    await this.colectivoService.getById(datos.colectivo)
-    for (const id of datos.habilidadesRequeridas ?? []) {
-      await this.habilidadService.getById(id)
+    try {
+      await this.colectivoService.getById(datos.colectivo)
+    } catch (error) {
+      if (error instanceof EntityNotFound) {
+        throw new InvalidReference("Colectivo no encontrado")
+      }
+      throw error
     }
-  }
-
-  validarDatos(modalidadesColaboracion) {
-    if (
-      modalidadesColaboracion.some(
-        (modalidad) =>
-          !Object.values(ModalidadColaboracion).includes(modalidad),
-      )
-    ) {
-      throw new UnprocessableEntityError(
-        "La modalidad de colaboración es inválida.",
-      )
+    for (const id of datos.habilidadesRequeridas ?? []) {
+      try {
+        await this.habilidadService.getById(id)
+      } catch (error) {
+        if (error instanceof EntityNotFound) {
+          throw new InvalidReference("Habilidad no encontrada")
+        }
+        throw error
+      }
     }
   }
 
   create = async (nuevo) => {
     if (nuevo.titulo && await this.proyectoRepository.findByTitulo?.(nuevo.titulo)) {
-      throw new ConflictError("PROYECTO EXISTENTE!")
+      throw new AlreadyExists("Ya existe un proyecto con ese título")
     }
 
     await this.validarReferencias(nuevo)
@@ -79,13 +78,7 @@ export default class ProyectoService {
   update = async (id, proyectoActualizado) => {
     const proyectoExistente = await  this.getById(id)
 
-    if (
-      proyectoExistente.proyectoCerrado() &&
-      proyectoActualizado.estado !== undefined &&
-      proyectoActualizado.estado !== EstadoProyecto.CERRADO
-    ) {
-      throw new ConflictError("No se puede reabrir un proyecto cerrado")
-    }
+    proyectoExistente.assertPuedeActualizarEstado(proyectoActualizado.estado)
     const existenteConMismoTitulo = await this.proyectoRepository.findByTitulo?.(proyectoActualizado.titulo)
     if (
       proyectoActualizado.titulo &&
@@ -93,7 +86,7 @@ export default class ProyectoService {
       existenteConMismoTitulo &&
       existenteConMismoTitulo.id !== id
     ) {
-      throw new ConflictError("PROYECTO EXISTENTE!")
+      throw new AlreadyExists("Ya existe un proyecto con ese título")
     }
 
     const datosActualizados = {
@@ -103,15 +96,13 @@ export default class ProyectoService {
     Proyecto.validarDatos(datosActualizados)
     await this.validarReferencias(datosActualizados)
 
-    Object.assign(proyectoExistente, proyectoActualizado)
+    const { estado, ...resto } = proyectoActualizado
+    Object.assign(proyectoExistente, resto)
+    if (estado === EstadoProyecto.CERRADO) {
+      proyectoExistente.cerrar()
+    }
 
     return await this.proyectoRepository.save(proyectoExistente)
-  }
-
-  cerrarProyecto = async (id) => {
-    const proyecto = await this.getById(id)
-    proyecto.cerrar()
-    return await this.proyectoRepository.save(proyecto)
   }
 
   delete = async (id) => {

@@ -193,4 +193,20 @@ describe("Proyecto", () => {
     expect(() => proyecto.cerrar()).toThrow(DomainRuleError)
     expect(proyecto.fechaCierre).toBe(fechaCierre)
   })
+
+  test("rechaza reabrir un proyecto cerrado", () => {
+    const proyecto = new Proyecto(
+      "Taller de Reciclaje",
+      "Capacitación comunitaria",
+      UnidadCompromiso.HORAS_MENSUALES,
+      10,
+      colectivo,
+      [ModalidadColaboracion.GRATUITA],
+    )
+    proyecto.cerrar()
+
+    expect(() =>
+      proyecto.assertPuedeActualizarEstado(EstadoProyecto.PUBLICADO),
+    ).toThrow(DomainRuleError)
+  })
 })

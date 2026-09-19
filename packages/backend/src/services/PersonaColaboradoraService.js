@@ -1,8 +1,6 @@
-import { NotFoundError,UnprocessableEntityError } from "../errors/AppError.js"
+import { EntityNotFound, InvalidReference } from "../errors/ApplicationErrors.js"
 import PersonaColaboradora from "../domain/PersonaColaboradora.js"
 import Cuenta from "../domain/Cuenta.js"
-import { TipoCuenta } from "../domain/enums/TipoCuenta.js"
-
 
 export default class PersonaColaboradoraService {
   constructor(personaColaboradoraRepository, habilidadService) {
@@ -11,9 +9,16 @@ export default class PersonaColaboradoraService {
   }
 
   buscarHabilidades = async (ids) => {
-    return await Promise.all(
-      (ids ?? []).map((id) => this.habilidadService.getById(id))
-    );
+    try {
+      return await Promise.all(
+        (ids ?? []).map((id) => this.habilidadService.getById(id))
+      )
+    } catch (error) {
+      if (error instanceof EntityNotFound) {
+        throw new InvalidReference(error.message)
+      }
+      throw error
+    }
   }
 
   crearCuentas = (cuentas) => {
@@ -23,19 +28,9 @@ export default class PersonaColaboradoraService {
   }
 
   create = async (nueva) => {
-   
     const habilidades = await this.buscarHabilidades(nueva.habilidades)
     const cuentas = this.crearCuentas(nueva.cuentas)
 
-    if (nueva.cuentas && nueva.cuentas.length > 0) {
-      nueva.cuentas.forEach((cuenta) => {
-        if (!Object.values(TipoCuenta).includes(cuenta.tipo)) {
-          throw new UnprocessableEntityError(`Tipo de cuenta inválido: ${cuenta.tipo}`)
-        }
-      })
-    }
-
-   
     const personaColaboradora = new PersonaColaboradora(
       nueva.nombreFantasia,
       nueva.nombre,
@@ -52,7 +47,7 @@ export default class PersonaColaboradoraService {
   update = async (id, actualizada) => {
     const personaExistente = await this.personaColaboradoraRepository.findById(id)
     if (!personaExistente) {
-      throw new NotFoundError("Persona colaboradora no encontrada")
+      throw new EntityNotFound("Persona colaboradora no encontrada")
     }
 
     PersonaColaboradora.validarDatos(actualizada)
@@ -75,7 +70,7 @@ export default class PersonaColaboradoraService {
   delete = async (id) => {
     const personaExistente = await this.personaColaboradoraRepository.findById(id)
     if (!personaExistente) {
-      throw new NotFoundError("Persona colaboradora no encontrada")
+      throw new EntityNotFound("Persona colaboradora no encontrada")
     }
     await this.personaColaboradoraRepository.deleteById(id)
   }
@@ -87,7 +82,7 @@ export default class PersonaColaboradoraService {
   getById = async (id) => {
     const personaColaboradora = await this.personaColaboradoraRepository.findById(id)
     if (!personaColaboradora) {
-      throw new NotFoundError("Persona colaboradora no encontrada")
+      throw new EntityNotFound("Persona colaboradora no encontrada")
     }
     return personaColaboradora
   }

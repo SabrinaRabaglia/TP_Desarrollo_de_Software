@@ -10,7 +10,7 @@ export default class Habilidad {
 
   static validarDatos({ titulo, codigo, descripcion }) {
     if (!titulo || !codigo || !descripcion) {
-      throw new DomainValidationError("Todos los campos son requeridos")
+      throw new DomainValidationError("Título, código y descripción son obligatorios.")
     }
     Habilidad.validarCodigo(titulo, codigo)
     
@@ -30,7 +30,7 @@ export default class Habilidad {
 
     if (!esperado || codigo !== esperado) {
       throw new DomainValidationError(
-        "El código debe coincidir con el título normalizado en snake_case, en minúsculas y sin tildes",
+        "El código debe coincidir con el título normalizado en snake_case, en minúsculas y sin tildes.",
       )
     }
   }

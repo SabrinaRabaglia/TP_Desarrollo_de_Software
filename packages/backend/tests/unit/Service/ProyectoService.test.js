@@ -7,10 +7,10 @@ import TipoColectivoRepository from "../../../src/repositories/TipoColectivoRepo
 import HabilidadService from "../../../src/services/HabilidadService.js"
 import HabilidadRepository from "../../../src/repositories/HabilidadRepository.js"
 import {
-  ConflictError,
-  NotFoundError,
-  UnprocessableEntityError,
-} from "../../../src/errors/AppError.js"
+  AlreadyExists,
+  EntityNotFound,
+  InvalidReference,
+} from "../../../src/errors/ApplicationErrors.js"
 import { DomainValidationError, DomainRuleError } from "../../../src/domain/errors/DomainErrors.js"
 import { EstadoProyecto } from "../../../src/domain/enums/EstadoProyecto.js"
 import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColaboracion.js"
@@ -156,7 +156,7 @@ expect(colectivoOrigen.proyectos).toEqual([proyecto])
           ...dtoProyectoValido,
           colectivo: "colectivo-inexistente",
         }),
-      ).rejects.toThrow(NotFoundError)
+      ).rejects.toThrow(InvalidReference)
 
       expect(await service.getAll()).toHaveLength(0)
     })
@@ -170,7 +170,7 @@ expect(colectivoOrigen.proyectos).toEqual([proyecto])
             "habilidad-inexistente",
           ],
         }),
-      ).rejects.toThrow(NotFoundError)
+      ).rejects.toThrow(InvalidReference)
 
       expect(await service.getAll()).toHaveLength(0)
     })
@@ -184,7 +184,7 @@ expect(colectivoOrigen.proyectos).toEqual([proyecto])
       expect((await service.getById(creado.id)).habilidadesRequeridas).toEqual([])
     })
 
-    test("tira ConflictError si ya existe un proyecto con el mismo título", async () => {
+    test("tira AlreadyExists si ya existe un proyecto con el mismo título", async () => {
       await service.create(dtoProyectoValido)
 
       await expect(
@@ -192,7 +192,7 @@ expect(colectivoOrigen.proyectos).toEqual([proyecto])
           ...dtoProyectoValido,
           descripcion: "Otra descripción",
         }),
-      ).rejects.toThrow(ConflictError)
+      ).rejects.toThrow(AlreadyExists)
       
       expect(await service.getAll()).toHaveLength(1)
     })
@@ -209,8 +209,8 @@ expect(colectivoOrigen.proyectos).toEqual([proyecto])
       expect(encontrado.titulo).toBe(dtoProyectoValido.titulo)
     })
 
-    test("lanza NotFoundError si el proyecto no existe", async () => {
-      await expect(service.getById("id-inexistente")).rejects.toThrow(NotFoundError)
+    test("lanza EntityNotFound si el proyecto no existe", async () => {
+      await expect(service.getById("id-inexistente")).rejects.toThrow(EntityNotFound)
     })
   })
 
@@ -260,7 +260,7 @@ expect(colectivoOrigen.proyectos).toEqual([proyecto])
             cantHoras: 20,
             ...cambios,
           }),
-        ).rejects.toThrow(NotFoundError)
+        ).rejects.toThrow(InvalidReference)
 
         expect(await service.getById(creado.id)).toEqual(antes)
         expect(await service.getAll()).toHaveLength(1)
@@ -290,10 +290,10 @@ expect(colectivoOrigen.proyectos).toEqual([proyecto])
       expect(actualizado.habilidadesRequeridas).toEqual([habilidad.id])
     })
 
-    test("lanza NotFoundError si intenta actualizar un proyecto inexistente", async () => {
+    test("lanza EntityNotFound si intenta actualizar un proyecto inexistente", async () => {
       await expect(
         service.update("id-inexistente", { titulo: "Nuevo" }),
-      ).rejects.toThrow(NotFoundError)
+      ).rejects.toThrow(EntityNotFound)
     })
   })
 
@@ -306,40 +306,46 @@ expect(colectivoOrigen.proyectos).toEqual([proyecto])
       expect(await service.getAll()).toHaveLength(0)
     })
 
-    test("lanza NotFoundError al intentar eliminar un proyecto inexistente", async () => {
-      await expect(service.delete("id-inexistente")).rejects.toThrow(NotFoundError)
+    test("lanza EntityNotFound al intentar eliminar un proyecto inexistente", async () => {
+      await expect(service.delete("id-inexistente")).rejects.toThrow(EntityNotFound)
     })
   })
 
-  describe("cerrarProyecto", () => {
-    test("cierra y guarda el proyecto actualizando su estado y fecha", async () => {
+  describe("cerrar proyecto", () => {
+    test("cierra y guarda el proyecto al actualizar el estado", async () => {
       const creado = await service.create(dtoProyectoValido)
 
-      const cerrado = await service.cerrarProyecto(creado.id)
+      const cerrado = await service.update(creado.id, {
+        estado: EstadoProyecto.CERRADO,
+      })
 
       expect(cerrado.estado).toBe(EstadoProyecto.CERRADO)
       expect(cerrado.fechaCierre).toBeInstanceOf(Date)
       expect(await service.getById(creado.id)).toBe(cerrado)
     })
 
-    test("lanza NotFoundError si el proyecto no existe", async () => {
-      await expect(service.cerrarProyecto("id-inexistente")).rejects.toThrow(
-        NotFoundError,
-      )
+    test("lanza EntityNotFound si el proyecto no existe", async () => {
+      await expect(
+        service.update("id-inexistente", { estado: EstadoProyecto.CERRADO }),
+      ).rejects.toThrow(EntityNotFound)
     })
 
     test("rechaza un segundo cierre sin alterar la fecha", async () => {
       const creado = await service.create(dtoProyectoValido)
-      const cerrado = await service.cerrarProyecto(creado.id)
+      const cerrado = await service.update(creado.id, {
+        estado: EstadoProyecto.CERRADO,
+      })
       const fechaCierre = cerrado.fechaCierre
 
-      await expect(service.cerrarProyecto(creado.id)).rejects.toThrow(DomainRuleError)
+      await expect(
+        service.update(creado.id, { estado: EstadoProyecto.CERRADO }),
+      ).rejects.toThrow(DomainRuleError)
       expect((await service.getById(creado.id)).fechaCierre).toBe(fechaCierre)
     })
 
     test("rechaza reabrir un proyecto sin aplicar cambios parciales", async () => {
       const creado = await service.create(dtoProyectoValido)
-      await service.cerrarProyecto(creado.id)
+      await service.update(creado.id, { estado: EstadoProyecto.CERRADO })
       const antes = { ...creado }
 
       await expect(
@@ -348,7 +354,7 @@ expect(colectivoOrigen.proyectos).toEqual([proyecto])
           estado: EstadoProyecto.PUBLICADO,
           fechaCierre: null,
         }),
-      ).rejects.toThrow(ConflictError)
+      ).rejects.toThrow(DomainRuleError)
       expect(await service.getById(creado.id)).toEqual(antes)
 
       const editado = await service.update(creado.id, {

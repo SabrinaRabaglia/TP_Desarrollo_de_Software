@@ -1,10 +1,7 @@
 import { describe, expect, test, beforeEach } from "@jest/globals"
 import HabilidadService from "../../../src/services/HabilidadService.js"
 import HabilidadRepository from "../../../src/repositories/HabilidadRepository.js"
-import {
-  ConflictError,
-  NotFoundError
-} from "../../../src/errors/AppError.js"
+import { AlreadyExists, EntityNotFound } from "../../../src/errors/ApplicationErrors.js"
 import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 
 describe("HabilidadService", () => {
@@ -30,7 +27,7 @@ describe("HabilidadService", () => {
       expect(await service.getAll()).toEqual([habilidad])
     })
 
-    test("tira ConflictError si ya existe una habilidad con el mismo código", async () => {
+    test("tira AlreadyExists si ya existe una habilidad con el mismo código", async () => {
       const service = new HabilidadService(new HabilidadRepository())
       await service.create({ titulo: "React", codigo: "react", descripcion: "desc" })
       
@@ -41,7 +38,7 @@ describe("HabilidadService", () => {
           descripcion: "otra desc",
         })
 
-      await expect(crearHabilidadConCodigoRepetido()).rejects.toThrow(ConflictError)
+      await expect(crearHabilidadConCodigoRepetido()).rejects.toThrow(AlreadyExists)
       expect(await service.getAll()).toHaveLength(1)
     })
 
@@ -100,7 +97,7 @@ describe("HabilidadService", () => {
       expect(actualizada.descripcion).toBe("nueva desc")
     })
 
-    test("tira NotFoundError si el id no corresponde a ninguna habilidad", async () => {
+    test("tira EntityNotFound si el id no corresponde a ninguna habilidad", async () => {
       const service = new HabilidadService(new HabilidadRepository())
       
       await expect(
@@ -109,10 +106,10 @@ describe("HabilidadService", () => {
           codigo: "y",
           descripcion: "z",
         })
-      ).rejects.toThrow(NotFoundError)
+      ).rejects.toThrow(EntityNotFound)
     })
 
-    test("tira ConflictError si el nuevo código pertenece a OTRA habilidad existente", async () => {
+    test("tira AlreadyExists si el nuevo código pertenece a OTRA habilidad existente", async () => {
       const service = new HabilidadService(new HabilidadRepository())
       const react = await service.create({
         titulo: "React",
@@ -127,7 +124,7 @@ describe("HabilidadService", () => {
           codigo: "node",
           descripcion: "desc",
         })
-      ).rejects.toThrow(ConflictError) // Ajustado a ConflictError que es el que lanza el servicio por duplicado
+      ).rejects.toThrow(AlreadyExists)
     })
 
     test("permite actualizar una habilidad conservando su propio código (no es conflicto consigo misma)", async () => {
@@ -183,10 +180,10 @@ describe("HabilidadService", () => {
       expect(await service.getAll()).toEqual([])
     })
 
-    test("tira NotFoundError si el id no corresponde a ninguna habilidad", async () => {
+    test("tira EntityNotFound si el id no corresponde a ninguna habilidad", async () => {
       const service = new HabilidadService(new HabilidadRepository())
       
-      await expect(service.delete("id-inexistente")).rejects.toThrow(NotFoundError)
+      await expect(service.delete("id-inexistente")).rejects.toThrow(EntityNotFound)
     })
   })
 
@@ -204,10 +201,10 @@ describe("HabilidadService", () => {
       expect(encontrada).toEqual(habilidad)
     })
 
-    test("tira NotFoundError si el id no corresponde a ninguna habilidad", async () => {
+    test("tira EntityNotFound si el id no corresponde a ninguna habilidad", async () => {
       const service = new HabilidadService(new HabilidadRepository())
 
-      await expect(service.getById("id-inexistente")).rejects.toThrow(NotFoundError)
+      await expect(service.getById("id-inexistente")).rejects.toThrow(EntityNotFound)
     })
   })
 

@@ -6,10 +6,10 @@ import  ProyectoRepository  from "../repositories/ProyectoRepository.js"
 import  ProvinciaRepository  from "../repositories/ProvinciaRepository.js"
 import  PaisRepository  from "../repositories/PaisRepository.js"
 import {
-  ConflictError,
-  NotFoundError,
-  UnprocessableEntityError,
-} from "../errors/AppError.js"
+  AlreadyExists,
+  EntityNotFound,
+  InvalidReference,
+} from "../errors/ApplicationErrors.js"
 
 export default class ColectivoService {
   constructor(
@@ -38,13 +38,13 @@ export default class ColectivoService {
   getById = async (id) => {
     const colectivo = await this.colectivoRepository.findById(id)
     if (!colectivo) {
-      throw new NotFoundError("COLECTIVO NO ENCONTRADO!")
+      throw new EntityNotFound("Colectivo no encontrado")
     }
     return await this.incluirProyectos(colectivo)
   }
   validarTipo = async(tipo) => {
     if (!await this.tipoColectivoRepository.findByNombre(tipo)) {
-      throw new UnprocessableEntityError(
+      throw new InvalidReference(
         "El tipo de colectivo no pertenece al catálogo.",
       )
     }
@@ -55,7 +55,7 @@ export default class ColectivoService {
       nuevo.nombre,
     )
     if (colectivoExistente) {
-      throw new ConflictError("COLECTIVO EXISTENTE!")
+      throw new AlreadyExists("Ya existe un colectivo con ese nombre")
     }
 
     await this.validarTipo(nuevo.tipo)
@@ -64,13 +64,13 @@ export default class ColectivoService {
     let instanciaProvincia = null;
     if (nuevo.provincia) {
       instanciaProvincia = await this.provinciaRepository.findById(nuevo.provincia);
-      if (!instanciaProvincia) throw new UnprocessableEntityError("PROVINCIA NO ENCONTRADA!");
+      if (!instanciaProvincia) throw new InvalidReference("Provincia no encontrada")
     }
 
     let instanciaPais = null;
     if (nuevo.pais) {
       instanciaPais = await this.paisRepository.findById(nuevo.pais);
-      if (!instanciaPais) throw new UnprocessableEntityError("PAÍS NO ENCONTRADO!");
+      if (!instanciaPais) throw new InvalidReference("País no encontrado")
     }
 
     const colectivo = new Colectivo(
@@ -88,7 +88,7 @@ export default class ColectivoService {
   update = async (id, colectivoActualizado) => {
     const colectivoExistente = await this.colectivoRepository.findById(id)
 
-    if (!colectivoExistente) throw new NotFoundError("Colectivo no encontrado")
+    if (!colectivoExistente) throw new EntityNotFound("Colectivo no encontrado")
 
     Colectivo.validarDatos(colectivoActualizado)
     await this.validarTipo(colectivoActualizado.tipo)
@@ -98,11 +98,11 @@ export default class ColectivoService {
     )
 
     if (otro && otro.id !== colectivoExistente.id)
-      throw new ConflictError("COLECTIVO EXISTENTE!")
+      throw new AlreadyExists("Ya existe un colectivo con ese nombre")
     let instanciaProvincia = null;
     if (colectivoActualizado.provincia) {
       instanciaProvincia = await this.provinciaRepository.findById(colectivoActualizado.provincia);
-      if (!instanciaProvincia) throw new UnprocessableEntityError("PROVINCIA NO ENCONTRADA!");
+      if (!instanciaProvincia) throw new InvalidReference("Provincia no encontrada")
     }
     colectivoExistente.nombre = colectivoActualizado.nombre
     colectivoExistente.descripcion = colectivoActualizado.descripcion
@@ -116,6 +116,7 @@ export default class ColectivoService {
   }
   patch = async (id, cambios) => {
     const existente = await this.colectivoRepository.findById(id)
+    if (!existente) throw new EntityNotFound("Colectivo no encontrado")
 
     return this.update(id, {
       nombre: existente.nombre,
@@ -128,7 +129,8 @@ export default class ColectivoService {
     })
   }
   delete = async (id) => {
-    await this.colectivoRepository.findById(id)
+    const colectivo = await this.colectivoRepository.findById(id)
+    if (!colectivo) throw new EntityNotFound("Colectivo no encontrado")
     await this.colectivoRepository.delete(id)
   }
 }

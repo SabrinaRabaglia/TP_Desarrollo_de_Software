@@ -6,11 +6,8 @@ import PersonaColaboradoraRepository from "../../../src/repositories/PersonaCola
 import Proyecto from "../../../src/domain/Proyecto.js"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import Habilidad from "../../../src/domain/Habilidad.js"
-import {
-  BadRequestError,
-  ConflictError,
-  NotFoundError,
-} from "../../../src/errors/AppError.js"
+import { AlreadyExists, EntityNotFound } from "../../../src/errors/ApplicationErrors.js"
+import { DomainRuleError } from "../../../src/domain/errors/DomainErrors.js"
 
 describe("ColaboracionService", () => {
   let service, proyectoRepository, personaRepository, proyecto, persona, datos
@@ -50,7 +47,7 @@ describe("ColaboracionService", () => {
 
     expect(colaboracion.personaColaboradora).toBe(persona)
     expect(colaboracion.proyecto).toBe(proyecto)
-    await expect(service.create(datos)).rejects.toThrow(ConflictError)
+    await expect(service.create(datos)).rejects.toThrow(AlreadyExists)
     expect(await service.getAll()).toEqual([colaboracion])
     expect(persona.colaboraciones).toEqual([colaboracion])
     expect(proyecto.colaboraciones).toEqual([colaboracion])
@@ -60,33 +57,33 @@ describe("ColaboracionService", () => {
     [
       "proyecto inexistente",
       async () => await proyectoRepository.delete(proyecto.id),
-      NotFoundError,
+      EntityNotFound,
     ],
     [
       "persona inexistente",
       async () => await personaRepository.deleteById(persona.id),
-      NotFoundError,
+      EntityNotFound,
     ],
     [
       "proyecto cerrado",
       async () => {
         proyecto.estado = "CERRADO"
       },
-      ConflictError,
+      DomainRuleError,
     ],
     [
       "habilidades sin coincidencia",
       async () => {
         persona.habilidades = []
       },
-      BadRequestError,
+      DomainRuleError,
     ],
     [
       "proyecto sin habilidades requeridas",
       async () => {
         proyecto.habilidadesRequeridas = []
       },
-      BadRequestError,
+      DomainRuleError,
     ],
   ])(
     "rechaza %s sin registrar ni asociar la colaboración",

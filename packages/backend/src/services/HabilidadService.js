@@ -1,4 +1,4 @@
-import { ConflictError, NotFoundError } from "../errors/AppError.js"
+import { AlreadyExists, EntityNotFound } from "../errors/ApplicationErrors.js"
 import Habilidad from "../domain/Habilidad.js"
 
 export default class HabilidadService {
@@ -16,7 +16,7 @@ export default class HabilidadService {
       nueva.codigo,
     )
     if (habilidadExistente) {
-      throw new ConflictError(
+      throw new AlreadyExists(
         `Ya existe una habilidad con código: ${nueva.codigo}`,
       )
     }
@@ -26,7 +26,7 @@ export default class HabilidadService {
   update = async (id, actualizada) => {
     const habilidadExistente = await this.habilidadRepository.findById(id)
     if (!habilidadExistente) {
-      throw new NotFoundError("Habilidad no encontrada")
+      throw new EntityNotFound("Habilidad no encontrada")
     }
 
     Habilidad.validarDatos(actualizada)
@@ -35,7 +35,7 @@ export default class HabilidadService {
       actualizada.codigo,
     )
     if (otraConMismoCodigo && otraConMismoCodigo.id !== id) {
-      throw new ConflictError(
+      throw new AlreadyExists(
         `Ya existe una habilidad con código: ${actualizada.codigo}`,
       )
     }
@@ -50,7 +50,7 @@ export default class HabilidadService {
   delete = async (id) => {
     const habilidadExistente = await this.habilidadRepository.findById(id)
     if (!habilidadExistente) {
-      throw new NotFoundError("Habilidad no encontrada")
+      throw new EntityNotFound("Habilidad no encontrada")
     }
     await this.habilidadRepository.deleteById(id)
   }
@@ -59,7 +59,7 @@ export default class HabilidadService {
     const habilidad = await this.habilidadRepository.findById(id)
     
     if (!habilidad) {
-      throw new NotFoundError("Habilidad no encontrada")
+      throw new EntityNotFound("Habilidad no encontrada")
     }
     return habilidad
   }

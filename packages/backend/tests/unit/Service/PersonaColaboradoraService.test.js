@@ -4,10 +4,7 @@ import PersonaColaboradoraRepository from "../../../src/repositories/PersonaCola
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import Cuenta from "../../../src/domain/Cuenta.js"
 import Habilidad from "../../../src/domain/Habilidad.js"
-import {
-  NotFoundError,
-  UnprocessableEntityError,
-} from "../../../src/errors/AppError.js"
+import { EntityNotFound, InvalidReference } from "../../../src/errors/ApplicationErrors.js"
 import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 
 describe("PersonaColaboradoraService", () => {
@@ -24,7 +21,7 @@ describe("PersonaColaboradoraService", () => {
     const habilidadService = {
       getById: jest.fn(async (id) => {
         if (id !== habilidad.id) {
-          throw new NotFoundError("Habilidad no encontrada")
+          throw new EntityNotFound("Habilidad no encontrada")
         }
         return habilidad
       }),
@@ -55,7 +52,7 @@ describe("PersonaColaboradoraService", () => {
         ...datos,
         habilidades: [habilidad.id, "habilidad-inexistente"],
       }),
-    ).rejects.toThrow(NotFoundError)
+    ).rejects.toThrow(InvalidReference)
 
     expect(await repository.getAll()).toEqual([])
   })
@@ -85,7 +82,7 @@ describe("PersonaColaboradoraService", () => {
         nombreFantasia: "No debe guardarse",
         habilidades: ["habilidad-inexistente"],
       }),
-    ).rejects.toThrow(NotFoundError)
+    ).rejects.toThrow(InvalidReference)
 
     expect(await repository.findById(persona.id)).toEqual(antes)
   })

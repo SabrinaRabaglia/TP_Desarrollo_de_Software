@@ -1,4 +1,5 @@
 import { EstadoProyecto } from "./enums/EstadoProyecto.js"
+import { ModalidadColaboracion } from "./enums/ModalidadColaboracion.js"
 import { DomainValidationError,DomainRuleError } from "./errors/DomainErrors.js"
 
 export default class Proyecto {
@@ -38,10 +39,20 @@ export default class Proyecto {
 
   cerrar() {
     if (this.proyectoCerrado()) {
-      throw new DomainRuleError("El proyecto ya está cerrado")
+      throw new DomainRuleError("El proyecto ya está cerrado.")
     }
     this.estado = EstadoProyecto.CERRADO
     this.fechaCierre = new Date()
+  }
+
+  assertPuedeActualizarEstado(nuevoEstado) {
+    if (
+      this.proyectoCerrado() &&
+      nuevoEstado !== undefined &&
+      nuevoEstado !== EstadoProyecto.CERRADO
+    ) {
+      throw new DomainRuleError("No se puede reabrir un proyecto cerrado.")
+    }
   }
 
   agregarColaboracion(colaboracion) {
@@ -77,7 +88,7 @@ export default class Proyecto {
       !colectivo
     ) {
       throw new DomainValidationError(
-        "Titulo, descripción, unidadCompromiso, cantHoras y colectivo son obligatorios.",
+        "Título, descripción, unidad de compromiso, cantidad de horas y colectivo son obligatorios.",
       )
     }
     if (!Number.isInteger(cantHoras) || cantHoras <= 0) {
@@ -91,6 +102,16 @@ export default class Proyecto {
     ) {
       throw new DomainValidationError(
         "El proyecto debe tener al menos una modalidad de colaboración.",
+      )
+    }
+    if (
+      modalidadesColaboracion.some(
+        (modalidad) =>
+          !Object.values(ModalidadColaboracion).includes(modalidad),
+      )
+    ) {
+      throw new DomainValidationError(
+        "La modalidad de colaboración es inválida.",
       )
     }
     if (fechaCierre && fechaCierre < fechaAlta) {

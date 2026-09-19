@@ -24,7 +24,7 @@ export default class PersonaColaboradora {
   static validarDatos({ nombreFantasia }) {
     if (!nombreFantasia) {
       throw new DomainValidationError(
-        "La persona colaboradora debe tener un nombre de fantasia",
+        "La persona colaboradora debe tener un nombre de fantasía.",
       )
     }
   }

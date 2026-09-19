@@ -111,11 +111,18 @@ test("inscribir permite consultar y actualizar las entidades sin ciclos en el JS
       },
       201,
     )
-    const cerrado = await request("PUT", `/proyectos/${proyecto.id}/cierre`)
+    const cerrado = await request("PATCH", `/proyectos/${proyecto.id}`, {
+      estado: "CERRADO",
+    })
     expect(cerrado.estado).toBe("CERRADO")
     expect(cerrado.fechaCierre).toEqual(expect.any(String))
     expect(cerrado.colaboraciones).toEqual([colaboracion])
-    await request("PUT", `/proyectos/${proyecto.id}/cierre`, undefined, 409)
+    await request(
+      "PATCH",
+      `/proyectos/${proyecto.id}`,
+      { estado: "CERRADO" },
+      409,
+    )
     await request("PUT", `/proyectos/${proyecto.id}`, proyectoDatos, 409)
     const despues = await request("GET", `/proyectos/${proyecto.id}`)
     expect(despues.estado).toBe("CERRADO")
@@ -127,7 +134,7 @@ test("inscribir permite consultar y actualizar las entidades sin ciclos en el JS
         proyectoId: proyecto.id,
         personaColaboradoraId: otraPersona.id,
       },
-      422,
+      409,
     )
     expect(await request("GET", "/colaboraciones")).toEqual([colaboracion])
   } finally {

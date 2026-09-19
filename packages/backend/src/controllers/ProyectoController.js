@@ -86,15 +86,6 @@ export default class ProyectoController {
     }
   }
 
-  cerrar = async (req, res, next) => {
-    try {
-      const proyecto = await this.proyectoService.cerrarProyecto(req.params.id)
-      res.status(200).json(proyecto)
-    } catch (error) {
-      next(error)
-    }
-  }
-
   delete = async (req, res, next) => {
     try {
       const { id } = req.params

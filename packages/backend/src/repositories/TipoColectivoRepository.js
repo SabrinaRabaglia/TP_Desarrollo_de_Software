@@ -1,6 +1,5 @@
 import TipoColectivo from "../domain/TipoColectivo.js"
 import normalizarNombre from "../domain/normalizarNombre.js"
-import { UnprocessableEntityError } from "../errors/AppError.js"
 
 export default class TipoColectivoRepository {
   constructor() {
@@ -15,11 +14,6 @@ export default class TipoColectivoRepository {
   }
 
   async save(tipo) {
-    if (!normalizarNombre(tipo.nombre)) {
-      throw new UnprocessableEntityError(
-        "El tipo de colectivo debe tener un nombre.",
-      )
-    }
     const existente = await this.findByNombre(tipo.nombre)
     if (existente) return existente
 

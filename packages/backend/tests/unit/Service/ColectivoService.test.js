@@ -1,10 +1,10 @@
 import { describe, expect, test, beforeEach } from "@jest/globals"
 import ColectivoService from "../../../src/services/ColectivoService.js"
 import {
-  ConflictError,
-  NotFoundError,
-  UnprocessableEntityError,
-} from "../../../src/errors/AppError.js"
+  AlreadyExists,
+  EntityNotFound,
+  InvalidReference,
+} from "../../../src/errors/ApplicationErrors.js"
 import ColectivoRepository from "../../../src/repositories/ColectivoRepository.js"
 import TipoColectivoRepository from "../../../src/repositories/TipoColectivoRepository.js"
 import ProyectoRepository from "../../../src/repositories/ProyectoRepository.js"
@@ -38,7 +38,7 @@ describe("ColectivoService", () => {
       }
 
       await expect(service.create({ ...datos, ...cambios })).rejects.toThrow(
-        UnprocessableEntityError,
+        InvalidReference,
       )
       expect(await service.getAll()).toEqual([])
 
@@ -47,12 +47,12 @@ describe("ColectivoService", () => {
 
       await expect(
         service.update(colectivo.id, { ...datos, ...cambios }),
-      ).rejects.toThrow(UnprocessableEntityError)
+      ).rejects.toThrow(InvalidReference)
 
       expect(await service.getById(colectivo.id)).toEqual(antes)
 
       await expect(service.patch(colectivo.id, cambios)).rejects.toThrow(
-        UnprocessableEntityError,
+        InvalidReference,
       )
       expect(await service.getById(colectivo.id)).toEqual(antes)
     },
@@ -106,7 +106,7 @@ describe("ColectivoService", () => {
       expect(await service.getAll()).toHaveLength(1)
     })
 
-    test("tira ConflictError si ya existe un colectivo con el mismo nombre", async () => {
+    test("tira AlreadyExists si ya existe un colectivo con el mismo nombre", async () => {
       const service = new ColectivoService(
         new ColectivoRepository(),
         new TipoColectivoRepository(),
@@ -127,7 +127,7 @@ describe("ColectivoService", () => {
           descripcion: "Otra descripción distinta",
           tipo: "ONG",
         })
-      ).rejects.toThrow(ConflictError)
+      ).rejects.toThrow(AlreadyExists)
 
       expect(await service.getAll()).toHaveLength(1)
     })
@@ -154,7 +154,7 @@ describe("ColectivoService", () => {
         expect(colectivoEncontrado.nombre).toBe("Asamblea Ambiental")
       })
 
-      test("lanza NotFoundError si el colectivo no existe", async () => {
+      test("lanza EntityNotFound si el colectivo no existe", async () => {
         const service = new ColectivoService(
           new ColectivoRepository(),
           new TipoColectivoRepository(),
@@ -163,7 +163,7 @@ describe("ColectivoService", () => {
           new PaisRepository()
         )
 
-        await expect(service.getById("id-inexistente")).rejects.toThrow(NotFoundError)
+        await expect(service.getById("id-inexistente")).rejects.toThrow(EntityNotFound)
       })
     })
 
@@ -193,7 +193,7 @@ describe("ColectivoService", () => {
         expect(await service.getById(colectivo.id)).toEqual(antes)
       })
 
-      test("lanza NotFoundError si intenta actualizar un colectivo inexistente", async () => {
+      test("lanza EntityNotFound si intenta actualizar un colectivo inexistente", async () => {
         const service = new ColectivoService(
           new ColectivoRepository(),
           new TipoColectivoRepository(),
@@ -204,7 +204,7 @@ describe("ColectivoService", () => {
         const datos = { nombre: "Nuevo", descripcion: "Desc", tipo: "ONG" }
 
         await expect(service.update("id-inexistente", datos)).rejects.toThrow(
-          NotFoundError,
+          EntityNotFound,
         )
       })
     })

@@ -1,5 +1,14 @@
 import { expect, jest, test } from "@jest/globals"
 import { BadRequestError } from "../../src/errors/AppError.js"
+import {
+  AlreadyExists,
+  EntityNotFound,
+  InvalidReference,
+} from "../../src/errors/ApplicationErrors.js"
+import {
+  DomainRuleError,
+  DomainValidationError,
+} from "../../src/domain/errors/DomainErrors.js"
 import errorHandler from "../../src/middlewares/errorHandler.js"
 
 const mockRes = () => ({
@@ -33,6 +42,24 @@ test("responde 400 en JSON para un body mal formado", () => {
   expect(res.status).toHaveBeenCalledWith(400)
   expect(res.json).toHaveBeenCalledWith({
     message: "JSON inválido",
+    details: [],
+  })
+})
+
+test.each([
+  [new DomainValidationError("Campo obligatorio"), 422],
+  [new DomainRuleError("Estado inválido"), 409],
+  [new EntityNotFound("Recurso no encontrado"), 404],
+  [new InvalidReference("Referencia inválida"), 404],
+  [new AlreadyExists("Ya existe"), 409],
+])("traduce %s al status HTTP correspondiente", (error, status) => {
+  const res = mockRes()
+
+  errorHandler(error, {}, res, jest.fn())
+
+  expect(res.status).toHaveBeenCalledWith(status)
+  expect(res.json).toHaveBeenCalledWith({
+    message: error.message,
     details: [],
   })
 })

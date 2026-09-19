@@ -6,7 +6,6 @@ import colectivoRoutes from "./routes/colectivoRoutes.js"
 import habilidadRoutes from "./routes/habilidadRoutes.js"
 import personaColaboradoraRoutes from "./routes/personaColaboradoraRoutes.js"
 import proyectoRoutes from "./routes/proyectoRoutes.js"
-import { NotFoundError } from "./errors/AppError.js"
 import errorHandler from "./middlewares/errorHandler.js"
 import Colaboracion from "./domain/Colaboracion.js"
 
@@ -50,7 +49,10 @@ app.get("/hello", (req, res) => {
 })
 
 app.use((_req, _res, next) => {
-  next(new NotFoundError("Ruta no encontrada"))
+  const error = new Error("Ruta no encontrada")
+  error.status = 404
+  error.expose = true
+  next(error)
 })
 
 app.use(errorHandler)
