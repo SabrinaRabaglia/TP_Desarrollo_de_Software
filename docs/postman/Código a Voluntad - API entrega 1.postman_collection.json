@@ -1,11 +1,8 @@
 {
   "info": {
-    "_postman_id": "bb5d863c-3e0f-4862-aa6f-25598aed665c",
     "name": "Código a Voluntad - API entrega 1",
     "description": "Importar este archivo desde Postman > Import > Files. No hace falta un environment: la colección incluye baseUrl (http://localhost:8000) y las variables para los IDs.\n\nCon el backend iniciado, ejecutar las carpetas en el orden mostrado. Las altas guardan automáticamente los IDs para las solicitudes siguientes. Los ejemplos usan nombres únicos y se pueden volver a ejecutar. Ajustar baseUrl si se usa otro puerto o servidor.\n\nIncluye healthcheck, CRUD de habilidades, personas, colectivos y proyectos, inscripción/listado de colaboraciones y cierre manual. La API no requiere autenticación y mantiene los datos en memoria.\n\nEl cierre se ejecuta después de inscribir a la persona. Una vez cerrado, el proyecto no admite nuevas inscripciones ni reapertura. Para repetir ese flujo hay que crear un proyecto nuevo.\n\nLa carpeta final Limpieza elimina el proyecto, la persona, el colectivo y la habilidad creados en la ejecución. Las colaboraciones no tienen endpoint DELETE y se conservan en memoria hasta reiniciar el backend. Omitir Limpieza si se quieren conservar los datos de ejemplo para probar manualmente.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "50555524",
-    "_collection_link": "https://go.postman.co/collection/50555524-bb5d863c-3e0f-4862-aa6f-25598aed665c?source=collection_link"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
@@ -995,7 +992,16 @@
           ],
           "request": {
             "method": "PATCH",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"CERRADO\"\n}"
+            },
             "url": {
               "raw": "{{baseUrl}}/proyectos/{{proyectoId}}",
               "host": [
@@ -1006,7 +1012,7 @@
                 "{{proyectoId}}"
               ]
             },
-            "description": "No requiere body. Responde 200 al cerrar, 409 si ya estaba cerrado y 404 si el proyecto no existe. La fecha la genera el servidor."
+            "description": "Cierra el proyecto actualizando su estado. Responde 200 al cerrar, 409 si ya estaba cerrado o se intenta reabrir, y 404 si el proyecto no existe. La fecha la genera el servidor."
           },
           "response": []
         }
@@ -1203,11 +1209,33 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8000"
+      "value": "http://localhost:8000",
+      "type": "string"
     },
     {
       "key": "runSuffix",
-      "value": ""
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "habilidadId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "personaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "colectivoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "proyectoId",
+      "value": "",
+      "type": "string"
     }
   ]
 }
