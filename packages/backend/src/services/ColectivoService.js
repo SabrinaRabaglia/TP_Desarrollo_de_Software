@@ -69,13 +69,7 @@ export default class ColectivoService {
   }
 
   create = async (nuevo) => {
-    const colectivoExistente = await this.colectivoRepository.findByNombre(
-      nuevo.nombre,
-    )
-    if (colectivoExistente) {
-      throw new AlreadyExists("Ya existe un colectivo con ese nombre")
-    }
-
+    Colectivo.validarDatos(nuevo)
     await this.validarTipo(nuevo.tipo)
     const { pais, provincia } = await this.resolverUbicacion(nuevo)
 
@@ -87,6 +81,14 @@ export default class ColectivoService {
       provincia,
       nuevo.ciudad,
     )
+
+    const colectivoExistente = await this.colectivoRepository.findByNombre(
+      colectivo.nombre,
+    )
+    if (colectivoExistente) {
+      throw new AlreadyExists("Ya existe un colectivo con ese nombre")
+    }
+
     colectivo.id = randomUUID()
     
     return await this.colectivoRepository.save(colectivo);
@@ -98,6 +100,7 @@ export default class ColectivoService {
 
     Colectivo.validarDatos(colectivoActualizado)
     await this.validarTipo(colectivoActualizado.tipo)
+    const { pais, provincia } = await this.resolverUbicacion(colectivoActualizado)
 
     const otro = await this.colectivoRepository.findByNombre(
       colectivoActualizado.nombre,
@@ -105,7 +108,6 @@ export default class ColectivoService {
 
     if (otro && otro.id !== colectivoExistente.id)
       throw new AlreadyExists("Ya existe un colectivo con ese nombre")
-    const { pais, provincia } = await this.resolverUbicacion(colectivoActualizado)
     colectivoExistente.nombre = colectivoActualizado.nombre
     colectivoExistente.descripcion = colectivoActualizado.descripcion
     colectivoExistente.tipo = colectivoActualizado.tipo

@@ -52,12 +52,6 @@ export default class ProyectoService {
   }
 
   create = async (nuevo) => {
-    if (nuevo.titulo && await this.proyectoRepository.findByTitulo?.(nuevo.titulo)) {
-      throw new AlreadyExists("Ya existe un proyecto con ese título")
-    }
-
-    await this.validarReferencias(nuevo)
-
     const proyecto = new Proyecto(
       nuevo.titulo,
       nuevo.descripcion,
@@ -70,6 +64,13 @@ export default class ProyectoService {
       nuevo.fechaCierre,
       nuevo.habilidadesRequeridas,
     )
+
+    await this.validarReferencias(nuevo)
+
+    if (await this.proyectoRepository.findByTitulo?.(proyecto.titulo)) {
+      throw new AlreadyExists("Ya existe un proyecto con ese título")
+    }
+
     proyecto.id = randomUUID()
 
     return await this.proyectoRepository.save(proyecto)
@@ -79,6 +80,14 @@ export default class ProyectoService {
     const proyectoExistente = await  this.getById(id)
 
     proyectoExistente.assertPuedeActualizarEstado(proyectoActualizado.estado)
+
+    const datosActualizados = {
+      ...proyectoExistente,
+      ...proyectoActualizado,
+    }
+    Proyecto.validarDatos(datosActualizados)
+    await this.validarReferencias(datosActualizados)
+
     const existenteConMismoTitulo = await this.proyectoRepository.findByTitulo?.(proyectoActualizado.titulo)
     if (
       proyectoActualizado.titulo &&
@@ -88,13 +97,6 @@ export default class ProyectoService {
     ) {
       throw new AlreadyExists("Ya existe un proyecto con ese título")
     }
-
-    const datosActualizados = {
-      ...proyectoExistente,
-      ...proyectoActualizado,
-    }
-    Proyecto.validarDatos(datosActualizados)
-    await this.validarReferencias(datosActualizados)
 
     const { estado, ...resto } = proyectoActualizado
     Object.assign(proyectoExistente, resto)
