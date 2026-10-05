@@ -26,9 +26,9 @@ describe("ProyectoController", () => {
       "Desarrollo de plataforma para conectar colectivos y voluntarios.",
     unidadCompromiso: UnidadCompromiso.HORAS_SEMANALES,
     cantHoras: 10,
-    colectivo: "Asamblea Ambiental del Sur",
+    colectivo: "65f1a2b3c4d5e6f708192a10",
     modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
-    habilidadesRequeridas: ["hab-1", "hab-2"],
+    habilidadesRequeridas: ["65f1a2b3c4d5e6f708192a11", "65f1a2b3c4d5e6f708192a12"],
     estado: EstadoProyecto.PUBLICADO,
     fechaAlta: "2026-09-01T00:00:00.000Z",
     fechaCierre: null,
@@ -105,6 +105,20 @@ describe("ProyectoController", () => {
         expect(next).toHaveBeenCalledWith(expect.any(BadRequestError));
         expect(proyectoServiceMock.create).not.toHaveBeenCalled();
 
+    })
+
+    test.each([
+      ["colectivo", { colectivo: "Asamblea Ambiental del Sur" }],
+      ["habilidadesRequeridas", { habilidadesRequeridas: ["hab-1"] }],
+    ])("con un %s que no es un id válido, tira BadRequestError", async (_campo, cambios) => {
+      const proyectoServiceMock = mockProyectoService()
+      const controller = new ProyectoController(proyectoServiceMock)
+      const next = jest.fn()
+
+      await controller.create({ body: { ...proyectoValido, ...cambios } }, mockRes(), next)
+
+      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
+      expect(proyectoServiceMock.create).not.toHaveBeenCalled()
     })
 
     test("con un campo extra no declarado en el schema, tira BadRequestError", async () => {

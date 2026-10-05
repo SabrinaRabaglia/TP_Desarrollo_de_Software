@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { BadRequestError } from "../errors/AppError.js"
+import { objectIdSchema } from "../validations/objectId.js"
 
 
 //import ColectivoRepository from "../repositories/ColectivoRepository.js"
@@ -14,8 +15,8 @@ const colectivoSchema = z
     nombre: z.string(),
     descripcion: z.string().min(2).max(500),
     tipo: z.string(),
-    pais: z.string().nullable().optional(),
-    provincia: z.string().nullable().optional(),
+    pais: objectIdSchema.nullable().optional(),
+    provincia: objectIdSchema.nullable().optional(),
     ciudad: z.string().nullable().optional(),
   })
   .strict()

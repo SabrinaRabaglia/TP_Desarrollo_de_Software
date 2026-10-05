@@ -2,6 +2,9 @@ import { describe, expect, test, jest } from "@jest/globals"
 import ColectivoController from "../../../src/controllers/ColectivoController.js"
 import { BadRequestError } from "../../../src/errors/AppError.js"
 
+const PAIS_ID = "65f1a2b3c4d5e6f708192a01"
+const PROVINCIA_ID = "65f1a2b3c4d5e6f708192a02"
+
 const mockRes = () => ({
   status: jest.fn().mockReturnThis(),
   json: jest.fn().mockReturnThis(),
@@ -63,8 +66,8 @@ describe("ColectivoController", () => {
         descripcion:
           "Grupo autoconvocado para la protección de la cuenca y humedales locales.",
         tipo: "asamblea",
-        pais: "Argentina",
-        provincia: "CABA",
+        pais: PAIS_ID,
+        provincia: PROVINCIA_ID,
         ciudad: "Almagro",
       }
       const colectivoServiceMock = mockColectivoService()
@@ -76,8 +79,8 @@ describe("ColectivoController", () => {
           descripcion:
             "Grupo autoconvocado para la protección de la cuenca y humedales locales.",
           tipo: "asamblea",
-          pais: "Argentina",
-          provincia: "CABA",
+          pais: PAIS_ID,
+          provincia: PROVINCIA_ID,
           ciudad: "Almagro",
         },
       }
@@ -108,6 +111,22 @@ describe("ColectivoController", () => {
       expect(next).toHaveBeenCalledWith(expect.any(BadRequestError));
       expect(colectivoServiceMock.create).not.toHaveBeenCalled()
     })
+    test.each([
+      ["pais", { pais: "Argentina" }],
+      ["provincia", { provincia: "2" }],
+    ])("con un %s que no es un id válido, tira BadRequestError", async (_campo, cambios) => {
+      const colectivoServiceMock = mockColectivoService()
+      const controller = new ColectivoController(colectivoServiceMock)
+      const req = {
+        body: { nombre: "Asamblea", descripcion: "Descripción", tipo: "Asamblea", ...cambios },
+      }
+      const next = jest.fn()
+
+      await controller.create(req, mockRes(), next)
+
+      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
+      expect(colectivoServiceMock.create).not.toHaveBeenCalled()
+    })
     test("con un campo extra no declarado en el schema, tira BadRequestError", async () => {
       const colectivoServiceMock = mockColectivoService()
       const controller = new ColectivoController(colectivoServiceMock)
@@ -117,8 +136,8 @@ describe("ColectivoController", () => {
           descripcion:
             "Grupo autoconvocado para la protección de la cuenca y humedales locales.",
           tipo: "asamblea",
-          pais: "Argentina",
-          provincia: "CABA",
+          pais: PAIS_ID,
+          provincia: PROVINCIA_ID,
           ciudad: "Almagro",
           extra: "no debería estar",
         },
@@ -143,8 +162,8 @@ describe("ColectivoController", () => {
         descripcion:
           "Nueva descripción con objetivos ampliados para el barrio.",
         tipo: "asamblea",
-        pais: "Argentina",
-        provincia: "CABA",
+        pais: PAIS_ID,
+        provincia: PROVINCIA_ID,
         ciudad: "Palermo",
       }
       const req = { params: { id: "1" }, body: colectivoActualizado }

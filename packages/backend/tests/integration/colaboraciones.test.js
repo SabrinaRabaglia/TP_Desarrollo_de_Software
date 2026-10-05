@@ -84,6 +84,12 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
       proyecto: { id: proyecto.id, titulo: proyecto.titulo },
     })
     expect(await request("GET", "/colaboraciones")).toEqual([colaboracion])
+    for (const ruta of [
+      `/proyectos/${proyecto.id}`,
+      `/personas-colaboradoras/${persona.id}`,
+    ]) {
+      expect(await request("GET", ruta)).not.toHaveProperty("colaboraciones")
+    }
 
     const detalleColectivo = await request("GET", `/colectivos/${colectivo.id}`)
     expect(detalleColectivo.provincia).toEqual({
