@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, test } from "@jest/globals"
 import ProyectoService from "../../../src/services/ProyectoService.js"
-import ProyectoRepository from "../../../src/repositories/ProyectoRepository.js"
+import ProyectoRepository from "../../fakes/ProyectoRepository.js"
 import ColectivoService from "../../../src/services/ColectivoService.js"
-import ColectivoRepository from "../../../src/repositories/ColectivoRepository.js"
-import TipoColectivoRepository from "../../../src/repositories/TipoColectivoRepository.js"
-import ProvinciaRepository from "../../../src/repositories/ProvinciaRepository.js"
-import PaisRepository from "../../../src/repositories/PaisRepository.js"
+import ColectivoRepository from "../../fakes/ColectivoRepository.js"
+import TipoColectivoRepository from "../../fakes/TipoColectivoRepository.js"
+import ProvinciaRepository from "../../fakes/ProvinciaRepository.js"
+import PaisRepository from "../../fakes/PaisRepository.js"
 import HabilidadService from "../../../src/services/HabilidadService.js"
-import HabilidadRepository from "../../../src/repositories/HabilidadRepository.js"
+import HabilidadRepository from "../../fakes/HabilidadRepository.js"
 import {
   AlreadyExists,
   EntityNotFound,

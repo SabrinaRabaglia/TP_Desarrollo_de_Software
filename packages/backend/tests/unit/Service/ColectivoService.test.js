@@ -5,11 +5,11 @@ import {
   EntityNotFound,
   InvalidReference,
 } from "../../../src/errors/ApplicationErrors.js"
-import ColectivoRepository from "../../../src/repositories/ColectivoRepository.js"
-import TipoColectivoRepository from "../../../src/repositories/TipoColectivoRepository.js"
-import ProyectoRepository from "../../../src/repositories/ProyectoRepository.js"
-import ProvinciaRepository from "../../../src/repositories/ProvinciaRepository.js"
-import PaisRepository from "../../../src/repositories/PaisRepository.js"
+import ColectivoRepository from "../../fakes/ColectivoRepository.js"
+import TipoColectivoRepository from "../../fakes/TipoColectivoRepository.js"
+import ProyectoRepository from "../../fakes/ProyectoRepository.js"
+import ProvinciaRepository from "../../fakes/ProvinciaRepository.js"
+import PaisRepository from "../../fakes/PaisRepository.js"
 import TipoColectivo from "../../../src/domain/TipoColectivo.js"
 describe("ColectivoService", () => {
 

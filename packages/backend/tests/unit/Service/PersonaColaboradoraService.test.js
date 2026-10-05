@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, jest, test } from "@jest/globals"
 import PersonaColaboradoraService from "../../../src/services/PersonaColaboradoraService.js"
-import PersonaColaboradoraRepository from "../../../src/repositories/PersonaColaboradoraRepository.js"
+import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraRepository.js"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import Cuenta from "../../../src/domain/Cuenta.js"
 import Habilidad from "../../../src/domain/Habilidad.js"

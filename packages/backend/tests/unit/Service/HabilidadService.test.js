@@ -1,6 +1,6 @@
 import { describe, expect, test, beforeEach } from "@jest/globals"
 import HabilidadService from "../../../src/services/HabilidadService.js"
-import HabilidadRepository from "../../../src/repositories/HabilidadRepository.js"
+import HabilidadRepository from "../../fakes/HabilidadRepository.js"
 import { AlreadyExists, EntityNotFound } from "../../../src/errors/ApplicationErrors.js"
 import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 
