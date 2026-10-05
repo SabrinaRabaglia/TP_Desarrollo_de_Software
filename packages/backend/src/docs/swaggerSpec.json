@@ -35,6 +35,10 @@
     {
       "name": "Colaboraciones",
       "description": "Inscripción de personas a proyectos"
+    },
+    {
+      "name": "Catálogos",
+      "description": "Catálogos precargados de solo lectura. Sus ids se usan como país y provincia de un colectivo."
     }
   ],
   "paths": {
@@ -1071,6 +1075,78 @@
           },
           "409": {
             "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/paises": {
+      "get": {
+        "tags": [
+          "Catálogos"
+        ],
+        "summary": "Listar paises",
+        "description": "Devuelve paises del catálogo ordenados por nombre.",
+        "operationId": "listarPaises",
+        "responses": {
+          "200": {
+            "description": "Lista de paises",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaisProvincia"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "64f1a2b3c4d5e6f7a8b9c010",
+                    "nombre": "Argentina"
+                  }
+                ]
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/provincias": {
+      "get": {
+        "tags": [
+          "Catálogos"
+        ],
+        "summary": "Listar provincias",
+        "description": "Devuelve provincias del catálogo ordenados por nombre.",
+        "operationId": "listarProvincias",
+        "responses": {
+          "200": {
+            "description": "Lista de provincias",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaisProvincia"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "64f1a2b3c4d5e6f7a8b9c011",
+                    "nombre": "Buenos Aires"
+                  },
+                  {
+                    "id": "64f1a2b3c4d5e6f7a8b9c012",
+                    "nombre": "Catamarca"
+                  }
+                ]
+              }
+            }
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"

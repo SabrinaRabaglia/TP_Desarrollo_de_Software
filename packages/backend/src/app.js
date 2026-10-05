@@ -3,6 +3,7 @@ import cors from "cors"
 import { createRequire } from "node:module"
 import swaggerUi from "swagger-ui-express"
 import routes from "./routes/routes.js"
+import catalogoRoutes from "./routes/catalogoRoutes.js"
 import colaboracionRoutes from "./routes/colaboracionRoutes.js"
 import colectivoRoutes from "./routes/colectivoRoutes.js"
 import habilidadRoutes from "./routes/habilidadRoutes.js"
@@ -26,6 +27,7 @@ app.use(
 app.use(express.json())
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use(routes)
+app.use(catalogoRoutes)
 app.use(colaboracionRoutes)
 app.use(colectivoRoutes)
 app.use(habilidadRoutes)

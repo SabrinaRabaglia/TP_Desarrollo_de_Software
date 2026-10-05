@@ -115,3 +115,19 @@ describe("persistencia en MongoDB", () => {
     expect(antes.TipoColectivo).toHaveLength(4)
   })
 })
+
+test("GET /paises y GET /provincias listan los catálogos ordenados por nombre", async () => {
+  const paises = await (await fetch(`${base}/paises`)).json()
+  expect(paises).toEqual([expect.objectContaining({ nombre: "Argentina" })])
+
+  const respuesta = await fetch(`${base}/provincias`)
+  expect(respuesta.status).toBe(200)
+  const provincias = await respuesta.json()
+  expect(provincias).toHaveLength(24)
+  const nombres = provincias.map((provincia) => provincia.nombre)
+  expect(nombres).toEqual([...nombres].sort((a, b) => a.localeCompare(b)))
+  for (const provincia of provincias) {
+    expect(provincia.id).toMatch(/^[0-9a-f]{24}$/)
+    expect(provincia).not.toHaveProperty("_id")
+  }
+})
