@@ -1,6 +1,7 @@
 import { BadRequestError } from "../errors/AppError.js"
 import { TipoCuenta } from "../domain/enums/TipoCuenta.js"
 import { z } from "zod"
+import { OBJECT_ID } from "../middlewares/validateId.js"
 
 const cuentaSchema = z
   .object({
@@ -17,7 +18,7 @@ const personaColaboradoraSchema = z
     pronombres: z.array(z.string()).optional(),
     presentacion: z.string().optional(),
     cuentas: z.array(cuentaSchema).optional(),
-    habilidades: z.array(z.string().uuid()).optional(),
+    habilidades: z.array(z.string().regex(OBJECT_ID)).optional(),
   })
   .strict()
 

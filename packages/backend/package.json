@@ -6,6 +6,7 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:unit": "cross-env NODE_OPTIONS=--experimental-vm-modules jest tests/unit",
     "format:backend": "prettier packages/backend --write",
     "format:check": "prettier . --check"
   },

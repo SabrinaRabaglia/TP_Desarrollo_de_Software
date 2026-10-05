@@ -1,46 +1,32 @@
-export default class ProyectoRepository {
-  
-  static proyectos = []
-  
-  constructor() {
+import ProyectoModel from "../schemas/proyectoSchema.js"
+import guardar from "./guardar.js"
 
-    //this.proyectos = []
+export default class ProyectoRepository {
+  constructor() {
+    this.model = ProyectoModel
   }
 
   async findAll() {
-    return ProyectoRepository.proyectos
+    return await this.model.find()
   }
 
   async findById(id) {
-    return ProyectoRepository.proyectos.find((c) => c.id === id)
+    return await this.model.findById(id)
   }
 
-  async   findByTitulo(titulo) {
-    return ProyectoRepository.proyectos.find((c) => c.titulo === titulo)
+  async findByTitulo(titulo) {
+    return await this.model.findOne({ titulo })
   }
 
   async findByColectivoId(colectivoId) {
-    return ProyectoRepository.proyectos.filter(
-      (proyecto) => proyecto.colectivo === colectivoId,
-    )
+    return await this.model.find({ colectivo: colectivoId })
   }
 
-  async save(nuevo) {
-    const indice = ProyectoRepository.proyectos.findIndex((p) => p.id === nuevo.id)
-    if (indice === -1) {
-      ProyectoRepository.proyectos.push(nuevo)
-      return nuevo
-    }
-    ProyectoRepository.proyectos[indice] = nuevo
-    return nuevo
+  async save(proyecto) {
+    return await guardar(this.model, proyecto)
   }
 
   async delete(id) {
-    ProyectoRepository.proyectos = ProyectoRepository.proyectos.filter((c) => c.id !== id)
+    return await this.model.findByIdAndDelete(id)
   }
-  deleteAll() {
-   ProyectoRepository.proyectos.length = 0; 
 }
-}
-
-export { ProyectoRepository }

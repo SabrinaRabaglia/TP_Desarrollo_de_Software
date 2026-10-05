@@ -44,15 +44,13 @@ describe("ColaboracionService", () => {
     datos = { proyectoId: proyecto.id, personaColaboradoraId: persona.id }
   })
 
-  test("registra una única colaboración y la vincula con ambas entidades", async () => {
+  test("registra una única colaboración entre la persona y el proyecto", async () => {
     const colaboracion = await service.create(datos)
 
     expect(colaboracion.personaColaboradora).toBe(persona)
     expect(colaboracion.proyecto).toBe(proyecto)
     await expect(service.create(datos)).rejects.toThrow(AlreadyExists)
     expect(await service.getAll()).toEqual([colaboracion])
-    expect(persona.colaboraciones).toEqual([colaboracion])
-    expect(proyecto.colaboraciones).toEqual([colaboracion])
   })
 
   test.each([
@@ -88,14 +86,12 @@ describe("ColaboracionService", () => {
       DomainRuleError,
     ],
   ])(
-    "rechaza %s sin registrar ni asociar la colaboración",
+    "rechaza %s sin registrar la colaboración",
     async (_caso, preparar, error) => {
       preparar()
 
       await expect(service.create(datos)).rejects.toThrow(error)
       expect(await service.getAll()).toEqual([])
-      expect(persona.colaboraciones).toEqual([])
-      expect(proyecto.colaboraciones).toEqual([])
     },
   )
 })

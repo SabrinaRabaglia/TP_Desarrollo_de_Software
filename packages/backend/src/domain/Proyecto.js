@@ -64,7 +64,7 @@ export default class Proyecto {
   poseeHabilidadNecesaria(personaColaboradora) {
     return this.habilidadesRequeridas.some((idRequerido) =>
       personaColaboradora.habilidades.some(
-        (habilidad) => habilidad.id === idRequerido,
+        (habilidad) => String(habilidad.id) === String(idRequerido),
       ),
     )
   }

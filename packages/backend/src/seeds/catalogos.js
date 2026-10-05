@@ -1,0 +1,79 @@
+import Habilidad from "../domain/Habilidad.js"
+import HabilidadModel from "../schemas/habilidadSchema.js"
+import PaisModel from "../schemas/paisSchema.js"
+import ProvinciaModel from "../schemas/provinciaSchema.js"
+import TipoColectivoModel from "../schemas/tipoColectivoSchema.js"
+
+const PAISES = ["Argentina"]
+
+const PROVINCIAS = [
+  "Buenos Aires",
+  "Ciudad Autónoma de Buenos Aires (CABA)",
+  "Catamarca",
+  "Chaco",
+  "Chubut",
+  "Córdoba",
+  "Corrientes",
+  "Entre Ríos",
+  "Formosa",
+  "Jujuy",
+  "La Pampa",
+  "La Rioja",
+  "Mendoza",
+  "Misiones",
+  "Neuquén",
+  "Río Negro",
+  "Salta",
+  "San Juan",
+  "San Luis",
+  "Santa Cruz",
+  "Santa Fe",
+  "Santiago del Estero",
+  "Tierra del Fuego, Antártida e Islas del Atlántico Sur",
+  "Tucumán",
+]
+
+const TIPOS_COLECTIVO = ["Fundación", "Asociación barrial", "ONG", "Asamblea"]
+
+const HABILIDADES = [
+  new Habilidad("JavaScript", "javascript", "Desarrollo con JavaScript"),
+  new Habilidad("TypeScript", "typescript", "Desarrollo con TypeScript"),
+  new Habilidad("Node.js", "node_js", "Desarrollo backend con Node.js"),
+  new Habilidad("React", "react", "Desarrollo de interfaces con React"),
+  new Habilidad("Python", "python", "Desarrollo con Python"),
+  new Habilidad("Java", "java", "Desarrollo con Java"),
+  new Habilidad("SQL", "sql", "Modelado y consultas en bases relacionales"),
+  new Habilidad("MongoDB", "mongodb", "Modelado y consultas en MongoDB"),
+  new Habilidad("Docker", "docker", "Contenedores y despliegue con Docker"),
+  new Habilidad(
+    "Diseño UX/UI",
+    "diseno_ux_ui",
+    "Diseño de experiencia e interfaces",
+  ),
+]
+
+export const sembrar = (model, clave, documentos) =>
+  Promise.all(
+    documentos.map((documento) =>
+      model.updateOne(
+        { [clave]: documento[clave] },
+        { $setOnInsert: documento },
+        { upsert: true, runValidators: true },
+      ),
+    ),
+  )
+
+const conNombre = (nombre) => ({ nombre })
+
+export default async function sembrarCatalogos() {
+  await Promise.all([
+    sembrar(PaisModel, "nombre", PAISES.map(conNombre)),
+    sembrar(ProvinciaModel, "nombre", PROVINCIAS.map(conNombre)),
+    sembrar(TipoColectivoModel, "nombre", TIPOS_COLECTIVO.map(conNombre)),
+    sembrar(
+      HabilidadModel,
+      "codigo",
+      HABILIDADES.map((habilidad) => ({ ...habilidad })),
+    ),
+  ])
+}

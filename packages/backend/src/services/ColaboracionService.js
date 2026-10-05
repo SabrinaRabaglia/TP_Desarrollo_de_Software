@@ -26,10 +26,9 @@ export default class ColaboracionService {
       throw new AlreadyExists("La persona ya colabora en este proyecto")
     }
 
-    const colaboracion = new Colaboracion(persona, proyecto)
-    persona.agregarColaboracion(colaboracion)
-    proyecto.agregarColaboracion(colaboracion)
-    return await this.colaboracionRepository.save(colaboracion)
+    return await this.colaboracionRepository.save(
+      new Colaboracion(persona, proyecto),
+    )
   }
 
   getAll = async () => await this.colaboracionRepository.getAll()

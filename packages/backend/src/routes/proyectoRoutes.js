@@ -1,4 +1,5 @@
 import { Router } from "express"
+import validateId from "../middlewares/validateId.js"
 
 import ProyectoRepository from "../repositories/ProyectoRepository.js"
 import ProyectoService from "../services/ProyectoService.js"
@@ -38,8 +39,8 @@ const proyectoController = new ProyectoController(proyectoService)
 
 routes.post("/proyectos", proyectoController.create)
 routes.get("/proyectos", proyectoController.getAll)
-routes.get("/proyectos/:id", proyectoController.getById)
-routes.put("/proyectos/:id", proyectoController.put)
-routes.delete("/proyectos/:id", proyectoController.delete)
-routes.patch("/proyectos/:id", proyectoController.patch)
+routes.get("/proyectos/:id", validateId, proyectoController.getById)
+routes.put("/proyectos/:id", validateId, proyectoController.put)
+routes.delete("/proyectos/:id", validateId, proyectoController.delete)
+routes.patch("/proyectos/:id", validateId, proyectoController.patch)
 export default routes

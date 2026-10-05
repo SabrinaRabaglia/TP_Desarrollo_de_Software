@@ -1,34 +1,31 @@
-export default class ColectivoRepository {
+import ColectivoModel from "../schemas/colectivoSchema.js"
+import guardar from "./guardar.js"
 
-  static colectivos = []
+const UBICACION = ["pais", "provincia"]
+
+export default class ColectivoRepository {
   constructor() {
-    //this.colectivos = []
+    this.model = ColectivoModel
   }
+
   async findAll() {
-    return ColectivoRepository.colectivos
+    return await this.model.find().populate(UBICACION)
   }
 
   async findById(id) {
-    return ColectivoRepository.colectivos.find((c) => c.id === id)
+    return await this.model.findById(id).populate(UBICACION)
   }
+
   async findByNombre(nombre) {
-    return ColectivoRepository.colectivos.find((c) => c.nombre === nombre)
+    return await this.model.findOne({ nombre })
   }
 
-  async save(nuevo) {
-    const indice = ColectivoRepository.colectivos.findIndex((c) => c.id === nuevo.id)
-    if (indice === -1) {
-      ColectivoRepository.colectivos.push(nuevo)
-      return nuevo
-    }
-    ColectivoRepository.colectivos[indice] = nuevo
-    return nuevo
+  async save(colectivo) {
+    const guardado = await guardar(this.model, colectivo)
+    return await guardado.populate(UBICACION)
   }
+
   async delete(id) {
-    ColectivoRepository.colectivos = ColectivoRepository.colectivos.filter((c) => c.id !== id)
+    return await this.model.findByIdAndDelete(id)
   }
-
-  deleteAll() {
-   ColectivoRepository.colectivos.length = 0; 
-}
 }

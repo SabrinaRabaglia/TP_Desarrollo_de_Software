@@ -1,31 +1,29 @@
+import ColaboracionModel from "../schemas/colaboracionSchema.js"
+import guardar from "./guardar.js"
+
+const REFERENCIAS = [
+  { path: "personaColaboradora", select: "nombreFantasia" },
+  { path: "proyecto", select: "titulo" },
+]
+
 export default class ColaboracionRepository {
   constructor() {
-    this.colaboraciones = []
+    this.model = ColaboracionModel
   }
 
   async getAll() {
-    return this.colaboraciones
-  }
-
-  async getAllFilteredByProyecto(titulo) {
-    return this.colaboraciones.filter((c) => c.proyecto.titulo.includes(titulo))
-  }
-
-  async getAllFilteredByColaborador(nombre) {
-    return this.colaboraciones.filter(
-      (c) => c.personaColaboradora.nombre === nombre,
-    )
+    return await this.model.find().populate(REFERENCIAS)
   }
 
   async findByPersonaAndProyecto(personaId, proyectoId) {
-    return this.colaboraciones.find(
-      (c) =>
-        c.personaColaboradora.id === personaId && c.proyecto.id === proyectoId,
-    )
+    return await this.model.findOne({
+      personaColaboradora: personaId,
+      proyecto: proyectoId,
+    })
   }
 
   async save(colaboracion) {
-    this.colaboraciones.push(colaboracion)
-    return colaboracion
+    const guardada = await guardar(this.model, colaboracion)
+    return await guardada.populate(REFERENCIAS)
   }
 }

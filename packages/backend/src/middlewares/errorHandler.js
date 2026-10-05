@@ -1,3 +1,4 @@
+import mongoose from "mongoose"
 import { BadRequestError } from "../errors/AppError.js"
 import {
   AlreadyExists,
@@ -12,6 +13,23 @@ const jsonError = (res, status, message, details = []) =>
 export default function errorHandler(error, _req, res, next) {
   if (res.headersSent) {
     return next(error)
+  }
+
+  if (error instanceof mongoose.Error.CastError) {
+    return jsonError(res, 400, `Valor inválido para '${error.path}'`)
+  }
+
+  if (error instanceof mongoose.Error.ValidationError) {
+    const mensajes = Object.values(error.errors).map((e) => e.message)
+    return jsonError(res, 400, mensajes.join(" | "))
+  }
+
+  if (error.code === 11000) {
+    return jsonError(
+      res,
+      409,
+      `Valor duplicado: ${JSON.stringify(error.keyValue)}`,
+    )
   }
 
   if (error instanceof DomainValidationError) {

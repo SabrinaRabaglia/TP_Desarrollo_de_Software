@@ -1,10 +1,11 @@
 import { z } from "zod"
 import { BadRequestError } from "../errors/AppError.js"
+import { OBJECT_ID } from "../middlewares/validateId.js"
 
 const colaboracionSchema = z
   .object({
-    personaColaboradoraId: z.string().uuid(),
-    proyectoId: z.string().uuid(),
+    personaColaboradoraId: z.string().regex(OBJECT_ID),
+    proyectoId: z.string().regex(OBJECT_ID),
   })
   .strict()
 

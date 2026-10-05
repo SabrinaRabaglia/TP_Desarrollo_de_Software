@@ -1,4 +1,5 @@
 import { Router } from "express"
+import validateId from "../middlewares/validateId.js"
 
 import HabilidadRepository from "../repositories/HabilidadRepository.js"
 import HabilidadService from "../services/HabilidadService.js"
@@ -12,7 +13,7 @@ const habilidadController = new HabilidadController(habilidadService)
 
 routes.post("/habilidades", habilidadController.create)
 routes.get("/habilidades", habilidadController.getAll)
-routes.get("/habilidades/:id", habilidadController.getById)
-routes.put("/habilidades/:id", habilidadController.update)
-routes.delete("/habilidades/:id", habilidadController.delete)
+routes.get("/habilidades/:id", validateId, habilidadController.getById)
+routes.put("/habilidades/:id", validateId, habilidadController.update)
+routes.delete("/habilidades/:id", validateId, habilidadController.delete)
 export default routes

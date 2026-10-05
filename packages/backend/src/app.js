@@ -7,24 +7,8 @@ import habilidadRoutes from "./routes/habilidadRoutes.js"
 import personaColaboradoraRoutes from "./routes/personaColaboradoraRoutes.js"
 import proyectoRoutes from "./routes/proyectoRoutes.js"
 import errorHandler from "./middlewares/errorHandler.js"
-import Colaboracion from "./domain/Colaboracion.js"
 
 const app = express()
-
-// Evita recorrer los vínculos de vuelta a la persona y al proyecto en el JSON.
-app.set("json replacer", (_key, value) => {
-  if (value instanceof Colaboracion) {
-    return {
-      fechaInscripcion: value.fechaInscripcion,
-      personaColaboradora: {
-        id: value.personaColaboradora.id,
-        nombreFantasia: value.personaColaboradora.nombreFantasia,
-      },
-      proyecto: { id: value.proyecto.id, titulo: value.proyecto.titulo },
-    }
-  }
-  return value
-})
 
 app.use(
   cors({

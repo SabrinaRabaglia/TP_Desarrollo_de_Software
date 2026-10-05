@@ -1,4 +1,5 @@
 import { expect, jest, test } from "@jest/globals"
+import mongoose from "mongoose"
 import { BadRequestError } from "../../src/errors/AppError.js"
 import {
   AlreadyExists,
@@ -62,6 +63,48 @@ test.each([
     message: error.message,
     details: [],
   })
+})
+
+const errorDeValidacionDeMongoose = () => {
+  const error = new mongoose.Error.ValidationError()
+  for (const path of ["titulo", "cantHoras"]) {
+    error.addError(
+      path,
+      new mongoose.Error.ValidatorError({ message: `${path} inválido`, path }),
+    )
+  }
+  return error
+}
+
+test.each([
+  [
+    "un id con formato inválido",
+    new mongoose.Error.CastError("ObjectId", "123", "colectivo"),
+    400,
+    "Valor inválido para 'colectivo'",
+  ],
+  [
+    "una validación del schema",
+    errorDeValidacionDeMongoose(),
+    400,
+    "titulo inválido | cantHoras inválido",
+  ],
+  [
+    "una clave única duplicada",
+    Object.assign(new Error("E11000"), {
+      code: 11000,
+      keyValue: { titulo: "Repetido" },
+    }),
+    409,
+    'Valor duplicado: {"titulo":"Repetido"}',
+  ],
+])("traduce %s de Mongoose", (_caso, error, status, message) => {
+  const res = mockRes()
+
+  errorHandler(error, {}, res, jest.fn())
+
+  expect(res.status).toHaveBeenCalledWith(status)
+  expect(res.json).toHaveBeenCalledWith({ message, details: [] })
 })
 
 test("responde 500 sin exponer el mensaje de un error inesperado", () => {

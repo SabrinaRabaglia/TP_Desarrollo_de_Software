@@ -1,8 +1,13 @@
-import { expect, test } from "@jest/globals"
+import { afterAll, beforeAll, expect, test } from "@jest/globals"
 import { once } from "node:events"
 import app from "../../src/app.js"
+import ProvinciaModel from "../../src/schemas/provinciaSchema.js"
+import { conectar, desconectar } from "./mongo.js"
 
-test("inscribir permite consultar y actualizar las entidades sin ciclos en el JSON", async () => {
+beforeAll(() => conectar("colaboraciones"))
+afterAll(desconectar)
+
+test("inscribir permite consultar y actualizar las entidades persistidas", async () => {
   const server = app.listen(0, "127.0.0.1")
   await once(server, "listening")
   const base = `http://127.0.0.1:${server.address().port}`
@@ -21,16 +26,18 @@ test("inscribir permite consultar y actualizar las entidades sin ciclos en el JS
       "POST",
       "/habilidades",
       {
-        titulo: "JavaScript",
-        codigo: "javascript",
-        descripcion: "Desarrollo web",
+        titulo: "Rust",
+        codigo: "rust",
+        descripcion: "Desarrollo de sistemas",
       },
       201,
     )
+    const cordoba = await ProvinciaModel.findOne({ nombre: "Córdoba" })
     const colectivoDatos = {
       nombre: "Colectivo HTTP",
       descripcion: "Desarrollo comunitario",
       tipo: "ONG",
+      provincia: cordoba.id,
     }
     const colectivo = await request("POST", "/colectivos", colectivoDatos, 201)
     const personaDatos = {
@@ -66,7 +73,10 @@ test("inscribir permite consultar y actualizar las entidades sin ciclos en el JS
       201,
     )
     expect(colaboracion).toEqual({
+      id: expect.any(String),
       fechaInscripcion: expect.any(String),
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
       personaColaboradora: {
         id: persona.id,
         nombreFantasia: persona.nombreFantasia,
@@ -75,21 +85,14 @@ test("inscribir permite consultar y actualizar las entidades sin ciclos en el JS
     })
     expect(await request("GET", "/colaboraciones")).toEqual([colaboracion])
 
-    for (const [ruta, entidad] of [
-      ["proyectos", proyecto],
-      ["personas-colaboradoras", persona],
-    ]) {
-      const detalle = await request("GET", `/${ruta}/${entidad.id}`)
-      expect(detalle.colaboraciones).toEqual([colaboracion])
-      const lista = await request("GET", `/${ruta}`)
-      expect(
-        lista.find((item) => item.id === entidad.id).colaboraciones,
-      ).toEqual([colaboracion])
-    }
     const detalleColectivo = await request("GET", `/colectivos/${colectivo.id}`)
-    expect(detalleColectivo.proyectos[0].colaboraciones).toEqual([colaboracion])
-    const colectivos = await request("GET", "/colectivos")
-    expect(colectivos[0].proyectos[0].colaboraciones).toEqual([colaboracion])
+    expect(detalleColectivo.provincia).toEqual({
+      id: cordoba.id,
+      nombre: "Córdoba",
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
+    })
+    expect(detalleColectivo.proyectos).toEqual([proyecto])
 
     for (const [ruta, id, datos] of [
       ["proyectos", proyecto.id, proyectoDatos],
@@ -116,7 +119,6 @@ test("inscribir permite consultar y actualizar las entidades sin ciclos en el JS
     })
     expect(cerrado.estado).toBe("CERRADO")
     expect(cerrado.fechaCierre).toEqual(expect.any(String))
-    expect(cerrado.colaboraciones).toEqual([colaboracion])
     await request(
       "PATCH",
       `/proyectos/${proyecto.id}`,

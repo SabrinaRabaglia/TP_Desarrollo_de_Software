@@ -2,7 +2,7 @@ import { describe, expect, test, jest } from "@jest/globals"
 import PersonaColaboradoraController from "../../../src/controllers/PersonaColaboradoraController.js"
 import { BadRequestError } from "../../../src/errors/AppError.js"
 
-const UUID_VALIDO = "b8c65bfd-1234-4a12-8b12-abcdef123456"
+const OBJECT_ID_VALIDO = "65f1a2b3c4d5e6f708192a3b"
 
 const crearResFalso = () => ({
   status: jest.fn().mockReturnThis(),
@@ -36,14 +36,14 @@ describe("PersonaColaboradoraController", () => {
       expect(res.json).toHaveBeenCalledWith(personaCreada)
     })
 
-    test("con body válido incluyendo cuentas y habilidades (id con formato UUID), delega en el service", async () => {
+    test("con body válido incluyendo cuentas y habilidades (id con formato ObjectId), delega en el service", async () => {
       const service = crearPersonaColaboradoraServiceFalso()
       service.create.mockReturnValue({ id: "1" })
       const controller = new PersonaColaboradoraController(service)
       const req = {
         body: {
           nombreFantasia: "anon123",
-          habilidades: [UUID_VALIDO],
+          habilidades: [OBJECT_ID_VALIDO],
           cuentas: [{ nombreUsuario: "anagomez", tipo: "GITHUB" }],
         },
       }
@@ -69,11 +69,11 @@ describe("PersonaColaboradoraController", () => {
         expect(service.create).not.toHaveBeenCalled();
     })
 
-    test("con un id de habilidad que no tiene formato UUID, tira BadRequestError", async () => {
+    test.each(["react", "b8c65bfd-1234-4a12-8b12-abcdef123456"])("con un id de habilidad %s que no tiene formato ObjectId, tira BadRequestError", async (idInvalido) => {
       const service = crearPersonaColaboradoraServiceFalso()
       const controller = new PersonaColaboradoraController(service)
       const req = {
-        body: { nombreFantasia: "anon123", habilidades: ["react"] },
+        body: { nombreFantasia: "anon123", habilidades: [idInvalido] },
       }
       const res = crearResFalso()
       const next = jest.fn()

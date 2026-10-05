@@ -1,7 +1,31 @@
-import { randomUUID } from "node:crypto"
 import { AlreadyExists, EntityNotFound, InvalidReference } from "../errors/ApplicationErrors.js"
 import { Proyecto } from "../domain/Proyecto.js"
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
+
+// Un documento de Mongoose no se puede esparcir con "...": sus campos son getters del prototipo.
+const datosDelProyecto = ({
+  titulo,
+  descripcion,
+  unidadCompromiso,
+  cantHoras,
+  colectivo,
+  modalidadesColaboracion,
+  estado,
+  fechaAlta,
+  fechaCierre,
+  habilidadesRequeridas,
+}) => ({
+  titulo,
+  descripcion,
+  unidadCompromiso,
+  cantHoras,
+  colectivo,
+  modalidadesColaboracion,
+  estado,
+  fechaAlta,
+  fechaCierre,
+  habilidadesRequeridas,
+})
 
 export default class ProyectoService {
   constructor(proyectoRepository, colectivoService, habilidadService) {
@@ -64,8 +88,6 @@ export default class ProyectoService {
       throw new AlreadyExists("Ya existe un proyecto con ese título")
     }
 
-    proyecto.id = randomUUID()
-
     return await this.proyectoRepository.save(proyecto)
   }
 
@@ -75,7 +97,7 @@ export default class ProyectoService {
     proyectoExistente.assertPuedeActualizarEstado(proyectoActualizado.estado)
 
     const datosActualizados = {
-      ...proyectoExistente,
+      ...datosDelProyecto(proyectoExistente),
       ...proyectoActualizado,
     }
     Proyecto.validarDatos(datosActualizados)

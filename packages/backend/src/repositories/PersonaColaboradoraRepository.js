@@ -1,39 +1,25 @@
+import PersonaColaboradoraModel from "../schemas/personaColaboradoraSchema.js"
+import guardar from "./guardar.js"
+
 export default class PersonaColaboradoraRepository {
-  static personas = [];
   constructor() {
-    //this.personasColaboradoras = []
+    this.model = PersonaColaboradoraModel
   }
 
   async getAll() {
-    return PersonaColaboradoraRepository.personas
+    return await this.model.find().populate("habilidades")
   }
 
   async findById(id) {
-    return PersonaColaboradoraRepository.personas.find((p) => p.id === id)
+    return await this.model.findById(id).populate("habilidades")
   }
 
   async deleteById(id) {
-    const indice = PersonaColaboradoraRepository.personas.findIndex((p) => p.id === id)
-    if (indice === -1) {
-      return false
-    }
-    PersonaColaboradoraRepository.personas.splice(indice, 1)
-    return true
+    return Boolean(await this.model.findByIdAndDelete(id))
   }
 
   async save(personaColaboradora) {
-    const indice = PersonaColaboradoraRepository.personas.findIndex(
-      (p) => p.id === personaColaboradora.id,
-    )
-    if (indice === -1) {
-      PersonaColaboradoraRepository.personas.push(personaColaboradora)
-      return personaColaboradora
-    }
-    PersonaColaboradoraRepository.personas[indice] = personaColaboradora
-    return personaColaboradora
+    const guardada = await guardar(this.model, personaColaboradora)
+    return await guardada.populate("habilidades")
   }
-  deleteAll() {
-   PersonaColaboradoraRepository.personas.length = 0; 
-  }
-  
 }

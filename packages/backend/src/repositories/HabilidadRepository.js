@@ -1,39 +1,28 @@
+import HabilidadModel from "../schemas/habilidadSchema.js"
+import guardar from "./guardar.js"
+
 export default class HabilidadRepository {
-  static habilidades = []
   constructor() {
+    this.model = HabilidadModel
   }
 
   async getAll() {
-    return HabilidadRepository.habilidades
+    return await this.model.find()
   }
 
   async findByCodigo(codigo) {
-    return HabilidadRepository.habilidades.find((h) => h.codigo === codigo)
+    return await this.model.findOne({ codigo })
   }
 
   async findById(id) {
-    return HabilidadRepository.habilidades.find((h) => h.id === id)
+    return await this.model.findById(id)
   }
 
   async deleteById(id) {
-    const indice = HabilidadRepository.habilidades.findIndex((h) => h.id === id)
-    if (indice === -1) {
-      return false
-    }
-    HabilidadRepository.habilidades.splice(indice, 1)
-    return true
+    return Boolean(await this.model.findByIdAndDelete(id))
   }
 
   async save(habilidad) {
-    const indice = HabilidadRepository.habilidades.findIndex((h) => h.id === habilidad.id)
-    if (indice === -1) {
-      HabilidadRepository.habilidades.push(habilidad)
-      return habilidad
-    }
-    HabilidadRepository.habilidades[indice] = habilidad
-    return habilidad
+    return await guardar(this.model, habilidad)
   }
-  deleteAll() {
-   HabilidadRepository.habilidades.length = 0; 
-}
 }

@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto"
 import Colectivo from "../domain/Colectivo.js"
 import {
   AlreadyExists,
@@ -20,14 +19,26 @@ export default class ColectivoService {
     this.provinciaRepository = provinciaRepository
     this.paisRepository = paisRepository
   }
-  incluirProyectos = async (colectivo) => ({
-    ...colectivo,
-    proyectos: await this.proyectoRepository.findByColectivoId(colectivo.id),
+  toDTO = (colectivo, proyectos) => ({
+    id: colectivo.id,
+    nombre: colectivo.nombre,
+    descripcion: colectivo.descripcion,
+    tipo: colectivo.tipo,
+    pais: colectivo.pais,
+    provincia: colectivo.provincia,
+    ciudad: colectivo.ciudad,
+    proyectos,
   })
+
+  conProyectos = async (colectivo) =>
+    this.toDTO(
+      colectivo,
+      await this.proyectoRepository.findByColectivoId(colectivo.id),
+    )
 
   getAll = async () => {
     const colectivos = await this.colectivoRepository.findAll()
-    return await Promise.all(colectivos.map(this.incluirProyectos))
+    return await Promise.all(colectivos.map(this.conProyectos))
   }
 
   getById = async (id) => {
@@ -35,7 +46,7 @@ export default class ColectivoService {
     if (!colectivo) {
       throw new EntityNotFound("Colectivo no encontrado")
     }
-    return await this.incluirProyectos(colectivo)
+    return await this.conProyectos(colectivo)
   }
   validarTipo = async(tipo) => {
     if (!await this.tipoColectivoRepository.findByNombre(tipo)) {
@@ -84,9 +95,7 @@ export default class ColectivoService {
       throw new AlreadyExists("Ya existe un colectivo con ese nombre")
     }
 
-    colectivo.id = randomUUID()
-    
-    return await this.colectivoRepository.save(colectivo);
+    return this.toDTO(await this.colectivoRepository.save(colectivo), [])
   }
   update = async (id, colectivoActualizado) => {
     const colectivoExistente = await this.colectivoRepository.findById(id)
@@ -111,7 +120,7 @@ export default class ColectivoService {
     colectivoExistente.ciudad = colectivoActualizado.ciudad || null
 
     const colectivoGuardado = await this.colectivoRepository.save(colectivoExistente)
-    return await this.incluirProyectos(colectivoGuardado)
+    return await this.conProyectos(colectivoGuardado)
   }
   patch = async (id, cambios) => {
     const existente = await this.colectivoRepository.findById(id)

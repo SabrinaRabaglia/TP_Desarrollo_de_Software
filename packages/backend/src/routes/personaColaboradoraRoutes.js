@@ -1,4 +1,5 @@
 import { Router } from "express"
+import validateId from "../middlewares/validateId.js"
 
 import PersonaColaboradoraRepository from "../repositories/PersonaColaboradoraRepository.js"
 import HabilidadRepository from "../repositories/HabilidadRepository.js"
@@ -21,10 +22,11 @@ const personaColaboradoraController = new PersonaColaboradoraController(
 
 routes.post("/personas-colaboradoras", personaColaboradoraController.create)
 routes.get("/personas-colaboradoras", personaColaboradoraController.getAll)
-routes.get("/personas-colaboradoras/:id", personaColaboradoraController.getById)
-routes.put("/personas-colaboradoras/:id", personaColaboradoraController.update)
+routes.get("/personas-colaboradoras/:id", validateId, personaColaboradoraController.getById)
+routes.put("/personas-colaboradoras/:id", validateId, personaColaboradoraController.update)
 routes.delete(
   "/personas-colaboradoras/:id",
+  validateId,
   personaColaboradoraController.delete,
 )
 export default routes

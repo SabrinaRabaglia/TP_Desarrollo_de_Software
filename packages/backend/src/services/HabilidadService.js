@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto"
 import { AlreadyExists, EntityNotFound } from "../errors/ApplicationErrors.js"
 import Habilidad from "../domain/Habilidad.js"
 
@@ -19,7 +18,6 @@ export default class HabilidadService {
     if (habilidadExistente) {
       throw new AlreadyExists("Ya existe una habilidad con ese código")
     }
-    habilidad.id = randomUUID()
     return await this.habilidadRepository.save(habilidad)
   }
 
