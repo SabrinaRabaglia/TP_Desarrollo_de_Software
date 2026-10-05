@@ -22,6 +22,14 @@ export default class ColaboracionRepository {
     })
   }
 
+  async deleteByProyecto(proyectoId) {
+    await this.model.deleteMany({ proyecto: proyectoId })
+  }
+
+  async deleteByPersona(personaId) {
+    await this.model.deleteMany({ personaColaboradora: personaId })
+  }
+
   async save(colaboracion) {
     const guardada = await guardar(this.model, colaboracion)
     return await guardada.populate(REFERENCIAS)

@@ -3,9 +3,14 @@ import PersonaColaboradora from "../domain/PersonaColaboradora.js"
 import Cuenta from "../domain/Cuenta.js"
 
 export default class PersonaColaboradoraService {
-  constructor(personaColaboradoraRepository, habilidadService) {
+  constructor(
+    personaColaboradoraRepository,
+    habilidadService,
+    colaboracionRepository,
+  ) {
     this.personaColaboradoraRepository = personaColaboradoraRepository
     this.habilidadService = habilidadService
+    this.colaboracionRepository = colaboracionRepository
   }
 
   buscarHabilidades = async (ids) => {
@@ -71,6 +76,7 @@ export default class PersonaColaboradoraService {
     if (!personaExistente) {
       throw new EntityNotFound("Persona colaboradora no encontrada")
     }
+    await this.colaboracionRepository.deleteByPersona(id)
     await this.personaColaboradoraRepository.deleteById(id)
   }
 

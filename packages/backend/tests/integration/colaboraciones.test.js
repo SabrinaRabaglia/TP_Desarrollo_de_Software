@@ -145,6 +145,12 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
       409,
     )
     expect(await request("GET", "/colaboraciones")).toEqual([colaboracion])
+
+    const borrado = await fetch(`${base}/proyectos/${proyecto.id}`, {
+      method: "DELETE",
+    })
+    expect(borrado.status).toBe(204)
+    expect(await request("GET", "/colaboraciones")).toEqual([])
   } finally {
     await new Promise((resolve, reject) =>
       server.close((error) => (error ? reject(error) : resolve())),

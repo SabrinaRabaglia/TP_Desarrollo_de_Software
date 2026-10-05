@@ -3,6 +3,7 @@ import validateId from "../middlewares/validateId.js"
 
 import PersonaColaboradoraRepository from "../repositories/PersonaColaboradoraRepository.js"
 import HabilidadRepository from "../repositories/HabilidadRepository.js"
+import ColaboracionRepository from "../repositories/ColaboracionRepository.js"
 import PersonaColaboradoraService from "../services/PersonaColaboradoraService.js"
 import PersonaColaboradoraController from "../controllers/PersonaColaboradoraController.js"
 import HabilidadService from "../services/HabilidadService.js"
@@ -15,6 +16,7 @@ const personaColaboradoraRepository = new PersonaColaboradoraRepository()
 const personaColaboradoraService = new PersonaColaboradoraService(
   personaColaboradoraRepository,
   habilidadService,
+  new ColaboracionRepository(),
 )
 const personaColaboradoraController = new PersonaColaboradoraController(
   personaColaboradoraService,

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, jest, test } from "@jest/globals"
 import PersonaColaboradoraService from "../../../src/services/PersonaColaboradoraService.js"
 import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraRepository.js"
+import ColaboracionRepository from "../../fakes/ColaboracionRepository.js"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import Cuenta from "../../../src/domain/Cuenta.js"
 import Habilidad from "../../../src/domain/Habilidad.js"
@@ -10,6 +11,7 @@ import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.j
 describe("PersonaColaboradoraService", () => {
   let repository
   let service
+  let colaboracionRepository
   let habilidad
   let datos
 
@@ -27,7 +29,12 @@ describe("PersonaColaboradoraService", () => {
         return habilidad
       }),
     }
-    service = new PersonaColaboradoraService(repository, habilidadService)
+    colaboracionRepository = new ColaboracionRepository()
+    service = new PersonaColaboradoraService(
+      repository,
+      habilidadService,
+      colaboracionRepository,
+    )
     datos = {
       nombreFantasia: "anon123",
       nombre: "Ana",
@@ -101,5 +108,19 @@ describe("PersonaColaboradoraService", () => {
     ).rejects.toThrow(DomainValidationError)
 
     expect(await repository.findById(persona.id)).toEqual(antes)
+  })
+
+  test("eliminar una persona elimina sus colaboraciones y conserva las de otras", async () => {
+    const persona = await service.create(datos)
+    const proyecto = { id: "proyecto-1" }
+    await colaboracionRepository.save({ personaColaboradora: { id: persona.id }, proyecto })
+    await colaboracionRepository.save({ personaColaboradora: { id: "otra-persona" }, proyecto })
+
+    await service.delete(persona.id)
+
+    await expect(service.getById(persona.id)).rejects.toThrow(EntityNotFound)
+    expect(await colaboracionRepository.getAll()).toEqual([
+      { personaColaboradora: { id: "otra-persona" }, proyecto },
+    ])
   })
 })

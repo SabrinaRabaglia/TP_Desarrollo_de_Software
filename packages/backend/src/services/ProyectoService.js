@@ -28,11 +28,16 @@ const datosDelProyecto = ({
 })
 
 export default class ProyectoService {
-  constructor(proyectoRepository, colectivoService, habilidadService) {
+  constructor(
+    proyectoRepository,
+    colectivoService,
+    habilidadService,
+    colaboracionRepository,
+  ) {
     this.proyectoRepository = proyectoRepository
     this.colectivoService = colectivoService
     this.habilidadService = habilidadService
-
+    this.colaboracionRepository = colaboracionRepository
   }
 
   getAll = async () => {
@@ -124,6 +129,7 @@ export default class ProyectoService {
 
   delete = async (id) => {
     await this.getById(id)
+    await this.colaboracionRepository.deleteByProyecto(id)
     await this.proyectoRepository.delete(id)
   }
 }

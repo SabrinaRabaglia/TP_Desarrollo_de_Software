@@ -24,6 +24,18 @@ export default class ColaboracionRepository {
     )
   }
 
+  async deleteByProyecto(proyectoId) {
+    this.colaboraciones = this.colaboraciones.filter(
+      (c) => c.proyecto.id !== proyectoId,
+    )
+  }
+
+  async deleteByPersona(personaId) {
+    this.colaboraciones = this.colaboraciones.filter(
+      (c) => c.personaColaboradora.id !== personaId,
+    )
+  }
+
   async save(colaboracion) {
     this.colaboraciones.push(colaboracion)
     return colaboracion

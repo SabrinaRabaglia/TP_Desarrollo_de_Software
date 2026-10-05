@@ -11,6 +11,7 @@ import ProvinciaRepository from "../repositories/ProvinciaRepository.js"
 import PaisRepository from "../repositories/PaisRepository.js"
 import HabilidadService from "../services/HabilidadService.js"
 import HabilidadRepository from "../repositories/HabilidadRepository.js"
+import ColaboracionRepository from "../repositories/ColaboracionRepository.js"
 
 const routes = Router()
 
@@ -34,6 +35,7 @@ const proyectoService = new ProyectoService(
   proyectoRepository,
   colectivoService,
   habilidadService,
+  new ColaboracionRepository(),
 )
 const proyectoController = new ProyectoController(proyectoService)
 
