@@ -1,0 +1,24 @@
+services:
+  mongo:
+    image: mongo:6
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build: .
+    depends_on:
+      - mongo
+    environment:
+      SERVER_PORT: 8000
+      MONGODB_URI: mongodb://root:secret@mongo:27017/?authSource=admin
+      MONGODB_DB_NAME: codigo-a-voluntad
+    ports:
+      - "8000:8000"
+
+volumes:
+  mongo-data:
