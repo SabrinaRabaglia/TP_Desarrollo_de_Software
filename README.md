@@ -53,13 +53,27 @@ Crea un archivo `.env` en el directorio `packages/backend`. Puedes usar el archi
 ```
 # packages/backend/.env
 ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
-SERVER_PORT=3001
+SERVER_PORT=8000
+MONGODB_URI=mongodb://root:secret@localhost:27017/?authSource=admin
+MONGODB_DB_NAME=codigo-a-voluntad
 ```
 
 - **`ALLOWED_ORIGINS`**: Define los orígenes permitidos para las solicitudes CORS. Asegurate de incluir la URL donde se ejecuta tu frontend (por defecto, `http://localhost:3000` para Create React App). Cuando se haga el despliegue en nube acá se deberá incluir la URL donde se desplegó el frontend.
 - **`SERVER_PORT`**: El puerto en el que se ejecutará el servidor backend (ej. `8000`).
+- **`MONGODB_URI`**: URI de conexión a MongoDB. El `authSource=admin` va dentro de la URI porque el usuario `root` del contenedor vive en la base `admin`.
+- **`MONGODB_DB_NAME`**: Nombre de la base. Mongo la crea sola con el primer documento.
 
-### 3\. Ejecución de la Aplicación
+### 3\. Levantar MongoDB
+
+El backend necesita MongoDB para arrancar. Con Docker:
+
+```bash
+docker compose up -d mongo
+```
+
+`docker compose up --build` levanta además el backend en un contenedor, igual que en producción.
+
+### 4\. Ejecución de la Aplicación
 
 Podés iniciar el frontend y el backend por separado o ambos a la vez:
 
@@ -101,17 +115,60 @@ Si no coincide, la API responde `422` sin guardar cambios. Al cambiar el título
 se debe enviar su código correspondiente; si ese código ya pertenece a otra
 habilidad, la respuesta es `409`.
 
+## Base de datos (MongoDB)
+
+La persistencia usa MongoDB con Mongoose, siguiendo la guía de la cátedra. Cada capa tiene una responsabilidad:
+
+- `src/domain/`: clases de dominio puras, sin dependencias de Mongoose.
+- `src/schemas/`: un Schema por entidad, vinculado a su clase con `loadClass`.
+- `src/repositories/`: la única capa que conoce a Mongoose.
+- `src/config/database.js`: la conexión, que se abre en `src/server.js` antes de levantar el servidor.
+
+### Datos iniciales (seeds)
+
+- Al arrancar, el servidor carga los catálogos: país, las 24 provincias, los tipos de colectivo y las habilidades iniciales.
+- `npm run seed:backend` carga además los datos de prueba: colectivos, proyectos, personas y colaboraciones.
+
+Los dos procesos son idempotentes. Insertan lo que falta por su clave natural, nunca borran y no modifican lo que ya existe, así que se pueden correr cualquier cantidad de veces, también en producción.
+
+### Modelado: embebido o referencia
+
+| Relación | Decisión | Por qué |
+|---|---|---|
+| Habilidad en Proyecto y Persona | Referencia | Es un catálogo compartido. Si se corrige una habilidad, el cambio se ve en todos lados. |
+| País y provincia en Colectivo | Referencia | Catálogos precargados y compartidos. |
+| Tipo de colectivo | Nombre del catálogo (`String`) | Se valida contra la colección `tiposColectivo` y no tiene más datos que el nombre. |
+| Proyecto en Colectivo | Referencia en el proyecto (`proyecto.colectivo`) | Un colectivo puede tener muchos proyectos. La lista se arma con una consulta y no se guarda en el colectivo. |
+| Cuentas en Persona | Embebido | Relación uno a pocos, sin existencia propia fuera de la persona. |
+| Colaboración | Colección propia con referencias a persona y proyecto | Es una relación muchos a muchos que crece con el historial. Un índice único impide inscribir dos veces a la misma persona en el mismo proyecto. |
+
+### Ids
+
+Los ids son ObjectId de Mongo: 24 caracteres hexadecimales. Un id con otro formato, en la URL o en el body, devuelve `400`.
+
+### Base de datos en producción
+
+En producción la base es un cluster gratuito (M0) de MongoDB Atlas. El workflow de deploy toma la URI del secret `MONGODB_URI` del repositorio, la guarda como secret del Container App (`mongodb-uri`) y se la pasa al backend como variable de entorno. Para configurarlo por primera vez:
+
+1. Crear el cluster M0 en Atlas y un usuario de base de datos con permiso de lectura y escritura.
+2. En **Network Access**, permitir `0.0.0.0/0`. Las IPs de salida de Azure Container Apps no son fijas.
+3. Copiar la URI de conexión (`mongodb+srv://usuario:password@cluster.../?retryWrites=true&w=majority`) y guardarla en GitHub, en **Settings → Secrets and variables → Actions**, como `MONGODB_URI`.
+
+Si falta el secret, el deploy falla con un error que lo indica, antes de tocar el Container App.
+
+## Documentación de la API (Swagger)
+
+Con el backend corriendo, la documentación está en [`/api-docs`](http://localhost:8000/api-docs). La spec vive en `packages/backend/src/docs/swaggerSpec.json`. Al agregar o cambiar un endpoint, actualizá ahí su path, sus schemas y sus respuestas.
+
+## Tests
+
+- `npm run test:backend` corre todos los tests. Los de integración necesitan MongoDB levantado (`docker compose up -d mongo`).
+- `npm run test:unit --workspace=backend` corre solo los unitarios, sin base de datos. Los services se prueban con los repositorios falsos de `tests/fakes/`.
+
+En CI, el workflow de tests levanta un MongoDB como servicio.
+
 ## Tipo de colectivo y provincia
 
-La creación y actualización de colectivos valida el tipo contra un catálogo en
-memoria, precargado con `Fundación`, `Asociación barrial`, `ONG` y `Asamblea`.
-El catálogo puede ampliarse desde el código con
-`tipoColectivoRepository.save(new TipoColectivo("Cooperativa"))`, usando la misma
-instancia inyectada en `ColectivoService`. No hay un endpoint de administración del catálogo.
+El tipo de colectivo se valida contra la colección `tiposColectivo`, precargada con `Fundación`, `Asociación barrial`, `ONG` y `Asamblea`. La comparación ignora mayúsculas, tildes y espacios sobrantes. Para ampliar el catálogo, agregá el nombre en `src/seeds/catalogos.js`: se inserta en el próximo arranque.
 
-La provincia es opcional y puede omitirse o ser `null`. Si se informa, debe ser
-una de las 23 provincias argentinas o la Ciudad Autónoma de Buenos Aires.
-Se aceptan los alias `CABA` y `Tierra del Fuego` para los nombres completos.
-Las comparaciones de tipos y provincias ignoran mayúsculas, tildes y espacios
-sobrantes; se conserva el texto recibido. Un valor desconocido devuelve `422`
-sin guardar cambios, también en `PUT` y `PATCH`. La ciudad o barrio sigue siendo texto libre.
+País y provincia son opcionales y se envían por id (el de la colección `paises` o `provincias`). La API los devuelve como `{ id, nombre }`. La ciudad o barrio sigue siendo texto libre.

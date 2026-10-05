@@ -51,6 +51,21 @@ jobs:
       - name: Push image
         run: docker push "$BACKEND_IMAGE"
 
+      - name: Configure database secret
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        run: |
+          if [ -z "$MONGODB_URI" ]; then
+            echo "::error::Falta el secret MONGODB_URI del repositorio (URI de MongoDB Atlas)."
+            exit 1
+          fi
+
+          az containerapp secret set \
+            --name ca-ddso-backend \
+            --resource-group rg-ddso-backend \
+            --secrets "mongodb-uri=${MONGODB_URI}" \
+            --output none
+
       - name: Deploy backend
         run: |
           az containerapp revision set-mode \
@@ -63,6 +78,9 @@ jobs:
             --name ca-ddso-backend \
             --resource-group rg-ddso-backend \
             --image "$BACKEND_IMAGE" \
+            --set-env-vars \
+              MONGODB_URI=secretref:mongodb-uri \
+              MONGODB_DB_NAME=codigo-a-voluntad \
             --min-replicas 1 \
             --max-replicas 1 \
             --output none
