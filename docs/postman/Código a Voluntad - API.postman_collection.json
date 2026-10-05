@@ -559,8 +559,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"devuelve el país del catálogo\", () => pm.expect(respuesta.pais).to.include({ id: pm.collectionVariables.get(\"paisId\"), nombre: \"Argentina\" }))",
-                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))\nconst respuesta = pm.response.json()\npm.test(\"la respuesta contiene un id\", () => pm.expect(respuesta.id).to.be.a(\"string\"))\npm.collectionVariables.set(\"colectivoId\", respuesta.id)"
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))\nconst respuesta = pm.response.json()\npm.test(\"la respuesta contiene un id\", () => pm.expect(respuesta.id).to.be.a(\"string\"))\npm.collectionVariables.set(\"colectivoId\", respuesta.id)",
+                  "pm.test(\"devuelve el país del catálogo\", () => pm.expect(respuesta.pais).to.include({ id: pm.collectionVariables.get(\"paisId\"), nombre: \"Argentina\" }))"
                 ]
               }
             }
