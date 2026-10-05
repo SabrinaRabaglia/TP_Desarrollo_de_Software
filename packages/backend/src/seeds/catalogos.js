@@ -52,11 +52,11 @@ const HABILIDADES = [
   ),
 ]
 
-export const sembrar = (model, clave, documentos) =>
+export const sembrar = (model, claves, documentos) =>
   Promise.all(
     documentos.map((documento) =>
       model.updateOne(
-        { [clave]: documento[clave] },
+        Object.fromEntries(claves.map((clave) => [clave, documento[clave]])),
         { $setOnInsert: documento },
         { upsert: true, runValidators: true },
       ),
@@ -67,12 +67,12 @@ const conNombre = (nombre) => ({ nombre })
 
 export default async function sembrarCatalogos() {
   await Promise.all([
-    sembrar(PaisModel, "nombre", PAISES.map(conNombre)),
-    sembrar(ProvinciaModel, "nombre", PROVINCIAS.map(conNombre)),
-    sembrar(TipoColectivoModel, "nombre", TIPOS_COLECTIVO.map(conNombre)),
+    sembrar(PaisModel, ["nombre"], PAISES.map(conNombre)),
+    sembrar(ProvinciaModel, ["nombre"], PROVINCIAS.map(conNombre)),
+    sembrar(TipoColectivoModel, ["nombre"], TIPOS_COLECTIVO.map(conNombre)),
     sembrar(
       HabilidadModel,
-      "codigo",
+      ["codigo"],
       HABILIDADES.map((habilidad) => ({ ...habilidad })),
     ),
   ])
