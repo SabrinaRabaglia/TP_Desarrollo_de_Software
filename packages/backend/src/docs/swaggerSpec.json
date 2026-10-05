@@ -1,0 +1,1841 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Código a Voluntad",
+    "description": "API REST para conectar colectivos, proyectos y personas colaboradoras. Los ids son ObjectId de MongoDB. Todos los errores responden `{ message, details }`.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Desarrollo local"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Sistema",
+      "description": "Salud del servicio y endpoints de prueba"
+    },
+    {
+      "name": "Habilidades",
+      "description": "Catálogo de habilidades"
+    },
+    {
+      "name": "Personas colaboradoras",
+      "description": "Personas que se inscriben a proyectos"
+    },
+    {
+      "name": "Colectivos",
+      "description": "Organizaciones que publican proyectos"
+    },
+    {
+      "name": "Proyectos",
+      "description": "Proyectos de los colectivos"
+    },
+    {
+      "name": "Colaboraciones",
+      "description": "Inscripción de personas a proyectos"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "Sistema"
+        ],
+        "summary": "Health check",
+        "description": "Indica que el servidor está levantado. Devuelve siempre 200.",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Servidor operativo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/hello": {
+      "get": {
+        "tags": [
+          "Sistema"
+        ],
+        "summary": "Saludo de prueba",
+        "description": "Endpoint de prueba definido en `app.js`.",
+        "operationId": "getHello",
+        "responses": {
+          "200": {
+            "description": "Saludo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HelloResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/habilidades": {
+      "get": {
+        "tags": [
+          "Habilidades"
+        ],
+        "summary": "Listar habilidades",
+        "description": "Devuelve todas las habilidades registradas.",
+        "operationId": "listarHabilidades",
+        "responses": {
+          "200": {
+            "description": "Lista de habilidades",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Habilidad"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Habilidades"
+        ],
+        "summary": "Crear habilidad",
+        "description": "Crea una habilidad. El `codigo` debe coincidir con el `titulo` normalizado (minúsculas, sin tildes, snake_case) y ser único.",
+        "operationId": "crearHabilidad",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HabilidadInput"
+              },
+              "example": {
+                "titulo": "Programación Web / React",
+                "codigo": "programacion_web_react",
+                "descripcion": "Desarrollo de interfaces web con React."
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Habilidad creada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Habilidad"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/habilidades/{id}": {
+      "get": {
+        "tags": [
+          "Habilidades"
+        ],
+        "summary": "Obtener habilidad",
+        "description": "Devuelve una habilidad por id.",
+        "operationId": "obtenerHabilidad",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Habilidad encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Habilidad"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Habilidades"
+        ],
+        "summary": "Actualizar habilidad",
+        "description": "Reemplaza los datos de una habilidad. Se aplican las mismas reglas que al crear. Responde 409 si el `codigo` ya lo usa otra habilidad.",
+        "operationId": "actualizarHabilidad",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HabilidadInput"
+              },
+              "example": {
+                "titulo": "Programación Web / React",
+                "codigo": "programacion_web_react",
+                "descripcion": "Desarrollo de interfaces web con React."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Habilidad actualizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Habilidad"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Habilidades"
+        ],
+        "summary": "Eliminar habilidad",
+        "description": "Elimina una habilidad por id.",
+        "operationId": "eliminarHabilidad",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Eliminado correctamente. No devuelve contenido."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/personas-colaboradoras": {
+      "get": {
+        "tags": [
+          "Personas colaboradoras"
+        ],
+        "summary": "Listar personas colaboradoras",
+        "description": "Devuelve todas las personas colaboradoras. Las habilidades vuelven como objetos completos.",
+        "operationId": "listarPersonasColaboradoras",
+        "responses": {
+          "200": {
+            "description": "Lista de personas colaboradoras",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PersonaColaboradora"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Personas colaboradoras"
+        ],
+        "summary": "Crear persona colaboradora",
+        "description": "Crea una persona colaboradora. Cada id de `habilidades` debe existir; si alguno no existe responde 404.",
+        "operationId": "crearPersonaColaboradora",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonaColaboradoraInput"
+              },
+              "example": {
+                "nombreFantasia": "Ana la dev",
+                "nombre": "Ana",
+                "apellido": "Gómez",
+                "pronombres": [
+                  "ella"
+                ],
+                "presentacion": "Desarrolladora frontend interesada en proyectos sociales.",
+                "cuentas": [
+                  {
+                    "nombreUsuario": "ana_gomez",
+                    "tipo": "GITHUB"
+                  }
+                ],
+                "habilidades": [
+                  "64f1a2b3c4d5e6f7a8b9c001"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Persona colaboradora creada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonaColaboradora"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/personas-colaboradoras/{id}": {
+      "get": {
+        "tags": [
+          "Personas colaboradoras"
+        ],
+        "summary": "Obtener persona colaboradora",
+        "description": "Devuelve una persona colaboradora por id.",
+        "operationId": "obtenerPersonaColaboradora",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Persona colaboradora encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonaColaboradora"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Personas colaboradoras"
+        ],
+        "summary": "Actualizar persona colaboradora",
+        "description": "Reemplaza los datos de la persona. Los campos opcionales omitidos quedan en `null` (o lista vacía).",
+        "operationId": "actualizarPersonaColaboradora",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonaColaboradoraInput"
+              },
+              "example": {
+                "nombreFantasia": "Ana la dev",
+                "nombre": "Ana",
+                "apellido": "Gómez",
+                "pronombres": [
+                  "ella"
+                ],
+                "presentacion": "Desarrolladora frontend interesada en proyectos sociales.",
+                "cuentas": [
+                  {
+                    "nombreUsuario": "ana_gomez",
+                    "tipo": "GITHUB"
+                  }
+                ],
+                "habilidades": [
+                  "64f1a2b3c4d5e6f7a8b9c001"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Persona colaboradora actualizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonaColaboradora"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Personas colaboradoras"
+        ],
+        "summary": "Eliminar persona colaboradora",
+        "description": "Elimina una persona colaboradora por id.",
+        "operationId": "eliminarPersonaColaboradora",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Eliminado correctamente. No devuelve contenido."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/colectivos": {
+      "get": {
+        "tags": [
+          "Colectivos"
+        ],
+        "summary": "Listar colectivos",
+        "description": "Devuelve todos los colectivos con sus proyectos. País y provincia vuelven populados como `{ id, nombre }`.",
+        "operationId": "listarColectivos",
+        "responses": {
+          "200": {
+            "description": "Lista de colectivos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Colectivo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Colectivos"
+        ],
+        "summary": "Crear colectivo",
+        "description": "Crea un colectivo. El `tipo` debe pertenecer al catálogo (Fundación, Asociación barrial, ONG, Asamblea). País y provincia se envían por id. El `nombre` es único.",
+        "operationId": "crearColectivo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ColectivoInput"
+              },
+              "example": {
+                "nombre": "Asamblea Ambiental",
+                "descripcion": "Grupo comunitario para la protección de humedales locales.",
+                "tipo": "Asamblea",
+                "pais": "64f1a2b3c4d5e6f7a8b9c00a",
+                "provincia": "64f1a2b3c4d5e6f7a8b9c00b",
+                "ciudad": "La Plata"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Colectivo creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Colectivo"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/colectivos/{id}": {
+      "get": {
+        "tags": [
+          "Colectivos"
+        ],
+        "summary": "Obtener colectivo",
+        "description": "Devuelve un colectivo por id, con sus proyectos.",
+        "operationId": "obtenerColectivo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Colectivo encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Colectivo"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Colectivos"
+        ],
+        "summary": "Reemplazar colectivo",
+        "description": "Reemplaza todos los datos del colectivo. País, provincia y ciudad omitidos o `null` se borran.",
+        "operationId": "reemplazarColectivo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ColectivoInput"
+              },
+              "example": {
+                "nombre": "Asamblea Ambiental",
+                "descripcion": "Grupo comunitario para la protección de humedales locales.",
+                "tipo": "Asamblea",
+                "pais": "64f1a2b3c4d5e6f7a8b9c00a",
+                "provincia": "64f1a2b3c4d5e6f7a8b9c00b",
+                "ciudad": "La Plata"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Colectivo actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Colectivo"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Colectivos"
+        ],
+        "summary": "Actualizar parcialmente un colectivo",
+        "description": "Modifica solo los campos enviados; los demás conservan su valor. Se valida el resultado final igual que en PUT.",
+        "operationId": "actualizarColectivo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ColectivoPatchInput"
+              },
+              "example": {
+                "ciudad": "Lanús"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Colectivo actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Colectivo"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Colectivos"
+        ],
+        "summary": "Eliminar colectivo",
+        "description": "Elimina un colectivo por id.",
+        "operationId": "eliminarColectivo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Eliminado correctamente. No devuelve contenido."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/proyectos": {
+      "get": {
+        "tags": [
+          "Proyectos"
+        ],
+        "summary": "Listar proyectos",
+        "description": "Devuelve todos los proyectos.",
+        "operationId": "listarProyectos",
+        "responses": {
+          "200": {
+            "description": "Lista de proyectos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Proyecto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Proyectos"
+        ],
+        "summary": "Crear proyecto",
+        "description": "Crea un proyecto. El `colectivo` y cada habilidad requerida deben existir (404 si no). El `titulo` es único.",
+        "operationId": "crearProyecto",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProyectoInput"
+              },
+              "example": {
+                "titulo": "Plataforma de Colaboración",
+                "descripcion": "Plataforma para conectar colectivos sociales y personas voluntarias.",
+                "unidadCompromiso": "HORAS_SEMANALES",
+                "cantHoras": 10,
+                "colectivo": "64f1a2b3c4d5e6f7a8b9c002",
+                "modalidadesColaboracion": [
+                  "GRATUITA",
+                  "CON_POSIBILIDAD_CONTRATACION"
+                ],
+                "habilidadesRequeridas": [
+                  "64f1a2b3c4d5e6f7a8b9c001"
+                ],
+                "estado": "PUBLICADO",
+                "fechaAlta": "2026-09-01T00:00:00.000Z",
+                "fechaCierre": null
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Proyecto creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Proyecto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/proyectos/{id}": {
+      "get": {
+        "tags": [
+          "Proyectos"
+        ],
+        "summary": "Obtener proyecto",
+        "description": "Devuelve un proyecto por id.",
+        "operationId": "obtenerProyecto",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Proyecto encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Proyecto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Proyectos"
+        ],
+        "summary": "Reemplazar proyecto",
+        "description": "Reemplaza los datos del proyecto; todos los campos son obligatorios. Enviar `estado: CERRADO` cierra el proyecto y fija `fechaCierre` en el momento actual. Un proyecto cerrado no se puede reabrir (409).",
+        "operationId": "reemplazarProyecto",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProyectoInput"
+              },
+              "example": {
+                "titulo": "Plataforma de Colaboración",
+                "descripcion": "Plataforma para conectar colectivos sociales y personas voluntarias.",
+                "unidadCompromiso": "HORAS_SEMANALES",
+                "cantHoras": 10,
+                "colectivo": "64f1a2b3c4d5e6f7a8b9c002",
+                "modalidadesColaboracion": [
+                  "GRATUITA",
+                  "CON_POSIBILIDAD_CONTRATACION"
+                ],
+                "habilidadesRequeridas": [
+                  "64f1a2b3c4d5e6f7a8b9c001"
+                ],
+                "estado": "PUBLICADO",
+                "fechaAlta": "2026-09-01T00:00:00.000Z",
+                "fechaCierre": null
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Proyecto actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Proyecto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Proyectos"
+        ],
+        "summary": "Actualizar parcialmente un proyecto",
+        "description": "Modifica solo los campos enviados. Mismas reglas de cierre que PUT.",
+        "operationId": "actualizarProyecto",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProyectoPatchInput"
+              },
+              "example": {
+                "estado": "CERRADO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Proyecto actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Proyecto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Proyectos"
+        ],
+        "summary": "Eliminar proyecto",
+        "description": "Elimina un proyecto por id.",
+        "operationId": "eliminarProyecto",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Eliminado correctamente. No devuelve contenido."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/colaboraciones": {
+      "get": {
+        "tags": [
+          "Colaboraciones"
+        ],
+        "summary": "Listar colaboraciones",
+        "description": "Devuelve todas las colaboraciones en forma resumida.",
+        "operationId": "listarColaboraciones",
+        "responses": {
+          "200": {
+            "description": "Lista de colaboraciones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Colaboracion"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Colaboraciones"
+        ],
+        "summary": "Inscribir una persona en un proyecto",
+        "description": "Crea una colaboración. Responde 404 si el proyecto o la persona no existen; 409 si el proyecto está cerrado, si la persona no tiene al menos una habilidad requerida por el proyecto o si ya colabora en él.",
+        "operationId": "crearColaboracion",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ColaboracionInput"
+              },
+              "example": {
+                "personaColaboradoraId": "64f1a2b3c4d5e6f7a8b9c003",
+                "proyectoId": "64f1a2b3c4d5e6f7a8b9c004"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Colaboración creada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Colaboracion"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "IdPath": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Id del recurso (ObjectId de 24 caracteres hexadecimales). Si el formato es inválido responde 400.",
+        "schema": {
+          "$ref": "#/components/schemas/ObjectId"
+        }
+      }
+    },
+    "schemas": {
+      "ObjectId": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$",
+        "description": "ObjectId de MongoDB: string de 24 caracteres hexadecimales.",
+        "example": "64f1a2b3c4d5e6f7a8b9c0d1"
+      },
+      "TipoCuenta": {
+        "type": "string",
+        "enum": [
+          "GITHUB",
+          "GITLAB"
+        ],
+        "description": "Plataforma de la cuenta."
+      },
+      "UnidadCompromiso": {
+        "type": "string",
+        "enum": [
+          "HORAS_TOTALES",
+          "HORAS_SEMANALES",
+          "HORAS_MENSUALES"
+        ]
+      },
+      "ModalidadColaboracion": {
+        "type": "string",
+        "enum": [
+          "GRATUITA",
+          "CON_INCENTIVO_ECONOMICO",
+          "CON_POSIBILIDAD_CONTRATACION"
+        ]
+      },
+      "EstadoProyecto": {
+        "type": "string",
+        "enum": [
+          "PUBLICADO",
+          "CERRADO"
+        ]
+      },
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok"
+          }
+        }
+      },
+      "HelloResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "hello world"
+          }
+        }
+      },
+      "ErrorIssue": {
+        "type": "object",
+        "description": "Issue de validación de zod.",
+        "additionalProperties": true,
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "invalid_type"
+          },
+          "message": {
+            "type": "string",
+            "example": "Invalid input: expected string, received undefined"
+          },
+          "path": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "example": [
+              "titulo"
+            ]
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "message",
+          "details"
+        ],
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "array",
+            "description": "Vacío salvo en errores de validación del body (400), donde lista los issues.",
+            "items": {
+              "$ref": "#/components/schemas/ErrorIssue"
+            }
+          }
+        }
+      },
+      "HabilidadInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "titulo",
+          "codigo",
+          "descripcion"
+        ],
+        "properties": {
+          "titulo": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Programación Web / React"
+          },
+          "codigo": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Debe ser el título en minúsculas, sin tildes y en snake_case. Único.",
+            "example": "programacion_web_react"
+          },
+          "descripcion": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Desarrollo de interfaces web con React."
+          }
+        }
+      },
+      "Habilidad": {
+        "type": "object",
+        "required": [
+          "id",
+          "titulo",
+          "codigo",
+          "descripcion"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "titulo": {
+            "type": "string"
+          },
+          "codigo": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "id": "64f1a2b3c4d5e6f7a8b9c001",
+          "titulo": "Programación Web / React",
+          "codigo": "programacion_web_react",
+          "descripcion": "Desarrollo de interfaces web con React."
+        }
+      },
+      "CuentaInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "nombreUsuario",
+          "tipo"
+        ],
+        "properties": {
+          "nombreUsuario": {
+            "type": "string",
+            "example": "ana_gomez"
+          },
+          "tipo": {
+            "$ref": "#/components/schemas/TipoCuenta"
+          }
+        }
+      },
+      "Cuenta": {
+        "type": "object",
+        "required": [
+          "nombreUsuario",
+          "tipo"
+        ],
+        "properties": {
+          "nombreUsuario": {
+            "type": "string"
+          },
+          "tipo": {
+            "$ref": "#/components/schemas/TipoCuenta"
+          }
+        }
+      },
+      "PersonaColaboradoraInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "nombreFantasia"
+        ],
+        "properties": {
+          "nombreFantasia": {
+            "type": "string",
+            "example": "Ana la dev"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "apellido": {
+            "type": "string"
+          },
+          "pronombres": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "presentacion": {
+            "type": "string"
+          },
+          "cuentas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CuentaInput"
+            }
+          },
+          "habilidades": {
+            "type": "array",
+            "description": "Ids de habilidades existentes.",
+            "items": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          }
+        }
+      },
+      "PersonaColaboradora": {
+        "type": "object",
+        "required": [
+          "id",
+          "nombreFantasia"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "nombreFantasia": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string",
+            "nullable": true
+          },
+          "apellido": {
+            "type": "string",
+            "nullable": true
+          },
+          "pronombres": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "presentacion": {
+            "type": "string",
+            "nullable": true
+          },
+          "cuentas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cuenta"
+            }
+          },
+          "habilidades": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Habilidad"
+            }
+          }
+        }
+      },
+      "ColectivoInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "nombre",
+          "descripcion",
+          "tipo"
+        ],
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "description": "Único.",
+            "example": "Asamblea Ambiental"
+          },
+          "descripcion": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 500
+          },
+          "tipo": {
+            "type": "string",
+            "description": "Nombre de un tipo del catálogo (se compara sin distinguir mayúsculas ni tildes).",
+            "enum": [
+              "Fundación",
+              "Asociación barrial",
+              "ONG",
+              "Asamblea"
+            ],
+            "example": "Asamblea"
+          },
+          "pais": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "Id del país (ObjectId).",
+            "example": "64f1a2b3c4d5e6f7a8b9c00a"
+          },
+          "provincia": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "Id de la provincia (ObjectId).",
+            "example": "64f1a2b3c4d5e6f7a8b9c00b"
+          },
+          "ciudad": {
+            "type": "string",
+            "nullable": true,
+            "example": "La Plata"
+          }
+        }
+      },
+      "ColectivoPatchInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Mismos campos que `ColectivoInput`, todos opcionales.",
+        "properties": {
+          "nombre": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 500
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "Fundación",
+              "Asociación barrial",
+              "ONG",
+              "Asamblea"
+            ]
+          },
+          "pais": {
+            "$ref": "#/components/schemas/ColectivoInput/properties/pais"
+          },
+          "provincia": {
+            "$ref": "#/components/schemas/ColectivoInput/properties/provincia"
+          },
+          "ciudad": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PaisProvincia": {
+        "type": "object",
+        "required": [
+          "id",
+          "nombre"
+        ],
+        "nullable": true,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Argentina"
+          }
+        }
+      },
+      "Colectivo": {
+        "type": "object",
+        "required": [
+          "id",
+          "nombre",
+          "descripcion",
+          "tipo"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "pais": {
+            "$ref": "#/components/schemas/PaisProvincia"
+          },
+          "provincia": {
+            "$ref": "#/components/schemas/PaisProvincia"
+          },
+          "ciudad": {
+            "type": "string",
+            "nullable": true
+          },
+          "proyectos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Proyecto"
+            }
+          }
+        }
+      },
+      "ProyectoInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "titulo",
+          "descripcion",
+          "unidadCompromiso",
+          "cantHoras",
+          "colectivo",
+          "modalidadesColaboracion",
+          "habilidadesRequeridas",
+          "estado",
+          "fechaAlta",
+          "fechaCierre"
+        ],
+        "properties": {
+          "titulo": {
+            "type": "string",
+            "description": "Único."
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "unidadCompromiso": {
+            "$ref": "#/components/schemas/UnidadCompromiso"
+          },
+          "cantHoras": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "colectivo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ],
+            "description": "Id de un colectivo existente."
+          },
+          "modalidadesColaboracion": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/ModalidadColaboracion"
+            }
+          },
+          "habilidadesRequeridas": {
+            "type": "array",
+            "description": "Ids de habilidades existentes. Una persona solo puede inscribirse si tiene al menos una.",
+            "items": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          "estado": {
+            "$ref": "#/components/schemas/EstadoProyecto"
+          },
+          "fechaAlta": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fechaCierre": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Obligatoria pero admite `null`. No puede ser anterior a `fechaAlta`."
+          }
+        }
+      },
+      "ProyectoPatchInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Mismos campos que `ProyectoInput`, todos opcionales.",
+        "properties": {
+          "titulo": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "unidadCompromiso": {
+            "$ref": "#/components/schemas/UnidadCompromiso"
+          },
+          "cantHoras": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "colectivo": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "modalidadesColaboracion": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/ModalidadColaboracion"
+            }
+          },
+          "habilidadesRequeridas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          "estado": {
+            "$ref": "#/components/schemas/EstadoProyecto"
+          },
+          "fechaAlta": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fechaCierre": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "Proyecto": {
+        "type": "object",
+        "required": [
+          "id",
+          "titulo",
+          "descripcion",
+          "unidadCompromiso",
+          "cantHoras",
+          "colectivo",
+          "modalidadesColaboracion",
+          "habilidadesRequeridas",
+          "estado",
+          "fechaAlta",
+          "fechaCierre"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "titulo": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "unidadCompromiso": {
+            "$ref": "#/components/schemas/UnidadCompromiso"
+          },
+          "cantHoras": {
+            "type": "integer"
+          },
+          "colectivo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ],
+            "description": "Id del colectivo."
+          },
+          "modalidadesColaboracion": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModalidadColaboracion"
+            }
+          },
+          "habilidadesRequeridas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          "estado": {
+            "$ref": "#/components/schemas/EstadoProyecto"
+          },
+          "fechaAlta": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fechaCierre": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "ColaboracionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "personaColaboradoraId",
+          "proyectoId"
+        ],
+        "properties": {
+          "personaColaboradoraId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "proyectoId": {
+            "$ref": "#/components/schemas/ObjectId"
+          }
+        }
+      },
+      "Colaboracion": {
+        "type": "object",
+        "required": [
+          "id",
+          "fechaInscripcion",
+          "personaColaboradora",
+          "proyecto"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "fechaInscripcion": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "personaColaboradora": {
+            "type": "object",
+            "required": [
+              "id",
+              "nombreFantasia"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/ObjectId"
+              },
+              "nombreFantasia": {
+                "type": "string"
+              }
+            }
+          },
+          "proyecto": {
+            "type": "object",
+            "required": [
+              "id",
+              "titulo"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/ObjectId"
+              },
+              "titulo": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Solicitud inválida: JSON malformado, body que no cumple el esquema (campos faltantes, tipos incorrectos o claves desconocidas por `.strict()`) o id con formato inválido (en la ruta o en el body que no es un ObjectId de 24 hex).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "Datos inválidos",
+              "details": [
+                {
+                  "code": "invalid_type",
+                  "path": [
+                    "titulo"
+                  ],
+                  "message": "Invalid input: expected string, received undefined"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Recurso no encontrado, referencia a una entidad inexistente (por ejemplo una habilidad, un país o un colectivo que no existe) o ruta inexistente.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "Colectivo no encontrado",
+              "details": []
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Conflicto: clave duplicada (código de habilidad, nombre de colectivo, título de proyecto, colaboración repetida) o violación de una regla de negocio (proyecto cerrado, sin habilidad requerida, reabrir un proyecto cerrado).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "Ya existe un colectivo con ese nombre",
+              "details": []
+            }
+          }
+        }
+      },
+      "UnprocessableEntity": {
+        "description": "Datos que cumplen el esquema pero violan una validación de dominio (por ejemplo `codigo` que no coincide con el título normalizado, o `fechaCierre` anterior a `fechaAlta`).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "El código debe coincidir con el título normalizado en snake_case, en minúsculas y sin tildes.",
+              "details": []
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Error interno del servidor.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "Error interno del servidor",
+              "details": []
+            }
+          }
+        }
+      }
+    }
+  }
+}
