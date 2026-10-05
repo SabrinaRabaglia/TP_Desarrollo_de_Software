@@ -1,5 +1,7 @@
 import express from "express"
 import cors from "cors"
+import { createRequire } from "node:module"
+import swaggerUi from "swagger-ui-express"
 import routes from "./routes/routes.js"
 import colaboracionRoutes from "./routes/colaboracionRoutes.js"
 import colectivoRoutes from "./routes/colectivoRoutes.js"
@@ -7,6 +9,9 @@ import habilidadRoutes from "./routes/habilidadRoutes.js"
 import personaColaboradoraRoutes from "./routes/personaColaboradoraRoutes.js"
 import proyectoRoutes from "./routes/proyectoRoutes.js"
 import errorHandler from "./middlewares/errorHandler.js"
+
+const require = createRequire(import.meta.url)
+const swaggerSpec = require("./docs/swaggerSpec.json")
 
 const app = express()
 
@@ -19,14 +24,13 @@ app.use(
 )
 
 app.use(express.json())
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use(routes)
 app.use(colaboracionRoutes)
 app.use(colectivoRoutes)
 app.use(habilidadRoutes)
 app.use(personaColaboradoraRoutes)
 app.use(proyectoRoutes)
-
-app.use("/health", routes)
 
 app.get("/hello", (req, res) => {
   res.json({ message: "hello world" })
