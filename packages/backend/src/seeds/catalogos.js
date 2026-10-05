@@ -52,16 +52,19 @@ const HABILIDADES = [
   ),
 ]
 
-export const sembrar = (model, claves, documentos) =>
-  Promise.all(
+export const sembrar = (model, claves, documentos) => {
+  const ahora = new Date()
+  return Promise.all(
     documentos.map((documento) =>
       model.updateOne(
         Object.fromEntries(claves.map((clave) => [clave, documento[clave]])),
-        { $setOnInsert: documento },
-        { upsert: true, runValidators: true },
+        { $setOnInsert: { ...documento, createdAt: ahora, updatedAt: ahora } },
+        // Sin esto Mongoose agrega $set de updatedAt y re-sembrar modifica los existentes.
+        { upsert: true, runValidators: true, timestamps: false },
       ),
     ),
   )
+}
 
 const conNombre = (nombre) => ({ nombre })
 

@@ -26,14 +26,14 @@ afterAll(async () => {
   await desconectar()
 })
 
-const contarDocumentos = async () =>
+const leerDocumentos = async () =>
   Object.fromEntries(
     await Promise.all(
       mongoose
         .modelNames()
         .map(async (nombre) => [
           nombre,
-          await mongoose.model(nombre).countDocuments(),
+          await mongoose.model(nombre).find().sort({ _id: 1 }).lean(),
         ]),
     ),
   )
@@ -104,16 +104,14 @@ describe("persistencia en MongoDB", () => {
     })
   })
 
-  test("sembrar los catálogos de nuevo no duplica documentos", async () => {
-    const antes = await contarDocumentos()
+  test("sembrar los catálogos de nuevo no duplica ni modifica documentos", async () => {
+    const antes = await leerDocumentos()
 
     await sembrarCatalogos()
 
-    expect(await contarDocumentos()).toEqual(antes)
-    expect(antes).toMatchObject({
-      Pais: 1,
-      Provincia: 24,
-      TipoColectivo: 4,
-    })
+    expect(await leerDocumentos()).toEqual(antes)
+    expect(antes.Pais).toHaveLength(1)
+    expect(antes.Provincia).toHaveLength(24)
+    expect(antes.TipoColectivo).toHaveLength(4)
   })
 })
