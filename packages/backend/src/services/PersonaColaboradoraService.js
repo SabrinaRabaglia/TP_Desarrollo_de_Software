@@ -44,6 +44,8 @@ export default class PersonaColaboradoraService {
       nueva.presentacion,
       cuentas,
       habilidades,
+      nueva.aceptaMensajeriaInterna,
+      nueva.mediosDeContacto
     )
     return await this.personaColaboradoraRepository.save(personaColaboradora)
   }
@@ -67,10 +69,11 @@ export default class PersonaColaboradoraService {
     personaExistente.presentacion = actualizada.presentacion ?? null
     personaExistente.cuentas = cuentas
     personaExistente.habilidades = habilidades
+    personaExistente.aceptaMensajeriaInterna = actualizada.aceptaMensajeriaInterna ?? false
+    personaExistente.mediosDeContacto = actualizada.mediosDeContacto ?? []
 
     return await this.personaColaboradoraRepository.save(personaExistente)
   }
-
   delete = async (id) => {
     const personaExistente = await this.personaColaboradoraRepository.findById(id)
     if (!personaExistente) {

@@ -8,6 +8,8 @@ export default class PersonaColaboradora {
     presentacion = null,
     cuentas = [],
     habilidades = [],
+    aceptaMensajeriaInterna = false,
+    mediosDeContacto = []
   ) {
     PersonaColaboradora.validarDatos({ nombreFantasia })
     this.nombreFantasia = nombreFantasia
@@ -17,6 +19,8 @@ export default class PersonaColaboradora {
     this.presentacion = presentacion
     this.cuentas = cuentas
     this.habilidades = habilidades
+    this.aceptaMensajeriaInterna = aceptaMensajeriaInterna
+    this.mediosDeContacto = mediosDeContacto
     this.colaboraciones = []
   }
 
@@ -38,5 +42,9 @@ export default class PersonaColaboradora {
 
   agregarColaboracion(colaboracion) {
     this.colaboraciones.push(colaboracion)
+  }
+  
+  agregarMedioDeContacto(medio){
+    this.mediosDeContacto.push(medio)
   }
 }

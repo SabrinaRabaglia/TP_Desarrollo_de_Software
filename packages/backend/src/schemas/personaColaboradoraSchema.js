@@ -13,7 +13,17 @@ const cuentaSchema = new mongoose.Schema(
 )
 
 cuentaSchema.loadClass(Cuenta)
-
+const medioDeContactoSchema = new mongoose.Schema({
+    tipo: {
+        type: String,
+        required: true,
+        enum: ["EMAIL", "WHATSAPP", "SMS"]
+    },
+    valor: {
+        type: String,
+        required: true
+    }
+}, { _id: false })
 const personaColaboradoraSchema = new mongoose.Schema(
   {
     nombreFantasia: { type: String, required: true },
@@ -23,6 +33,11 @@ const personaColaboradoraSchema = new mongoose.Schema(
     presentacion: { type: String, default: null },
     cuentas: [cuentaSchema],
     habilidades: [{ type: mongoose.Schema.Types.ObjectId, ref: "Habilidad" }],
+    aceptaMensajeriaInterna:{
+      type: Boolean,
+      default: false
+    },
+    mediosDeContacto: [medioDeContactoSchema]
   },
   {
     timestamps: true,

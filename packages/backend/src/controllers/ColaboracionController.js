@@ -6,6 +6,7 @@ const colaboracionSchema = z
   .object({
     personaColaboradoraId: objectIdSchema,
     proyectoId: objectIdSchema,
+    esAnonima: z.boolean().optional().default(false)
   })
   .strict()
 
@@ -27,8 +28,6 @@ export default class ColaboracionController {
     catch (error) {
       next(error)
     }
-
-    
   }
 
   getAll = async (_req, res, next) => {

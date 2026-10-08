@@ -21,4 +21,5 @@ const colaboracionController = new ColaboracionController(colaboracionService)
 routes.post("/colaboraciones", colaboracionController.create)
 routes.get("/colaboraciones", colaboracionController.getAll)
 
+
 export default routes

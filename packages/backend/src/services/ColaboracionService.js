@@ -8,7 +8,7 @@ export default class ColaboracionService {
     this.personaRepository = personaRepository
   }
 
-  create = async ({ proyectoId, personaColaboradoraId }) => {
+  create = async ({ proyectoId, personaColaboradoraId, esAnonima }) => {
     const proyecto = await this.proyectoRepository.findById(proyectoId)
     if (!proyecto) {
       throw new InvalidReference("Proyecto no encontrado")
@@ -27,7 +27,7 @@ export default class ColaboracionService {
     }
 
     return await this.colaboracionRepository.save(
-      new Colaboracion(persona, proyecto),
+      new Colaboracion(persona, proyecto, esAnonima),
     )
   }
 

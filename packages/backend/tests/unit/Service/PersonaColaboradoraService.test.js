@@ -40,10 +40,12 @@ describe("PersonaColaboradoraService", () => {
       nombre: "Ana",
       cuentas: [{ nombreUsuario: "anagomez", tipo: "GITHUB" }],
       habilidades: [habilidad.id],
+      aceptaMensajeriaInterna: true,
+      mediosDeContacto: [{ tipo: "EMAIL", valor: "ana@example.com" }],
     }
   })
 
-  test("crea y guarda una persona con cuentas y habilidades resueltas", async () => {
+  test("crea y guarda una persona con cuentas, habilidades y datos de contacto resueltos", async () => {
     const persona = await service.create(datos)
 
     expect(persona).toBeInstanceOf(PersonaColaboradora)
@@ -51,6 +53,8 @@ describe("PersonaColaboradoraService", () => {
     expect(persona.cuentas[0]).toBeInstanceOf(Cuenta)
     expect(persona.cuentas).toEqual(datos.cuentas)
     expect(persona.habilidades).toEqual([habilidad])
+    expect(persona.aceptaMensajeriaInterna).toBe(true)
+    expect(persona.mediosDeContacto).toEqual(datos.mediosDeContacto)
     expect(await repository.getAll()).toEqual([persona])
   })
 
@@ -77,6 +81,8 @@ describe("PersonaColaboradoraService", () => {
     expect(actualizada.cuentas[0]).toBeInstanceOf(Cuenta)
     expect(actualizada.cuentas).toEqual(datos.cuentas)
     expect(actualizada.habilidades).toEqual([habilidad])
+    expect(actualizada.aceptaMensajeriaInterna).toBe(true)
+    expect(actualizada.mediosDeContacto).toEqual(datos.mediosDeContacto)
     expect(await repository.findById(id)).toBe(actualizada)
     expect(await repository.getAll()).toHaveLength(1)
   })
