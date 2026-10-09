@@ -132,4 +132,20 @@ export default class ProyectoService {
     await this.colaboracionRepository.deleteByProyecto(id)
     await this.proyectoRepository.delete(id)
   }
+
+  crearPerfil = async (proyectoId, perfil) => {
+    const proyecto = await this.proyectoRepository.agregarPerfil(proyectoId, perfil)
+    if (!proyecto) {
+      throw new EntityNotFound("Proyecto no encontrado")
+    }
+    return proyecto
+  }
+
+  eliminarPerfil = async (proyectoId, perfilId) => {
+    const proyecto = await this.proyectoRepository.eliminarPerfil(proyectoId, perfilId)
+    if (!proyecto) {
+      throw new EntityNotFound("Proyecto no encontrado")
+    }
+    return proyecto
+  }
 }

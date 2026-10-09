@@ -9,14 +9,14 @@ const proyectoSchema = z
   .object({
     titulo: z.string(),
     descripcion: z.string(),
-    unidadCompromiso: z.nativeEnum(UnidadCompromiso),
+    unidadCompromiso: z.enum(UnidadCompromiso),
     cantHoras: z.number().int().positive(),
     colectivo: objectIdSchema,
     modalidadesColaboracion: z
-      .array(z.nativeEnum(ModalidadColaboracion))
+      .array(z.enum(ModalidadColaboracion))
       .min(1),
     habilidadesRequeridas: z.array(objectIdSchema),
-    estado: z.nativeEnum(EstadoProyecto),
+    estado: z.enum(EstadoProyecto),
     fechaAlta: z.coerce.date(),
     fechaCierre: z.coerce.date().nullable(),
   })

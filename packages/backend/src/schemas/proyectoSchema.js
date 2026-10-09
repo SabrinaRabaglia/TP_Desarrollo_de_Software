@@ -4,6 +4,7 @@ import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
 import { ModalidadColaboracion } from "../domain/enums/ModalidadColaboracion.js"
 import { UnidadCompromiso } from "../domain/enums/UnidadCompromiso.js"
 import opcionesJSON from "./opcionesJSON.js"
+import perfilSchema from "./perfilSchema.js"
 
 const proyectoSchema = new mongoose.Schema(
   {
@@ -46,6 +47,7 @@ const proyectoSchema = new mongoose.Schema(
     habilidadesRequeridas: [
       { type: mongoose.Schema.Types.ObjectId, ref: "Habilidad" },
     ],
+    perfiles: [perfilSchema],
   },
   { timestamps: true, collection: "proyectos", toJSON: opcionesJSON },
 )

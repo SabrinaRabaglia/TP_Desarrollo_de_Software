@@ -953,6 +953,75 @@
       "description": "CRUD de proyectos. La solicitud de alta requiere un colectivo y una habilidad existentes."
     },
     {
+      "name": "Perfiles",
+      "item": [
+        {
+          "name": "Crear perfil",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"proyectoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Proyectos > Crear proyecto.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"habilidadId\")) {",
+                  "  throw new Error(\"Ejecutá primero Habilidades > Crear habilidad.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
+                  "const respuesta = pm.response.json()",
+                  "const perfiles = respuesta.perfiles || []",
+                  "const ultimo = perfiles[perfiles.length - 1]",
+                  "pm.test(\"el proyecto tiene el perfil embebido\", () => pm.expect(ultimo).to.not.be.undefined)",
+                  "if (ultimo) pm.collectionVariables.set(\"perfilId\", ultimo._id)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Tester\",\n  \"descripcion\": \"Perfil de testing E2E {{runSuffix}}\",\n  \"unidadCompromiso\": \"HORAS_MENSUALES\",\n  \"cantidadHoras\": 5,\n  \"modalidadesColaboracion\": [\n    \"GRATUITA\"\n  ],\n  \"habilidadesRequeridas\": [\n    \"{{habilidadId}}\"\n  ],\n  \"habilidadesOpcionales\": [\n    \"{{habilidadId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}/perfiles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoId}}",
+                "perfiles"
+              ]
+            },
+            "description": "Crea un perfil embebido dentro del proyecto {{proyectoId}} y guarda su id en perfilId. Para probar sin afectar datos reales: corré primero Proyectos > Crear proyecto (crea uno descartable), probá acá lo que necesites, y al final corré Limpieza > Eliminar proyecto para borrar todo junto (el perfil se borra con el proyecto, al estar embebido)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Colaboraciones",
       "item": [
         {
@@ -1326,6 +1395,11 @@
     },
     {
       "key": "proyectoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "perfilId",
       "value": "",
       "type": "string"
     }

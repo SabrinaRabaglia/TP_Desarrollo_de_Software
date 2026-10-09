@@ -12,6 +12,8 @@ import PaisRepository from "../repositories/PaisRepository.js"
 import HabilidadService from "../services/HabilidadService.js"
 import HabilidadRepository from "../repositories/HabilidadRepository.js"
 import ColaboracionRepository from "../repositories/ColaboracionRepository.js"
+import PerfilService from "../services/PerfilService.js"
+import PerfilController from "../controllers/PerfilController.js"
 
 const routes = Router()
 
@@ -39,10 +41,16 @@ const proyectoService = new ProyectoService(
 )
 const proyectoController = new ProyectoController(proyectoService)
 
+const perfilService = new PerfilService(proyectoService, habilidadService)
+const perfilController = new PerfilController(perfilService)
+
 routes.post("/proyectos", proyectoController.create)
 routes.get("/proyectos", proyectoController.getAll)
 routes.get("/proyectos/:id", validateId, proyectoController.getById)
 routes.put("/proyectos/:id", validateId, proyectoController.put)
 routes.delete("/proyectos/:id", validateId, proyectoController.delete)
 routes.patch("/proyectos/:id", validateId, proyectoController.patch)
+
+routes.post("/proyectos/:id/perfiles", validateId, perfilController.create)
+routes.delete("/proyectos/:id/perfiles/:perfilId", validateId, perfilController.delete)
 export default routes
