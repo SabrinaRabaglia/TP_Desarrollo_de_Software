@@ -42,4 +42,44 @@ export default class PerfilController {
             next(error)
         }
     }
+
+    update = async (req, res, next) => {
+        try {
+            const resultado = perfilSchema.safeParse(req.body)
+            if (resultado.error) {
+                throw new BadRequestError("Datos inválidos", resultado.error.issues)
+            }
+            const perfil = await this.perfilService.update(req.params.id, req.params.perfilId, resultado.data)
+            res.status(200).json(perfil)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    getById = async (req, res, next) => {
+        try {
+            const perfil = await this.perfilService.getById(req.params.id, req.params.perfilId)
+            res.status(200).json(perfil)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    getAllByProyecto = async (req, res, next) => {
+        try {
+            const perfiles = await this.perfilService.getAllByProyectoId(req.params.id)
+            res.status(200).json(perfiles)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    getAll = async (req, res, next) => {
+        try {
+            const perfiles = await this.perfilService.getAll()
+            res.status(200).json(perfiles)
+        } catch (error) {
+            next(error)
+        }
+    }
 }

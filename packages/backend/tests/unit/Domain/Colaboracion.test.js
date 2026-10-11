@@ -3,8 +3,6 @@ import Colaboracion from "../../../src/domain/Colaboracion.js"
 import Proyecto from "../../../src/domain/Proyecto.js"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import Habilidad from "../../../src/domain/Habilidad.js"
-import { UnidadCompromiso } from "../../../src/domain/enums/UnidadCompromiso.js"
-import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColaboracion.js"
 import {
   DomainRuleError,
   DomainValidationError,
@@ -23,15 +21,8 @@ const personaConHabilidad = () => {
 }
 
 const proyectoAbierto = (habilidadesRequeridas = ["hab-1"]) => {
-  const proyecto = new Proyecto(
-    "Plataforma",
-    "Desarrollo web",
-    UnidadCompromiso.HORAS_TOTALES,
-    5,
-    "colectivo-1",
-    [ModalidadColaboracion.GRATUITA],
-  )
-  proyecto.habilidadesRequeridas = habilidadesRequeridas
+  const proyecto = new Proyecto("Plataforma", "Desarrollo web", "colectivo-1")
+  proyecto.perfiles = [{ habilidadesRequeridas }]
   return proyecto
 }
 

@@ -1,41 +1,29 @@
 import { EstadoProyecto } from "./enums/EstadoProyecto.js"
-import { ModalidadColaboracion } from "./enums/ModalidadColaboracion.js"
-import { UnidadCompromiso } from "./enums/UnidadCompromiso.js"
 import { DomainValidationError,DomainRuleError } from "./errors/DomainErrors.js"
 
 export default class Proyecto {
   constructor(
     titulo,
     descripcion,
-    unidadCompromiso,
-    cantHoras,
     colectivo,
-    modalidadesColaboracion,
     estado = EstadoProyecto.PUBLICADO,
     fechaAlta = new Date(),
     fechaCierre = null,
-    habilidadesRequeridas = [],
   ) {
     Proyecto.validarDatos({
       titulo,
       descripcion,
-      unidadCompromiso,
-      cantHoras,
       colectivo,
-      modalidadesColaboracion,
       estado,
       fechaAlta, fechaCierre
     })
     this.titulo = titulo
     this.descripcion = descripcion
-    this.unidadCompromiso = unidadCompromiso
-    this.cantHoras = cantHoras
-    this.modalidadesColaboracion = modalidadesColaboracion
     this.estado = estado
     this.fechaAlta = fechaAlta
     this.fechaCierre = fechaCierre
     this.colectivo = colectivo
-    this.habilidadesRequeridas = habilidadesRequeridas
+    this.perfiles = []
     this.colaboraciones = []
   }
 
@@ -62,9 +50,11 @@ export default class Proyecto {
   }
 
   poseeHabilidadNecesaria(personaColaboradora) {
-    return this.habilidadesRequeridas.some((idRequerido) =>
-      personaColaboradora.habilidades.some(
-        (habilidad) => String(habilidad.id) === String(idRequerido),
+    return this.perfiles.some((perfil) =>
+      perfil.habilidadesRequeridas.some((idRequerido) =>
+        personaColaboradora.habilidades.some(
+          (habilidad) => String(habilidad.id) === String(idRequerido),
+        ),
       ),
     )
   }
@@ -76,50 +66,13 @@ export default class Proyecto {
   static validarDatos({
     titulo,
     descripcion,
-    unidadCompromiso,
-    cantHoras,
     colectivo,
-    modalidadesColaboracion,
     estado,
     fechaAlta, fechaCierre
   }) {
-    if (
-      !titulo ||
-      !descripcion ||
-      !unidadCompromiso ||
-      !cantHoras ||
-      !colectivo
-    ) {
+    if (!titulo || !descripcion || !colectivo) {
       throw new DomainValidationError(
-        "Título, descripción, unidad de compromiso, cantidad de horas y colectivo son obligatorios.",
-      )
-    }
-    if (!Object.values(UnidadCompromiso).includes(unidadCompromiso)) {
-      throw new DomainValidationError(
-        "La unidad de compromiso es inválida.",
-      )
-    }
-    if (!Number.isInteger(cantHoras) || cantHoras <= 0) {
-      throw new DomainValidationError(
-        "La cantidad de horas debe ser un entero mayor que cero.",
-      )
-    }
-    if (
-      !Array.isArray(modalidadesColaboracion) ||
-      modalidadesColaboracion.length === 0
-    ) {
-      throw new DomainValidationError(
-        "El proyecto debe tener al menos una modalidad de colaboración.",
-      )
-    }
-    if (
-      modalidadesColaboracion.some(
-        (modalidad) =>
-          !Object.values(ModalidadColaboracion).includes(modalidad),
-      )
-    ) {
-      throw new DomainValidationError(
-        "La modalidad de colaboración es inválida.",
+        "Título, descripción y colectivo son obligatorios.",
       )
     }
     if (
@@ -134,9 +87,6 @@ export default class Proyecto {
        )
       }
   }
-
-
-
 
 
 

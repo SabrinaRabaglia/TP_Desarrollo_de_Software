@@ -1,7 +1,5 @@
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
-import { ModalidadColaboracion } from "../domain/enums/ModalidadColaboracion.js"
 import { TipoCuenta } from "../domain/enums/TipoCuenta.js"
-import { UnidadCompromiso } from "../domain/enums/UnidadCompromiso.js"
 import ColaboracionModel from "../schemas/colaboracionSchema.js"
 import ColectivoModel from "../schemas/colectivoSchema.js"
 import HabilidadModel from "../schemas/habilidadSchema.js"
@@ -62,55 +60,31 @@ export default async function sembrarDatosDePrueba() {
       {
         titulo: "Sitio web de la huerta",
         descripcion: "Publicar el calendario de talleres y cosechas",
-        unidadCompromiso: UnidadCompromiso.HORAS_SEMANALES,
-        cantHoras: 4,
-        modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
         estado: EstadoProyecto.PUBLICADO,
         fechaAlta: new Date("2026-09-01T00:00:00.000Z"),
         colectivo: colectivos["Huerta Comunitaria Sur"],
-        habilidadesRequeridas: [
-          habilidades["javascript"],
-          habilidades["react"],
-        ],
       },
       {
         titulo: "API de donaciones",
         descripcion: "Registrar donaciones y emitir comprobantes",
-        unidadCompromiso: UnidadCompromiso.HORAS_TOTALES,
-        cantHoras: 80,
-        modalidadesColaboracion: [
-          ModalidadColaboracion.GRATUITA,
-          ModalidadColaboracion.CON_INCENTIVO_ECONOMICO,
-        ],
         estado: EstadoProyecto.PUBLICADO,
         fechaAlta: new Date("2026-09-05T00:00:00.000Z"),
         colectivo: colectivos["Fundación Código Abierto"],
-        habilidadesRequeridas: [habilidades["node_js"], habilidades["mongodb"]],
       },
       {
         titulo: "Mapa de humedales",
         descripcion: "Visualizar los puntos de monitoreo en un mapa",
-        unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
-        cantHoras: 10,
-        modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
         estado: EstadoProyecto.PUBLICADO,
         fechaAlta: new Date("2026-09-10T00:00:00.000Z"),
         colectivo: colectivos["Asamblea Ambiental del Litoral"],
-        habilidadesRequeridas: [habilidades["python"]],
       },
       {
         titulo: "Rediseño de la app de voluntariado",
         descripcion: "Mejorar la experiencia de inscripción",
-        unidadCompromiso: UnidadCompromiso.HORAS_TOTALES,
-        cantHoras: 40,
-        modalidadesColaboracion: [
-          ModalidadColaboracion.CON_POSIBILIDAD_CONTRATACION,
-        ],
         estado: EstadoProyecto.CERRADO,
         fechaAlta: new Date("2026-08-01T00:00:00.000Z"),
         fechaCierre: new Date("2026-09-15T00:00:00.000Z"),
         colectivo: colectivos["Fundación Código Abierto"],
-        habilidadesRequeridas: [habilidades["diseno_ux_ui"]],
       },
     ],
   )

@@ -770,7 +770,7 @@
           "Proyectos"
         ],
         "summary": "Crear proyecto",
-        "description": "Crea un proyecto. El `colectivo` y cada habilidad requerida deben existir (404 si no). El `titulo` es único.",
+        "description": "Crea un proyecto. El colectivo debe existir (404 si no). El titulo es único.",
         "operationId": "crearProyecto",
         "requestBody": {
           "required": true,
@@ -782,16 +782,7 @@
               "example": {
                 "titulo": "Plataforma de Colaboración",
                 "descripcion": "Plataforma para conectar colectivos sociales y personas voluntarias.",
-                "unidadCompromiso": "HORAS_SEMANALES",
-                "cantHoras": 10,
                 "colectivo": "64f1a2b3c4d5e6f7a8b9c002",
-                "modalidadesColaboracion": [
-                  "GRATUITA",
-                  "CON_POSIBILIDAD_CONTRATACION"
-                ],
-                "habilidadesRequeridas": [
-                  "64f1a2b3c4d5e6f7a8b9c001"
-                ],
                 "estado": "PUBLICADO",
                 "fechaAlta": "2026-09-01T00:00:00.000Z",
                 "fechaCierre": null
@@ -885,16 +876,7 @@
               "example": {
                 "titulo": "Plataforma de Colaboración",
                 "descripcion": "Plataforma para conectar colectivos sociales y personas voluntarias.",
-                "unidadCompromiso": "HORAS_SEMANALES",
-                "cantHoras": 10,
                 "colectivo": "64f1a2b3c4d5e6f7a8b9c002",
-                "modalidadesColaboracion": [
-                  "GRATUITA",
-                  "CON_POSIBILIDAD_CONTRATACION"
-                ],
-                "habilidadesRequeridas": [
-                  "64f1a2b3c4d5e6f7a8b9c001"
-                ],
                 "estado": "PUBLICADO",
                 "fechaAlta": "2026-09-01T00:00:00.000Z",
                 "fechaCierre": null
@@ -1594,11 +1576,7 @@
         "required": [
           "titulo",
           "descripcion",
-          "unidadCompromiso",
-          "cantHoras",
           "colectivo",
-          "modalidadesColaboracion",
-          "habilidadesRequeridas",
           "estado",
           "fechaAlta",
           "fechaCierre"
@@ -1611,13 +1589,6 @@
           "descripcion": {
             "type": "string"
           },
-          "unidadCompromiso": {
-            "$ref": "#/components/schemas/UnidadCompromiso"
-          },
-          "cantHoras": {
-            "type": "integer",
-            "minimum": 1
-          },
           "colectivo": {
             "allOf": [
               {
@@ -1625,20 +1596,6 @@
               }
             ],
             "description": "Id de un colectivo existente."
-          },
-          "modalidadesColaboracion": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "$ref": "#/components/schemas/ModalidadColaboracion"
-            }
-          },
-          "habilidadesRequeridas": {
-            "type": "array",
-            "description": "Ids de habilidades existentes. Una persona solo puede inscribirse si tiene al menos una.",
-            "items": {
-              "$ref": "#/components/schemas/ObjectId"
-            }
           },
           "estado": {
             "$ref": "#/components/schemas/EstadoProyecto"
@@ -1666,28 +1623,8 @@
           "descripcion": {
             "type": "string"
           },
-          "unidadCompromiso": {
-            "$ref": "#/components/schemas/UnidadCompromiso"
-          },
-          "cantHoras": {
-            "type": "integer",
-            "minimum": 1
-          },
           "colectivo": {
             "$ref": "#/components/schemas/ObjectId"
-          },
-          "modalidadesColaboracion": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "$ref": "#/components/schemas/ModalidadColaboracion"
-            }
-          },
-          "habilidadesRequeridas": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ObjectId"
-            }
           },
           "estado": {
             "$ref": "#/components/schemas/EstadoProyecto"
@@ -1709,11 +1646,7 @@
           "id",
           "titulo",
           "descripcion",
-          "unidadCompromiso",
-          "cantHoras",
           "colectivo",
-          "modalidadesColaboracion",
-          "habilidadesRequeridas",
           "estado",
           "fechaAlta",
           "fechaCierre"
@@ -1728,12 +1661,6 @@
           "descripcion": {
             "type": "string"
           },
-          "unidadCompromiso": {
-            "$ref": "#/components/schemas/UnidadCompromiso"
-          },
-          "cantHoras": {
-            "type": "integer"
-          },
           "colectivo": {
             "allOf": [
               {
@@ -1741,18 +1668,6 @@
               }
             ],
             "description": "Id del colectivo."
-          },
-          "modalidadesColaboracion": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ModalidadColaboracion"
-            }
-          },
-          "habilidadesRequeridas": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ObjectId"
-            }
           },
           "estado": {
             "$ref": "#/components/schemas/EstadoProyecto"
@@ -1765,6 +1680,12 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "perfiles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Perfil"
+            }
           }
         }
       },
@@ -1828,6 +1749,59 @@
               "titulo": {
                 "type": "string"
               }
+            }
+          }
+        }
+      },
+      "Perfil": {
+        "type": "object",
+        "required": [
+          "id",
+          "descripcion",
+          "habilidadesRequeridas",
+          "habilidadesOpcionales"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "nombre": {
+            "type": "string",
+            "nullable": true
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "unidadCompromiso": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UnidadCompromiso"
+              }
+            ],
+            "nullable": true
+          },
+          "cantidadHoras": {
+            "type": "integer",
+            "nullable": true
+          },
+          "modalidadesColaboracion": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModalidadColaboracion"
+            }
+          },
+          "habilidadesRequeridas": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          "habilidadesOpcionales": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/ObjectId"
             }
           }
         }

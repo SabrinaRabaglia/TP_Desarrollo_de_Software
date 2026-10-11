@@ -6,37 +6,27 @@ import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
 const datosDelProyecto = ({
   titulo,
   descripcion,
-  unidadCompromiso,
-  cantHoras,
   colectivo,
-  modalidadesColaboracion,
   estado,
   fechaAlta,
   fechaCierre,
-  habilidadesRequeridas,
 }) => ({
   titulo,
   descripcion,
-  unidadCompromiso,
-  cantHoras,
   colectivo,
-  modalidadesColaboracion,
   estado,
   fechaAlta,
   fechaCierre,
-  habilidadesRequeridas,
 })
 
 export default class ProyectoService {
   constructor(
     proyectoRepository,
     colectivoService,
-    habilidadService,
     colaboracionRepository,
   ) {
     this.proyectoRepository = proyectoRepository
     this.colectivoService = colectivoService
-    this.habilidadService = habilidadService
     this.colaboracionRepository = colaboracionRepository
   }
 
@@ -61,30 +51,16 @@ export default class ProyectoService {
       }
       throw error
     }
-    for (const id of datos.habilidadesRequeridas ?? []) {
-      try {
-        await this.habilidadService.getById(id)
-      } catch (error) {
-        if (error instanceof EntityNotFound) {
-          throw new InvalidReference("Habilidad no encontrada")
-        }
-        throw error
-      }
-    }
   }
 
   create = async (nuevo) => {
     const proyecto = new Proyecto(
       nuevo.titulo,
       nuevo.descripcion,
-      nuevo.unidadCompromiso,
-      nuevo.cantHoras ?? nuevo.cantidadHoras,
       nuevo.colectivo,
-      nuevo.modalidadesColaboracion,
       nuevo.estado,
       nuevo.fechaAlta,
       nuevo.fechaCierre,
-      nuevo.habilidadesRequeridas,
     )
 
     await this.validarReferencias(nuevo)
@@ -139,6 +115,10 @@ export default class ProyectoService {
       throw new EntityNotFound("Proyecto no encontrado")
     }
     return proyecto
+  }
+
+  guardar = async (proyecto) => {
+    return await this.proyectoRepository.save(proyecto)
   }
 
   eliminarPerfil = async (proyectoId, perfilId) => {

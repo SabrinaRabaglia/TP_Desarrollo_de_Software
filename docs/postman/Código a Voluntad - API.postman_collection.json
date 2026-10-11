@@ -797,9 +797,6 @@
                 "exec": [
                   "if (!pm.collectionVariables.get(\"colectivoId\")) {",
                   "  throw new Error(\"Ejecutá primero Colectivos > Crear colectivo.\")",
-                  "}",
-                  "if (!pm.collectionVariables.get(\"habilidadId\")) {",
-                  "  throw new Error(\"Ejecutá primero Habilidades > Crear habilidad.\")",
                   "}"
                 ]
               }
@@ -827,7 +824,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"titulo\": \"Plataforma de Colaboración {{runSuffix}}\",\n  \"descripcion\": \"Plataforma para conectar colectivos sociales y personas voluntarias.\",\n  \"unidadCompromiso\": \"HORAS_SEMANALES\",\n  \"cantHoras\": 10,\n  \"colectivo\": \"{{colectivoId}}\",\n  \"modalidadesColaboracion\": [\n    \"GRATUITA\"\n  ],\n  \"habilidadesRequeridas\": [\n    \"{{habilidadId}}\"\n  ],\n  \"estado\": \"PUBLICADO\",\n  \"fechaAlta\": \"{{$isoTimestamp}}\",\n  \"fechaCierre\": null\n}",
+              "raw": "{\n  \"titulo\": \"Plataforma de Colaboración {{runSuffix}}\",\n  \"descripcion\": \"Plataforma para conectar colectivos sociales y personas voluntarias.\",\n  \"colectivo\": \"{{colectivoId}}\",\n  \"estado\": \"PUBLICADO\",\n  \"fechaAlta\": \"{{$isoTimestamp}}\",\n  \"fechaCierre\": null\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -843,7 +840,7 @@
                 "proyectos"
               ]
             },
-            "description": "Crea un proyecto, valida las referencias y guarda el ID en `proyectoId`."
+            "description": "Crea un proyecto y guarda el ID en proyectoId."
           },
           "response": []
         },

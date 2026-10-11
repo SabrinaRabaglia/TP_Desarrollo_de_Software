@@ -31,4 +31,16 @@ export default class Perfil {
       throw new DomainValidationError("Unidad de compromiso inválida.");
     }
   }
+
+  agregarHabilidadRequerida(habilidad) {
+    this.habilidadesRequeridas.push(habilidad);
+  }
+
+  agregarHabilidadOpcional(habilidad) {
+    this.habilidadesOpcionales.push(habilidad);
+  }
+
+  agregarModalidadColaboracion(modalidad) {
+    this.modalidadesColaboracion.push(modalidad);
+  }
 }

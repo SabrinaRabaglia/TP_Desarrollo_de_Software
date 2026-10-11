@@ -36,7 +36,6 @@ const colectivoService = new ColectivoService(
 const proyectoService = new ProyectoService(
   proyectoRepository,
   colectivoService,
-  habilidadService,
   new ColaboracionRepository(),
 )
 const proyectoController = new ProyectoController(proyectoService)
@@ -52,5 +51,9 @@ routes.delete("/proyectos/:id", validateId, proyectoController.delete)
 routes.patch("/proyectos/:id", validateId, proyectoController.patch)
 
 routes.post("/proyectos/:id/perfiles", validateId, perfilController.create)
+routes.get("/proyectos/:id/perfiles", validateId, perfilController.getAllByProyecto)
+routes.get("/proyectos/:id/perfiles/:perfilId", validateId, perfilController.getById)
+routes.put("/proyectos/:id/perfiles/:perfilId", validateId, perfilController.update)
 routes.delete("/proyectos/:id/perfiles/:perfilId", validateId, perfilController.delete)
+routes.get("/perfiles", perfilController.getAll)
 export default routes
