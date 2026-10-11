@@ -161,8 +161,11 @@ describe("PerfilService", () => {
     })
 
     test("permite crear un perfil sin nombre, unidadCompromiso, cantidadHoras ni modalidades (son opcionales)", async () => {
-      const { nombre, unidadCompromiso, cantidadHoras, modalidadesColaboracion, ...minimo } =
-        dtoPerfilValido
+      const minimo = {
+        descripcion: dtoPerfilValido.descripcion,
+        habilidadesRequeridas: dtoPerfilValido.habilidadesRequeridas,
+        habilidadesOpcionales: dtoPerfilValido.habilidadesOpcionales,
+      }
 
       const proyectoActualizado = await service.create(minimo, proyecto.id)
 
