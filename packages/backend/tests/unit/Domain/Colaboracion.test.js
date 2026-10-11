@@ -34,10 +34,14 @@ test("la colaboración exige ambas entidades y registra la fecha de inscripción
 
   expect(colaboracion.personaColaboradora).toBe(persona)
   expect(colaboracion.proyecto).toBe(proyecto)
+  expect(colaboracion.esAnonima).toBe(false)
   expect(colaboracion.fechaInscripcion.getTime()).toBeGreaterThanOrEqual(antes)
   expect(colaboracion.fechaInscripcion.getTime()).toBeLessThanOrEqual(
     Date.now(),
   )
+  const colaboracionAnonima = new Colaboracion(persona,proyecto,true)
+  expect(colaboracionAnonima.esAnonima).toBe(true)
+
   expect(() => new Colaboracion(null, proyecto)).toThrow(
     DomainValidationError,
   )

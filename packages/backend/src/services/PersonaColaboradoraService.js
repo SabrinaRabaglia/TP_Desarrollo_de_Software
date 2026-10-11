@@ -1,7 +1,7 @@
 import { EntityNotFound, InvalidReference } from "../errors/ApplicationErrors.js"
 import PersonaColaboradora from "../domain/PersonaColaboradora.js"
 import Cuenta from "../domain/Cuenta.js"
-
+import MedioDeContacto from "../domain/MedioDeContacto.js"
 export default class PersonaColaboradoraService {
   constructor(
     personaColaboradoraRepository,
@@ -31,10 +31,15 @@ export default class PersonaColaboradoraService {
       (cuenta) => new Cuenta(cuenta.nombreUsuario, cuenta.tipo),
     )
   }
-
+  crearMediosDeContacto = (medios) => {
+    return (medios ?? []).map(
+      (medio) => new MedioDeContacto(medio.tipo, medio.valor)
+    )
+  }
   create = async (nueva) => {
     const habilidades = await this.buscarHabilidades(nueva.habilidades)
     const cuentas = this.crearCuentas(nueva.cuentas)
+    const mediosDeContacto = this.crearMediosDeContacto(nueva.mediosDeContacto)
 
     const personaColaboradora = new PersonaColaboradora(
       nueva.nombreFantasia,
@@ -44,6 +49,8 @@ export default class PersonaColaboradoraService {
       nueva.presentacion,
       cuentas,
       habilidades,
+      nueva.aceptaMensajeriaInterna,
+      mediosDeContacto
     )
     return await this.personaColaboradoraRepository.save(personaColaboradora)
   }
@@ -67,10 +74,11 @@ export default class PersonaColaboradoraService {
     personaExistente.presentacion = actualizada.presentacion ?? null
     personaExistente.cuentas = cuentas
     personaExistente.habilidades = habilidades
+    personaExistente.aceptaMensajeriaInterna = actualizada.aceptaMensajeriaInterna ?? false
+    personaExistente.mediosDeContacto = actualizada.mediosDeContacto ?? []
 
     return await this.personaColaboradoraRepository.save(personaExistente)
   }
-
   delete = async (id) => {
     const personaExistente = await this.personaColaboradoraRepository.findById(id)
     if (!personaExistente) {

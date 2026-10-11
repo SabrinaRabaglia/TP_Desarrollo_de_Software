@@ -2,14 +2,19 @@ import { BadRequestError } from "../errors/AppError.js"
 import { TipoCuenta } from "../domain/enums/TipoCuenta.js"
 import { z } from "zod"
 import { objectIdSchema } from "../validations/objectId.js"
-
+import {TipoMedioContacto }from "../domain/enums/TipoMedioContacto.js"
 const cuentaSchema = z
   .object({
     nombreUsuario: z.string(),
     tipo: z.enum(Object.values(TipoCuenta)),
   })
   .strict()
-
+const medioDeContactoSchema = z
+  .object({
+    tipo: z.enum(Object.values(TipoMedioContacto)),
+    valor: z.string().min(1)
+  })
+  .strict()
 const personaColaboradoraSchema = z
   .object({
     nombreFantasia: z.string(),
@@ -19,6 +24,8 @@ const personaColaboradoraSchema = z
     presentacion: z.string().optional(),
     cuentas: z.array(cuentaSchema).optional(),
     habilidades: z.array(objectIdSchema).optional(),
+    aceptaMensajeriaInterna : z.boolean().optional().default(false),
+    mediosDeContacto: z.array(medioDeContactoSchema).optional()
   })
   .strict()
 
