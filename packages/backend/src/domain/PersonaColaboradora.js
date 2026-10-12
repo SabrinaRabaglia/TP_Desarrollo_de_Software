@@ -43,8 +43,4 @@ export default class PersonaColaboradora {
   agregarColaboracion(colaboracion) {
     this.colaboraciones.push(colaboracion)
   }
-  
-  agregarMedioDeContacto(medio){
-    this.mediosDeContacto.push(medio)
-  }
 }

@@ -101,12 +101,4 @@ describe("PersonaColaboradora", () => {
 
     expect(persona.colaboraciones).toEqual([colaboracionFalsa])
   })
-
-  test("agregarMedioDeContacto agrega un medio de contacto al array existente", () => {
-    const persona = new PersonaColaboradora("anon123")
-    const medioFalso = { tipo: "EMAIL", valor: "test@example.com" }
-    persona.agregarMedioDeContacto(medioFalso)
-
-    expect(persona.mediosDeContacto).toEqual([medioFalso])
-  })
 })
