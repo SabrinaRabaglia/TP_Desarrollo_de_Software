@@ -1,42 +1,32 @@
 import { AlreadyExists, EntityNotFound, InvalidReference } from "../errors/ApplicationErrors.js"
-import { Proyecto } from "../domain/Proyecto.js"
+import Proyecto from "../domain/Proyecto.js"
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
 
 // Un documento de Mongoose no se puede esparcir con "...": sus campos son getters del prototipo.
 const datosDelProyecto = ({
   titulo,
   descripcion,
-  unidadCompromiso,
-  cantHoras,
   colectivo,
-  modalidadesColaboracion,
   estado,
   fechaAlta,
   fechaCierre,
-  habilidadesRequeridas,
 }) => ({
   titulo,
   descripcion,
-  unidadCompromiso,
-  cantHoras,
   colectivo,
-  modalidadesColaboracion,
   estado,
   fechaAlta,
   fechaCierre,
-  habilidadesRequeridas,
 })
 
 export default class ProyectoService {
   constructor(
     proyectoRepository,
     colectivoService,
-    habilidadService,
     colaboracionRepository,
   ) {
     this.proyectoRepository = proyectoRepository
     this.colectivoService = colectivoService
-    this.habilidadService = habilidadService
     this.colaboracionRepository = colaboracionRepository
   }
 
@@ -61,30 +51,16 @@ export default class ProyectoService {
       }
       throw error
     }
-    for (const id of datos.habilidadesRequeridas ?? []) {
-      try {
-        await this.habilidadService.getById(id)
-      } catch (error) {
-        if (error instanceof EntityNotFound) {
-          throw new InvalidReference("Habilidad no encontrada")
-        }
-        throw error
-      }
-    }
   }
 
   create = async (nuevo) => {
     const proyecto = new Proyecto(
       nuevo.titulo,
       nuevo.descripcion,
-      nuevo.unidadCompromiso,
-      nuevo.cantHoras ?? nuevo.cantidadHoras,
       nuevo.colectivo,
-      nuevo.modalidadesColaboracion,
       nuevo.estado,
       nuevo.fechaAlta,
       nuevo.fechaCierre,
-      nuevo.habilidadesRequeridas,
     )
 
     await this.validarReferencias(nuevo)

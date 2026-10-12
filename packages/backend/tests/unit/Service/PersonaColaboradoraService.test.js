@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, jest, test } from "@jest/globals"
+import { beforeEach, describe, expect, test } from "@jest/globals"
 import PersonaColaboradoraService from "../../../src/services/PersonaColaboradoraService.js"
+import HabilidadService from "../../../src/services/HabilidadService.js"
 import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraRepository.js"
 import ColaboracionRepository from "../../fakes/ColaboracionRepository.js"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
@@ -21,14 +22,9 @@ describe("PersonaColaboradoraService", () => {
     
     habilidad = new Habilidad("React", "react", "Desarrollo web")
     habilidad.id = "habilidad-1"
-    const habilidadService = {
-      getById: jest.fn(async (id) => {
-        if (id !== habilidad.id) {
-          throw new EntityNotFound("Habilidad no encontrada")
-        }
-        return habilidad
-      }),
-    }
+    const habilidadService = new HabilidadService({
+      findById: async (id) => (id === habilidad.id ? habilidad : undefined),
+    })
     colaboracionRepository = new ColaboracionRepository()
     service = new PersonaColaboradoraService(
       repository,

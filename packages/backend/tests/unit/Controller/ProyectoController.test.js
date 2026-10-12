@@ -2,8 +2,6 @@ import { describe, expect, test, jest } from "@jest/globals"
 import ProyectoController from "../../../src/controllers/ProyectoController.js"
 import { BadRequestError } from "../../../src/errors/AppError.js"
 import { EstadoProyecto } from "../../../src/domain/enums/EstadoProyecto.js"
-import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColaboracion.js"
-import { UnidadCompromiso } from "../../../src/domain/enums/UnidadCompromiso.js"
 const mockRes = () => ({
   status: jest.fn().mockReturnThis(),
   json: jest.fn().mockReturnThis(),
@@ -24,11 +22,7 @@ describe("ProyectoController", () => {
     titulo: "Plataforma de Colaboración",
     descripcion:
       "Desarrollo de plataforma para conectar colectivos y voluntarios.",
-    unidadCompromiso: UnidadCompromiso.HORAS_SEMANALES,
-    cantHoras: 10,
     colectivo: "65f1a2b3c4d5e6f708192a10",
-    modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
-    habilidadesRequeridas: ["65f1a2b3c4d5e6f708192a11", "65f1a2b3c4d5e6f708192a12"],
     estado: EstadoProyecto.PUBLICADO,
     fechaAlta: "2026-09-01T00:00:00.000Z",
     fechaCierre: null,
@@ -109,7 +103,6 @@ describe("ProyectoController", () => {
 
     test.each([
       ["colectivo", { colectivo: "Asamblea Ambiental del Sur" }],
-      ["habilidadesRequeridas", { habilidadesRequeridas: ["hab-1"] }],
     ])("con un %s que no es un id válido, tira BadRequestError", async (_campo, cambios) => {
       const proyectoServiceMock = mockProyectoService()
       const controller = new ProyectoController(proyectoServiceMock)

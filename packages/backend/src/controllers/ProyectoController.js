@@ -1,7 +1,5 @@
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
 import { z } from "zod"
-import { ModalidadColaboracion } from "../domain/enums/ModalidadColaboracion.js"
-import { UnidadCompromiso } from "../domain/enums/UnidadCompromiso.js"
 import { BadRequestError } from "../errors/AppError.js"
 import { objectIdSchema } from "../validations/objectId.js"
 
@@ -9,14 +7,8 @@ const proyectoSchema = z
   .object({
     titulo: z.string(),
     descripcion: z.string(),
-    unidadCompromiso: z.nativeEnum(UnidadCompromiso),
-    cantHoras: z.number().int().positive(),
     colectivo: objectIdSchema,
-    modalidadesColaboracion: z
-      .array(z.nativeEnum(ModalidadColaboracion))
-      .min(1),
-    habilidadesRequeridas: z.array(objectIdSchema),
-    estado: z.nativeEnum(EstadoProyecto),
+    estado: z.enum(EstadoProyecto),
     fechaAlta: z.coerce.date(),
     fechaCierre: z.coerce.date().nullable(),
   })

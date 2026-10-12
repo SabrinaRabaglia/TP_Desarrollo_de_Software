@@ -1,4 +1,8 @@
-import { AlreadyExists, EntityNotFound } from "../errors/ApplicationErrors.js"
+import {
+  AlreadyExists,
+  EntityNotFound,
+  InvalidReference,
+} from "../errors/ApplicationErrors.js"
 import Habilidad from "../domain/Habilidad.js"
 
 export default class HabilidadService {
@@ -58,6 +62,17 @@ export default class HabilidadService {
       throw new EntityNotFound("Habilidad no encontrada")
     }
     return habilidad
+  }
+
+  buscarReferenciadas = async (ids) => {
+    try {
+      return await Promise.all(ids.map((id) => this.getById(id)))
+    } catch (error) {
+      if (error instanceof EntityNotFound) {
+        throw new InvalidReference(error.message)
+      }
+      throw error
+    }
   }
 
   getAll = async () => {

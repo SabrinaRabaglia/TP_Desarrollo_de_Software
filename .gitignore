@@ -3,3 +3,7 @@ node_modules/
 /packages/**/node_modules/
 .env
 .DS_Store
+
+# Contexto/skills local para Claude (no se versiona)
+CLAUDE.md
+.claude/

@@ -54,16 +54,26 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
     const proyectoDatos = {
       titulo: "Proyecto HTTP",
       descripcion: "Desarrollo web",
-      unidadCompromiso: "HORAS_TOTALES",
-      cantHoras: 5,
       colectivo: colectivo.id,
-      modalidadesColaboracion: ["GRATUITA"],
-      habilidadesRequeridas: [habilidad.id],
       estado: "PUBLICADO",
       fechaAlta: "2026-09-14T00:00:00.000Z",
       fechaCierre: null,
     }
-    const proyecto = await request("POST", "/proyectos", proyectoDatos, 201)
+    let proyecto = await request("POST", "/proyectos", proyectoDatos, 201)
+    await request(
+      "POST",
+      `/proyectos/${proyecto.id}/perfiles`,
+      {
+        descripcion: "Desarrollador/a Rust",
+        unidadCompromiso: "HORAS_TOTALES",
+        cantidadHoras: 5,
+        modalidadesColaboracion: ["GRATUITA"],
+        habilidadesRequeridas: [habilidad.id],
+        habilidadesOpcionales: [habilidad.id],
+      },
+      201,
+    )
+    proyecto = await request("GET", `/proyectos/${proyecto.id}`)
     const colaboracion = await request(
       "POST",
       "/colaboraciones",

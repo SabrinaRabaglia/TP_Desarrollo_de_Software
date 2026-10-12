@@ -30,16 +30,9 @@ describe("ColaboracionService", () => {
     persona.id = "persona-1"
     persona.agregarHabilidad(habilidad)
     personaRepository.save(persona)
-    proyecto = new Proyecto(
-      "Plataforma",
-      "Desarrollo web",
-      "HORAS_TOTALES",
-      5,
-      "colectivo-1",
-      ["GRATUITA"],
-    )
+    proyecto = new Proyecto("Plataforma", "Desarrollo web", "colectivo-1")
     proyecto.id = "proyecto-1"
-    proyecto.habilidadesRequeridas = ["otra-habilidad", habilidad.id]
+    proyecto.perfiles = [{ habilidadesRequeridas: ["otra-habilidad", habilidad.id] }]
     proyectoRepository.save(proyecto)
     datos = { proyectoId: proyecto.id, personaColaboradoraId: persona.id, esAnonima: false}
   })
@@ -79,9 +72,9 @@ describe("ColaboracionService", () => {
       DomainRuleError,
     ],
     [
-      "proyecto sin habilidades requeridas",
+      "proyecto sin perfiles (sin habilidades requeridas)",
       async () => {
-        proyecto.habilidadesRequeridas = []
+        proyecto.perfiles = []
       },
       DomainRuleError,
     ],

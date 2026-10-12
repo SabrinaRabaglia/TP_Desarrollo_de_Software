@@ -40,22 +40,35 @@ class Colectivo {
 class Proyecto {
     titulo: String
     descripcion: String
-    unidadCompromiso: UnidadCompromiso
-    cantidadHoras: int
-    modalidadesColaboracion: ModalidadColaboracion[]
     estado: EstadoProyecto
     fechaAlta: Date
     fechaCierre: Date
     colectivo: Colectivo
-    habilidadesRequeridas: Habilidad[]
+    perfiles: Perfil[]
     colaboraciones: Colaboracion[]
 
     cerrar():void
+    agregarPerfil(perfil: Perfil): Perfil
+    buscarPerfil(perfilId: String): Perfil
+    actualizarPerfil(perfil: Perfil, datos): void
+    eliminarPerfil(perfilId: String): void
     agregarColaboracion(colaboracion: Colaboracion): void
     poseeHabilidadNecesaria(personaColaboradora: PersonaColaboradora): boolean
     proyectoCerrado(): boolean
 
 }
+class Perfil {
+    nombre: String
+    descripcion: String
+    unidadCompromiso: UnidadCompromiso
+    cantidadHoras: int
+    modalidadesColaboracion: ModalidadColaboracion[]
+    habilidadesRequeridas: Habilidad[]
+    habilidadesOpcionales: Habilidad[]
+
+    actualizar(datos): void
+}
+
 class MedioDeContacto{
     tipo: TipoMedioContacto
     valor: String
@@ -110,7 +123,8 @@ Colectivo --> Pais
 Colectivo --> Provincia
 Colectivo --> Proyecto 
 Proyecto --> Colectivo 
-Proyecto --> Habilidad
+Proyecto *-- Perfil
+Perfil --> Habilidad
 Proyecto --> Colaboracion 
 Colaboracion --> PersonaColaboradora 
 Colaboracion --> Proyecto 
@@ -119,8 +133,8 @@ PersonaColaboradora --> Habilidad
 PersonaColaboradora --> Colaboracion 
 PersonaColaboradora --> MedioDeContacto
 MedioDeContacto --> TipoMedioContacto
-Proyecto --> UnidadCompromiso 
-Proyecto --> ModalidadColaboracion 
+Perfil --> UnidadCompromiso
+Perfil --> ModalidadColaboracion
 Proyecto --> EstadoProyecto 
 Cuenta --> TipoCuenta
 

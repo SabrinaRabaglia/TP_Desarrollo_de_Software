@@ -28,6 +28,9 @@ export default class ProyectoRepository {
 
   async save(nuevo) {
     nuevo.id ??= randomUUID()
+    for (const perfil of nuevo.perfiles ?? []) {
+      perfil.id ??= randomUUID()
+    }
     const indice = ProyectoRepository.proyectos.findIndex((p) => p.id === nuevo.id)
     if (indice === -1) {
       ProyectoRepository.proyectos.push(nuevo)

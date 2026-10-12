@@ -1,4 +1,4 @@
-import { EntityNotFound, InvalidReference } from "../errors/ApplicationErrors.js"
+import { EntityNotFound } from "../errors/ApplicationErrors.js"
 import PersonaColaboradora from "../domain/PersonaColaboradora.js"
 import Cuenta from "../domain/Cuenta.js"
 import MedioDeContacto from "../domain/MedioDeContacto.js"
@@ -13,19 +13,6 @@ export default class PersonaColaboradoraService {
     this.colaboracionRepository = colaboracionRepository
   }
 
-  buscarHabilidades = async (ids) => {
-    try {
-      return await Promise.all(
-        (ids ?? []).map((id) => this.habilidadService.getById(id))
-      )
-    } catch (error) {
-      if (error instanceof EntityNotFound) {
-        throw new InvalidReference(error.message)
-      }
-      throw error
-    }
-  }
-
   crearCuentas = (cuentas) => {
     return (cuentas ?? []).map(
       (cuenta) => new Cuenta(cuenta.nombreUsuario, cuenta.tipo),
@@ -37,7 +24,9 @@ export default class PersonaColaboradoraService {
     )
   }
   create = async (nueva) => {
-    const habilidades = await this.buscarHabilidades(nueva.habilidades)
+    const habilidades = await this.habilidadService.buscarReferenciadas(
+      nueva.habilidades ?? [],
+    )
     const cuentas = this.crearCuentas(nueva.cuentas)
     const mediosDeContacto = this.crearMediosDeContacto(nueva.mediosDeContacto)
 
@@ -69,7 +58,9 @@ export default class PersonaColaboradoraService {
         ? personaExistente.mediosDeContacto
         : this.crearMediosDeContacto(actualizada.mediosDeContacto)
 
-    const habilidades = await this.buscarHabilidades(actualizada.habilidades)
+    const habilidades = await this.habilidadService.buscarReferenciadas(
+      actualizada.habilidades ?? [],
+    )
 
     personaExistente.nombreFantasia = actualizada.nombreFantasia
     personaExistente.nombre = actualizada.nombre ?? null
