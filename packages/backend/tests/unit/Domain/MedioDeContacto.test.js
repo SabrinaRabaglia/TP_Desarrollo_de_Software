@@ -16,6 +16,12 @@ describe("MedioDeContacto", () => {
     )
   })
 
+  test("tira DomainValidationError si el tipo no es EMAIL, WHATSAPP ni SMS", () => {
+    expect(() => new MedioDeContacto("TELEGRAM", "@ana")).toThrow(
+      DomainValidationError,
+    )
+  })
+
   test("tira DomainValidationError si falta el valor", () => {
     expect(() => new MedioDeContacto("EMAIL", "")).toThrow(
       DomainValidationError,

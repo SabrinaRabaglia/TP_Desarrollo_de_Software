@@ -13,6 +13,11 @@ export default class MedioDeContacto {
         "El tipo de medio de contacto es obligatorio",
       )
     }
+    if (!Object.values(TipoMedioContacto).includes(tipo)) {
+      throw new DomainValidationError(
+        "El tipo de medio de contacto es inválido",
+      )
+    }
     if (!valor) {
       throw new DomainValidationError(
         "El valor del medio de contacto es obligatorio",
