@@ -33,6 +33,10 @@
       "description": "Proyectos de los colectivos"
     },
     {
+      "name": "Perfiles",
+      "description": "Perfiles que necesita un proyecto: habilidades requeridas y opcionales, compromiso y modalidad de colaboración."
+    },
+    {
       "name": "Colaboraciones",
       "description": "Inscripción de personas a proyectos"
     },
@@ -1015,6 +1019,249 @@
         }
       }
     },
+    "/proyectos/{id}/perfiles": {
+      "get": {
+        "tags": [
+          "Perfiles"
+        ],
+        "summary": "Listar los perfiles de un proyecto",
+        "operationId": "listarPerfiles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Perfiles del proyecto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Perfil"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Perfiles"
+        ],
+        "summary": "Agregar un perfil a un proyecto",
+        "description": "Responde 404 si el proyecto o alguna habilidad no existen y 422 si el perfil no cumple las reglas del dominio. Un proyecto cerrado no admite cambios en sus perfiles: responde 409.",
+        "operationId": "crearPerfil",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PerfilInput"
+              },
+              "example": {
+                "nombre": "Tester",
+                "descripcion": "Testing E2E con Cypress",
+                "unidadCompromiso": "HORAS_MENSUALES",
+                "cantidadHoras": 5,
+                "modalidadesColaboracion": [
+                  "GRATUITA"
+                ],
+                "habilidadesRequeridas": [
+                  "64f1a2b3c4d5e6f7a8b9c001"
+                ],
+                "habilidadesOpcionales": [
+                  "64f1a2b3c4d5e6f7a8b9c002"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Perfil creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Perfil"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/proyectos/{id}/perfiles/{perfilId}": {
+      "get": {
+        "tags": [
+          "Perfiles"
+        ],
+        "summary": "Obtener un perfil de un proyecto",
+        "description": "Responde 404 si el perfil no pertenece a ese proyecto.",
+        "operationId": "obtenerPerfil",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          },
+          {
+            "$ref": "#/components/parameters/PerfilIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Perfil encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Perfil"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Perfiles"
+        ],
+        "summary": "Actualizar un perfil",
+        "description": "Reemplaza los datos del perfil. Si se omite el nombre queda en null. Un proyecto cerrado no admite cambios en sus perfiles: responde 409.",
+        "operationId": "actualizarPerfil",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          },
+          {
+            "$ref": "#/components/parameters/PerfilIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PerfilInput"
+              },
+              "example": {
+                "nombre": "Tester",
+                "descripcion": "Testing E2E con Cypress",
+                "unidadCompromiso": "HORAS_MENSUALES",
+                "cantidadHoras": 5,
+                "modalidadesColaboracion": [
+                  "GRATUITA"
+                ],
+                "habilidadesRequeridas": [
+                  "64f1a2b3c4d5e6f7a8b9c001"
+                ],
+                "habilidadesOpcionales": [
+                  "64f1a2b3c4d5e6f7a8b9c002"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Perfil actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Perfil"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Perfiles"
+        ],
+        "summary": "Eliminar un perfil",
+        "description": "Un proyecto cerrado no admite cambios en sus perfiles: responde 409.",
+        "operationId": "eliminarPerfil",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          },
+          {
+            "$ref": "#/components/parameters/PerfilIdPath"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Eliminado correctamente. No devuelve contenido."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
     "/colaboraciones": {
       "get": {
         "tags": [
@@ -1167,6 +1414,15 @@
         "in": "path",
         "required": true,
         "description": "Id del recurso (ObjectId de 24 caracteres hexadecimales). Si el formato es inválido responde 400.",
+        "schema": {
+          "$ref": "#/components/schemas/ObjectId"
+        }
+      },
+      "PerfilIdPath": {
+        "name": "perfilId",
+        "in": "path",
+        "required": true,
+        "description": "Id del perfil dentro del proyecto.",
         "schema": {
           "$ref": "#/components/schemas/ObjectId"
         }
@@ -1834,6 +2090,9 @@
         "required": [
           "id",
           "descripcion",
+          "unidadCompromiso",
+          "cantidadHoras",
+          "modalidadesColaboracion",
           "habilidadesRequeridas",
           "habilidadesOpcionales"
         ],
@@ -1846,22 +2105,20 @@
             "nullable": true
           },
           "descripcion": {
-            "type": "string"
+            "type": "string",
+            "example": "Testing E2E con Cypress"
           },
           "unidadCompromiso": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UnidadCompromiso"
-              }
-            ],
-            "nullable": true
+            "$ref": "#/components/schemas/UnidadCompromiso"
           },
           "cantidadHoras": {
             "type": "integer",
-            "nullable": true
+            "minimum": 1,
+            "example": 5
           },
           "modalidadesColaboracion": {
             "type": "array",
+            "minItems": 1,
             "items": {
               "$ref": "#/components/schemas/ModalidadColaboracion"
             }
@@ -1869,6 +2126,7 @@
           "habilidadesRequeridas": {
             "type": "array",
             "minItems": 1,
+            "description": "Ids de habilidades existentes.",
             "items": {
               "$ref": "#/components/schemas/ObjectId"
             }
@@ -1876,6 +2134,60 @@
           "habilidadesOpcionales": {
             "type": "array",
             "minItems": 1,
+            "description": "Ids de habilidades existentes.",
+            "items": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          }
+        }
+      },
+      "PerfilInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "descripcion",
+          "unidadCompromiso",
+          "cantidadHoras",
+          "modalidadesColaboracion",
+          "habilidadesRequeridas",
+          "habilidadesOpcionales"
+        ],
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "example": "Tester"
+          },
+          "descripcion": {
+            "type": "string",
+            "example": "Testing E2E con Cypress"
+          },
+          "unidadCompromiso": {
+            "$ref": "#/components/schemas/UnidadCompromiso"
+          },
+          "cantidadHoras": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 5
+          },
+          "modalidadesColaboracion": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/ModalidadColaboracion"
+            }
+          },
+          "habilidadesRequeridas": {
+            "type": "array",
+            "minItems": 1,
+            "description": "Ids de habilidades existentes.",
+            "items": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          "habilidadesOpcionales": {
+            "type": "array",
+            "minItems": 1,
+            "description": "Ids de habilidades existentes.",
             "items": {
               "$ref": "#/components/schemas/ObjectId"
             }
