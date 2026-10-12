@@ -42,14 +42,7 @@ const personaColaboradoraSchema = new mongoose.Schema(
   {
     timestamps: true,
     collection: "personasColaboradoras",
-    toJSON: {
-      ...opcionesJSON,
-      transform: (documento, json) => {
-        opcionesJSON.transform(documento, json)
-        delete json.mediosDeContacto
-        return json
-      },
-    },
+    toJSON: opcionesJSON,
   },
 )
 

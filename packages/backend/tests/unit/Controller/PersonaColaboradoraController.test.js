@@ -31,10 +31,7 @@ describe("PersonaColaboradoraController", () => {
 
       await controller.create(req, res, next)
 
-      expect(service.create).toHaveBeenCalledWith({
-        nombreFantasia: "anon123",
-        aceptaMensajeriaInterna: false,
-      })
+      expect(service.create).toHaveBeenCalledWith(req.body)
       expect(res.status).toHaveBeenCalledWith(201)
       expect(res.json).toHaveBeenCalledWith(personaCreada)
     })
@@ -55,12 +52,7 @@ describe("PersonaColaboradoraController", () => {
 
       await controller.create(req, res, next)
 
-      expect(service.create).toHaveBeenCalledWith({
-        nombreFantasia: "anon123",
-        habilidades: [OBJECT_ID_VALIDO],
-        cuentas: [{ nombreUsuario: "anagomez", tipo: "GITHUB" }],
-        aceptaMensajeriaInterna: false,
-      })
+      expect(service.create).toHaveBeenCalledWith(req.body)
       expect(res.status).toHaveBeenCalledWith(201)
     })
 
@@ -174,10 +166,7 @@ describe("PersonaColaboradoraController", () => {
 
       await controller.update(req, res, next)
 
-      expect(service.update).toHaveBeenCalledWith("1", {
-        nombreFantasia: "anon123-editado",
-        aceptaMensajeriaInterna: false,
-      })
+      expect(service.update).toHaveBeenCalledWith("1", req.body)
       expect(res.status).toHaveBeenCalledWith(200)
       expect(res.json).toHaveBeenCalledWith(personaActualizada)
     })

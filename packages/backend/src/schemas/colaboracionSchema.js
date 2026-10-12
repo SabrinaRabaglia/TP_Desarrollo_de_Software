@@ -17,20 +17,7 @@ const colaboracionSchema = new mongoose.Schema(
       required: true,
     },
   },
-  {
-    timestamps: true,
-    collection: "colaboraciones",
-    toJSON: {
-      ...opcionesJSON,
-      transform: (documento, json) => {
-        opcionesJSON.transform(documento, json)
-        if (json.esAnonima) {
-          json.personaColaboradora = null
-        }
-        return json
-      },
-    },
-  },
+  { timestamps: true, collection: "colaboraciones", toJSON: opcionesJSON },
 )
 
 colaboracionSchema.index(
