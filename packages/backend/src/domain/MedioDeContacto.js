@@ -22,7 +22,7 @@ export default class MedioDeContacto{
         }
 
         if (tipo === "WHATSAPP" || tipo === "SMS") {
-            const phoneRegex = /^[\+]?[(]?[0-9]{2,4}[)]?[-\s\.]?[0-9]{3,4}[-\s\.]?[0-9]{4,6}$/
+            const phoneRegex = /^[+]?[(]?[0-9]{2,4}[)]?[-\s.]?[0-9]{3,4}[-\s.]?[0-9]{4,6}$/
         if (!phoneRegex.test(valor)) {
         throw new DomainValidationError("El formato del teléfono es inválido")
             }
