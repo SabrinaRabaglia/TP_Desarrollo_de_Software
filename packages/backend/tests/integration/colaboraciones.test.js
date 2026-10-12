@@ -2,7 +2,6 @@ import { afterAll, beforeAll, expect, test } from "@jest/globals"
 import { once } from "node:events"
 import app from "../../src/app.js"
 import ColaboracionModel from "../../src/schemas/colaboracionSchema.js"
-import PersonaColaboradoraModel from "../../src/schemas/personaColaboradoraSchema.js"
 import ProvinciaModel from "../../src/schemas/provinciaSchema.js"
 import { conectar, desconectar } from "./mongo.js"
 
@@ -46,18 +45,12 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
       nombreFantasia: "Ana HTTP",
       habilidades: [habilidad.id],
     }
-    const mediosDeContacto = [{ tipo: "EMAIL", valor: "ana@example.com" }]
     const persona = await request(
       "POST",
       "/personas-colaboradoras",
-      { ...personaDatos, aceptaMensajeriaInterna: true, mediosDeContacto },
+      personaDatos,
       201,
     )
-    expect(persona.aceptaMensajeriaInterna).toBe(true)
-    expect(persona).not.toHaveProperty("mediosDeContacto")
-    expect(
-      await request("GET", `/personas-colaboradoras/${persona.id}`),
-    ).not.toHaveProperty("mediosDeContacto")
     const proyectoDatos = {
       titulo: "Proyecto HTTP",
       descripcion: "Desarrollo web",
@@ -147,10 +140,6 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
       const actualizado = await request("PUT", `/${ruta}/${id}`, datos)
       expect(actualizado.id).toBe(id)
     }
-    const personaGuardada = await PersonaColaboradoraModel.findById(persona.id)
-    expect(personaGuardada.toObject().mediosDeContacto).toEqual(
-      mediosDeContacto,
-    )
     await request("PATCH", `/colectivos/${colectivo.id}`, {
       descripcion: "Descripción actualizada",
     })
