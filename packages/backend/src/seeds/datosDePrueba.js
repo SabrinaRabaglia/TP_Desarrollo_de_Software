@@ -1,6 +1,8 @@
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
+import { ModalidadColaboracion } from "../domain/enums/ModalidadColaboracion.js"
 import { TipoCuenta } from "../domain/enums/TipoCuenta.js"
 import { TipoMedioContacto } from "../domain/enums/TipoMedioContacto.js"
+import { UnidadCompromiso } from "../domain/enums/UnidadCompromiso.js"
 import ColaboracionModel from "../schemas/colaboracionSchema.js"
 import ColectivoModel from "../schemas/colectivoSchema.js"
 import HabilidadModel from "../schemas/habilidadSchema.js"
@@ -64,6 +66,20 @@ export default async function sembrarDatosDePrueba() {
         estado: EstadoProyecto.PUBLICADO,
         fechaAlta: new Date("2026-09-01T00:00:00.000Z"),
         colectivo: colectivos["Huerta Comunitaria Sur"],
+        perfiles: [
+          {
+            nombre: "Desarrollo frontend",
+            descripcion: "Maquetar y mantener el sitio con el calendario",
+            unidadCompromiso: UnidadCompromiso.HORAS_SEMANALES,
+            cantidadHoras: 4,
+            modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
+            habilidadesRequeridas: [
+              habilidades["javascript"],
+              habilidades["react"],
+            ],
+            habilidadesOpcionales: [habilidades["typescript"]],
+          },
+        ],
       },
       {
         titulo: "API de donaciones",
@@ -71,6 +87,23 @@ export default async function sembrarDatosDePrueba() {
         estado: EstadoProyecto.PUBLICADO,
         fechaAlta: new Date("2026-09-05T00:00:00.000Z"),
         colectivo: colectivos["Fundación Código Abierto"],
+        perfiles: [
+          {
+            nombre: "Desarrollo backend",
+            descripcion: "Diseñar la API y el modelo de datos de donaciones",
+            unidadCompromiso: UnidadCompromiso.HORAS_TOTALES,
+            cantidadHoras: 80,
+            modalidadesColaboracion: [
+              ModalidadColaboracion.GRATUITA,
+              ModalidadColaboracion.CON_INCENTIVO_ECONOMICO,
+            ],
+            habilidadesRequeridas: [
+              habilidades["node_js"],
+              habilidades["mongodb"],
+            ],
+            habilidadesOpcionales: [habilidades["docker"]],
+          },
+        ],
       },
       {
         titulo: "Mapa de humedales",
@@ -78,6 +111,28 @@ export default async function sembrarDatosDePrueba() {
         estado: EstadoProyecto.PUBLICADO,
         fechaAlta: new Date("2026-09-10T00:00:00.000Z"),
         colectivo: colectivos["Asamblea Ambiental del Litoral"],
+        perfiles: [
+          {
+            nombre: "Análisis de datos",
+            descripcion: "Procesar las mediciones de los puntos de monitoreo",
+            unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
+            cantidadHoras: 10,
+            modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
+            habilidadesRequeridas: [habilidades["python"]],
+            habilidadesOpcionales: [habilidades["sql"]],
+          },
+          {
+            nombre: "Desarrollo del mapa",
+            descripcion: "Construir el mapa interactivo",
+            unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
+            cantidadHoras: 15,
+            modalidadesColaboracion: [
+              ModalidadColaboracion.CON_INCENTIVO_ECONOMICO,
+            ],
+            habilidadesRequeridas: [habilidades["javascript"]],
+            habilidadesOpcionales: [habilidades["react"]],
+          },
+        ],
       },
       {
         titulo: "Rediseño de la app de voluntariado",
@@ -86,6 +141,19 @@ export default async function sembrarDatosDePrueba() {
         fechaAlta: new Date("2026-08-01T00:00:00.000Z"),
         fechaCierre: new Date("2026-09-15T00:00:00.000Z"),
         colectivo: colectivos["Fundación Código Abierto"],
+        perfiles: [
+          {
+            nombre: "Diseño UX/UI",
+            descripcion: "Rediseñar el flujo de inscripción",
+            unidadCompromiso: UnidadCompromiso.HORAS_TOTALES,
+            cantidadHoras: 40,
+            modalidadesColaboracion: [
+              ModalidadColaboracion.CON_POSIBILIDAD_CONTRATACION,
+            ],
+            habilidadesRequeridas: [habilidades["diseno_ux_ui"]],
+            habilidadesOpcionales: [habilidades["react"]],
+          },
+        ],
       },
     ],
   )
