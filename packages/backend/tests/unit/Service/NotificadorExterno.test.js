@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, jest, test } from "@jest/globals"
-import NotificadorExterno, {
-  canalesSimulados,
-} from "../../../src/services/NotificadorExterno.js"
+import NotificadorExterno from "../../../src/services/NotificadorExterno.js"
+import { canalesSimulados } from "../../../src/canales/canalesSimulados.js"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import MedioDeContacto from "../../../src/domain/MedioDeContacto.js"
 
