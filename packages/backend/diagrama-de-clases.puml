@@ -22,7 +22,7 @@ enum EstadoProyecto {
     PUBLICADO
     CERRADO
 }
-enum TipoMedioDeContacto{
+enum TipoMedioContacto{
     EMAIL
     WHATSAPP
     SMS
@@ -118,7 +118,7 @@ PersonaColaboradora --> Cuenta
 PersonaColaboradora --> Habilidad
 PersonaColaboradora --> Colaboracion 
 PersonaColaboradora --> MedioDeContacto
-MedioDeContacto --> TipoMedioDeContacto
+MedioDeContacto --> TipoMedioContacto
 Proyecto --> UnidadCompromiso 
 Proyecto --> ModalidadColaboracion 
 Proyecto --> EstadoProyecto 
