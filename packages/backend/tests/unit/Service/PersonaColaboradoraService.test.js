@@ -116,6 +116,36 @@ describe("PersonaColaboradoraService", () => {
     expect(await repository.findById(persona.id)).toEqual(antes)
   })
 
+  test("actualizar sin medios de contacto conserva los guardados y con una lista vacía los borra", async () => {
+    const persona = await service.create(datos)
+    const conservada = await service.update(persona.id, {
+      ...datos,
+      mediosDeContacto: undefined,
+    })
+    expect(conservada.mediosDeContacto).toEqual(datos.mediosDeContacto)
+
+    const sinContacto = await service.update(persona.id, {
+      ...datos,
+      mediosDeContacto: [],
+    })
+    expect(sinContacto.mediosDeContacto).toEqual([])
+  })
+
+  test("rechaza un medio de contacto inválido al actualizar sin modificar la persona", async () => {
+    const persona = await service.create(datos)
+    const antes = { ...persona }
+
+    await expect(
+      service.update(persona.id, {
+        ...datos,
+        presentacion: "No debe guardarse",
+        mediosDeContacto: [{ tipo: "EMAIL", valor: "no-es-un-email" }],
+      }),
+    ).rejects.toThrow(DomainValidationError)
+
+    expect(await repository.findById(persona.id)).toEqual(antes)
+  })
+
   test("eliminar una persona elimina sus colaboraciones y conserva las de otras", async () => {
     const persona = await service.create(datos)
     const proyecto = { id: "proyecto-1" }

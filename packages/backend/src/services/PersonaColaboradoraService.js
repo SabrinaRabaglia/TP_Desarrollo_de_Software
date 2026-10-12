@@ -64,6 +64,10 @@ export default class PersonaColaboradoraService {
     PersonaColaboradora.validarDatos(actualizada)
 
     const cuentas = this.crearCuentas(actualizada.cuentas)
+    const mediosDeContacto =
+      actualizada.mediosDeContacto === undefined
+        ? personaExistente.mediosDeContacto
+        : this.crearMediosDeContacto(actualizada.mediosDeContacto)
 
     const habilidades = await this.buscarHabilidades(actualizada.habilidades)
 
@@ -75,7 +79,7 @@ export default class PersonaColaboradoraService {
     personaExistente.cuentas = cuentas
     personaExistente.habilidades = habilidades
     personaExistente.aceptaMensajeriaInterna = actualizada.aceptaMensajeriaInterna ?? false
-    personaExistente.mediosDeContacto = actualizada.mediosDeContacto ?? []
+    personaExistente.mediosDeContacto = mediosDeContacto
 
     return await this.personaColaboradoraRepository.save(personaExistente)
   }
