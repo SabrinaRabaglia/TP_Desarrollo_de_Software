@@ -33,4 +33,24 @@ describe("MedioDeContacto", () => {
       DomainValidationError,
     )
   })
+
+  test.each([
+    "+54 9 11 1234-5678",
+    "+54 11 1234-5678",
+    "+54 351 123-4567",
+    "(011) 4567-8901",
+    "11.1234.5678",
+    "+5491112345678",
+  ])("acepta el teléfono %s", (telefono) => {
+    expect(new MedioDeContacto("SMS", telefono).valor).toBe(telefono)
+  })
+
+  test.each(["1234567", "+54 9 11 1234-5678 999", "11 1234 56a8", "+"])(
+    "rechaza el teléfono %s",
+    (telefono) => {
+      expect(() => new MedioDeContacto("SMS", telefono)).toThrow(
+        DomainValidationError,
+      )
+    },
+  )
 })
