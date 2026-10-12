@@ -925,7 +925,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"titulo\": \"Plataforma de Colaboración Actualizada {{runSuffix}}\",\n  \"descripcion\": \"Proyecto actualizado para conectar organizaciones y voluntariado.\",\n  \"unidadCompromiso\": \"HORAS_MENSUALES\",\n  \"cantHoras\": 20,\n  \"colectivo\": \"{{colectivoId}}\",\n  \"modalidadesColaboracion\": [\n    \"GRATUITA\",\n    \"CON_POSIBILIDAD_CONTRATACION\"\n  ],\n  \"habilidadesRequeridas\": [\n    \"{{habilidadId}}\"\n  ],\n  \"estado\": \"PUBLICADO\",\n  \"fechaAlta\": \"{{$isoTimestamp}}\",\n  \"fechaCierre\": null\n}",
+              "raw": "{\n  \"titulo\": \"Plataforma de Colaboración Actualizada {{runSuffix}}\",\n  \"descripcion\": \"Proyecto actualizado para conectar organizaciones y voluntariado.\",\n  \"colectivo\": \"{{colectivoId}}\",\n  \"estado\": \"PUBLICADO\",\n  \"fechaAlta\": \"{{$isoTimestamp}}\",\n  \"fechaCierre\": null\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -975,11 +975,9 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
-                  "const respuesta = pm.response.json()",
-                  "const perfiles = respuesta.perfiles || []",
-                  "const ultimo = perfiles[perfiles.length - 1]",
-                  "pm.test(\"el proyecto tiene el perfil embebido\", () => pm.expect(ultimo).to.not.be.undefined)",
-                  "if (ultimo) pm.collectionVariables.set(\"perfilId\", ultimo._id)"
+                  "const perfil = pm.response.json()",
+                  "pm.test(\"devuelve el perfil creado con su id\", () => pm.expect(perfil.id).to.be.a(\"string\"))",
+                  "pm.collectionVariables.set(\"perfilId\", perfil.id)"
                 ]
               }
             }
@@ -1013,6 +1011,154 @@
               ]
             },
             "description": "Crea un perfil embebido dentro del proyecto {{proyectoId}} y guarda su id en perfilId. Para probar sin afectar datos reales: corré primero Proyectos > Crear proyecto (crea uno descartable), probá acá lo que necesites, y al final corré Limpieza > Eliminar proyecto para borrar todo junto (el perfil se borra con el proyecto, al estar embebido)."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar perfiles del proyecto",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"proyectoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Proyectos > Crear proyecto.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"habilidadId\")) {",
+                  "  throw new Error(\"Ejecutá primero Habilidades > Crear habilidad.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"devuelve una lista\", () => pm.expect(pm.response.json()).to.be.an(\"array\"))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}/perfiles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoId}}",
+                "perfiles"
+              ]
+            },
+            "description": "Lista los perfiles del proyecto {{proyectoId}}."
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener perfil",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"perfilId\")) {",
+                  "  throw new Error(\"Ejecutá primero Perfiles > Crear perfil.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"devuelve el perfil pedido\", () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get(\"perfilId\")))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}/perfiles/{{perfilId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoId}}",
+                "perfiles",
+                "{{perfilId}}"
+              ]
+            },
+            "description": "Obtiene el perfil {{perfilId}} del proyecto {{proyectoId}}."
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar perfil",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"perfilId\")) {",
+                  "  throw new Error(\"Ejecutá primero Perfiles > Crear perfil.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"devuelve el perfil actualizado\", () => pm.expect(pm.response.json().cantidadHoras).to.eql(10))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Tester\",\n  \"descripcion\": \"Perfil de testing E2E {{runSuffix}}\",\n  \"unidadCompromiso\": \"HORAS_MENSUALES\",\n  \"cantidadHoras\": 10,\n  \"modalidadesColaboracion\": [\n    \"GRATUITA\"\n  ],\n  \"habilidadesRequeridas\": [\n    \"{{habilidadId}}\"\n  ],\n  \"habilidadesOpcionales\": [\n    \"{{habilidadId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}/perfiles/{{perfilId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoId}}",
+                "perfiles",
+                "{{perfilId}}"
+              ]
+            },
+            "description": "Reemplaza los datos del perfil {{perfilId}}. Si el proyecto está cerrado responde 409."
           },
           "response": []
         }
@@ -1091,7 +1237,7 @@
                   "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
                   "const respuesta = pm.response.json()",
                   "pm.test(\"devuelve un array\", () => pm.expect(respuesta).to.be.an(\"array\"))",
-                  "pm.test(\"incluye la inscripción creada\", () => pm.expect(respuesta.some(c => c.personaColaboradora.id === pm.collectionVariables.get(\"personaId\") && c.proyecto.id === pm.collectionVariables.get(\"proyectoId\"))).to.eql(true))"
+                  "pm.test(\"incluye la inscripción creada\", () => pm.expect(respuesta.some(c => c.personaColaboradora?.id === pm.collectionVariables.get(\"personaId\") && c.proyecto.id === pm.collectionVariables.get(\"proyectoId\"))).to.eql(true))"
                 ]
               }
             }
