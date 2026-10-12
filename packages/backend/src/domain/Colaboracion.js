@@ -1,7 +1,7 @@
 import { DomainRuleError, DomainValidationError } from "./errors/DomainErrors.js"
 
 export default class Colaboracion {
-  constructor(personaColaboradora, proyecto) {
+  constructor(personaColaboradora, proyecto, esAnonima = false) {
     if (!personaColaboradora || !proyecto) {
       throw new DomainValidationError(
         "La colaboración debe tener una persona colaboradora y un proyecto asociados.",
@@ -18,5 +18,6 @@ export default class Colaboracion {
     this.fechaInscripcion = new Date()
     this.personaColaboradora = personaColaboradora
     this.proyecto = proyecto
+    this.esAnonima = esAnonima
   }
 }

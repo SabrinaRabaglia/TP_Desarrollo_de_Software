@@ -34,7 +34,7 @@ describe("ColaboracionService", () => {
     proyecto.id = "proyecto-1"
     proyecto.perfiles = [{ habilidadesRequeridas: ["otra-habilidad", habilidad.id] }]
     proyectoRepository.save(proyecto)
-    datos = { proyectoId: proyecto.id, personaColaboradoraId: persona.id }
+    datos = { proyectoId: proyecto.id, personaColaboradoraId: persona.id, esAnonima: false}
   })
 
   test("registra una única colaboración entre la persona y el proyecto", async () => {

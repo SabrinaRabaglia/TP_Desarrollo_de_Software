@@ -2,14 +2,20 @@ import { BadRequestError } from "../errors/AppError.js"
 import { TipoCuenta } from "../domain/enums/TipoCuenta.js"
 import { z } from "zod"
 import { objectIdSchema } from "../validations/objectId.js"
-
+import { TipoMedioContacto } from "../domain/enums/TipoMedioContacto.js"
+import { personaColaboradoraDTO } from "../dtos/personaColaboradoraDTO.js"
 const cuentaSchema = z
   .object({
     nombreUsuario: z.string(),
     tipo: z.enum(Object.values(TipoCuenta)),
   })
   .strict()
-
+const medioDeContactoSchema = z
+  .object({
+    tipo: z.enum(Object.values(TipoMedioContacto)),
+    valor: z.string().min(1),
+  })
+  .strict()
 const personaColaboradoraSchema = z
   .object({
     nombreFantasia: z.string(),
@@ -19,6 +25,8 @@ const personaColaboradoraSchema = z
     presentacion: z.string().optional(),
     cuentas: z.array(cuentaSchema).optional(),
     habilidades: z.array(objectIdSchema).optional(),
+    aceptaMensajeriaInterna: z.boolean().optional(),
+    mediosDeContacto: z.array(medioDeContactoSchema).optional(),
   })
   .strict()
 
@@ -36,7 +44,7 @@ export default class PersonaColaboradoraController {
       const personaColaboradora = await this.personaColaboradoraService.create(
         resultado.data,
       )
-      res.status(201).json(personaColaboradora)
+      res.status(201).json(personaColaboradoraDTO(personaColaboradora))
     } catch (error) {
       next(error)
     }
@@ -52,7 +60,7 @@ export default class PersonaColaboradoraController {
         req.params.id,
         resultado.data,
       )
-      res.status(200).json(personaColaboradora)
+      res.status(200).json(personaColaboradoraDTO(personaColaboradora))
     } catch (error) {
       next(error)
     }
@@ -72,7 +80,7 @@ export default class PersonaColaboradoraController {
       const personaColaboradora = await this.personaColaboradoraService.getById(
         req.params.id,
       )
-      res.status(200).json(personaColaboradora)
+      res.status(200).json(personaColaboradoraDTO(personaColaboradora))
     } catch (error) {
       next(error)
     }
@@ -80,7 +88,8 @@ export default class PersonaColaboradoraController {
 
   getAll = async (req, res, next) => {
     try {
-      res.status(200).json(await this.personaColaboradoraService.getAll())
+      const personas = await this.personaColaboradoraService.getAll()
+      res.status(200).json(personas.map(personaColaboradoraDTO))
     } catch (error) {
       next(error)
     }

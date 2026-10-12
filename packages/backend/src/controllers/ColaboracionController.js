@@ -1,11 +1,13 @@
 import { z } from "zod"
 import { BadRequestError } from "../errors/AppError.js"
 import { objectIdSchema } from "../validations/objectId.js"
+import { colaboracionDTO } from "../dtos/colaboracionDTO.js"
 
 const colaboracionSchema = z
   .object({
     personaColaboradoraId: objectIdSchema,
     proyectoId: objectIdSchema,
+    esAnonima: z.boolean().optional(),
   })
   .strict()
 
@@ -22,18 +24,17 @@ export default class ColaboracionController {
       throw new BadRequestError("Datos inválidos", resultado.error.issues)
     }
     const colaboracion = await this.colaboracionService.create(resultado.data)
-    res.status(201).json(colaboracion)
+    res.status(201).json(colaboracionDTO(colaboracion))
     }
     catch (error) {
       next(error)
     }
-
-    
   }
 
   getAll = async (_req, res, next) => {
     try {
-      res.status(200).json(await this.colaboracionService.getAll())
+      const colaboraciones = await this.colaboracionService.getAll()
+      res.status(200).json(colaboraciones.map(colaboracionDTO))
     } catch (error) {
       next(error)
     }

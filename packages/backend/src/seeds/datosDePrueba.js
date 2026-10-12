@@ -1,5 +1,6 @@
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
 import { TipoCuenta } from "../domain/enums/TipoCuenta.js"
+import { TipoMedioContacto } from "../domain/enums/TipoMedioContacto.js"
 import ColaboracionModel from "../schemas/colaboracionSchema.js"
 import ColectivoModel from "../schemas/colectivoSchema.js"
 import HabilidadModel from "../schemas/habilidadSchema.js"
@@ -102,6 +103,11 @@ export default async function sembrarDatosDePrueba() {
         presentacion: "Desarrolladora frontend",
         cuentas: [{ nombreUsuario: "anagomez", tipo: TipoCuenta.GITHUB }],
         habilidades: [habilidades["javascript"], habilidades["react"]],
+        aceptaMensajeriaInterna: true,
+        mediosDeContacto: [
+          { tipo: TipoMedioContacto.EMAIL, valor: "ana.gomez@example.com" },
+          { tipo: TipoMedioContacto.WHATSAPP, valor: "+54 9 11 2345-6789" },
+        ],
       },
       {
         nombreFantasia: "lucho_dev",
@@ -123,6 +129,10 @@ export default async function sembrarDatosDePrueba() {
           { nombreUsuario: "solm", tipo: TipoCuenta.GITLAB },
         ],
         habilidades: [habilidades["python"], habilidades["sql"]],
+        aceptaMensajeriaInterna: true,
+        mediosDeContacto: [
+          { tipo: TipoMedioContacto.SMS, valor: "+54 9 341 456-7890" },
+        ],
       },
       {
         nombreFantasia: "anon123",
@@ -145,6 +155,12 @@ export default async function sembrarDatosDePrueba() {
         fechaInscripcion: new Date("2026-09-14T00:00:00.000Z"),
         personaColaboradora: personas["lucho_dev"],
         proyecto: proyectos["API de donaciones"],
+      },
+      {
+        fechaInscripcion: new Date("2026-09-16T00:00:00.000Z"),
+        esAnonima: true,
+        personaColaboradora: personas["sol.datos"],
+        proyecto: proyectos["Mapa de humedales"],
       },
     ],
   )
