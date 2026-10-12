@@ -65,6 +65,9 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
       `/proyectos/${proyecto.id}/perfiles`,
       {
         descripcion: "Desarrollador/a Rust",
+        unidadCompromiso: "HORAS_TOTALES",
+        cantidadHoras: 5,
+        modalidadesColaboracion: ["GRATUITA"],
         habilidadesRequeridas: [habilidad.id],
         habilidadesOpcionales: [habilidad.id],
       },

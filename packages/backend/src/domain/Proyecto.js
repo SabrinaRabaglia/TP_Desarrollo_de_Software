@@ -45,6 +45,34 @@ export default class Proyecto {
     }
   }
 
+  assertPuedeModificarPerfiles() {
+    if (this.proyectoCerrado()) {
+      throw new DomainRuleError(
+        "No se pueden modificar los perfiles de un proyecto cerrado.",
+      )
+    }
+  }
+
+  buscarPerfil(perfilId) {
+    return this.perfiles.find((perfil) => perfil.id === perfilId)
+  }
+
+  agregarPerfil(perfil) {
+    this.assertPuedeModificarPerfiles()
+    this.perfiles.push(perfil)
+    return this.perfiles.at(-1)
+  }
+
+  actualizarPerfil(perfil, datos) {
+    this.assertPuedeModificarPerfiles()
+    perfil.actualizar(datos)
+  }
+
+  eliminarPerfil(perfilId) {
+    this.assertPuedeModificarPerfiles()
+    this.perfiles = this.perfiles.filter((perfil) => perfil.id !== perfilId)
+  }
+
   agregarColaboracion(colaboracion) {
     this.colaboraciones.push(colaboracion)
   }
@@ -87,10 +115,4 @@ export default class Proyecto {
        )
       }
   }
-
-
-
-  
 }
-
-export { Proyecto }

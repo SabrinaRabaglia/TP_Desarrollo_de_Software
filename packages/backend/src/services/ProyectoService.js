@@ -1,5 +1,5 @@
 import { AlreadyExists, EntityNotFound, InvalidReference } from "../errors/ApplicationErrors.js"
-import { Proyecto } from "../domain/Proyecto.js"
+import Proyecto from "../domain/Proyecto.js"
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
 
 // Un documento de Mongoose no se puede esparcir con "...": sus campos son getters del prototipo.
@@ -107,25 +107,5 @@ export default class ProyectoService {
     await this.getById(id)
     await this.colaboracionRepository.deleteByProyecto(id)
     await this.proyectoRepository.delete(id)
-  }
-
-  crearPerfil = async (proyectoId, perfil) => {
-    const proyecto = await this.proyectoRepository.agregarPerfil(proyectoId, perfil)
-    if (!proyecto) {
-      throw new EntityNotFound("Proyecto no encontrado")
-    }
-    return proyecto
-  }
-
-  guardar = async (proyecto) => {
-    return await this.proyectoRepository.save(proyecto)
-  }
-
-  eliminarPerfil = async (proyectoId, perfilId) => {
-    const proyecto = await this.proyectoRepository.eliminarPerfil(proyectoId, perfilId)
-    if (!proyecto) {
-      throw new EntityNotFound("Proyecto no encontrado")
-    }
-    return proyecto
   }
 }

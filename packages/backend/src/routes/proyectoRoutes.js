@@ -40,7 +40,11 @@ const proyectoService = new ProyectoService(
 )
 const proyectoController = new ProyectoController(proyectoService)
 
-const perfilService = new PerfilService(proyectoService, habilidadService)
+const perfilService = new PerfilService(
+  proyectoService,
+  proyectoRepository,
+  habilidadService,
+)
 const perfilController = new PerfilController(perfilService)
 
 routes.post("/proyectos", proyectoController.create)
@@ -55,5 +59,4 @@ routes.get("/proyectos/:id/perfiles", validateId, perfilController.getAllByProye
 routes.get("/proyectos/:id/perfiles/:perfilId", validateId, perfilController.getById)
 routes.put("/proyectos/:id/perfiles/:perfilId", validateId, perfilController.update)
 routes.delete("/proyectos/:id/perfiles/:perfilId", validateId, perfilController.delete)
-routes.get("/perfiles", perfilController.getAll)
 export default routes

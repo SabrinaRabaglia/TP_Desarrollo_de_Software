@@ -14,7 +14,10 @@ import {
   EntityNotFound,
   InvalidReference,
 } from "../../../src/errors/ApplicationErrors.js"
-import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
+import {
+  DomainRuleError,
+  DomainValidationError,
+} from "../../../src/domain/errors/DomainErrors.js"
 import { UnidadCompromiso } from "../../../src/domain/enums/UnidadCompromiso.js"
 import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColaboracion.js"
 
@@ -25,12 +28,11 @@ describe("PerfilService", () => {
   let otroProyecto
   let habilidad1
   let habilidad2
-  let dtoPerfilValido
+  let datos
 
   beforeEach(async () => {
     const proyectoRepository = new ProyectoRepository()
     const colectivoRepository = new ColectivoRepository()
-    const tipoColectivoRepository = new TipoColectivoRepository()
     const habilidadRepository = new HabilidadRepository()
 
     proyectoRepository.deleteAll()
@@ -39,7 +41,7 @@ describe("PerfilService", () => {
 
     const colectivoService = new ColectivoService(
       colectivoRepository,
-      tipoColectivoRepository,
+      new TipoColectivoRepository(),
       proyectoRepository,
       new ProvinciaRepository(),
       new PaisRepository(),
@@ -50,7 +52,11 @@ describe("PerfilService", () => {
       colectivoService,
       new ColaboracionRepository(),
     )
-    service = new PerfilService(proyectoService, habilidadService)
+    service = new PerfilService(
+      proyectoService,
+      proyectoRepository,
+      habilidadService,
+    )
 
     const colectivo = await colectivoService.create({
       nombre: "Asamblea Ambiental",
@@ -79,7 +85,7 @@ describe("PerfilService", () => {
       descripcion: "Desarrollo con React",
     })
 
-    dtoPerfilValido = {
+    datos = {
       nombre: "Tester",
       descripcion: "Perfil de testing",
       unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
@@ -90,352 +96,181 @@ describe("PerfilService", () => {
     }
   })
 
-  describe("create", () => {
-    test("crea y embebe un perfil en el proyecto, resolviendo las habilidades", async () => {
-      const proyectoActualizado = await service.create(dtoPerfilValido, proyecto.id)
+  const perfilesDe = async (proyectoId) =>
+    (await proyectoService.getById(proyectoId)).perfiles
 
-      expect(proyectoActualizado.perfiles).toHaveLength(1)
-      const perfil = proyectoActualizado.perfiles[0]
-      expect(perfil.id).toBeDefined()
-      expect(perfil.nombre).toBe("Tester")
-      expect(perfil.descripcion).toBe("Perfil de testing")
+  describe("create", () => {
+    test("agrega el perfil al proyecto con las habilidades resueltas y lo devuelve", async () => {
+      const perfil = await service.create(proyecto.id, datos)
+
+      expect(perfil.id).toEqual(expect.any(String))
+      expect(perfil.descripcion).toBe(datos.descripcion)
       expect(perfil.habilidadesRequeridas).toEqual([habilidad1])
       expect(perfil.habilidadesOpcionales).toEqual([habilidad2])
+      expect(await perfilesDe(proyecto.id)).toEqual([perfil])
     })
 
-    test("permite crear dos perfiles idénticos en el mismo proyecto, con ids distintos", async () => {
-      await service.create(dtoPerfilValido, proyecto.id)
-      const actualizado = await service.create(dtoPerfilValido, proyecto.id)
+    test("permite dos perfiles iguales en el mismo proyecto, con ids distintos", async () => {
+      const primero = await service.create(proyecto.id, datos)
+      const segundo = await service.create(proyecto.id, datos)
 
-      expect(actualizado.perfiles).toHaveLength(2)
-      const [perfil1, perfil2] = actualizado.perfiles
-      expect(perfil1.id).not.toBe(perfil2.id)
-      expect(perfil1.descripcion).toBe(perfil2.descripcion)
-      expect(perfil1.habilidadesRequeridas).toEqual(perfil2.habilidadesRequeridas)
-    })
-
-    test("lanza EntityNotFound si el proyecto no existe", async () => {
-      await expect(
-        service.create(dtoPerfilValido, "proyecto-inexistente"),
-      ).rejects.toThrow(EntityNotFound)
-    })
-
-    test("lanza InvalidReference si una habilidad requerida no existe, sin crear el perfil", async () => {
-      await expect(
-        service.create(
-          { ...dtoPerfilValido, habilidadesRequeridas: ["habilidad-inexistente"] },
-          proyecto.id,
-        ),
-      ).rejects.toThrow(InvalidReference)
-
-      expect((await proyectoService.getById(proyecto.id)).perfiles).toHaveLength(0)
-    })
-
-    test("lanza InvalidReference si una habilidad opcional no existe, sin crear el perfil", async () => {
-      await expect(
-        service.create(
-          { ...dtoPerfilValido, habilidadesOpcionales: ["habilidad-inexistente"] },
-          proyecto.id,
-        ),
-      ).rejects.toThrow(InvalidReference)
-
-      expect((await proyectoService.getById(proyecto.id)).perfiles).toHaveLength(0)
-    })
-
-    test("lanza DomainValidationError si falta la descripción", async () => {
-      await expect(
-        service.create({ ...dtoPerfilValido, descripcion: undefined }, proyecto.id),
-      ).rejects.toThrow(DomainValidationError)
-    })
-
-    test("lanza DomainValidationError si no hay habilidades requeridas", async () => {
-      await expect(
-        service.create({ ...dtoPerfilValido, habilidadesRequeridas: [] }, proyecto.id),
-      ).rejects.toThrow(DomainValidationError)
-    })
-
-    test("lanza DomainValidationError si no hay habilidades opcionales", async () => {
-      await expect(
-        service.create({ ...dtoPerfilValido, habilidadesOpcionales: [] }, proyecto.id),
-      ).rejects.toThrow(DomainValidationError)
-    })
-
-    test("permite crear un perfil sin nombre, unidadCompromiso, cantidadHoras ni modalidades (son opcionales)", async () => {
-      const minimo = {
-        descripcion: dtoPerfilValido.descripcion,
-        habilidadesRequeridas: dtoPerfilValido.habilidadesRequeridas,
-        habilidadesOpcionales: dtoPerfilValido.habilidadesOpcionales,
-      }
-
-      const proyectoActualizado = await service.create(minimo, proyecto.id)
-
-      const perfil = proyectoActualizado.perfiles[0]
-      expect(perfil.nombre).toBeNull()
-      expect(perfil.unidadCompromiso).toBeNull()
-      expect(perfil.cantidadHoras).toBeNull()
-      expect(perfil.modalidadesColaboracion).toEqual([])
-    })
-  })
-
-  describe("getAllByProyectoId", () => {
-    test("devuelve solo los perfiles del proyecto indicado", async () => {
-      await service.create(dtoPerfilValido, proyecto.id)
-      await service.create(dtoPerfilValido, otroProyecto.id)
-
-      const perfiles = await service.getAllByProyectoId(proyecto.id)
-
-      expect(perfiles).toHaveLength(1)
-    })
-
-    test("devuelve un array vacío si el proyecto no tiene perfiles", async () => {
-      expect(await service.getAllByProyectoId(proyecto.id)).toEqual([])
+      expect(primero.id).not.toBe(segundo.id)
+      expect(await perfilesDe(proyecto.id)).toHaveLength(2)
     })
 
     test("lanza EntityNotFound si el proyecto no existe", async () => {
+      await expect(service.create("id-inexistente", datos)).rejects.toThrow(
+        EntityNotFound,
+      )
+    })
+
+    test.each(["habilidadesRequeridas", "habilidadesOpcionales"])(
+      "lanza InvalidReference si una de %s no existe, sin crear el perfil",
+      async (campo) => {
+        await expect(
+          service.create(proyecto.id, { ...datos, [campo]: ["inexistente"] }),
+        ).rejects.toThrow(InvalidReference)
+        expect(await perfilesDe(proyecto.id)).toEqual([])
+      },
+    )
+
+    test("lanza DomainValidationError si el perfil es inválido, sin crearlo", async () => {
       await expect(
-        service.getAllByProyectoId("proyecto-inexistente"),
-      ).rejects.toThrow(EntityNotFound)
+        service.create(proyecto.id, { ...datos, habilidadesRequeridas: [] }),
+      ).rejects.toThrow(DomainValidationError)
+      expect(await perfilesDe(proyecto.id)).toEqual([])
+    })
+
+    test("lanza DomainRuleError si el proyecto está cerrado", async () => {
+      await proyectoService.update(proyecto.id, { estado: "CERRADO" })
+
+      await expect(service.create(proyecto.id, datos)).rejects.toThrow(
+        DomainRuleError,
+      )
+      expect(await perfilesDe(proyecto.id)).toEqual([])
     })
   })
 
-  describe("getAll", () => {
-    test("devuelve los perfiles de todos los proyectos juntos", async () => {
-      await service.create(dtoPerfilValido, proyecto.id)
-      await service.create(dtoPerfilValido, proyecto.id)
-      await service.create(dtoPerfilValido, otroProyecto.id)
+  describe("consultas", () => {
+    test("getAllByProyectoId devuelve solo los perfiles de ese proyecto", async () => {
+      const perfil = await service.create(proyecto.id, datos)
+      await service.create(otroProyecto.id, datos)
 
-      expect(await service.getAll()).toHaveLength(3)
+      expect(await service.getAllByProyectoId(proyecto.id)).toEqual([perfil])
     })
 
-    test("devuelve un array vacío si no hay perfiles en ningún proyecto", async () => {
-      expect(await service.getAll()).toEqual([])
-    })
-  })
+    test("getById devuelve el perfil dentro de su proyecto", async () => {
+      const perfil = await service.create(proyecto.id, datos)
 
-  describe("getById", () => {
-    test("devuelve el perfil correspondiente dentro del proyecto", async () => {
-      const actualizado = await service.create(dtoPerfilValido, proyecto.id)
-      const perfilId = actualizado.perfiles[0].id
-
-      const perfil = await service.getById(proyecto.id, perfilId)
-
-      expect(perfil.id).toBe(perfilId)
-      expect(perfil.descripcion).toBe(dtoPerfilValido.descripcion)
+      expect(await service.getById(proyecto.id, perfil.id)).toBe(perfil)
     })
 
-    test("lanza EntityNotFound si el perfil no existe en ese proyecto", async () => {
-      await service.create(dtoPerfilValido, proyecto.id)
+    test("getById lanza EntityNotFound si el perfil es de otro proyecto", async () => {
+      const perfil = await service.create(otroProyecto.id, datos)
 
-      await expect(
-        service.getById(proyecto.id, "perfil-inexistente"),
-      ).rejects.toThrow(EntityNotFound)
-    })
-
-    test("lanza EntityNotFound si el perfil existe pero pertenece a otro proyecto", async () => {
-      const actualizado = await service.create(dtoPerfilValido, proyecto.id)
-      const perfilId = actualizado.perfiles[0].id
-
-      await expect(service.getById(otroProyecto.id, perfilId)).rejects.toThrow(
+      await expect(service.getById(proyecto.id, perfil.id)).rejects.toThrow(
         EntityNotFound,
       )
     })
 
     test("lanza EntityNotFound si el proyecto no existe", async () => {
       await expect(
-        service.getById("proyecto-inexistente", "cualquier-id"),
-      ).rejects.toThrow(EntityNotFound)
-    })
-  })
-
-  describe("delete", () => {
-    test("elimina el perfil del proyecto", async () => {
-      const actualizado = await service.create(dtoPerfilValido, proyecto.id)
-      const perfilId = actualizado.perfiles[0].id
-
-      await service.delete(proyecto.id, perfilId)
-
-      expect((await proyectoService.getById(proyecto.id)).perfiles).toEqual([])
-    })
-
-    test("al borrar un perfil duplicado, conserva el resto intactos", async () => {
-      await service.create(dtoPerfilValido, proyecto.id)
-      const actualizado = await service.create(dtoPerfilValido, proyecto.id)
-      const [aBorrar, aConservar] = actualizado.perfiles
-
-      await service.delete(proyecto.id, aBorrar.id)
-
-      const perfilesRestantes = (await proyectoService.getById(proyecto.id)).perfiles
-      expect(perfilesRestantes).toHaveLength(1)
-      expect(perfilesRestantes[0].id).toBe(aConservar.id)
-    })
-
-    test("lanza EntityNotFound si el perfil no existe en ese proyecto", async () => {
-      await service.create(dtoPerfilValido, proyecto.id)
-
-      await expect(
-        service.delete(proyecto.id, "perfil-inexistente"),
-      ).rejects.toThrow(EntityNotFound)
-    })
-
-    test("lanza EntityNotFound si el perfil existe pero pertenece a otro proyecto, sin borrarlo", async () => {
-      const actualizado = await service.create(dtoPerfilValido, proyecto.id)
-      const perfilId = actualizado.perfiles[0].id
-
-      await expect(service.delete(otroProyecto.id, perfilId)).rejects.toThrow(
-        EntityNotFound,
-      )
-      expect((await proyectoService.getById(proyecto.id)).perfiles).toHaveLength(1)
-    })
-
-    test("lanza EntityNotFound si el proyecto no existe", async () => {
-      await expect(
-        service.delete("proyecto-inexistente", "perfil-1"),
+        service.getAllByProyectoId("id-inexistente"),
       ).rejects.toThrow(EntityNotFound)
     })
   })
 
   describe("update", () => {
-    const actualizarYBuscar = async (proyectoId, perfilId, cambios) => {
-      const proyectoActualizado = await service.update(proyectoId, perfilId, cambios)
-      return proyectoActualizado.perfiles.find((p) => p.id === perfilId)
-    }
+    test("reemplaza los datos del perfil y lo devuelve", async () => {
+      const perfil = await service.create(proyecto.id, datos)
 
-    test("actualiza los campos de un perfil existente sin duplicarlo", async () => {
-      const creado = await service.create(dtoPerfilValido, proyecto.id)
-      const perfilId = creado.perfiles[0].id
-
-      const proyectoActualizado = await service.update(proyecto.id, perfilId, {
-        ...dtoPerfilValido,
+      const actualizado = await service.update(proyecto.id, perfil.id, {
+        ...datos,
+        nombre: undefined,
         descripcion: "Descripción actualizada",
         habilidadesRequeridas: [habilidad2.id],
         habilidadesOpcionales: [habilidad1.id],
       })
 
-      expect(proyectoActualizado.perfiles).toHaveLength(1)
-      const perfil = proyectoActualizado.perfiles[0]
-      expect(perfil.id).toBe(perfilId)
-      expect(perfil.descripcion).toBe("Descripción actualizada")
-      expect(perfil.habilidadesRequeridas).toEqual([habilidad2])
-      expect(perfil.habilidadesOpcionales).toEqual([habilidad1])
+      expect(actualizado.id).toBe(perfil.id)
+      expect(actualizado.nombre).toBeNull()
+      expect(actualizado.descripcion).toBe("Descripción actualizada")
+      expect(actualizado.habilidadesRequeridas).toEqual([habilidad2])
+      expect(actualizado.habilidadesOpcionales).toEqual([habilidad1])
+      expect(await perfilesDe(proyecto.id)).toEqual([actualizado])
     })
 
-    test("campos no obligatorios: si no se envían, el perfil queda con ellos en null/vacío", async () => {
-      const creado = await service.create(dtoPerfilValido, proyecto.id)
-      const perfilId = creado.perfiles[0].id
-
-      const perfil = await actualizarYBuscar(proyecto.id, perfilId, {
-        descripcion: "Sin campos opcionales",
-        habilidadesRequeridas: [habilidad1.id],
-        habilidadesOpcionales: [habilidad2.id],
-      })
-
-      expect(perfil.nombre).toBeNull()
-      expect(perfil.unidadCompromiso).toBeNull()
-      expect(perfil.cantidadHoras).toBeNull()
-      expect(perfil.modalidadesColaboracion).toBeNull()
-    })
-
-    test("campos no obligatorios: se pueden actualizar a un valor nuevo", async () => {
-      const creado = await service.create(dtoPerfilValido, proyecto.id)
-      const perfilId = creado.perfiles[0].id
-
-      const perfil = await actualizarYBuscar(proyecto.id, perfilId, {
-        nombre: "Nuevo nombre",
-        descripcion: "Con campos opcionales nuevos",
-        unidadCompromiso: UnidadCompromiso.HORAS_TOTALES,
-        cantidadHoras: 20,
-        modalidadesColaboracion: [ModalidadColaboracion.CON_INCENTIVO_ECONOMICO],
-        habilidadesRequeridas: [habilidad1.id],
-        habilidadesOpcionales: [habilidad2.id],
-      })
-
-      expect(perfil.nombre).toBe("Nuevo nombre")
-      expect(perfil.unidadCompromiso).toBe(UnidadCompromiso.HORAS_TOTALES)
-      expect(perfil.cantidadHoras).toBe(20)
-      expect(perfil.modalidadesColaboracion).toEqual([
-        ModalidadColaboracion.CON_INCENTIVO_ECONOMICO,
-      ])
-    })
-
-    test("rechaza actualizar la descripción (obligatoria) a null, sin modificar el perfil", async () => {
-      const creado = await service.create(dtoPerfilValido, proyecto.id)
-      const perfilId = creado.perfiles[0].id
+    test.each([
+      [
+        "DomainValidationError",
+        DomainValidationError,
+        { habilidadesOpcionales: [] },
+      ],
+      [
+        "InvalidReference",
+        InvalidReference,
+        { habilidadesRequeridas: ["inexistente"] },
+      ],
+    ])("lanza %s sin modificar el perfil", async (_nombre, error, cambio) => {
+      const perfil = await service.create(proyecto.id, datos)
+      const antes = { ...perfil }
 
       await expect(
-        service.update(proyecto.id, perfilId, {
-          ...dtoPerfilValido,
-          descripcion: null,
-        }),
-      ).rejects.toThrow(DomainValidationError)
-
-      const perfil = (await proyectoService.getById(proyecto.id)).perfiles[0]
-      expect(perfil.descripcion).toBe(dtoPerfilValido.descripcion)
+        service.update(proyecto.id, perfil.id, { ...datos, ...cambio }),
+      ).rejects.toThrow(error)
+      expect({ ...(await service.getById(proyecto.id, perfil.id)) }).toEqual(
+        antes,
+      )
     })
 
-    test("rechaza vaciar las habilidades requeridas (obligatorias), sin modificar el perfil", async () => {
-      const creado = await service.create(dtoPerfilValido, proyecto.id)
-      const perfilId = creado.perfiles[0].id
+    test("lanza EntityNotFound si el perfil es de otro proyecto", async () => {
+      const perfil = await service.create(otroProyecto.id, datos)
 
       await expect(
-        service.update(proyecto.id, perfilId, {
-          ...dtoPerfilValido,
-          habilidadesRequeridas: [],
-        }),
-      ).rejects.toThrow(DomainValidationError)
-
-      const perfil = (await proyectoService.getById(proyecto.id)).perfiles[0]
-      expect(perfil.habilidadesRequeridas).toEqual([habilidad1])
-    })
-
-    test("rechaza vaciar las habilidades opcionales (obligatorias), sin modificar el perfil", async () => {
-      const creado = await service.create(dtoPerfilValido, proyecto.id)
-      const perfilId = creado.perfiles[0].id
-
-      await expect(
-        service.update(proyecto.id, perfilId, {
-          ...dtoPerfilValido,
-          habilidadesOpcionales: [],
-        }),
-      ).rejects.toThrow(DomainValidationError)
-
-      const perfil = (await proyectoService.getById(proyecto.id)).perfiles[0]
-      expect(perfil.habilidadesOpcionales).toEqual([habilidad2])
-    })
-
-    test("lanza InvalidReference si una habilidad nueva no existe, sin modificar el perfil", async () => {
-      const creado = await service.create(dtoPerfilValido, proyecto.id)
-      const perfilId = creado.perfiles[0].id
-
-      await expect(
-        service.update(proyecto.id, perfilId, {
-          ...dtoPerfilValido,
-          habilidadesRequeridas: ["habilidad-inexistente"],
-        }),
-      ).rejects.toThrow(InvalidReference)
-
-      const perfil = (await proyectoService.getById(proyecto.id)).perfiles[0]
-      expect(perfil.habilidadesRequeridas).toEqual([habilidad1])
-    })
-
-    test("lanza EntityNotFound si el perfil no existe en ese proyecto", async () => {
-      await expect(
-        service.update(proyecto.id, "perfil-inexistente", dtoPerfilValido),
+        service.update(proyecto.id, perfil.id, datos),
       ).rejects.toThrow(EntityNotFound)
     })
 
-    test("lanza EntityNotFound si el perfil existe pero pertenece a otro proyecto", async () => {
-      const creado = await service.create(dtoPerfilValido, proyecto.id)
-      const perfilId = creado.perfiles[0].id
+    test("lanza DomainRuleError si el proyecto está cerrado", async () => {
+      const perfil = await service.create(proyecto.id, datos)
+      await proyectoService.update(proyecto.id, { estado: "CERRADO" })
 
       await expect(
-        service.update(otroProyecto.id, perfilId, dtoPerfilValido),
-      ).rejects.toThrow(EntityNotFound)
+        service.update(proyecto.id, perfil.id, { ...datos, cantidadHoras: 20 }),
+      ).rejects.toThrow(DomainRuleError)
+      expect(
+        (await service.getById(proyecto.id, perfil.id)).cantidadHoras,
+      ).toBe(5)
+    })
+  })
+
+  describe("delete", () => {
+    test("elimina el perfil y conserva los demás", async () => {
+      const perfil = await service.create(proyecto.id, datos)
+      const otro = await service.create(proyecto.id, datos)
+
+      await service.delete(proyecto.id, perfil.id)
+
+      expect(await perfilesDe(proyecto.id)).toEqual([otro])
     })
 
-    test("lanza EntityNotFound si el proyecto no existe", async () => {
-      await expect(
-        service.update("proyecto-inexistente", "perfil-1", dtoPerfilValido),
-      ).rejects.toThrow(EntityNotFound)
+    test("lanza EntityNotFound si el perfil es de otro proyecto, sin borrarlo", async () => {
+      const perfil = await service.create(otroProyecto.id, datos)
+
+      await expect(service.delete(proyecto.id, perfil.id)).rejects.toThrow(
+        EntityNotFound,
+      )
+      expect(await perfilesDe(otroProyecto.id)).toEqual([perfil])
+    })
+
+    test("lanza DomainRuleError si el proyecto está cerrado", async () => {
+      const perfil = await service.create(proyecto.id, datos)
+      await proyectoService.update(proyecto.id, { estado: "CERRADO" })
+
+      await expect(service.delete(proyecto.id, perfil.id)).rejects.toThrow(
+        DomainRuleError,
+      )
+      expect(await perfilesDe(proyecto.id)).toEqual([perfil])
     })
   })
 })

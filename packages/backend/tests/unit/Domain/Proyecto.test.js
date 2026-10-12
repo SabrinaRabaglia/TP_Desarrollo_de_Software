@@ -1,5 +1,8 @@
 import { describe, expect, test } from "@jest/globals"
 import Proyecto from "../../../src/domain/Proyecto.js"
+import Perfil from "../../../src/domain/Perfil.js"
+import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColaboracion.js"
+import { UnidadCompromiso } from "../../../src/domain/enums/UnidadCompromiso.js"
 import TipoColectivo from "../../../src/domain/TipoColectivo.js"
 import { EstadoProyecto } from "../../../src/domain/enums/EstadoProyecto.js"
 import Colectivo from "../../../src/domain/Colectivo.js"
@@ -149,5 +152,65 @@ describe("Proyecto", () => {
           new Date("2026-01-01"),
         ),
     ).toThrow(DomainValidationError)
+  })
+
+  describe("perfiles", () => {
+    const crearPerfil = (descripcion) =>
+      new Perfil({
+        descripcion,
+        unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
+        cantidadHoras: 5,
+        modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
+        habilidadesRequeridas: ["cypress"],
+        habilidadesOpcionales: ["soap_ui"],
+      })
+
+    const crearProyectoConPerfil = () => {
+      const proyecto = new Proyecto("Mapa", "Mapa de humedales", colectivo)
+      const perfil = proyecto.agregarPerfil(crearPerfil("Tester"))
+      perfil.id = "perfil-1"
+      return { proyecto, perfil }
+    }
+
+    test("agregar un perfil lo suma al proyecto y lo devuelve", () => {
+      const { proyecto, perfil } = crearProyectoConPerfil()
+
+      expect(proyecto.perfiles).toEqual([perfil])
+      expect(proyecto.buscarPerfil("perfil-1")).toBe(perfil)
+      expect(proyecto.buscarPerfil("otro")).toBeUndefined()
+    })
+
+    test("actualizar un perfil delega en el perfil", () => {
+      const { proyecto, perfil } = crearProyectoConPerfil()
+
+      proyecto.actualizarPerfil(perfil, { ...crearPerfil("Analista") })
+
+      expect(perfil.descripcion).toBe("Analista")
+    })
+
+    test("eliminar un perfil conserva los demás", () => {
+      const { proyecto } = crearProyectoConPerfil()
+      const otro = proyecto.agregarPerfil(crearPerfil("Analista"))
+      otro.id = "perfil-2"
+
+      proyecto.eliminarPerfil("perfil-1")
+
+      expect(proyecto.perfiles).toEqual([otro])
+    })
+
+    test("un proyecto cerrado no admite agregar, actualizar ni eliminar perfiles", () => {
+      const { proyecto, perfil } = crearProyectoConPerfil()
+      proyecto.cerrar()
+
+      expect(() => proyecto.agregarPerfil(crearPerfil("Analista"))).toThrow(
+        DomainRuleError,
+      )
+      expect(() =>
+        proyecto.actualizarPerfil(perfil, { ...crearPerfil("Analista") }),
+      ).toThrow(DomainRuleError)
+      expect(() => proyecto.eliminarPerfil("perfil-1")).toThrow(DomainRuleError)
+      expect(proyecto.perfiles).toEqual([perfil])
+      expect(perfil.descripcion).toBe("Tester")
+    })
   })
 })

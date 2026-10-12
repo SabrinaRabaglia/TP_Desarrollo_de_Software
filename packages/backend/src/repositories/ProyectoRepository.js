@@ -25,26 +25,8 @@ export default class ProyectoRepository {
   async save(proyecto) {
     return await guardar(this.model, proyecto)
   }
-  
+
   async delete(id) {
     return await this.model.findByIdAndDelete(id)
-  }
-
-  async agregarPerfil(proyectoId, perfil) {
-    const proyecto = await this.model.findById(proyectoId)
-    if (!proyecto) {
-      return null
-    }
-    proyecto.perfiles.push(perfil)
-    return await proyecto.save()
-  }
-
-  async eliminarPerfil(proyectoId, perfilId) {
-    const proyecto = await this.model.findById(proyectoId)
-    if (!proyecto) {
-      return null
-    }
-    proyecto.perfiles.pull(perfilId)
-    return await proyecto.save()
   }
 }

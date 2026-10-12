@@ -28,6 +28,9 @@ export default class ProyectoRepository {
 
   async save(nuevo) {
     nuevo.id ??= randomUUID()
+    for (const perfil of nuevo.perfiles ?? []) {
+      perfil.id ??= randomUUID()
+    }
     const indice = ProyectoRepository.proyectos.findIndex((p) => p.id === nuevo.id)
     if (indice === -1) {
       ProyectoRepository.proyectos.push(nuevo)
@@ -40,29 +43,8 @@ export default class ProyectoRepository {
   async delete(id) {
     ProyectoRepository.proyectos = ProyectoRepository.proyectos.filter((c) => c.id !== id)
   }
-
-  async agregarPerfil(proyectoId, perfil) {
-    const proyecto = ProyectoRepository.proyectos.find((p) => p.id === proyectoId)
-    if (!proyecto) {
-      return null
-    }
-    perfil.id ??= randomUUID()
-    proyecto.perfiles ??= []
-    proyecto.perfiles.push(perfil)
-    return proyecto
-  }
-
-  async eliminarPerfil(proyectoId, perfilId) {
-    const proyecto = ProyectoRepository.proyectos.find((p) => p.id === proyectoId)
-    if (!proyecto) {
-      return null
-    }
-    proyecto.perfiles = (proyecto.perfiles ?? []).filter((p) => p.id !== perfilId)
-    return proyecto
-  }
-
   deleteAll() {
-   ProyectoRepository.proyectos.length = 0;
+   ProyectoRepository.proyectos.length = 0; 
 }
 }
 
