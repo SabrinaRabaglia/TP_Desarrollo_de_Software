@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, expect, test } from "@jest/globals"
 import { once } from "node:events"
 import app from "../../src/app.js"
+import ColaboracionModel from "../../src/schemas/colaboracionSchema.js"
 import ProvinciaModel from "../../src/schemas/provinciaSchema.js"
 import { conectar, desconectar } from "./mongo.js"
 
@@ -77,13 +78,44 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
       fechaInscripcion: expect.any(String),
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
+      esAnonima: false,
       personaColaboradora: {
         id: persona.id,
         nombreFantasia: persona.nombreFantasia,
       },
       proyecto: { id: proyecto.id, titulo: proyecto.titulo },
     })
-    expect(await request("GET", "/colaboraciones")).toEqual([colaboracion])
+    const personaAnonima = await request(
+      "POST",
+      "/personas-colaboradoras",
+      { ...personaDatos, nombreFantasia: "Persona anónima" },
+      201,
+    )
+    const anonima = await request(
+      "POST",
+      "/colaboraciones",
+      {
+        proyectoId: proyecto.id,
+        personaColaboradoraId: personaAnonima.id,
+        esAnonima: true,
+      },
+      201,
+    )
+    expect(anonima).toEqual({
+      ...colaboracion,
+      id: expect.any(String),
+      fechaInscripcion: expect.any(String),
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
+      esAnonima: true,
+      personaColaboradora: null,
+    })
+    const guardada = await ColaboracionModel.findById(anonima.id)
+    expect(guardada.personaColaboradora.toString()).toBe(personaAnonima.id)
+    expect(await request("GET", "/colaboraciones")).toEqual([
+      colaboracion,
+      anonima,
+    ])
     for (const ruta of [
       `/proyectos/${proyecto.id}`,
       `/personas-colaboradoras/${persona.id}`,
@@ -144,7 +176,10 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
       },
       409,
     )
-    expect(await request("GET", "/colaboraciones")).toEqual([colaboracion])
+    expect(await request("GET", "/colaboraciones")).toEqual([
+      colaboracion,
+      anonima,
+    ])
 
     const borrado = await fetch(`${base}/proyectos/${proyecto.id}`, {
       method: "DELETE",

@@ -5,6 +5,7 @@ import opcionesJSON from "./opcionesJSON.js"
 const colaboracionSchema = new mongoose.Schema(
   {
     fechaInscripcion: { type: Date, required: true },
+    esAnonima: { type: Boolean, required: true, default: false },
     personaColaboradora: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "PersonaColaboradora",

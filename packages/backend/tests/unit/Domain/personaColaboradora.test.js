@@ -18,6 +18,8 @@ describe("PersonaColaboradora", () => {
     expect(persona.cuentas).toEqual([])
     expect(persona.habilidades).toEqual([])
     expect(persona.colaboraciones).toEqual([])
+    expect(persona.aceptaMensajeriaInterna).toBe(false)
+    expect(persona.mediosDeContacto).toEqual([])
   })
 
   test("se construye con todos los datos opcionales cuando se los pasan", () => {
@@ -29,6 +31,8 @@ describe("PersonaColaboradora", () => {
     const presentacion = "Desarrollador frontend"
     const cuentas = [cuenta]
     const habilidades = [habilidad]
+    const aceptaMensajeriaInterna = true
+    const mediosDeContacto = [{ tipo: "EMAIL", valor: "juan@example.com" }]
 
     const persona = new PersonaColaboradora(
       "anon123",
@@ -38,6 +42,8 @@ describe("PersonaColaboradora", () => {
       presentacion,
       cuentas,
       habilidades,
+      aceptaMensajeriaInterna,
+      mediosDeContacto,
     )
 
     expect(persona.nombre).toBe("Juan")
@@ -46,6 +52,8 @@ describe("PersonaColaboradora", () => {
     expect(persona.presentacion).toBe("Desarrollador frontend")
     expect(persona.cuentas).toEqual([cuenta])
     expect(persona.habilidades).toEqual([habilidad])
+    expect(persona.aceptaMensajeriaInterna).toBe(true)
+    expect(persona.mediosDeContacto).toEqual(mediosDeContacto)
   })
 
   test("no asigna id: eso corresponde a persistencia", () => {

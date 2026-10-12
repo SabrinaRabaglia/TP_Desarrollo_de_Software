@@ -56,6 +56,26 @@ describe("PersonaColaboradoraController", () => {
       expect(res.status).toHaveBeenCalledWith(201)
     })
 
+    test("con body válido incluyendo aceptaMensajeriaInterna y mediosDeContacto, delega en el service", async () => {
+      const service = crearPersonaColaboradoraServiceFalso()
+      service.create.mockReturnValue({ id: "1" })
+      const controller = new PersonaColaboradoraController(service)
+      const req = {
+        body: {
+          nombreFantasia: "anon123",
+          aceptaMensajeriaInterna: true,
+          mediosDeContacto: [{ tipo: "EMAIL", valor: "test@example.com" }],
+        },
+      }
+      const res = crearResFalso()
+      const next = jest.fn()
+
+      await controller.create(req, res, next)
+
+      expect(service.create).toHaveBeenCalledWith(req.body)
+      expect(res.status).toHaveBeenCalledWith(201)
+    })
+
     test("sin nombreFantasia, tira BadRequestError y no llama al service", async () => {
       const service = crearPersonaColaboradoraServiceFalso()
       const controller = new PersonaColaboradoraController(service)
@@ -63,10 +83,9 @@ describe("PersonaColaboradoraController", () => {
       const res = crearResFalso()
       const next = jest.fn()
 
-
-        await controller.create(req, res, next);
-        expect(next).toHaveBeenCalledWith(expect.any(BadRequestError));
-        expect(service.create).not.toHaveBeenCalled();
+      await controller.create(req, res, next)
+      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
+      expect(service.create).not.toHaveBeenCalled()
     })
 
     test.each(["react", "b8c65bfd-1234-4a12-8b12-abcdef123456"])("con un id de habilidad %s que no tiene formato ObjectId, tira BadRequestError", async (idInvalido) => {
@@ -78,9 +97,9 @@ describe("PersonaColaboradoraController", () => {
       const res = crearResFalso()
       const next = jest.fn()
 
-      await controller.create(req, res, next);
-        expect(next).toHaveBeenCalledWith(expect.any(BadRequestError));
-        expect(service.create).not.toHaveBeenCalled();
+      await controller.create(req, res, next)
+      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
+      expect(service.create).not.toHaveBeenCalled()
     })
 
     test("con una cuenta de tipo inválido (no GITHUB ni GITLAB), tira BadRequestError", async () => {
@@ -95,9 +114,26 @@ describe("PersonaColaboradoraController", () => {
       const res = crearResFalso()
       const next = jest.fn()
 
-      await controller.create(req, res, next);
-        expect(next).toHaveBeenCalledWith(expect.any(BadRequestError));
-        expect(service.create).not.toHaveBeenCalled();
+      await controller.create(req, res, next)
+      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
+      expect(service.create).not.toHaveBeenCalled()
+    })
+
+    test("con un medio de contacto de tipo inválido, tira BadRequestError", async () => {
+      const service = crearPersonaColaboradoraServiceFalso()
+      const controller = new PersonaColaboradoraController(service)
+      const req = {
+        body: {
+          nombreFantasia: "anon123",
+          mediosDeContacto: [{ tipo: "TELEGRAM_FALSO", valor: "12345" }],
+        },
+      }
+      const res = crearResFalso()
+      const next = jest.fn()
+
+      await controller.create(req, res, next)
+      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
+      expect(service.create).not.toHaveBeenCalled()
     })
 
     test("con un campo extra no declarado en el schema, tira BadRequestError", async () => {
@@ -109,9 +145,9 @@ describe("PersonaColaboradoraController", () => {
       const res = crearResFalso()
       const next = jest.fn()
 
-      await controller.create(req, res, next);
-        expect(next).toHaveBeenCalledWith(expect.any(BadRequestError));
-        expect(service.create).not.toHaveBeenCalled();
+      await controller.create(req, res, next)
+      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
+      expect(service.create).not.toHaveBeenCalled()
     })
   })
 
@@ -142,9 +178,9 @@ describe("PersonaColaboradoraController", () => {
       const res = crearResFalso()
       const next = jest.fn()
 
-      await controller.update(req, res, next);
-        expect(next).toHaveBeenCalledWith(expect.any(BadRequestError));
-        expect(service.update).not.toHaveBeenCalled();
+      await controller.update(req, res, next)
+      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
+      expect(service.update).not.toHaveBeenCalled()
     })
   })
 

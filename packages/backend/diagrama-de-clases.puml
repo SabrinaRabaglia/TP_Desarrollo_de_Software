@@ -22,7 +22,11 @@ enum EstadoProyecto {
     PUBLICADO
     CERRADO
 }
-
+enum TipoMedioContacto{
+    EMAIL
+    WHATSAPP
+    SMS
+}
 class Colectivo {
     nombre: String
     descripcion: String
@@ -52,7 +56,10 @@ class Proyecto {
     proyectoCerrado(): boolean
 
 }
-
+class MedioDeContacto{
+    tipo: TipoMedioContacto
+    valor: String
+}
 class PersonaColaboradora {
     nombreFantasia: String
     nombre: String
@@ -62,10 +69,13 @@ class PersonaColaboradora {
     cuentas: Cuenta[]
     habilidades: Habilidad[]
     colaboraciones: Colaboracion[]
+    aceptaMensajeriaInterna: Boolean
+    mediosDeContacto: MedioDeContacto[]
 }
 
 class Colaboracion {
     fechainscripcion: Date
+    esAnonima :  boolean
     personaColaboradora: PersonaColaboradora
     proyecto: Proyecto
 }
@@ -107,6 +117,8 @@ Colaboracion --> Proyecto
 PersonaColaboradora --> Cuenta 
 PersonaColaboradora --> Habilidad
 PersonaColaboradora --> Colaboracion 
+PersonaColaboradora --> MedioDeContacto
+MedioDeContacto --> TipoMedioContacto
 Proyecto --> UnidadCompromiso 
 Proyecto --> ModalidadColaboracion 
 Proyecto --> EstadoProyecto 

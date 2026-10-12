@@ -40,10 +40,12 @@ describe("PersonaColaboradoraService", () => {
       nombre: "Ana",
       cuentas: [{ nombreUsuario: "anagomez", tipo: "GITHUB" }],
       habilidades: [habilidad.id],
+      aceptaMensajeriaInterna: true,
+      mediosDeContacto: [{ tipo: "EMAIL", valor: "ana@example.com" }],
     }
   })
 
-  test("crea y guarda una persona con cuentas y habilidades resueltas", async () => {
+  test("crea y guarda una persona con cuentas, habilidades y datos de contacto resueltos", async () => {
     const persona = await service.create(datos)
 
     expect(persona).toBeInstanceOf(PersonaColaboradora)
@@ -51,6 +53,8 @@ describe("PersonaColaboradoraService", () => {
     expect(persona.cuentas[0]).toBeInstanceOf(Cuenta)
     expect(persona.cuentas).toEqual(datos.cuentas)
     expect(persona.habilidades).toEqual([habilidad])
+    expect(persona.aceptaMensajeriaInterna).toBe(true)
+    expect(persona.mediosDeContacto).toEqual(datos.mediosDeContacto)
     expect(await repository.getAll()).toEqual([persona])
   })
 
@@ -77,6 +81,8 @@ describe("PersonaColaboradoraService", () => {
     expect(actualizada.cuentas[0]).toBeInstanceOf(Cuenta)
     expect(actualizada.cuentas).toEqual(datos.cuentas)
     expect(actualizada.habilidades).toEqual([habilidad])
+    expect(actualizada.aceptaMensajeriaInterna).toBe(true)
+    expect(actualizada.mediosDeContacto).toEqual(datos.mediosDeContacto)
     expect(await repository.findById(id)).toBe(actualizada)
     expect(await repository.getAll()).toHaveLength(1)
   })
@@ -104,6 +110,36 @@ describe("PersonaColaboradoraService", () => {
         ...datos,
         nombreFantasia: "",
         presentacion: "No debe guardarse",
+      }),
+    ).rejects.toThrow(DomainValidationError)
+
+    expect(await repository.findById(persona.id)).toEqual(antes)
+  })
+
+  test("actualizar sin medios de contacto conserva los guardados y con una lista vacía los borra", async () => {
+    const persona = await service.create(datos)
+    const conservada = await service.update(persona.id, {
+      ...datos,
+      mediosDeContacto: undefined,
+    })
+    expect(conservada.mediosDeContacto).toEqual(datos.mediosDeContacto)
+
+    const sinContacto = await service.update(persona.id, {
+      ...datos,
+      mediosDeContacto: [],
+    })
+    expect(sinContacto.mediosDeContacto).toEqual([])
+  })
+
+  test("rechaza un medio de contacto inválido al actualizar sin modificar la persona", async () => {
+    const persona = await service.create(datos)
+    const antes = { ...persona }
+
+    await expect(
+      service.update(persona.id, {
+        ...datos,
+        presentacion: "No debe guardarse",
+        mediosDeContacto: [{ tipo: "EMAIL", valor: "no-es-un-email" }],
       }),
     ).rejects.toThrow(DomainValidationError)
 

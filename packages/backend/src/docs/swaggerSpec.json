@@ -330,6 +330,17 @@
                 ],
                 "habilidades": [
                   "64f1a2b3c4d5e6f7a8b9c001"
+                ],
+                "aceptaMensajeriaInterna": true,
+                "mediosDeContacto": [
+                  {
+                    "tipo": "EMAIL",
+                    "valor": "ana@example.com"
+                  },
+                  {
+                    "tipo": "WHATSAPP",
+                    "valor": "+54 9 11 1234-5678"
+                  }
                 ]
               }
             }
@@ -401,7 +412,7 @@
           "Personas colaboradoras"
         ],
         "summary": "Actualizar persona colaboradora",
-        "description": "Reemplaza los datos de la persona. Los campos opcionales omitidos quedan en `null` (o lista vacía).",
+        "description": "Reemplaza los datos de la persona. Los campos opcionales omitidos quedan en `null` (o lista vacía), salvo `mediosDeContacto`, que se conserva si se omite.",
         "operationId": "actualizarPersonaColaboradora",
         "parameters": [
           {
@@ -431,6 +442,17 @@
                 ],
                 "habilidades": [
                   "64f1a2b3c4d5e6f7a8b9c001"
+                ],
+                "aceptaMensajeriaInterna": true,
+                "mediosDeContacto": [
+                  {
+                    "tipo": "EMAIL",
+                    "valor": "ana@example.com"
+                  },
+                  {
+                    "tipo": "WHATSAPP",
+                    "valor": "+54 9 11 1234-5678"
+                  }
                 ]
               }
             }
@@ -1051,7 +1073,8 @@
               },
               "example": {
                 "personaColaboradoraId": "64f1a2b3c4d5e6f7a8b9c003",
-                "proyectoId": "64f1a2b3c4d5e6f7a8b9c004"
+                "proyectoId": "64f1a2b3c4d5e6f7a8b9c004",
+                "esAnonima": false
               }
             }
           }
@@ -1181,6 +1204,14 @@
           "GITLAB"
         ],
         "description": "Plataforma de la cuenta."
+      },
+      "TipoMedioContacto": {
+        "type": "string",
+        "enum": [
+          "EMAIL",
+          "WHATSAPP",
+          "SMS"
+        ]
       },
       "UnidadCompromiso": {
         "type": "string",
@@ -1361,6 +1392,24 @@
           }
         }
       },
+      "MedioDeContactoInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tipo",
+          "valor"
+        ],
+        "description": "Un email válido, o un teléfono de 8 a 15 dígitos con + opcional para WhatsApp y SMS. Se ignoran espacios, guiones, puntos y paréntesis.",
+        "properties": {
+          "tipo": {
+            "$ref": "#/components/schemas/TipoMedioContacto"
+          },
+          "valor": {
+            "type": "string",
+            "example": "ana@example.com"
+          }
+        }
+      },
       "PersonaColaboradoraInput": {
         "type": "object",
         "additionalProperties": false,
@@ -1398,6 +1447,19 @@
             "description": "Ids de habilidades existentes.",
             "items": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          "aceptaMensajeriaInterna": {
+            "type": "boolean",
+            "default": false,
+            "description": "Si acepta ser contactada por la mensajería interna cuando haya proyectos relacionados con sus habilidades."
+          },
+          "mediosDeContacto": {
+            "type": "array",
+            "writeOnly": true,
+            "description": "Se guardan internamente y no se devuelven en ninguna respuesta. En un PUT, si se omite se conservan los medios guardados y una lista vacía los borra.",
+            "items": {
+              "$ref": "#/components/schemas/MedioDeContactoInput"
             }
           }
         }
@@ -1444,6 +1506,9 @@
             "items": {
               "$ref": "#/components/schemas/Habilidad"
             }
+          },
+          "aceptaMensajeriaInterna": {
+            "type": "boolean"
           }
         }
       },
@@ -1781,6 +1846,11 @@
           },
           "proyectoId": {
             "$ref": "#/components/schemas/ObjectId"
+          },
+          "esAnonima": {
+            "type": "boolean",
+            "default": false,
+            "description": "Si es `true`, la colaboración se registra igual, pero las respuestas no indican quién la realizó."
           }
         }
       },
@@ -1790,7 +1860,8 @@
           "id",
           "fechaInscripcion",
           "personaColaboradora",
-          "proyecto"
+          "proyecto",
+          "esAnonima"
         ],
         "properties": {
           "id": {
@@ -1799,6 +1870,9 @@
           "fechaInscripcion": {
             "type": "string",
             "format": "date-time"
+          },
+          "esAnonima": {
+            "type": "boolean"
           },
           "personaColaboradora": {
             "type": "object",
@@ -1813,7 +1887,9 @@
               "nombreFantasia": {
                 "type": "string"
               }
-            }
+            },
+            "nullable": true,
+            "description": "`null` si la colaboración es anónima."
           },
           "proyecto": {
             "type": "object",
