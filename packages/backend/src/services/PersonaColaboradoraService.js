@@ -7,10 +7,12 @@ export default class PersonaColaboradoraService {
     personaColaboradoraRepository,
     habilidadService,
     colaboracionRepository,
+    proyectoRepository,
   ) {
     this.personaColaboradoraRepository = personaColaboradoraRepository
     this.habilidadService = habilidadService
     this.colaboracionRepository = colaboracionRepository
+    this.proyectoRepository = proyectoRepository
   }
 
   buscarHabilidades = async (ids) => {
@@ -90,6 +92,18 @@ export default class PersonaColaboradoraService {
 
   getAll = async () => {
     return await this.personaColaboradoraRepository.getAll()
+  }
+
+  getAllByPerfil = async (perfilId) => {
+    const perfil = await this.proyectoRepository.findPerfilById(perfilId);
+
+    if (!perfil) {
+        throw new EntityNotFound("Perfil no encontrado");
+    }
+
+    return await this.personaColaboradoraRepository.findByHabilidadesRequeridas(
+        perfil.habilidadesRequeridas
+    )
   }
 
   getById = async (id) => {

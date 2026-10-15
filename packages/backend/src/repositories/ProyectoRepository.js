@@ -1,4 +1,5 @@
 import ProyectoModel from "../schemas/proyectoSchema.js"
+import mongoose from "mongoose"
 import guardar from "./guardar.js"
 
 export default class ProyectoRepository {
@@ -46,5 +47,31 @@ export default class ProyectoRepository {
     }
     proyecto.perfiles.pull(perfilId)
     return await proyecto.save()
+  }
+
+  async findPerfilById(perfilId) {
+    const id = new mongoose.Types.ObjectId(perfilId);
+    const proyecto = await this.model.findOne(
+        { "perfiles._id": id },
+        {
+            perfiles: {
+                $elemMatch: { _id: id }
+            }
+        }
+    );
+
+    return proyecto?.perfiles[0] ?? null;
+  }
+
+  async findAllByHabilidades(habilidadesIds) {
+  const objectIds = habilidadesIds.map(id => new mongoose.Types.ObjectId(id));
+
+  return await this.model.find({
+    perfiles: {
+      $elemMatch: {
+        habilidadesRequeridas: { $all: objectIds }
+      }
+    }
+  })
   }
 }
