@@ -22,6 +22,7 @@ export default class PersonaColaboradora {
     this.aceptaMensajeriaInterna = aceptaMensajeriaInterna
     this.mediosDeContacto = mediosDeContacto
     this.colaboraciones = []
+    this.notificacionesRecibidas = []
   }
 
   static validarDatos({ nombreFantasia }) {
@@ -46,5 +47,9 @@ export default class PersonaColaboradora {
   
   agregarMedioDeContacto(medio){
     this.mediosDeContacto.push(medio)
+  }
+
+  agregarNotificacion(notificacion){
+    this.notificacionesRecibidas.push(notificacion)
   }
 }

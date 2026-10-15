@@ -9,6 +9,7 @@ import colectivoRoutes from "./routes/colectivoRoutes.js"
 import habilidadRoutes from "./routes/habilidadRoutes.js"
 import personaColaboradoraRoutes from "./routes/personaColaboradoraRoutes.js"
 import proyectoRoutes from "./routes/proyectoRoutes.js"
+import notificacionRoutes from "./routes/notificacionesRoutes.js"
 import errorHandler from "./middlewares/errorHandler.js"
 
 const require = createRequire(import.meta.url)
@@ -33,6 +34,7 @@ app.use(colectivoRoutes)
 app.use(habilidadRoutes)
 app.use(personaColaboradoraRoutes)
 app.use(proyectoRoutes)
+app.use(notificacionRoutes)
 
 app.get("/hello", (req, res) => {
   res.json({ message: "hello world" })

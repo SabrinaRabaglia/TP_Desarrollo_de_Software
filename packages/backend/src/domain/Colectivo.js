@@ -16,6 +16,7 @@ export default class Colectivo {
     this.provincia = provincia
     this.ciudad = ciudad
     this.proyectos = []
+    this.notificacionesEnviadas = []
   }
   static validarDatos({ nombre, descripcion, tipo}) {
     if (!nombre || !descripcion || !tipo) {
@@ -27,5 +28,9 @@ export default class Colectivo {
 
   agregarProyecto(proyecto) {
     this.proyectos.push(proyecto)
+  }
+
+  agregarNotificacion(notificacion){
+    this.notificacionesEnviadas.push(notificacion)
   }
 }
