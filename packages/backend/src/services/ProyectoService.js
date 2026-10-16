@@ -24,10 +24,12 @@ export default class ProyectoService {
     proyectoRepository,
     colectivoService,
     colaboracionRepository,
+    perfilRepository,
   ) {
     this.proyectoRepository = proyectoRepository
     this.colectivoService = colectivoService
     this.colaboracionRepository = colaboracionRepository
+    this.perfilRepository = perfilRepository
   }
 
   getAll = async () => {
@@ -40,6 +42,10 @@ export default class ProyectoService {
       throw new EntityNotFound("Proyecto no encontrado")
     }
     return proyecto
+  }
+
+  getAllByHabilidades = async (habilidadesIds) => {
+    return this.proyectoRepository.findAllByHabilidades(habilidadesIds)
   }
 
   validarReferencias = async (datos) => {

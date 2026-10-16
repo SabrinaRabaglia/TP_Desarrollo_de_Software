@@ -21,6 +21,11 @@ export default class ProyectoController {
 
   getAll = async (req, res, next) => {
     try {
+      const {habilidades} = req.query
+      const habilidadesIds = Array.isArray(habilidades) ? habilidades : [habilidades];
+      if(habilidades){
+        return res.status(200).json(await this.proyectoService.getAllByHabilidades(habilidadesIds))
+      }
       res.status(200).json(await this.proyectoService.getAll())
     } catch (error) {
       next(error)
