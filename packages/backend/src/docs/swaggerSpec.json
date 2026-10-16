@@ -41,6 +41,10 @@
       "description": "Inscripción de personas a proyectos"
     },
     {
+      "name": "Notificaciones",
+      "description": "Notificaciones enviadas a personas colaboradoras por un colectivo"
+    },
+    {
       "name": "Catálogos",
       "description": "Catálogos precargados de solo lectura. Sus ids se usan como país y provincia de un colectivo."
     }
@@ -302,7 +306,18 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "perfilId",
+            "in": "query",
+            "required": false,
+            "description": "Filtra las personas colaboradoras por id de perfil.",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -773,7 +788,7 @@
           "Proyectos"
         ],
         "summary": "Listar proyectos",
-        "description": "Devuelve todos los proyectos.",
+        "description": "Devuelve todos los proyectos. Se puede filtrar por una lista de habilidades",
         "operationId": "listarProyectos",
         "responses": {
           "200": {
@@ -789,7 +804,24 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "habilidades",
+            "in": "query",
+            "required": false,
+            "description": "Lista de ids de habilidades separados por coma. Filtra los proyectos según esas habilidades.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            },
+            "example": "habilidades=64f1a2b3c4d5e6f7a8b9c001,habilidades=64f1a2b3c4d5e6f7a8b9c002"
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1327,6 +1359,79 @@
           },
           "409": {
             "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/notificaciones": {
+      "get": {
+        "tags": [
+          "Notificaciones"
+        ],
+        "summary": "Listar notificaciones",
+        "description": "Devuelve todas las notificaciones.",
+        "operationId": "listarNotificaciones",
+        "responses": {
+          "200": {
+            "description": "Lista de notificaciones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Notificacion"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Notificaciones"
+        ],
+        "summary": "Crear notificación",
+        "description": "Crea una notificación. Responde 404 si el colectivo o la persona colaboradora no existen. La `fecha` se asigna automáticamente.",
+        "operationId": "crearNotificacion",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificacionInput"
+              },
+              "example": {
+                "contenido": "Tu perfil coincide con un nuevo proyecto del colectivo.",
+                "colectivo": "64f1a2b3c4d5e6f7a8b9c002",
+                "personaColaboradora": "64f1a2b3c4d5e6f7a8b9c003",
+                "perfil": "64f1a2b3c4d5e6f7a8b9c005"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Notificación creada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Notificacion"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
@@ -2191,6 +2296,122 @@
             "items": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          }
+        }
+      },
+        "MedioDeContacto": {
+      "type": "object",
+      "description": "Medio de contacto externo utilizado para avisar a la persona.",
+      "required": ["tipo", "valor"],
+      "properties": {
+        "tipo": {
+          "type": "string",
+          "enum": ["EMAIL", "WHATSAPP", "SMS"]
+        },
+        "valor": {
+          "type": "string",
+          "example": "ana@example.com"
+        }
+      }
+    },
+          "NotificacionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "contenido",
+          "colectivo",
+          "personaColaboradora",
+          "perfil"
+        ],
+        "properties": {
+          "contenido": {
+            "type": "string",
+            "example": "Tu perfil coincide con un nuevo proyecto del colectivo."
+          },
+          "colectivo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ],
+            "description": "Id del colectivo que envía la notificación."
+          },
+          "personaColaboradora": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ],
+            "description": "Id de la persona colaboradora destinataria."
+          },
+          "perfil": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ],
+            "description": "Id del perfil (de un proyecto) que originó la notificación."
+          }
+        }
+      },
+    "Notificacion": {
+        "type": "object",
+        "required": [
+          "id",
+          "contenido",
+          "colectivo",
+          "personaColaboradora",
+          "perfil",
+          "fecha"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "contenido": {
+            "type": "string"
+          },
+          "colectivo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ],
+            "description": "Id del colectivo."
+          },
+          "personaColaboradora": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ],
+            "description": "Id de la persona colaboradora."
+          },
+          "perfil": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ],
+            "description": "Id del perfil."
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "mediosExternosUtilizados": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MedioDeContacto"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       }
