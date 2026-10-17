@@ -1,5 +1,5 @@
 import { DomainRuleError } from "../domain/errors/DomainErrors.js"
-import Notificacion from "../domain/notificacion.js"
+import Notificacion from "../domain/Notificacion.js"
 import { InvalidReference } from "../errors/ApplicationErrors.js"
 
 export default class NotificacionService{

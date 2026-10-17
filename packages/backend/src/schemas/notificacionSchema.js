@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 import opcionesJSON from "./opcionesJSON.js"
-import Notificacion from "../domain/notificacion.js"
+import Notificacion from "../domain/Notificacion.js"
 import medioDeContactoSchema from "./medioDeContactoSchema.js"
 
 
