@@ -12,8 +12,14 @@ import {
   EntityNotFound,
   InvalidReference,
 } from "../../../src/errors/ApplicationErrors.js"
-import { DomainValidationError, DomainRuleError } from "../../../src/domain/errors/DomainErrors.js"
+import {
+  DomainValidationError,
+  DomainRuleError,
+} from "../../../src/domain/errors/DomainErrors.js"
 import { EstadoProyecto } from "../../../src/domain/enums/EstadoProyecto.js"
+import Perfil from "../../../src/domain/Perfil.js"
+import { UnidadCompromiso } from "../../../src/domain/enums/UnidadCompromiso.js"
+import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColaboracion.js"
 
 describe("ProyectoService", () => {
   let service
@@ -128,7 +134,9 @@ describe("ProyectoService", () => {
     })
 
     test("lanza EntityNotFound si el proyecto no existe", async () => {
-      await expect(service.getById("id-inexistente")).rejects.toThrow(EntityNotFound)
+      await expect(service.getById("id-inexistente")).rejects.toThrow(
+        EntityNotFound,
+      )
     })
   })
 
@@ -192,8 +200,14 @@ describe("ProyectoService", () => {
     test("elimina las colaboraciones del proyecto y conserva las de otros", async () => {
       const creado = await service.create(dtoProyectoValido)
       const persona = { id: "persona-1" }
-      await colaboracionRepository.save({ personaColaboradora: persona, proyecto: { id: creado.id } })
-      await colaboracionRepository.save({ personaColaboradora: persona, proyecto: { id: "otro-proyecto" } })
+      await colaboracionRepository.save({
+        personaColaboradora: persona,
+        proyecto: { id: creado.id },
+      })
+      await colaboracionRepository.save({
+        personaColaboradora: persona,
+        proyecto: { id: "otro-proyecto" },
+      })
 
       await service.delete(creado.id)
 
@@ -203,7 +217,9 @@ describe("ProyectoService", () => {
     })
 
     test("lanza EntityNotFound al intentar eliminar un proyecto inexistente", async () => {
-      await expect(service.delete("id-inexistente")).rejects.toThrow(EntityNotFound)
+      await expect(service.delete("id-inexistente")).rejects.toThrow(
+        EntityNotFound,
+      )
     })
   })
 
@@ -258,6 +274,46 @@ describe("ProyectoService", () => {
       })
       expect(editado.estado).toBe(EstadoProyecto.CERRADO)
       expect(editado.fechaCierre).toEqual(antes.fechaCierre)
+    })
+  })
+
+  describe("getAllByHabilidades", () => {
+    const crearConPerfil = async (titulo, habilidadesRequeridas) => {
+      const proyecto = await service.create({ ...dtoProyectoValido, titulo })
+      proyecto.agregarPerfil(
+        new Perfil({
+          descripcion: `Perfil de ${titulo}`,
+          unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
+          cantidadHoras: 5,
+          modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
+          habilidadesRequeridas,
+          habilidadesOpcionales: ["docker"],
+        }),
+      )
+      return await proyectoRepository.save(proyecto)
+    }
+
+    test("devuelve los proyectos con algún perfil que requiera al menos una de las habilidades", async () => {
+      const web = await crearConPerfil("Sitio web", ["javascript", "react"])
+      const mapa = await crearConPerfil("Mapa", ["javascript"])
+      await crearConPerfil("Análisis", ["python"])
+
+      expect(await service.getAllByHabilidades(["react"])).toEqual([web])
+      expect(await service.getAllByHabilidades(["javascript", "sql"])).toEqual([
+        web,
+        mapa,
+      ])
+      expect(await service.getAllByHabilidades(["sql"])).toEqual([])
+    })
+
+    test("no devuelve proyectos cerrados", async () => {
+      const abierto = await crearConPerfil("Abierto", ["javascript"])
+      const cerrado = await crearConPerfil("Cerrado", ["javascript"])
+      await service.update(cerrado.id, { estado: EstadoProyecto.CERRADO })
+
+      expect(await service.getAllByHabilidades(["javascript"])).toEqual([
+        abierto,
+      ])
     })
   })
 })

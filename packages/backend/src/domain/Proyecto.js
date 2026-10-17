@@ -1,5 +1,9 @@
 import { EstadoProyecto } from "./enums/EstadoProyecto.js"
-import { DomainValidationError,DomainRuleError } from "./errors/DomainErrors.js"
+import {
+  DomainValidationError,
+  DomainRuleError,
+} from "./errors/DomainErrors.js"
+import Notificacion from "./Notificacion.js"
 
 export default class Proyecto {
   constructor(
@@ -15,7 +19,8 @@ export default class Proyecto {
       descripcion,
       colectivo,
       estado,
-      fechaAlta, fechaCierre
+      fechaAlta,
+      fechaCierre,
     })
     this.titulo = titulo
     this.descripcion = descripcion
@@ -73,6 +78,21 @@ export default class Proyecto {
     this.perfiles = this.perfiles.filter((perfil) => perfil.id !== perfilId)
   }
 
+  contactar(perfil, personaColaboradora, contenido) {
+    if (this.proyectoCerrado()) {
+      throw new DomainRuleError(
+        "Un proyecto cerrado no puede contactar personas colaboradoras.",
+      )
+    }
+    personaColaboradora.assertAceptaMensajeriaInterna()
+    return new Notificacion({
+      contenido,
+      colectivo: this.colectivo,
+      personaColaboradora,
+      perfil,
+    })
+  }
+
   agregarColaboracion(colaboracion) {
     this.colaboraciones.push(colaboracion)
   }
@@ -96,23 +116,21 @@ export default class Proyecto {
     descripcion,
     colectivo,
     estado,
-    fechaAlta, fechaCierre
+    fechaAlta,
+    fechaCierre,
   }) {
     if (!titulo || !descripcion || !colectivo) {
       throw new DomainValidationError(
         "Título, descripción y colectivo son obligatorios.",
       )
     }
-    if (
-      estado != null &&
-      !Object.values(EstadoProyecto).includes(estado)
-    ) {
+    if (estado != null && !Object.values(EstadoProyecto).includes(estado)) {
       throw new DomainValidationError("El estado del proyecto es inválido.")
     }
     if (fechaCierre && fechaCierre < fechaAlta) {
-       throw new DomainValidationError(
-         "La fecha de cierre no puede ser anterior a la fecha de alta."
-       )
-      }
+      throw new DomainValidationError(
+        "La fecha de cierre no puede ser anterior a la fecha de alta.",
+      )
+    }
   }
 }

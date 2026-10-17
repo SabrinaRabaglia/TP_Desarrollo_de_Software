@@ -24,8 +24,16 @@ const personaColaboradoraController = new PersonaColaboradoraController(
 
 routes.post("/personas-colaboradoras", personaColaboradoraController.create)
 routes.get("/personas-colaboradoras", personaColaboradoraController.getAll)
-routes.get("/personas-colaboradoras/:id", validateId, personaColaboradoraController.getById)
-routes.put("/personas-colaboradoras/:id", validateId, personaColaboradoraController.update)
+routes.get(
+  "/personas-colaboradoras/:id",
+  validateId,
+  personaColaboradoraController.getById,
+)
+routes.put(
+  "/personas-colaboradoras/:id",
+  validateId,
+  personaColaboradoraController.update,
+)
 routes.delete(
   "/personas-colaboradoras/:id",
   validateId,

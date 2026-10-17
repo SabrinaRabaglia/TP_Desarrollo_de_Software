@@ -29,4 +29,11 @@ export default class ProyectoRepository {
   async delete(id) {
     return await this.model.findByIdAndDelete(id)
   }
+
+  async findByEstadoYAlgunaHabilidadRequerida(estado, habilidadesIds) {
+    return await this.model.find({
+      estado,
+      "perfiles.habilidadesRequeridas": { $in: habilidadesIds },
+    })
+  }
 }

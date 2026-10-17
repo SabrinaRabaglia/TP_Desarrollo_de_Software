@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto"
 export default class PersonaColaboradoraRepository {
-  static personas = [];
+  static personas = []
   constructor() {
     //this.personasColaboradoras = []
   }
@@ -13,8 +13,21 @@ export default class PersonaColaboradoraRepository {
     return PersonaColaboradoraRepository.personas.find((p) => p.id === id)
   }
 
+  async findConTodasLasHabilidades(habilidades) {
+    const idDe = (habilidad) => habilidad.id ?? habilidad
+    return PersonaColaboradoraRepository.personas.filter((persona) =>
+      habilidades.every((requerida) =>
+        persona.habilidades.some(
+          (habilidad) => idDe(habilidad) === idDe(requerida),
+        ),
+      ),
+    )
+  }
+
   async deleteById(id) {
-    const indice = PersonaColaboradoraRepository.personas.findIndex((p) => p.id === id)
+    const indice = PersonaColaboradoraRepository.personas.findIndex(
+      (p) => p.id === id,
+    )
     if (indice === -1) {
       return false
     }
@@ -35,7 +48,6 @@ export default class PersonaColaboradoraRepository {
     return personaColaboradora
   }
   deleteAll() {
-   PersonaColaboradoraRepository.personas.length = 0; 
+    PersonaColaboradoraRepository.personas.length = 0
   }
-  
 }

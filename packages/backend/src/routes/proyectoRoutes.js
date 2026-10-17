@@ -14,6 +14,8 @@ import HabilidadRepository from "../repositories/HabilidadRepository.js"
 import ColaboracionRepository from "../repositories/ColaboracionRepository.js"
 import PerfilService from "../services/PerfilService.js"
 import PerfilController from "../controllers/PerfilController.js"
+import PersonaColaboradoraService from "../services/PersonaColaboradoraService.js"
+import PersonaColaboradoraRepository from "../repositories/PersonaColaboradoraRepository.js"
 
 const routes = Router()
 
@@ -33,17 +35,24 @@ const colectivoService = new ColectivoService(
   paisRepository,
 )
 
+const colaboracionRepository = new ColaboracionRepository()
 const proyectoService = new ProyectoService(
   proyectoRepository,
   colectivoService,
-  new ColaboracionRepository(),
+  colaboracionRepository,
 )
 const proyectoController = new ProyectoController(proyectoService)
 
+const personaColaboradoraService = new PersonaColaboradoraService(
+  new PersonaColaboradoraRepository(),
+  habilidadService,
+  colaboracionRepository,
+)
 const perfilService = new PerfilService(
   proyectoService,
   proyectoRepository,
   habilidadService,
+  personaColaboradoraService,
 )
 const perfilController = new PerfilController(perfilService)
 
@@ -55,8 +64,29 @@ routes.delete("/proyectos/:id", validateId, proyectoController.delete)
 routes.patch("/proyectos/:id", validateId, proyectoController.patch)
 
 routes.post("/proyectos/:id/perfiles", validateId, perfilController.create)
-routes.get("/proyectos/:id/perfiles", validateId, perfilController.getAllByProyecto)
-routes.get("/proyectos/:id/perfiles/:perfilId", validateId, perfilController.getById)
-routes.put("/proyectos/:id/perfiles/:perfilId", validateId, perfilController.update)
-routes.delete("/proyectos/:id/perfiles/:perfilId", validateId, perfilController.delete)
+routes.get(
+  "/proyectos/:id/perfiles",
+  validateId,
+  perfilController.getAllByProyecto,
+)
+routes.get(
+  "/proyectos/:id/perfiles/:perfilId",
+  validateId,
+  perfilController.getById,
+)
+routes.put(
+  "/proyectos/:id/perfiles/:perfilId",
+  validateId,
+  perfilController.update,
+)
+routes.delete(
+  "/proyectos/:id/perfiles/:perfilId",
+  validateId,
+  perfilController.delete,
+)
+routes.get(
+  "/proyectos/:id/perfiles/:perfilId/colaboradores",
+  validateId,
+  perfilController.buscarColaboradores,
+)
 export default routes

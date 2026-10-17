@@ -6,6 +6,7 @@ import { UnidadCompromiso } from "../domain/enums/UnidadCompromiso.js"
 import ColaboracionModel from "../schemas/colaboracionSchema.js"
 import ColectivoModel from "../schemas/colectivoSchema.js"
 import HabilidadModel from "../schemas/habilidadSchema.js"
+import NotificacionModel from "../schemas/notificacionSchema.js"
 import PaisModel from "../schemas/paisSchema.js"
 import PersonaColaboradoraModel from "../schemas/personaColaboradoraSchema.js"
 import ProvinciaModel from "../schemas/provinciaSchema.js"
@@ -209,6 +210,28 @@ export default async function sembrarDatosDePrueba() {
     ],
   )
   const personas = await idsPor(PersonaColaboradoraModel, "nombreFantasia")
+  const sitioWeb = await ProyectoModel.findOne({
+    titulo: "Sitio web de la huerta",
+  })
+
+  await sembrar(
+    NotificacionModel,
+    ["personaColaboradora", "perfil"],
+    [
+      {
+        fecha: new Date("2026-09-10T00:00:00.000Z"),
+        contenido:
+          "Hola! Tu perfil encaja con el sitio de la huerta, ¿te gustaría sumarte?",
+        colectivo: colectivos["Huerta Comunitaria Sur"],
+        personaColaboradora: personas["anag"],
+        perfil: sitioWeb.perfiles[0]._id,
+        mediosExternosUtilizados: [
+          { tipo: TipoMedioContacto.EMAIL, valor: "ana.gomez@example.com" },
+          { tipo: TipoMedioContacto.WHATSAPP, valor: "+54 9 11 2345-6789" },
+        ],
+      },
+    ],
+  )
 
   await sembrar(
     ColaboracionModel,

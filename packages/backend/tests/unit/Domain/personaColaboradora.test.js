@@ -3,7 +3,10 @@ import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import Habilidad from "../../../src/domain/Habilidad.js"
 import Cuenta from "../../../src/domain/Cuenta.js"
 import { TipoCuenta } from "../../../src/domain/enums/TipoCuenta.js"
-import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
+import {
+  DomainRuleError,
+  DomainValidationError,
+} from "../../../src/domain/errors/DomainErrors.js"
 
 describe("PersonaColaboradora", () => {
   test("se construye solo con nombreFantasia, con el resto en sus valores por defecto", () => {
@@ -100,5 +103,15 @@ describe("PersonaColaboradora", () => {
     persona.agregarColaboracion(colaboracionFalsa)
 
     expect(persona.colaboraciones).toEqual([colaboracionFalsa])
+  })
+
+  test("solo se puede contactar por mensajería interna si lo aceptó", () => {
+    const acepta = new PersonaColaboradora("anag")
+    acepta.aceptaMensajeriaInterna = true
+
+    expect(() => acepta.assertAceptaMensajeriaInterna()).not.toThrow()
+    expect(() =>
+      new PersonaColaboradora("anon123").assertAceptaMensajeriaInterna(),
+    ).toThrow(DomainRuleError)
   })
 })

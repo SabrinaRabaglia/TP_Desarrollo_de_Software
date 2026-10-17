@@ -41,6 +41,10 @@
       "description": "Inscripción de personas a proyectos"
     },
     {
+      "name": "Notificaciones",
+      "description": "Mensajes internos que un colectivo envía a personas colaboradoras por un perfil, replicados por sus medios de contacto"
+    },
+    {
       "name": "Catálogos",
       "description": "Catálogos precargados de solo lectura. Sus ids se usan como país y provincia de un colectivo."
     }
@@ -515,6 +519,45 @@
         }
       }
     },
+    "/personas-colaboradoras/{id}/notificaciones": {
+      "get": {
+        "tags": [
+          "Notificaciones"
+        ],
+        "summary": "Bandeja de una persona colaboradora",
+        "description": "Devuelve los mensajes internos que recibió la persona, del más nuevo al más viejo. Responde 404 si la persona no existe.",
+        "operationId": "listarNotificacionesDePersona",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notificaciones recibidas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Notificacion"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
     "/colectivos": {
       "get": {
         "tags": [
@@ -773,8 +816,24 @@
           "Proyectos"
         ],
         "summary": "Listar proyectos",
-        "description": "Devuelve todos los proyectos.",
+        "description": "Devuelve todos los proyectos. Con `habilidades`, busca los proyectos que encajan con las habilidades de una persona colaboradora: solo los publicados con algún perfil que requiera al menos una de ellas.",
         "operationId": "listarProyectos",
+        "parameters": [
+          {
+            "name": "habilidades",
+            "in": "query",
+            "required": false,
+            "description": "Ids de habilidades. Para pasar varias se repite el parámetro: `?habilidades=<id1>&habilidades=<id2>`. Si alguno no es un id válido responde 400.",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Lista de proyectos",
@@ -788,6 +847,9 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           }
         }
       },
@@ -1255,6 +1317,107 @@
           },
           "409": {
             "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/proyectos/{id}/perfiles/{perfilId}/colaboradores": {
+      "get": {
+        "tags": [
+          "Perfiles"
+        ],
+        "summary": "Buscar colaboradores para un perfil",
+        "description": "Devuelve las personas colaboradoras que tienen todas las habilidades requeridas del perfil. Las opcionales no se tienen en cuenta. Responde 404 si el proyecto no existe o el perfil no pertenece a ese proyecto.",
+        "operationId": "buscarColaboradoresParaPerfil",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          },
+          {
+            "$ref": "#/components/parameters/PerfilIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Personas colaboradoras que encajan con el perfil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PersonaColaboradora"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/proyectos/{id}/perfiles/{perfilId}/notificaciones": {
+      "post": {
+        "tags": [
+          "Notificaciones"
+        ],
+        "summary": "Contactar a una persona por un perfil",
+        "description": "El colectivo dueño del proyecto le envía un mensaje interno a una persona colaboradora por uno de sus perfiles, y el mensaje se replica por todos los medios de contacto de la persona. Responde 409 si la persona no acepta mensajería interna o si el proyecto está cerrado, y 404 si el proyecto, el perfil o la persona no existen.",
+        "operationId": "contactarPersonaPorPerfil",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          },
+          {
+            "$ref": "#/components/parameters/PerfilIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificacionInput"
+              },
+              "example": {
+                "personaColaboradora": "64f1a2b3c4d5e6f7a8b9c003",
+                "contenido": "Hola! Tu perfil encaja con nuestro proyecto, ¿te interesa sumarte?"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Notificación enviada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Notificacion"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
@@ -2191,6 +2354,91 @@
             "items": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          }
+        }
+      },
+      "NotificacionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "personaColaboradora",
+          "contenido"
+        ],
+        "properties": {
+          "personaColaboradora": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ],
+            "description": "Id de la persona colaboradora destinataria."
+          },
+          "contenido": {
+            "type": "string",
+            "example": "Hola! Tu perfil encaja con nuestro proyecto, ¿te interesa sumarte?"
+          }
+        }
+      },
+      "Notificacion": {
+        "type": "object",
+        "required": [
+          "id",
+          "fecha",
+          "contenido",
+          "colectivo",
+          "personaColaboradora",
+          "perfil",
+          "mediosExternosUtilizados"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "contenido": {
+            "type": "string"
+          },
+          "colectivo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ],
+            "description": "Id del colectivo dueño del proyecto, que envía la notificación."
+          },
+          "personaColaboradora": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ],
+            "description": "Id de la persona colaboradora."
+          },
+          "perfil": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ],
+            "description": "Id del perfil por el que se contactó a la persona."
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "mediosExternosUtilizados": {
+            "type": "array",
+            "description": "Tipos de medio de contacto por los que se replicó la notificación. Los valores (emails y teléfonos) no se exponen.",
+            "items": {
+              "$ref": "#/components/schemas/TipoMedioContacto"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       }

@@ -20,7 +20,7 @@ export default class PersonaColaboradoraService {
   }
   crearMediosDeContacto = (medios) => {
     return (medios ?? []).map(
-      (medio) => new MedioDeContacto(medio.tipo, medio.valor)
+      (medio) => new MedioDeContacto(medio.tipo, medio.valor),
     )
   }
   create = async (nueva) => {
@@ -39,13 +39,14 @@ export default class PersonaColaboradoraService {
       cuentas,
       habilidades,
       nueva.aceptaMensajeriaInterna,
-      mediosDeContacto
+      mediosDeContacto,
     )
     return await this.personaColaboradoraRepository.save(personaColaboradora)
   }
 
   update = async (id, actualizada) => {
-    const personaExistente = await this.personaColaboradoraRepository.findById(id)
+    const personaExistente =
+      await this.personaColaboradoraRepository.findById(id)
     if (!personaExistente) {
       throw new EntityNotFound("Persona colaboradora no encontrada")
     }
@@ -69,13 +70,15 @@ export default class PersonaColaboradoraService {
     personaExistente.presentacion = actualizada.presentacion ?? null
     personaExistente.cuentas = cuentas
     personaExistente.habilidades = habilidades
-    personaExistente.aceptaMensajeriaInterna = actualizada.aceptaMensajeriaInterna ?? false
+    personaExistente.aceptaMensajeriaInterna =
+      actualizada.aceptaMensajeriaInterna ?? false
     personaExistente.mediosDeContacto = mediosDeContacto
 
     return await this.personaColaboradoraRepository.save(personaExistente)
   }
   delete = async (id) => {
-    const personaExistente = await this.personaColaboradoraRepository.findById(id)
+    const personaExistente =
+      await this.personaColaboradoraRepository.findById(id)
     if (!personaExistente) {
       throw new EntityNotFound("Persona colaboradora no encontrada")
     }
@@ -87,8 +90,15 @@ export default class PersonaColaboradoraService {
     return await this.personaColaboradoraRepository.getAll()
   }
 
+  getAllConHabilidades = async (habilidades) => {
+    return await this.personaColaboradoraRepository.findConTodasLasHabilidades(
+      habilidades,
+    )
+  }
+
   getById = async (id) => {
-    const personaColaboradora = await this.personaColaboradoraRepository.findById(id)
+    const personaColaboradora =
+      await this.personaColaboradoraRepository.findById(id)
     if (!personaColaboradora) {
       throw new EntityNotFound("Persona colaboradora no encontrada")
     }

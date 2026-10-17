@@ -1,4 +1,7 @@
-import { DomainValidationError } from "./errors/DomainErrors.js"
+import {
+  DomainRuleError,
+  DomainValidationError,
+} from "./errors/DomainErrors.js"
 export default class PersonaColaboradora {
   constructor(
     nombreFantasia,
@@ -9,7 +12,7 @@ export default class PersonaColaboradora {
     cuentas = [],
     habilidades = [],
     aceptaMensajeriaInterna = false,
-    mediosDeContacto = []
+    mediosDeContacto = [],
   ) {
     PersonaColaboradora.validarDatos({ nombreFantasia })
     this.nombreFantasia = nombreFantasia
@@ -22,6 +25,7 @@ export default class PersonaColaboradora {
     this.aceptaMensajeriaInterna = aceptaMensajeriaInterna
     this.mediosDeContacto = mediosDeContacto
     this.colaboraciones = []
+    this.notificacionesRecibidas = []
   }
 
   static validarDatos({ nombreFantasia }) {
@@ -42,5 +46,13 @@ export default class PersonaColaboradora {
 
   agregarColaboracion(colaboracion) {
     this.colaboraciones.push(colaboracion)
+  }
+
+  assertAceptaMensajeriaInterna() {
+    if (!this.aceptaMensajeriaInterna) {
+      throw new DomainRuleError(
+        "La persona colaboradora no acepta mensajería interna.",
+      )
+    }
   }
 }

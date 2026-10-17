@@ -2,8 +2,8 @@ import mongoose from "mongoose"
 import PersonaColaboradora from "../domain/PersonaColaboradora.js"
 import Cuenta from "../domain/Cuenta.js"
 import { TipoCuenta } from "../domain/enums/TipoCuenta.js"
-import { TipoMedioContacto } from "../domain/enums/TipoMedioContacto.js"
 import opcionesJSON from "./opcionesJSON.js"
+import medioDeContactoSchema from "./medioDeContactoSchema.js"
 
 const cuentaSchema = new mongoose.Schema(
   {
@@ -14,18 +14,6 @@ const cuentaSchema = new mongoose.Schema(
 )
 
 cuentaSchema.loadClass(Cuenta)
-
-const medioDeContactoSchema = new mongoose.Schema(
-  {
-    tipo: {
-      type: String,
-      required: true,
-      enum: Object.values(TipoMedioContacto),
-    },
-    valor: { type: String, required: true },
-  },
-  { _id: false },
-)
 
 const personaColaboradoraSchema = new mongoose.Schema(
   {
