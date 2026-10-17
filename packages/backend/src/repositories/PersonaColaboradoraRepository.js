@@ -14,11 +14,11 @@ export default class PersonaColaboradoraRepository {
     return await this.model.findById(id).populate("habilidades")
   }
 
-  async findByHabilidadesRequeridas(habilidadesRequeridas) {
-    return await this.model.find({
-        habilidades: { $all: habilidadesRequeridas }
-    });
-}
+  async findConTodasLasHabilidades(habilidades) {
+    return await this.model
+      .find({ habilidades: { $all: habilidades } })
+      .populate("habilidades")
+  }
 
   async deleteById(id) {
     return Boolean(await this.model.findByIdAndDelete(id))

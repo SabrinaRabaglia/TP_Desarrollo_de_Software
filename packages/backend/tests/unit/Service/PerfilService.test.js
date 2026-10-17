@@ -10,6 +10,8 @@ import PaisRepository from "../../fakes/PaisRepository.js"
 import ColaboracionRepository from "../../fakes/ColaboracionRepository.js"
 import HabilidadService from "../../../src/services/HabilidadService.js"
 import HabilidadRepository from "../../fakes/HabilidadRepository.js"
+import PersonaColaboradoraService from "../../../src/services/PersonaColaboradoraService.js"
+import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraRepository.js"
 import {
   EntityNotFound,
   InvalidReference,
@@ -29,12 +31,15 @@ describe("PerfilService", () => {
   let habilidad1
   let habilidad2
   let datos
+  let personaColaboradoraService
 
   beforeEach(async () => {
     const proyectoRepository = new ProyectoRepository()
     const colectivoRepository = new ColectivoRepository()
     const habilidadRepository = new HabilidadRepository()
+    const personaColaboradoraRepository = new PersonaColaboradoraRepository()
 
+    personaColaboradoraRepository.deleteAll()
     proyectoRepository.deleteAll()
     colectivoRepository.deleteAll()
     habilidadRepository.deleteAll()
@@ -52,10 +57,16 @@ describe("PerfilService", () => {
       colectivoService,
       new ColaboracionRepository(),
     )
+    personaColaboradoraService = new PersonaColaboradoraService(
+      personaColaboradoraRepository,
+      habilidadService,
+      new ColaboracionRepository(),
+    )
     service = new PerfilService(
       proyectoService,
       proyectoRepository,
       habilidadService,
+      personaColaboradoraService,
     )
 
     const colectivo = await colectivoService.create({
@@ -176,6 +187,47 @@ describe("PerfilService", () => {
     test("lanza EntityNotFound si el proyecto no existe", async () => {
       await expect(
         service.getAllByProyectoId("id-inexistente"),
+      ).rejects.toThrow(EntityNotFound)
+    })
+  })
+
+  describe("buscarColaboradores", () => {
+    const crearPersona = (nombreFantasia, habilidades) =>
+      personaColaboradoraService.create({ nombreFantasia, habilidades })
+
+    test("devuelve las personas que tienen todas las habilidades requeridas del perfil", async () => {
+      const perfil = await service.create(proyecto.id, {
+        ...datos,
+        habilidadesRequeridas: [habilidad1.id, habilidad2.id],
+        habilidadesOpcionales: [habilidad1.id],
+      })
+      const completa = await crearPersona("completa", [
+        habilidad1.id,
+        habilidad2.id,
+      ])
+      await crearPersona("solo javascript", [habilidad1.id])
+      await crearPersona("sin habilidades", [])
+
+      expect(await service.buscarColaboradores(proyecto.id, perfil.id)).toEqual(
+        [completa],
+      )
+    })
+
+    test("no tiene en cuenta las habilidades opcionales", async () => {
+      const perfil = await service.create(proyecto.id, datos)
+      const conRequerida = await crearPersona("con requerida", [habilidad1.id])
+      await crearPersona("solo opcional", [habilidad2.id])
+
+      expect(await service.buscarColaboradores(proyecto.id, perfil.id)).toEqual(
+        [conRequerida],
+      )
+    })
+
+    test("lanza EntityNotFound si el perfil es de otro proyecto", async () => {
+      const perfil = await service.create(otroProyecto.id, datos)
+
+      await expect(
+        service.buscarColaboradores(proyecto.id, perfil.id),
       ).rejects.toThrow(EntityNotFound)
     })
   })

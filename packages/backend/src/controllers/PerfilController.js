@@ -3,6 +3,7 @@ import { ModalidadColaboracion } from "../domain/enums/ModalidadColaboracion.js"
 import { UnidadCompromiso } from "../domain/enums/UnidadCompromiso.js"
 import { BadRequestError } from "../errors/AppError.js"
 import { objectIdSchema } from "../validations/objectId.js"
+import { personaColaboradoraDTO } from "../dtos/personaColaboradoraDTO.js"
 
 const perfilSchema = z
   .object({
@@ -70,6 +71,18 @@ export default class PerfilController {
         req.params.perfilId,
       )
       res.status(200).json(perfil)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  buscarColaboradores = async (req, res, next) => {
+    try {
+      const personas = await this.perfilService.buscarColaboradores(
+        req.params.id,
+        req.params.perfilId,
+      )
+      res.status(200).json(personas.map(personaColaboradoraDTO))
     } catch (error) {
       next(error)
     }

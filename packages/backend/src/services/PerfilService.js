@@ -2,10 +2,16 @@ import Perfil from "../domain/Perfil.js"
 import { EntityNotFound } from "../errors/ApplicationErrors.js"
 
 export default class PerfilService {
-  constructor(proyectoService, proyectoRepository, habilidadService) {
+  constructor(
+    proyectoService,
+    proyectoRepository,
+    habilidadService,
+    personaColaboradoraService,
+  ) {
     this.proyectoService = proyectoService
     this.proyectoRepository = proyectoRepository
     this.habilidadService = habilidadService
+    this.personaColaboradoraService = personaColaboradoraService
   }
 
   buscarPerfil = (proyecto, perfilId) => {
@@ -53,6 +59,13 @@ export default class PerfilService {
   getById = async (proyectoId, perfilId) => {
     const proyecto = await this.proyectoService.getById(proyectoId)
     return this.buscarPerfil(proyecto, perfilId)
+  }
+
+  buscarColaboradores = async (proyectoId, perfilId) => {
+    const perfil = await this.getById(proyectoId, perfilId)
+    return await this.personaColaboradoraService.getAllConHabilidades(
+      perfil.habilidadesRequeridas,
+    )
   }
 
   getAllByProyectoId = async (proyectoId) => {
