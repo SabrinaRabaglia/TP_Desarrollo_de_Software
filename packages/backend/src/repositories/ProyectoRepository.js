@@ -45,15 +45,10 @@ export default class ProyectoRepository {
     return proyecto?.perfiles[0] ?? null;
   }
 
-  async findAllByHabilidades(habilidadesIds) {
-  const objectIds = habilidadesIds.map(id => new mongoose.Types.ObjectId(id));
-
-  return await this.model.find({
-    perfiles: {
-      $elemMatch: {
-        habilidadesRequeridas: { $all: objectIds }
-      }
-    }
-  })
+  async findByEstadoYAlgunaHabilidadRequerida(estado, habilidadesIds) {
+    return await this.model.find({
+      estado,
+      "perfiles.habilidadesRequeridas": { $in: habilidadesIds },
+    })
   }
 }

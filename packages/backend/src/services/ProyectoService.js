@@ -1,4 +1,8 @@
-import { AlreadyExists, EntityNotFound, InvalidReference } from "../errors/ApplicationErrors.js"
+import {
+  AlreadyExists,
+  EntityNotFound,
+  InvalidReference,
+} from "../errors/ApplicationErrors.js"
 import Proyecto from "../domain/Proyecto.js"
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
 
@@ -20,16 +24,10 @@ const datosDelProyecto = ({
 })
 
 export default class ProyectoService {
-  constructor(
-    proyectoRepository,
-    colectivoService,
-    colaboracionRepository,
-    perfilRepository,
-  ) {
+  constructor(proyectoRepository, colectivoService, colaboracionRepository) {
     this.proyectoRepository = proyectoRepository
     this.colectivoService = colectivoService
     this.colaboracionRepository = colaboracionRepository
-    this.perfilRepository = perfilRepository
   }
 
   getAll = async () => {
@@ -45,7 +43,10 @@ export default class ProyectoService {
   }
 
   getAllByHabilidades = async (habilidadesIds) => {
-    return this.proyectoRepository.findAllByHabilidades(habilidadesIds)
+    return await this.proyectoRepository.findByEstadoYAlgunaHabilidadRequerida(
+      EstadoProyecto.PUBLICADO,
+      habilidadesIds,
+    )
   }
 
   validarReferencias = async (datos) => {
@@ -79,7 +80,7 @@ export default class ProyectoService {
   }
 
   update = async (id, proyectoActualizado) => {
-    const proyectoExistente = await  this.getById(id)
+    const proyectoExistente = await this.getById(id)
 
     proyectoExistente.assertPuedeActualizarEstado(proyectoActualizado.estado)
 
@@ -90,7 +91,8 @@ export default class ProyectoService {
     Proyecto.validarDatos(datosActualizados)
     await this.validarReferencias(datosActualizados)
 
-    const existenteConMismoTitulo = await this.proyectoRepository.findByTitulo?.(proyectoActualizado.titulo)
+    const existenteConMismoTitulo =
+      await this.proyectoRepository.findByTitulo?.(proyectoActualizado.titulo)
     if (
       proyectoActualizado.titulo &&
       proyectoActualizado.titulo !== proyectoExistente.titulo &&

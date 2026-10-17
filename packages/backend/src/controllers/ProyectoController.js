@@ -14,6 +14,13 @@ const proyectoSchema = z
   })
   .strict()
 
+const busquedaSchema = z.object({
+  habilidades: z
+    .union([objectIdSchema, z.array(objectIdSchema)])
+    .transform((habilidades) => [habilidades].flat())
+    .optional(),
+})
+
 export default class ProyectoController {
   constructor(proyectoService) {
     this.proyectoService = proyectoService
@@ -21,12 +28,15 @@ export default class ProyectoController {
 
   getAll = async (req, res, next) => {
     try {
-      const {habilidades} = req.query
-      const habilidadesIds = Array.isArray(habilidades) ? habilidades : [habilidades];
-      if(habilidades){
-        return res.status(200).json(await this.proyectoService.getAllByHabilidades(habilidadesIds))
+      const resultado = busquedaSchema.safeParse(req.query)
+      if (resultado.error) {
+        throw new BadRequestError("Datos inválidos", resultado.error.issues)
       }
-      res.status(200).json(await this.proyectoService.getAll())
+      const { habilidades } = resultado.data
+      const proyectos = habilidades
+        ? await this.proyectoService.getAllByHabilidades(habilidades)
+        : await this.proyectoService.getAll()
+      res.status(200).json(proyectos)
     } catch (error) {
       next(error)
     }
@@ -63,8 +73,8 @@ export default class ProyectoController {
         throw new BadRequestError("Datos inválidos", resultado.error.issues)
       }
       const id = req.params.id
-    const actualizado = await this.proyectoService.update(id, resultado.data)
-    res.status(200).json(actualizado)
+      const actualizado = await this.proyectoService.update(id, resultado.data)
+      res.status(200).json(actualizado)
     } catch (error) {
       next(error)
     }
@@ -77,8 +87,11 @@ export default class ProyectoController {
       if (resultado.error) {
         throw new BadRequestError("Datos inválidos", resultado.error.issues)
       }
-    const proyectoActualizado = await this.proyectoService.update(id, resultado.data)
-    res.status(200).json(proyectoActualizado)
+      const proyectoActualizado = await this.proyectoService.update(
+        id,
+        resultado.data,
+      )
+      res.status(200).json(proyectoActualizado)
     } catch (error) {
       next(error)
     }
