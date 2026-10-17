@@ -56,9 +56,14 @@ export default class PerfilService {
     await this.proyectoRepository.save(proyecto)
   }
 
-  getById = async (proyectoId, perfilId) => {
+  buscarEnProyecto = async (proyectoId, perfilId) => {
     const proyecto = await this.proyectoService.getById(proyectoId)
-    return this.buscarPerfil(proyecto, perfilId)
+    return { proyecto, perfil: this.buscarPerfil(proyecto, perfilId) }
+  }
+
+  getById = async (proyectoId, perfilId) => {
+    const { perfil } = await this.buscarEnProyecto(proyectoId, perfilId)
+    return perfil
   }
 
   buscarColaboradores = async (proyectoId, perfilId) => {

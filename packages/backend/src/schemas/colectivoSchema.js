@@ -14,7 +14,6 @@ const colectivoSchema = new mongoose.Schema(
       default: null,
     },
     ciudad: { type: String, default: null },
-    notificacionesEnviadas: [{ type: mongoose.Schema.Types.ObjectId, ref: "Notificacion" }]
   },
   { timestamps: true, collection: "colectivos", toJSON: opcionesJSON },
 )

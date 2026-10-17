@@ -1,55 +1,51 @@
-import { DomainRuleError } from "../domain/errors/DomainErrors.js"
-import Notificacion from "../domain/Notificacion.js"
-import { InvalidReference } from "../errors/ApplicationErrors.js"
+import {
+  EntityNotFound,
+  InvalidReference,
+} from "../errors/ApplicationErrors.js"
 
-export default class NotificacionService{
-    constructor(notificacionRepository, colaboradorRepository, colectivoRepository, proyectoRepository,
-        notificador
-    ){
-        this.notificacionRepository = notificacionRepository
-        this.colaboradorRepository = colaboradorRepository
-        this.colectivoRepository = colectivoRepository
-        this.proyectoRepository = proyectoRepository
-        this.notificador = notificador
+export default class NotificacionService {
+  constructor(
+    notificacionRepository,
+    perfilService,
+    personaColaboradoraService,
+    notificador,
+  ) {
+    this.notificacionRepository = notificacionRepository
+    this.perfilService = perfilService
+    this.personaColaboradoraService = personaColaboradoraService
+    this.notificador = notificador
+  }
+
+  buscarDestinataria = async (personaColaboradoraId) => {
+    try {
+      return await this.personaColaboradoraService.getById(
+        personaColaboradoraId,
+      )
+    } catch (error) {
+      if (error instanceof EntityNotFound) {
+        throw new InvalidReference(error.message)
+      }
+      throw error
     }
+  }
 
-    create = async (notificacionNueva) => {
-        const colaborador = await this.colaboradorRepository.findById(
-            notificacionNueva.personaColaboradora)
-        if(!colaborador){
-            throw new InvalidReference("Colaborador no encontrado")
-        }
+  create = async (proyectoId, perfilId, { personaColaboradora, contenido }) => {
+    const { proyecto, perfil } = await this.perfilService.buscarEnProyecto(
+      proyectoId,
+      perfilId,
+    )
+    const destinataria = await this.buscarDestinataria(personaColaboradora)
+    const notificacion = proyecto.contactar(perfil, destinataria, contenido)
+    notificacion.registrarMediosExternos(
+      await this.notificador.notificar(destinataria, contenido),
+    )
+    return await this.notificacionRepository.save(notificacion)
+  }
 
-        const colectivo = await this.colectivoRepository.findById(notificacionNueva.colectivo)
-        if(!colectivo){
-            throw new InvalidReference("Colectivo no encontrado")
-        }
-
-        const perfil = await this.proyectoRepository.findPerfilById(notificacionNueva.perfil)
-        if(!perfil){
-            throw new InvalidReference("perfil no encontrado")
-        }
-
-        if(!colaborador.aceptaMensajeriaInterna){
-            throw new DomainRuleError("El colaborador no acepta mensajeria interna")
-        }
-        const notificacion = new Notificacion(notificacionNueva.contenido, colectivo, colaborador, perfil)
-
-        this.notificador.notificar(colaborador, notificacion.contenido)
-        notificacion.agregarMediosExternos(colaborador.mediosDeContacto)
-
-        const guardado = await this.notificacionRepository.save(notificacion)
-
-        colaborador.agregarNotificacion(guardado._id)
-        colectivo.agregarNotificacion(guardado._id)
-
-        await this.colaboradorRepository.save(colaborador);
-        await this.colectivoRepository.save(colectivo);
-        
-        return guardado
-    }
-
-    getAll = async () => {
-        return await this.notificacionRepository.getAll()
-    }
+  getAllByPersonaColaboradora = async (personaColaboradoraId) => {
+    await this.personaColaboradoraService.getById(personaColaboradoraId)
+    return await this.notificacionRepository.findByPersonaColaboradora(
+      personaColaboradoraId,
+    )
+  }
 }

@@ -1,17 +1,18 @@
 import mongoose from "mongoose"
 import MedioDeContacto from "../domain/MedioDeContacto.js"
+import { TipoMedioContacto } from "../domain/enums/TipoMedioContacto.js"
 
-const medioDeContactoSchema = new mongoose.Schema({
+const medioDeContactoSchema = new mongoose.Schema(
+  {
     tipo: {
-        type: String,
-        required: true,
-        enum: ["EMAIL", "WHATSAPP", "SMS"]
+      type: String,
+      required: true,
+      enum: Object.values(TipoMedioContacto),
     },
-    valor: {
-        type: String,
-        required: true
-    }
-}, { _id: false })
+    valor: { type: String, required: true },
+  },
+  { _id: false },
+)
 
 medioDeContactoSchema.loadClass(MedioDeContacto)
 

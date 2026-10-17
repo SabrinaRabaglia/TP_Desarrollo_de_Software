@@ -24,12 +24,8 @@ const personaColaboradoraSchema = new mongoose.Schema(
     presentacion: { type: String, default: null },
     cuentas: [cuentaSchema],
     habilidades: [{ type: mongoose.Schema.Types.ObjectId, ref: "Habilidad" }],
-    aceptaMensajeriaInterna:{
-      type: Boolean,
-      default: false
-    },
+    aceptaMensajeriaInterna: { type: Boolean, default: false },
     mediosDeContacto: [medioDeContactoSchema],
-    notificacionesRecibidas: [{ type: mongoose.Schema.Types.ObjectId, ref: "Notificacion" }]
   },
   {
     timestamps: true,

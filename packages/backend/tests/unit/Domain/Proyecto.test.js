@@ -6,7 +6,12 @@ import { UnidadCompromiso } from "../../../src/domain/enums/UnidadCompromiso.js"
 import TipoColectivo from "../../../src/domain/TipoColectivo.js"
 import { EstadoProyecto } from "../../../src/domain/enums/EstadoProyecto.js"
 import Colectivo from "../../../src/domain/Colectivo.js"
-import { DomainValidationError, DomainRuleError } from "../../../src/domain/errors/DomainErrors.js"
+import Notificacion from "../../../src/domain/Notificacion.js"
+import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
+import {
+  DomainValidationError,
+  DomainRuleError,
+} from "../../../src/domain/errors/DomainErrors.js"
 
 describe("Proyecto", () => {
   const tipoColectivo = new TipoColectivo("Asamblea")
@@ -211,6 +216,52 @@ describe("Proyecto", () => {
       expect(() => proyecto.eliminarPerfil("perfil-1")).toThrow(DomainRuleError)
       expect(proyecto.perfiles).toEqual([perfil])
       expect(perfil.descripcion).toBe("Tester")
+    })
+  })
+
+  describe("contactar", () => {
+    const perfil = new Perfil({
+      descripcion: "Tester",
+      unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
+      cantidadHoras: 5,
+      modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
+      habilidadesRequeridas: ["cypress"],
+      habilidadesOpcionales: ["soap_ui"],
+    })
+    const crearPersona = (aceptaMensajeriaInterna) => {
+      const persona = new PersonaColaboradora("anag")
+      persona.aceptaMensajeriaInterna = aceptaMensajeriaInterna
+      return persona
+    }
+
+    test("arma una notificación del colectivo del proyecto para la persona", () => {
+      const proyecto = new Proyecto("Mapa", "Mapa de humedales", colectivo)
+      const persona = crearPersona(true)
+
+      const notificacion = proyecto.contactar(perfil, persona, "Hola")
+
+      expect(notificacion).toBeInstanceOf(Notificacion)
+      expect(notificacion.colectivo).toBe(colectivo)
+      expect(notificacion.personaColaboradora).toBe(persona)
+      expect(notificacion.perfil).toBe(perfil)
+      expect(notificacion.contenido).toBe("Hola")
+    })
+
+    test("rechaza contactar a una persona que no acepta mensajería interna", () => {
+      const proyecto = new Proyecto("Mapa", "Mapa de humedales", colectivo)
+
+      expect(() =>
+        proyecto.contactar(perfil, crearPersona(false), "Hola"),
+      ).toThrow(DomainRuleError)
+    })
+
+    test("un proyecto cerrado no puede contactar personas", () => {
+      const proyecto = new Proyecto("Mapa", "Mapa de humedales", colectivo)
+      proyecto.cerrar()
+
+      expect(() =>
+        proyecto.contactar(perfil, crearPersona(true), "Hola"),
+      ).toThrow(DomainRuleError)
     })
   })
 })

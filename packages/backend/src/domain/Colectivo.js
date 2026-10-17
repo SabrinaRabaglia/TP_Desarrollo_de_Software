@@ -18,9 +18,9 @@ export default class Colectivo {
     this.proyectos = []
     this.notificacionesEnviadas = []
   }
-  static validarDatos({ nombre, descripcion, tipo}) {
+  static validarDatos({ nombre, descripcion, tipo }) {
     if (!nombre || !descripcion || !tipo) {
-      throw new DomainValidationError( 
+      throw new DomainValidationError(
         "Nombre, descripción y tipo son obligatorios.",
       )
     }
@@ -28,9 +28,5 @@ export default class Colectivo {
 
   agregarProyecto(proyecto) {
     this.proyectos.push(proyecto)
-  }
-
-  agregarNotificacion(notificacion){
-    this.notificacionesEnviadas.push(notificacion)
   }
 }
