@@ -3,6 +3,9 @@ import Colaboracion from "../../../src/domain/Colaboracion.js"
 import Proyecto from "../../../src/domain/Proyecto.js"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import Habilidad from "../../../src/domain/Habilidad.js"
+import Perfil from "../../../src/domain/Perfil.js"
+import { UnidadCompromiso } from "../../../src/domain/enums/UnidadCompromiso.js"
+import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColaboracion.js"
 import {
   DomainRuleError,
   DomainValidationError,
@@ -22,7 +25,16 @@ const personaConHabilidad = () => {
 
 const proyectoAbierto = (habilidadesRequeridas = ["hab-1"]) => {
   const proyecto = new Proyecto("Plataforma", "Desarrollo web", "colectivo-1")
-  proyecto.perfiles = [{ habilidadesRequeridas }]
+  proyecto.perfiles = [
+    new Perfil({
+      descripcion: "Perfil",
+      unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
+      cantidadHoras: 5,
+      modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
+      habilidadesRequeridas,
+      habilidadesOpcionales: ["docker"],
+    }),
+  ]
   return proyecto
 }
 
@@ -61,6 +73,13 @@ test("rechaza colaborar en un proyecto cerrado", () => {
 test("rechaza colaborar sin una habilidad requerida", () => {
   const persona = new PersonaColaboradora("Ana")
   const proyecto = proyectoAbierto()
+
+  expect(() => new Colaboracion(persona, proyecto)).toThrow(DomainRuleError)
+})
+
+test("rechaza colaborar si solo tiene parte de las requeridas del perfil", () => {
+  const persona = personaConHabilidad()
+  const proyecto = proyectoAbierto(["hab-1", "hab-2"])
 
   expect(() => new Colaboracion(persona, proyecto)).toThrow(DomainRuleError)
 })

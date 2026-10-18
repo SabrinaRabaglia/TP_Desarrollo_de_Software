@@ -59,21 +59,30 @@ describe("Proyecto", () => {
     expect(proyecto.fechaCierre).toEqual(fechaCierre)
   })
 
-  test("compara las habilidades requeridas de todos los perfiles por ID y exige una coincidencia", () => {
+  test("una persona cubre el proyecto si tiene todas las requeridas de alguno de sus perfiles", () => {
+    const perfilQueRequiere = (...habilidadesRequeridas) =>
+      new Perfil({
+        descripcion: "Perfil",
+        unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
+        cantidadHoras: 5,
+        modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
+        habilidadesRequeridas,
+        habilidadesOpcionales: ["docker"],
+      })
     const proyecto = new Proyecto("Plataforma", "Desarrollo web", colectivo)
-    const persona = { habilidades: [{ id: "javascript" }] }
+    const persona = { habilidades: [{ id: "javascript" }, { id: "react" }] }
 
-    proyecto.perfiles = [{ habilidadesRequeridas: ["otra-habilidad"] }]
-    expect(proyecto.poseeHabilidadNecesaria(persona)).toBe(false)
+    proyecto.perfiles = [perfilQueRequiere("javascript", "python")]
+    expect(proyecto.algunPerfilEsCubiertoPor(persona)).toBe(false)
 
     proyecto.perfiles = [
-      { habilidadesRequeridas: ["otra-habilidad"] },
-      { habilidadesRequeridas: ["javascript"] },
+      perfilQueRequiere("javascript", "python"),
+      perfilQueRequiere("javascript", "react"),
     ]
-    expect(proyecto.poseeHabilidadNecesaria(persona)).toBe(true)
+    expect(proyecto.algunPerfilEsCubiertoPor(persona)).toBe(true)
 
     proyecto.perfiles = []
-    expect(proyecto.poseeHabilidadNecesaria(persona)).toBe(false)
+    expect(proyecto.algunPerfilEsCubiertoPor(persona)).toBe(false)
   })
 
   test("Falta el título del proyecto", () => {

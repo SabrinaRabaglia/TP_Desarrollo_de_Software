@@ -212,3 +212,21 @@ describe("búsqueda de colaboradores según un perfil", () => {
     )
   })
 })
+
+describe("inscripción con el mismo criterio que las búsquedas", () => {
+  const inscribir = (persona, proyecto, status) =>
+    request(
+      "POST",
+      "/colaboraciones",
+      { personaColaboradoraId: persona.id, proyectoId: proyecto.id },
+      status,
+    )
+
+  test("rechaza a quien cubre solo parte de las requeridas de un perfil", async () => {
+    await inscribir(personas.lucho, proyectos.web, 409)
+  })
+
+  test("acepta a quien cubre todas las requeridas de un perfil", async () => {
+    await inscribir(personas.ana, proyectos.web, 201)
+  })
+})

@@ -1369,7 +1369,7 @@
                 "colaboraciones"
               ]
             },
-            "description": "Exige al menos una habilidad coincidente. Devuelve 409 si ya está inscripta, 422 si el proyecto está cerrado y 404 si falta alguna entidad."
+            "description": "Exige que la persona tenga todas las habilidades requeridas de algún perfil del proyecto (el mismo criterio que las búsquedas). Devuelve 409 si no las tiene, si ya está inscripta o si el proyecto está cerrado, y 404 si falta alguna entidad."
           },
           "response": []
         },
