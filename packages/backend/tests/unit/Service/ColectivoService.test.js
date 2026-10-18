@@ -13,7 +13,6 @@ import ProvinciaRepository from "../../fakes/ProvinciaRepository.js"
 import PaisRepository from "../../fakes/PaisRepository.js"
 import TipoColectivo from "../../../src/domain/TipoColectivo.js"
 describe("ColectivoService", () => {
-
   beforeEach(() => {
     new ColectivoRepository().deleteAll()
   })
@@ -30,7 +29,7 @@ describe("ColectivoService", () => {
         new TipoColectivoRepository(),
         new ProyectoRepository(),
         new ProvinciaRepository(),
-        new PaisRepository()
+        new PaisRepository(),
       )
       const datos = {
         nombre: "Asamblea Ambiental",
@@ -44,7 +43,7 @@ describe("ColectivoService", () => {
       )
       expect(await service.getAll()).toEqual([])
 
-      const colectivo = await service.create(datos)
+      const colectivo = (await service.create(datos)).colectivo
       const antes = await service.getById(colectivo.id)
 
       await expect(
@@ -67,19 +66,21 @@ describe("ColectivoService", () => {
 
     const service = new ColectivoService(
       new ColectivoRepository(),
-      catalogo, 
+      catalogo,
       new ProyectoRepository(),
       new ProvinciaRepository(),
-      new PaisRepository()
+      new PaisRepository(),
     )
 
-    const colectivo = await service.create({
-      nombre: "Cooperativa del barrio",
-      descripcion: "Descripción",
-      tipo: "Cooperativa",
-    })
+    const colectivo = (
+      await service.create({
+        nombre: "Cooperativa del barrio",
+        descripcion: "Descripción",
+        tipo: "Cooperativa",
+      })
+    ).colectivo
 
-    const encontrado = await service.getById(colectivo.id)
+    const encontrado = (await service.getById(colectivo.id)).colectivo
     expect(encontrado).toBeDefined()
     expect(encontrado.tipo).toBe("Cooperativa")
   })
@@ -91,7 +92,7 @@ describe("ColectivoService", () => {
         new TipoColectivoRepository(),
         new ProyectoRepository(),
         new ProvinciaRepository(),
-        new PaisRepository()
+        new PaisRepository(),
       )
       const nueva = {
         nombre: "Asamblea Ambiental",
@@ -99,7 +100,7 @@ describe("ColectivoService", () => {
         tipo: "asamblea",
         provincia: "6",
       }
-      const colectivoCreado = await service.create(nueva)
+      const colectivoCreado = (await service.create(nueva)).colectivo
 
       expect(colectivoCreado.nombre).toBe(nueva.nombre)
       expect(colectivoCreado.descripcion).toBe(nueva.descripcion)
@@ -114,7 +115,7 @@ describe("ColectivoService", () => {
         new TipoColectivoRepository(),
         new ProyectoRepository(),
         new ProvinciaRepository(),
-        new PaisRepository()
+        new PaisRepository(),
       )
 
       await service.create({
@@ -128,7 +129,7 @@ describe("ColectivoService", () => {
           nombre: "Asamblea Ambiental",
           descripcion: "Otra descripción distinta",
           tipo: "ONG",
-        })
+        }),
       ).rejects.toThrow(AlreadyExists)
 
       expect(await service.getAll()).toHaveLength(1)
@@ -141,15 +142,18 @@ describe("ColectivoService", () => {
           new TipoColectivoRepository(),
           new ProyectoRepository(),
           new ProvinciaRepository(),
-          new PaisRepository()
+          new PaisRepository(),
         )
-        const colectivoCreado = await service.create({
-          nombre: "Asamblea Ambiental",
-          descripcion: "Protección de humedales locales",
-          tipo: "Asamblea",
-        })
+        const colectivoCreado = (
+          await service.create({
+            nombre: "Asamblea Ambiental",
+            descripcion: "Protección de humedales locales",
+            tipo: "Asamblea",
+          })
+        ).colectivo
 
-        const colectivoEncontrado = await service.getById(colectivoCreado.id)
+        const colectivoEncontrado = (await service.getById(colectivoCreado.id))
+          .colectivo
 
         expect(colectivoEncontrado).toBeDefined()
         expect(colectivoEncontrado.id).toBe(colectivoCreado.id)
@@ -162,10 +166,12 @@ describe("ColectivoService", () => {
           new TipoColectivoRepository(),
           new ProyectoRepository(),
           new ProvinciaRepository(),
-          new PaisRepository()
+          new PaisRepository(),
         )
 
-        await expect(service.getById("id-inexistente")).rejects.toThrow(EntityNotFound)
+        await expect(service.getById("id-inexistente")).rejects.toThrow(
+          EntityNotFound,
+        )
       })
     })
 
@@ -176,21 +182,25 @@ describe("ColectivoService", () => {
           new TipoColectivoRepository(),
           new ProyectoRepository(),
           new ProvinciaRepository(),
-          new PaisRepository()
+          new PaisRepository(),
         )
-        const colectivo = await service.create({
-          nombre: "Asamblea Ambiental",
-          descripcion: "Descripción original",
-          tipo: "Asamblea",
-        })
+        const colectivo = (
+          await service.create({
+            nombre: "Asamblea Ambiental",
+            descripcion: "Descripción original",
+            tipo: "Asamblea",
+          })
+        ).colectivo
 
-        const actualizado = await service.update(colectivo.id, {
-          nombre: "Asamblea Ambiental",
-          descripcion: "Descripción original",
-          tipo: "Asamblea",
-          pais: "1",
-          provincia: "2",
-        })
+        const actualizado = (
+          await service.update(colectivo.id, {
+            nombre: "Asamblea Ambiental",
+            descripcion: "Descripción original",
+            tipo: "Asamblea",
+            pais: "1",
+            provincia: "2",
+          })
+        ).colectivo
 
         expect(actualizado.pais).toMatchObject({ id: "1", nombre: "Argentina" })
         expect(actualizado.provincia).toMatchObject({
@@ -205,13 +215,15 @@ describe("ColectivoService", () => {
           new TipoColectivoRepository(),
           new ProyectoRepository(),
           new ProvinciaRepository(),
-          new PaisRepository()
+          new PaisRepository(),
         )
-        const colectivo = await service.create({
-          nombre: "Asamblea Ambiental",
-          descripcion: "Descripción original",
-          tipo: "Asamblea",
-        })
+        const colectivo = (
+          await service.create({
+            nombre: "Asamblea Ambiental",
+            descripcion: "Descripción original",
+            tipo: "Asamblea",
+          })
+        ).colectivo
         const antes = await service.getById(colectivo.id)
 
         await expect(
@@ -230,7 +242,7 @@ describe("ColectivoService", () => {
           new TipoColectivoRepository(),
           new ProyectoRepository(),
           new ProvinciaRepository(),
-          new PaisRepository()
+          new PaisRepository(),
         )
         const datos = { nombre: "Nuevo", descripcion: "Desc", tipo: "ONG" }
 
@@ -251,13 +263,15 @@ describe("ColectivoService", () => {
           new TipoColectivoRepository(),
           new ProyectoRepository(),
           new ProvinciaRepository(),
-          new PaisRepository()
+          new PaisRepository(),
         )
-        const colectivo = await service.create({
-          nombre: "Asamblea Ambiental",
-          descripcion: "Protección de humedales locales",
-          tipo: "Asamblea",
-        })
+        const colectivo = (
+          await service.create({
+            nombre: "Asamblea Ambiental",
+            descripcion: "Protección de humedales locales",
+            tipo: "Asamblea",
+          })
+        ).colectivo
 
         await service.delete(colectivo.id)
 
@@ -270,13 +284,15 @@ describe("ColectivoService", () => {
           new TipoColectivoRepository(),
           new ProyectoRepository(),
           new ProvinciaRepository(),
-          new PaisRepository()
+          new PaisRepository(),
         )
-        const colectivo = await service.create({
-          nombre: "Asamblea Ambiental",
-          descripcion: "Protección de humedales locales",
-          tipo: "Asamblea",
-        })
+        const colectivo = (
+          await service.create({
+            nombre: "Asamblea Ambiental",
+            descripcion: "Protección de humedales locales",
+            tipo: "Asamblea",
+          })
+        ).colectivo
         await new ProyectoRepository().save({
           titulo: "Mapa de humedales",
           colectivo: colectivo.id,

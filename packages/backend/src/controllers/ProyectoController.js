@@ -2,6 +2,7 @@ import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
 import { z } from "zod"
 import { BadRequestError } from "../errors/ApplicationErrors.js"
 import { objectIdSchema } from "../validations/objectId.js"
+import { proyectoDTO } from "../dtos/proyectoDTO.js"
 
 const proyectoSchema = z
   .object({
@@ -36,7 +37,7 @@ export default class ProyectoController {
       const proyectos = habilidades
         ? await this.proyectoService.getAllByHabilidades(habilidades)
         : await this.proyectoService.getAll()
-      res.status(200).json(proyectos)
+      res.status(200).json(proyectos.map(proyectoDTO))
     } catch (error) {
       next(error)
     }
@@ -45,7 +46,7 @@ export default class ProyectoController {
   getById = async (req, res, next) => {
     try {
       const { id } = req.params
-      res.status(200).json(await this.proyectoService.getById(id))
+      res.status(200).json(proyectoDTO(await this.proyectoService.getById(id)))
     } catch (error) {
       next(error)
     }
@@ -59,7 +60,7 @@ export default class ProyectoController {
         throw new BadRequestError("Datos inválidos", resultado.error.issues)
       }
       const creado = await this.proyectoService.create(resultado.data)
-      res.status(201).json(creado)
+      res.status(201).json(proyectoDTO(creado))
     } catch (error) {
       next(error)
     }
@@ -74,7 +75,7 @@ export default class ProyectoController {
       }
       const id = req.params.id
       const actualizado = await this.proyectoService.update(id, resultado.data)
-      res.status(200).json(actualizado)
+      res.status(200).json(proyectoDTO(actualizado))
     } catch (error) {
       next(error)
     }
@@ -91,7 +92,7 @@ export default class ProyectoController {
         id,
         resultado.data,
       )
-      res.status(200).json(proyectoActualizado)
+      res.status(200).json(proyectoDTO(proyectoActualizado))
     } catch (error) {
       next(error)
     }

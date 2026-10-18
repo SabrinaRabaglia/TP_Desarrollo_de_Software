@@ -2,6 +2,10 @@ import { describe, expect, test, jest } from "@jest/globals"
 import ProyectoController from "../../../src/controllers/ProyectoController.js"
 import { BadRequestError } from "../../../src/errors/ApplicationErrors.js"
 import { EstadoProyecto } from "../../../src/domain/enums/EstadoProyecto.js"
+import { proyectoDTO } from "../../../src/dtos/proyectoDTO.js"
+
+// El service devuelve el proyecto guardado; el controller lo pasa por el DTO.
+const guardado = (proyecto) => ({ ...proyecto, id: "1", perfiles: [] })
 const mockRes = () => ({
   status: jest.fn().mockReturnThis(),
   json: jest.fn().mockReturnThis(),
@@ -32,7 +36,7 @@ describe("ProyectoController", () => {
     test("responde con 200 y la lista de proyectos devuelta por el service", async () => {
       const proyectoServiceMock = mockProyectoService()
       const lista = [proyectoValido]
-      proyectoServiceMock.getAll.mockReturnValue(lista)
+      proyectoServiceMock.getAll.mockReturnValue(lista.map(guardado))
 
       const controller = new ProyectoController(proyectoServiceMock)
       const req = { query: {} }
@@ -43,7 +47,9 @@ describe("ProyectoController", () => {
 
       expect(proyectoServiceMock.getAll).toHaveBeenCalled()
       expect(res.status).toHaveBeenCalledWith(200)
-      expect(res.json).toHaveBeenCalledWith(lista)
+      expect(res.json).toHaveBeenCalledWith(
+        lista.map(guardado).map(proyectoDTO),
+      )
     })
 
     test.each([
@@ -62,7 +68,9 @@ describe("ProyectoController", () => {
       async (_caso, habilidades, ids) => {
         const proyectoServiceMock = mockProyectoService()
         const lista = [proyectoValido]
-        proyectoServiceMock.getAllByHabilidades.mockReturnValue(lista)
+        proyectoServiceMock.getAllByHabilidades.mockReturnValue(
+          lista.map(guardado),
+        )
         const controller = new ProyectoController(proyectoServiceMock)
         const res = mockRes()
 
@@ -73,7 +81,9 @@ describe("ProyectoController", () => {
         )
         expect(proyectoServiceMock.getAll).not.toHaveBeenCalled()
         expect(res.status).toHaveBeenCalledWith(200)
-        expect(res.json).toHaveBeenCalledWith(lista)
+        expect(res.json).toHaveBeenCalledWith(
+          lista.map(guardado).map(proyectoDTO),
+        )
       },
     )
 
@@ -96,7 +106,7 @@ describe("ProyectoController", () => {
   describe("getById", () => {
     test("responde con 200 y el proyecto obtenido según el id", async () => {
       const proyectoServiceMock = mockProyectoService()
-      proyectoServiceMock.getById.mockReturnValue(proyectoValido)
+      proyectoServiceMock.getById.mockReturnValue(guardado(proyectoValido))
 
       const controller = new ProyectoController(proyectoServiceMock)
       const req = { params: { id: "1" } }
@@ -107,7 +117,9 @@ describe("ProyectoController", () => {
 
       expect(proyectoServiceMock.getById).toHaveBeenCalledWith("1")
       expect(res.status).toHaveBeenCalledWith(200)
-      expect(res.json).toHaveBeenCalledWith(proyectoValido)
+      expect(res.json).toHaveBeenCalledWith(
+        proyectoDTO(guardado(proyectoValido)),
+      )
     })
   })
 
@@ -115,7 +127,7 @@ describe("ProyectoController", () => {
     test("con body valido, delega en el service y responde con 201 el proyecto creado", async () => {
       const proyectoServiceMock = mockProyectoService()
       const proyectoCreado = { ...proyectoValido, id: "proyecto-1" }
-      proyectoServiceMock.create.mockReturnValue(proyectoCreado)
+      proyectoServiceMock.create.mockReturnValue(guardado(proyectoCreado))
 
       const controller = new ProyectoController(proyectoServiceMock)
       const req = { body: { ...proyectoValido } }
@@ -126,7 +138,9 @@ describe("ProyectoController", () => {
 
       expect(proyectoServiceMock.create).toHaveBeenCalled()
       expect(res.status).toHaveBeenCalledWith(201)
-      expect(res.json).toHaveBeenCalledWith(proyectoCreado)
+      expect(res.json).toHaveBeenCalledWith(
+        proyectoDTO(guardado(proyectoCreado)),
+      )
     })
 
     test("con body inválido (falta un campo obligatorio), tira BadRequestError y no llama al service", async () => {
@@ -186,7 +200,7 @@ describe("ProyectoController", () => {
     test("con body valido actualiza el proyecto y responde con 200", async () => {
       const proyectoServiceMock = mockProyectoService()
       const proyectoGuardado = { ...proyectoValido, id: "1" }
-      proyectoServiceMock.update.mockReturnValue(proyectoGuardado)
+      proyectoServiceMock.update.mockReturnValue(guardado(proyectoGuardado))
 
       const controller = new ProyectoController(proyectoServiceMock)
       const req = { params: { id: "1" }, body: { ...proyectoValido } }
@@ -200,7 +214,9 @@ describe("ProyectoController", () => {
         expect.any(Object),
       )
       expect(res.status).toHaveBeenCalledWith(200)
-      expect(res.json).toHaveBeenCalledWith(proyectoGuardado)
+      expect(res.json).toHaveBeenCalledWith(
+        proyectoDTO(guardado(proyectoGuardado)),
+      )
     })
 
     test("con body invalido tira BadRequestError y no llama al service", async () => {
@@ -221,7 +237,7 @@ describe("ProyectoController", () => {
       const proyectoServiceMock = mockProyectoService()
       const cambiosParciales = { titulo: "Título Modificado" }
       const proyectoActualizado = { ...proyectoValido, ...cambiosParciales }
-      proyectoServiceMock.update.mockReturnValue(proyectoActualizado)
+      proyectoServiceMock.update.mockReturnValue(guardado(proyectoActualizado))
 
       const controller = new ProyectoController(proyectoServiceMock)
       const req = { params: { id: "1" }, body: cambiosParciales }
@@ -235,7 +251,9 @@ describe("ProyectoController", () => {
         cambiosParciales,
       )
       expect(res.status).toHaveBeenCalledWith(200)
-      expect(res.json).toHaveBeenCalledWith(proyectoActualizado)
+      expect(res.json).toHaveBeenCalledWith(
+        proyectoDTO(guardado(proyectoActualizado)),
+      )
     })
   })
 

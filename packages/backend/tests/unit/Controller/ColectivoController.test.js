@@ -1,6 +1,13 @@
 import { describe, expect, test, jest } from "@jest/globals"
 import ColectivoController from "../../../src/controllers/ColectivoController.js"
 import { BadRequestError } from "../../../src/errors/ApplicationErrors.js"
+import { colectivoDTO } from "../../../src/dtos/colectivoDTO.js"
+
+// El service devuelve el colectivo con sus proyectos; el controller lo pasa por el DTO.
+const guardado = (colectivo) => ({
+  colectivo: { id: "1", ...colectivo },
+  proyectos: [],
+})
 
 const PAIS_ID = "65f1a2b3c4d5e6f708192a01"
 const PROVINCIA_ID = "65f1a2b3c4d5e6f708192a02"
@@ -20,13 +27,12 @@ const mockColectivoService = () => ({
   getAll: jest.fn(),
 })
 
-
 describe("ColectivoController", () => {
   describe("getAll", () => {
     test("Responde con 200 y la lista de colectivos que devuelve el service", async () => {
       const colectivoServiceMock = mockColectivoService()
       const lista = [{ nombre: "Asamblea Ambiental" }]
-      colectivoServiceMock.getAll.mockReturnValue(lista)
+      colectivoServiceMock.getAll.mockReturnValue(lista.map(guardado))
 
       const controller = new ColectivoController(colectivoServiceMock)
       const req = {}
@@ -37,14 +43,16 @@ describe("ColectivoController", () => {
 
       expect(colectivoServiceMock.getAll).toHaveBeenCalled()
       expect(res.status).toHaveBeenCalledWith(200)
-      expect(res.json).toHaveBeenCalledWith(lista)
+      expect(res.json).toHaveBeenCalledWith(
+        lista.map(guardado).map(colectivoDTO),
+      )
     })
   })
   describe("getById", () => {
     test("Responde con 200 y el colectivo obtenido según el id", async () => {
       const colectivoServiceMock = mockColectivoService()
       const colectivo = { nombre: "Asamblea Ambiental" }
-      colectivoServiceMock.getById.mockReturnValue(colectivo)
+      colectivoServiceMock.getById.mockReturnValue(guardado(colectivo))
 
       const controller = new ColectivoController(colectivoServiceMock)
       const req = { params: { id: "1" } }
@@ -55,7 +63,7 @@ describe("ColectivoController", () => {
 
       expect(colectivoServiceMock.getById).toHaveBeenCalledWith("1")
       expect(res.status).toHaveBeenCalledWith(200)
-      expect(res.json).toHaveBeenCalledWith(colectivo)
+      expect(res.json).toHaveBeenCalledWith(colectivoDTO(guardado(colectivo)))
     })
   })
   describe("create", () => {
@@ -71,7 +79,7 @@ describe("ColectivoController", () => {
         ciudad: "Almagro",
       }
       const colectivoServiceMock = mockColectivoService()
-      colectivoServiceMock.create.mockReturnValue(colectivoCreado)
+      colectivoServiceMock.create.mockReturnValue(guardado(colectivoCreado))
       const controller = new ColectivoController(colectivoServiceMock)
       const req = {
         body: {
@@ -91,7 +99,9 @@ describe("ColectivoController", () => {
 
       expect(colectivoServiceMock.create).toHaveBeenCalledWith(req.body)
       expect(res.status).toHaveBeenCalledWith(201)
-      expect(res.json).toHaveBeenCalledWith(colectivoCreado)
+      expect(res.json).toHaveBeenCalledWith(
+        colectivoDTO(guardado(colectivoCreado)),
+      )
     })
     test("con body inválido (falta un campo), tira BadRequestError y no llama al service", async () => {
       const colectivoServiceMock = mockColectivoService()
@@ -106,27 +116,34 @@ describe("ColectivoController", () => {
       const res = mockRes()
       const next = jest.fn()
 
-
-      await controller.create(req, res, next); 
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError));
+      await controller.create(req, res, next)
+      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
       expect(colectivoServiceMock.create).not.toHaveBeenCalled()
     })
     test.each([
       ["pais", { pais: "Argentina" }],
       ["provincia", { provincia: "2" }],
-    ])("con un %s que no es un id válido, tira BadRequestError", async (_campo, cambios) => {
-      const colectivoServiceMock = mockColectivoService()
-      const controller = new ColectivoController(colectivoServiceMock)
-      const req = {
-        body: { nombre: "Asamblea", descripcion: "Descripción", tipo: "Asamblea", ...cambios },
-      }
-      const next = jest.fn()
+    ])(
+      "con un %s que no es un id válido, tira BadRequestError",
+      async (_campo, cambios) => {
+        const colectivoServiceMock = mockColectivoService()
+        const controller = new ColectivoController(colectivoServiceMock)
+        const req = {
+          body: {
+            nombre: "Asamblea",
+            descripcion: "Descripción",
+            tipo: "Asamblea",
+            ...cambios,
+          },
+        }
+        const next = jest.fn()
 
-      await controller.create(req, mockRes(), next)
+        await controller.create(req, mockRes(), next)
 
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
-      expect(colectivoServiceMock.create).not.toHaveBeenCalled()
-    })
+        expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
+        expect(colectivoServiceMock.create).not.toHaveBeenCalled()
+      },
+    )
     test("con un campo extra no declarado en el schema, tira BadRequestError", async () => {
       const colectivoServiceMock = mockColectivoService()
       const controller = new ColectivoController(colectivoServiceMock)
@@ -145,10 +162,8 @@ describe("ColectivoController", () => {
       const res = mockRes()
       const next = jest.fn()
 
-
-
-      await controller.create(req, res, next); // Se ejecuta normalmente
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError));
+      await controller.create(req, res, next) // Se ejecuta normalmente
+      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
       expect(colectivoServiceMock.create).not.toHaveBeenCalled()
     })
   })
@@ -168,7 +183,7 @@ describe("ColectivoController", () => {
       }
       const req = { params: { id: "1" }, body: colectivoActualizado }
       const colectivoGuardado = { ...colectivoActualizado, id: "1" }
-      colectivoServiceMock.update.mockReturnValue(colectivoGuardado)
+      colectivoServiceMock.update.mockReturnValue(guardado(colectivoGuardado))
       const res = mockRes()
       const next = jest.fn()
 
@@ -176,7 +191,9 @@ describe("ColectivoController", () => {
 
       expect(colectivoServiceMock.update).toHaveBeenCalledWith("1", req.body)
       expect(res.status).toHaveBeenCalledWith(200)
-      expect(res.json).toHaveBeenCalledWith(colectivoGuardado)
+      expect(res.json).toHaveBeenCalledWith(
+        colectivoDTO(guardado(colectivoGuardado)),
+      )
     })
 
     test("con body invalido tira BadRequestError", async () => {
@@ -185,10 +202,10 @@ describe("ColectivoController", () => {
       const req = { params: { id: "1" }, body: { nombre: "Solo nombre" } }
       const res = mockRes()
       const next = jest.fn()
-      
-     await controller.create(req, res, next);
-     expect(next).toHaveBeenCalledWith(expect.any(BadRequestError));
-      expect(colectivoServiceMock.create).not.toHaveBeenCalled();
+
+      await controller.create(req, res, next)
+      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
+      expect(colectivoServiceMock.create).not.toHaveBeenCalled()
     })
   })
 
@@ -196,7 +213,7 @@ describe("ColectivoController", () => {
     test("con actualización parcial valida delega en el service y responde con 200", async () => {
       const colectivoServiceMock = mockColectivoService()
       const actualizado = { nombre: "Nuevo Nombre" }
-      colectivoServiceMock.patch.mockReturnValue(actualizado)
+      colectivoServiceMock.patch.mockReturnValue(guardado(actualizado))
 
       const controller = new ColectivoController(colectivoServiceMock)
       const req = { params: { id: "1" }, body: { nombre: "Nuevo Nombre" } }
@@ -209,7 +226,7 @@ describe("ColectivoController", () => {
         nombre: "Nuevo Nombre",
       })
       expect(res.status).toHaveBeenCalledWith(200)
-      expect(res.json).toHaveBeenCalledWith(actualizado)
+      expect(res.json).toHaveBeenCalledWith(colectivoDTO(guardado(actualizado)))
     })
   })
 

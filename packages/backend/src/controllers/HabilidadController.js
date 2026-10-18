@@ -1,5 +1,6 @@
 import { BadRequestError } from "../errors/ApplicationErrors.js"
 import { z } from "zod"
+import { habilidadDTO } from "../dtos/habilidadDTO.js"
 
 const habilidadSchema = z
   .object({
@@ -21,7 +22,7 @@ export default class HabilidadController {
         throw new BadRequestError("Datos inválidos", resultado.error.issues)
       }
       const habilidad = await this.habilidadService.create(resultado.data)
-      res.status(201).json(habilidad)
+      res.status(201).json(habilidadDTO(habilidad))
     } catch (error) {
       next(error)
     }
@@ -37,7 +38,7 @@ export default class HabilidadController {
         req.params.id,
         resultado.data,
       )
-      res.status(200).json(habilidad)
+      res.status(200).json(habilidadDTO(habilidad))
     } catch (error) {
       next(error)
     }
@@ -55,7 +56,7 @@ export default class HabilidadController {
   getById = async (req, res, next) => {
     try {
       const habilidad = await this.habilidadService.getById(req.params.id)
-      res.status(200).json(habilidad)
+      res.status(200).json(habilidadDTO(habilidad))
     } catch (error) {
       next(error)
     }
@@ -63,7 +64,9 @@ export default class HabilidadController {
 
   getAll = async (req, res, next) => {
     try {
-      res.status(200).json(await this.habilidadService.getAll())
+      res
+        .status(200)
+        .json((await this.habilidadService.getAll()).map(habilidadDTO))
     } catch (error) {
       next(error)
     }

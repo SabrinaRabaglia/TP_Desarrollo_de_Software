@@ -4,6 +4,7 @@ import { UnidadCompromiso } from "../domain/enums/UnidadCompromiso.js"
 import { BadRequestError } from "../errors/ApplicationErrors.js"
 import { objectIdSchema } from "../validations/objectId.js"
 import { personaColaboradoraDTO } from "../dtos/personaColaboradoraDTO.js"
+import { perfilDTO } from "../dtos/perfilDTO.js"
 
 const perfilSchema = z
   .object({
@@ -36,7 +37,7 @@ export default class PerfilController {
         req.params.id,
         validar(req.body),
       )
-      res.status(201).json(perfil)
+      res.status(201).json(perfilDTO(perfil))
     } catch (error) {
       next(error)
     }
@@ -49,7 +50,7 @@ export default class PerfilController {
         req.params.perfilId,
         validar(req.body),
       )
-      res.status(200).json(perfil)
+      res.status(200).json(perfilDTO(perfil))
     } catch (error) {
       next(error)
     }
@@ -70,7 +71,7 @@ export default class PerfilController {
         req.params.id,
         req.params.perfilId,
       )
-      res.status(200).json(perfil)
+      res.status(200).json(perfilDTO(perfil))
     } catch (error) {
       next(error)
     }
@@ -93,7 +94,7 @@ export default class PerfilController {
       const perfiles = await this.perfilService.getAllByProyectoId(
         req.params.id,
       )
-      res.status(200).json(perfiles)
+      res.status(200).json(perfiles.map(perfilDTO))
     } catch (error) {
       next(error)
     }

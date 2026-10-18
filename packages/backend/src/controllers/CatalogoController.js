@@ -1,3 +1,5 @@
+import { catalogoDTO } from "../dtos/catalogoDTO.js"
+
 export default class CatalogoController {
   constructor(catalogoService) {
     this.catalogoService = catalogoService
@@ -5,7 +7,9 @@ export default class CatalogoController {
 
   getPaises = async (_req, res, next) => {
     try {
-      res.status(200).json(await this.catalogoService.getPaises())
+      res
+        .status(200)
+        .json((await this.catalogoService.getPaises()).map(catalogoDTO))
     } catch (error) {
       next(error)
     }
@@ -13,7 +17,9 @@ export default class CatalogoController {
 
   getProvincias = async (_req, res, next) => {
     try {
-      res.status(200).json(await this.catalogoService.getProvincias())
+      res
+        .status(200)
+        .json((await this.catalogoService.getProvincias()).map(catalogoDTO))
     } catch (error) {
       next(error)
     }

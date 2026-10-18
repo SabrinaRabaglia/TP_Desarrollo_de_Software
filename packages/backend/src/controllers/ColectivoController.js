@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { BadRequestError } from "../errors/ApplicationErrors.js"
 import { objectIdSchema } from "../validations/objectId.js"
+import { colectivoDTO } from "../dtos/colectivoDTO.js"
 
 const colectivoSchema = z
   .object({
@@ -19,7 +20,9 @@ export default class ColectivoController {
 
   getAll = async (req, res, next) => {
     try {
-      res.status(200).json(await this.colectivoService.getAll())
+      res
+        .status(200)
+        .json((await this.colectivoService.getAll()).map(colectivoDTO))
     } catch (error) {
       next(error)
     }
@@ -27,7 +30,9 @@ export default class ColectivoController {
   getById = async (req, res, next) => {
     const { id } = req.params
     try {
-      res.status(200).json(await this.colectivoService.getById(id))
+      res
+        .status(200)
+        .json(colectivoDTO(await this.colectivoService.getById(id)))
     } catch (error) {
       next(error)
     }
@@ -40,7 +45,7 @@ export default class ColectivoController {
         throw new BadRequestError("Datos inválidos", resultado.error.issues)
       }
       const creado = await this.colectivoService.create(resultado.data)
-      res.status(201).json(creado)
+      res.status(201).json(colectivoDTO(creado))
     } catch (error) {
       next(error)
     }
@@ -54,7 +59,7 @@ export default class ColectivoController {
       }
       const id = req.params.id
       const actualizado = await this.colectivoService.update(id, resultado.data)
-      res.status(200).json(actualizado)
+      res.status(200).json(colectivoDTO(actualizado))
     } catch (error) {
       next(error)
     }
@@ -70,7 +75,7 @@ export default class ColectivoController {
         id,
         resultado.data,
       )
-      res.status(200).json(colectivoActualizado)
+      res.status(200).json(colectivoDTO(colectivoActualizado))
     } catch (error) {
       next(error)
     }

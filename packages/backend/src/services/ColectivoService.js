@@ -20,22 +20,12 @@ export default class ColectivoService {
     this.provinciaRepository = provinciaRepository
     this.paisRepository = paisRepository
   }
-  toDTO = (colectivo, proyectos) => ({
-    id: colectivo.id,
-    nombre: colectivo.nombre,
-    descripcion: colectivo.descripcion,
-    tipo: colectivo.tipo,
-    pais: colectivo.pais,
-    provincia: colectivo.provincia,
-    ciudad: colectivo.ciudad,
-    proyectos,
+  // Devuelve el colectivo junto con sus proyectos, que se guardan del lado
+  // del proyecto (proyecto.colectivo) y no dentro del colectivo.
+  conProyectos = async (colectivo) => ({
+    colectivo,
+    proyectos: await this.proyectoRepository.findByColectivoId(colectivo.id),
   })
-
-  conProyectos = async (colectivo) =>
-    this.toDTO(
-      colectivo,
-      await this.proyectoRepository.findByColectivoId(colectivo.id),
-    )
 
   getAll = async () => {
     const colectivos = await this.colectivoRepository.findAll()
@@ -102,7 +92,10 @@ export default class ColectivoService {
     Object.assign(colectivo, await this.resolverUbicacion(nuevo))
     await this.validarNombreDisponible(colectivo.nombre)
 
-    return this.toDTO(await this.colectivoRepository.save(colectivo), [])
+    return {
+      colectivo: await this.colectivoRepository.save(colectivo),
+      proyectos: [],
+    }
   }
 
   aplicarCambios = async (existente, datos) => {

@@ -50,11 +50,11 @@ describe("ProyectoService", () => {
       colaboracionRepository,
     )
 
-    const colectivo = await colectivoService.create({
+    const colectivo = (await colectivoService.create({
       nombre: "Asamblea Ambiental",
       descripcion: "Protección de humedales",
       tipo: "Asamblea",
-    })
+    })).colectivo
 
     dtoProyectoValido = {
       titulo: "Plataforma de Colaboración",
@@ -169,11 +169,11 @@ describe("ProyectoService", () => {
 
     test("permite cambiar el colectivo por otro existente", async () => {
       const creado = await service.create(dtoProyectoValido)
-      const colectivo = await colectivoService.create({
+      const colectivo = (await colectivoService.create({
         nombre: "Otra organización",
         descripcion: "Proyecto comunitario",
         tipo: "ONG",
-      })
+      })).colectivo
 
       await service.update(creado.id, { colectivo: colectivo.id })
 
