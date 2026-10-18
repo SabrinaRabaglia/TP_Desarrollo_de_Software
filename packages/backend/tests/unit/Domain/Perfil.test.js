@@ -93,4 +93,15 @@ describe("Perfil", () => {
       }),
     ).toBe(2)
   })
+
+  test("está cubierto por un conjunto de habilidades si incluye todas sus requeridas", () => {
+    const perfil = new Perfil({
+      ...datos,
+      habilidadesRequeridas: ["cypress", "postman"],
+    })
+
+    expect(perfil.estaCubiertoPor(["cypress", "postman", "jmeter"])).toBe(true)
+    expect(perfil.estaCubiertoPor(["cypress"])).toBe(false)
+    expect(perfil.estaCubiertoPor([])).toBe(false)
+  })
 })

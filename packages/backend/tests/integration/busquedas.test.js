@@ -117,11 +117,19 @@ afterAll(async () => {
 })
 
 describe("búsqueda de proyectos según habilidades", () => {
-  test("devuelve los proyectos publicados con algún perfil que requiera al menos una", async () => {
+  test("devuelve los proyectos publicados con algún perfil cuyas requeridas estén todas cubiertas", async () => {
     const { javascript, react, python, sql } = habilidades
 
     expect(
       titulos(await request("GET", `/proyectos?habilidades=${javascript.id}`)),
+    ).toEqual(["Mapa"])
+    expect(
+      titulos(
+        await request(
+          "GET",
+          `/proyectos?habilidades=${javascript.id}&habilidades=${react.id}`,
+        ),
+      ),
     ).toEqual(["Mapa", "Sitio web"])
     expect(
       titulos(
@@ -130,7 +138,7 @@ describe("búsqueda de proyectos según habilidades", () => {
           `/proyectos?habilidades=${react.id}&habilidades=${python.id}`,
         ),
       ),
-    ).toEqual(["Análisis", "Sitio web"])
+    ).toEqual(["Análisis"])
     expect(await request("GET", `/proyectos?habilidades=${sql.id}`)).toEqual([])
   })
 

@@ -16,6 +16,13 @@ export default class Perfil {
     this.asignar(datos)
   }
 
+  estaCubiertoPor(habilidades) {
+    const disponibles = new Set(habilidades.map(idDe))
+    return this.habilidadesRequeridas.every((habilidad) =>
+      disponibles.has(idDe(habilidad)),
+    )
+  }
+
   cantidadDeHabilidadesOpcionalesDe(personaColaboradora) {
     const suyas = new Set(personaColaboradora.habilidades.map(idDe))
     return this.habilidadesOpcionales.filter((habilidad) =>

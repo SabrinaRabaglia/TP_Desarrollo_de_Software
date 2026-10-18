@@ -293,17 +293,22 @@ describe("ProyectoService", () => {
       return await proyectoRepository.save(proyecto)
     }
 
-    test("devuelve los proyectos con algún perfil que requiera al menos una de las habilidades", async () => {
+    test("devuelve los proyectos con algún perfil cuyas habilidades requeridas estén todas cubiertas", async () => {
       const web = await crearConPerfil("Sitio web", ["javascript", "react"])
       const mapa = await crearConPerfil("Mapa", ["javascript"])
       await crearConPerfil("Análisis", ["python"])
 
-      expect(await service.getAllByHabilidades(["react"])).toEqual([web])
-      expect(await service.getAllByHabilidades(["javascript", "sql"])).toEqual([
-        web,
-        mapa,
-      ])
+      expect(
+        await service.getAllByHabilidades(["javascript", "react", "sql"]),
+      ).toEqual([web, mapa])
+      expect(await service.getAllByHabilidades(["javascript"])).toEqual([mapa])
       expect(await service.getAllByHabilidades(["sql"])).toEqual([])
+    })
+
+    test("no devuelve un proyecto si solo se cubre parte de las requeridas de un perfil", async () => {
+      await crearConPerfil("Sitio web", ["javascript", "react"])
+
+      expect(await service.getAllByHabilidades(["react"])).toEqual([])
     })
 
     test("no devuelve proyectos cerrados", async () => {

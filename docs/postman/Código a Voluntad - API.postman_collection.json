@@ -1438,7 +1438,7 @@
                 "exec": [
                   "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
                   "const ids = pm.response.json().map((proyecto) => proyecto.id)",
-                  "pm.test(\"encuentra el proyecto con un perfil que requiere la habilidad\", () => pm.expect(ids).to.include(pm.collectionVariables.get(\"proyectoId\")))"
+                  "pm.test(\"encuentra el proyecto cuyo perfil requiere solo esa habilidad\", () => pm.expect(ids).to.include(pm.collectionVariables.get(\"proyectoId\")))"
                 ]
               }
             }
@@ -1461,7 +1461,7 @@
                 }
               ]
             },
-            "description": "Busca los proyectos publicados con algún perfil que requiera al menos una de las habilidades. Para pasar varias se repite el parámetro: `?habilidades=<id1>&habilidades=<id2>`."
+            "description": "Busca los proyectos publicados con algún perfil cuyas habilidades requeridas estén todas entre las pedidas (el mismo criterio que la búsqueda de colaboradores). Para pasar varias se repite el parámetro: `?habilidades=<id1>&habilidades=<id2>`."
           },
           "response": []
         },

@@ -43,9 +43,17 @@ export default class ProyectoService {
   }
 
   getAllByHabilidades = async (habilidadesIds) => {
-    return await this.proyectoRepository.findByEstadoYAlgunaHabilidadRequerida(
-      EstadoProyecto.PUBLICADO,
-      habilidadesIds,
+    // La consulta trae los candidatos y el dominio decide: mismo criterio que
+    // la búsqueda de colaboradores (tener todas las requeridas de un perfil).
+    const candidatos =
+      await this.proyectoRepository.findByEstadoYAlgunaHabilidadRequerida(
+        EstadoProyecto.PUBLICADO,
+        habilidadesIds,
+      )
+    return candidatos.filter((proyecto) =>
+      proyecto.perfiles.some((perfil) =>
+        perfil.estaCubiertoPor(habilidadesIds),
+      ),
     )
   }
 

@@ -822,7 +822,7 @@
           "Proyectos"
         ],
         "summary": "Listar proyectos",
-        "description": "Devuelve todos los proyectos. Con `habilidades`, busca los proyectos que encajan con las habilidades de una persona colaboradora: solo los publicados con algún perfil que requiera al menos una de ellas.",
+        "description": "Devuelve todos los proyectos. Con `habilidades`, busca los proyectos que encajan con las habilidades de una persona colaboradora: solo los publicados con algún perfil cuyas habilidades requeridas estén todas entre las pedidas. Es el mismo criterio que usa la búsqueda de colaboradores de un perfil.",
         "operationId": "listarProyectos",
         "parameters": [
           {
