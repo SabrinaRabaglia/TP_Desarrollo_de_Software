@@ -1,26 +1,4 @@
-import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
-import { z } from "zod"
-import { BadRequestError } from "../errors/ApplicationErrors.js"
-import { objectIdSchema } from "../validations/objectId.js"
 import { proyectoDTO } from "../dtos/proyectoDTO.js"
-
-const proyectoSchema = z
-  .object({
-    titulo: z.string(),
-    descripcion: z.string(),
-    colectivo: objectIdSchema,
-    estado: z.enum(EstadoProyecto),
-    fechaAlta: z.coerce.date(),
-    fechaCierre: z.coerce.date().nullable(),
-  })
-  .strict()
-
-const busquedaSchema = z.object({
-  habilidades: z
-    .union([objectIdSchema, z.array(objectIdSchema)])
-    .transform((habilidades) => [habilidades].flat())
-    .optional(),
-})
 
 export default class ProyectoController {
   constructor(proyectoService) {
@@ -29,11 +7,7 @@ export default class ProyectoController {
 
   getAll = async (req, res, next) => {
     try {
-      const resultado = busquedaSchema.safeParse(req.query)
-      if (resultado.error) {
-        throw new BadRequestError("Datos inválidos", resultado.error.issues)
-      }
-      const { habilidades } = resultado.data
+      const { habilidades } = req.query
       const proyectos = habilidades
         ? await this.proyectoService.getAllByHabilidades(habilidades)
         : await this.proyectoService.getAll()
@@ -54,12 +28,7 @@ export default class ProyectoController {
 
   create = async (req, res, next) => {
     try {
-      const body = req.body
-      const resultado = proyectoSchema.safeParse(body)
-      if (resultado.error) {
-        throw new BadRequestError("Datos inválidos", resultado.error.issues)
-      }
-      const creado = await this.proyectoService.create(resultado.data)
+      const creado = await this.proyectoService.create(req.body)
       res.status(201).json(proyectoDTO(creado))
     } catch (error) {
       next(error)
@@ -68,13 +37,8 @@ export default class ProyectoController {
 
   put = async (req, res, next) => {
     try {
-      const body = req.body
-      const resultado = proyectoSchema.safeParse(body)
-      if (resultado.error) {
-        throw new BadRequestError("Datos inválidos", resultado.error.issues)
-      }
       const id = req.params.id
-      const actualizado = await this.proyectoService.update(id, resultado.data)
+      const actualizado = await this.proyectoService.update(id, req.body)
       res.status(200).json(proyectoDTO(actualizado))
     } catch (error) {
       next(error)
@@ -84,13 +48,9 @@ export default class ProyectoController {
   patch = async (req, res, next) => {
     try {
       const { id } = req.params
-      const resultado = proyectoSchema.partial().safeParse(req.body)
-      if (resultado.error) {
-        throw new BadRequestError("Datos inválidos", resultado.error.issues)
-      }
       const proyectoActualizado = await this.proyectoService.update(
         id,
-        resultado.data,
+        req.body,
       )
       res.status(200).json(proyectoDTO(proyectoActualizado))
     } catch (error) {

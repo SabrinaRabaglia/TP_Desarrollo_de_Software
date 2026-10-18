@@ -1,6 +1,7 @@
 import { describe, expect, test, jest } from "@jest/globals"
 import ProyectoController from "../../../src/controllers/ProyectoController.js"
-import { BadRequestError } from "../../../src/errors/ApplicationErrors.js"
+import validar from "../../../src/middlewares/validar.js"
+import { busquedaProyectosSchema } from "../../../src/validations/proyecto.js"
 import { EstadoProyecto } from "../../../src/domain/enums/EstadoProyecto.js"
 import { proyectoDTO } from "../../../src/dtos/proyectoDTO.js"
 
@@ -64,7 +65,7 @@ describe("ProyectoController", () => {
         ["65f1a2b3c4d5e6f708192a01", "65f1a2b3c4d5e6f708192a02"],
       ],
     ])(
-      "con %s busca los proyectos por esas habilidades",
+      "con %s, el middleware las deja en una lista y el controller busca por ellas",
       async (_caso, habilidades, ids) => {
         const proyectoServiceMock = mockProyectoService()
         const lista = [proyectoValido]
@@ -74,7 +75,10 @@ describe("ProyectoController", () => {
         const controller = new ProyectoController(proyectoServiceMock)
         const res = mockRes()
 
-        await controller.getAll({ query: { habilidades } }, res, jest.fn())
+        const req = { query: { habilidades } }
+
+        await validar(busquedaProyectosSchema, "query")(req, res, jest.fn())
+        await controller.getAll(req, res, jest.fn())
 
         expect(proyectoServiceMock.getAllByHabilidades).toHaveBeenCalledWith(
           ids,
@@ -86,21 +90,6 @@ describe("ProyectoController", () => {
         )
       },
     )
-
-    test("con una habilidad que no es un id pasa BadRequestError a next", async () => {
-      const proyectoServiceMock = mockProyectoService()
-      const controller = new ProyectoController(proyectoServiceMock)
-      const next = jest.fn()
-
-      await controller.getAll(
-        { query: { habilidades: "hola" } },
-        mockRes(),
-        next,
-      )
-
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
-      expect(proyectoServiceMock.getAllByHabilidades).not.toHaveBeenCalled()
-    })
   })
 
   describe("getById", () => {
@@ -142,58 +131,6 @@ describe("ProyectoController", () => {
         proyectoDTO(guardado(proyectoCreado)),
       )
     })
-
-    test("con body inválido (falta un campo obligatorio), tira BadRequestError y no llama al service", async () => {
-      const proyectoServiceMock = mockProyectoService()
-      const controller = new ProyectoController(proyectoServiceMock)
-      const req = {
-        body: {
-          titulo: "Proyecto Incompleto",
-          descripcion: "Le faltan varios campos",
-        },
-      }
-      const res = mockRes()
-      const next = jest.fn()
-
-      await controller.create(req, res, next)
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
-      expect(proyectoServiceMock.create).not.toHaveBeenCalled()
-    })
-
-    test.each([["colectivo", { colectivo: "Asamblea Ambiental del Sur" }]])(
-      "con un %s que no es un id válido, tira BadRequestError",
-      async (_campo, cambios) => {
-        const proyectoServiceMock = mockProyectoService()
-        const controller = new ProyectoController(proyectoServiceMock)
-        const next = jest.fn()
-
-        await controller.create(
-          { body: { ...proyectoValido, ...cambios } },
-          mockRes(),
-          next,
-        )
-
-        expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
-        expect(proyectoServiceMock.create).not.toHaveBeenCalled()
-      },
-    )
-
-    test("con un campo extra no declarado en el schema, tira BadRequestError", async () => {
-      const proyectoServiceMock = mockProyectoService()
-      const controller = new ProyectoController(proyectoServiceMock)
-      const req = {
-        body: {
-          ...proyectoValido,
-          campoInexistente: "no debería estar",
-        },
-      }
-      const res = mockRes()
-      const next = jest.fn()
-
-      await controller.create(req, res, next)
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
-      expect(proyectoServiceMock.create).not.toHaveBeenCalled()
-    })
   })
 
   describe("put", () => {
@@ -217,18 +154,6 @@ describe("ProyectoController", () => {
       expect(res.json).toHaveBeenCalledWith(
         proyectoDTO(guardado(proyectoGuardado)),
       )
-    })
-
-    test("con body invalido tira BadRequestError y no llama al service", async () => {
-      const proyectoServiceMock = mockProyectoService()
-      const controller = new ProyectoController(proyectoServiceMock)
-      const req = { params: { id: "1" }, body: { titulo: "Solo título" } }
-      const res = mockRes()
-      const next = jest.fn()
-
-      await controller.put(req, res, next)
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
-      expect(proyectoServiceMock.update).not.toHaveBeenCalled()
     })
   })
 

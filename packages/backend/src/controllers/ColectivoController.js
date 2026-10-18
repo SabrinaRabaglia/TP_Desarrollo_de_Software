@@ -1,18 +1,5 @@
-import { z } from "zod"
-import { BadRequestError } from "../errors/ApplicationErrors.js"
-import { objectIdSchema } from "../validations/objectId.js"
 import { colectivoDTO } from "../dtos/colectivoDTO.js"
 
-const colectivoSchema = z
-  .object({
-    nombre: z.string(),
-    descripcion: z.string().min(2).max(500),
-    tipo: z.string(),
-    pais: objectIdSchema.nullable().optional(),
-    provincia: objectIdSchema.nullable().optional(),
-    ciudad: z.string().nullable().optional(),
-  })
-  .strict()
 export default class ColectivoController {
   constructor(colectivoService) {
     this.colectivoService = colectivoService
@@ -39,12 +26,7 @@ export default class ColectivoController {
   }
   create = async (req, res, next) => {
     try {
-      const body = req.body
-      const resultado = colectivoSchema.safeParse(body)
-      if (resultado.error) {
-        throw new BadRequestError("Datos inválidos", resultado.error.issues)
-      }
-      const creado = await this.colectivoService.create(resultado.data)
+      const creado = await this.colectivoService.create(req.body)
       res.status(201).json(colectivoDTO(creado))
     } catch (error) {
       next(error)
@@ -52,13 +34,8 @@ export default class ColectivoController {
   }
   put = async (req, res, next) => {
     try {
-      const body = req.body
-      const resultado = colectivoSchema.safeParse(body)
-      if (resultado.error) {
-        throw new BadRequestError("Datos inválidos", resultado.error.issues)
-      }
       const id = req.params.id
-      const actualizado = await this.colectivoService.update(id, resultado.data)
+      const actualizado = await this.colectivoService.update(id, req.body)
       res.status(200).json(colectivoDTO(actualizado))
     } catch (error) {
       next(error)
@@ -67,13 +44,9 @@ export default class ColectivoController {
   patch = async (req, res, next) => {
     try {
       const { id } = req.params
-      const resultado = colectivoSchema.partial().safeParse(req.body)
-      if (resultado.error) {
-        throw new BadRequestError("Datos inválidos", resultado.error.issues)
-      }
       const colectivoActualizado = await this.colectivoService.patch(
         id,
-        resultado.data,
+        req.body,
       )
       res.status(200).json(colectivoDTO(colectivoActualizado))
     } catch (error) {

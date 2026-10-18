@@ -1,4 +1,6 @@
 import { Router } from "express"
+import validar from "../middlewares/validar.js"
+import { notificacionSchema } from "../validations/notificacion.js"
 import validateId from "../middlewares/validateId.js"
 import { notificacionController } from "../dependencias.js"
 
@@ -10,6 +12,7 @@ const routes = Router()
 routes.post(
   "/proyectos/:id/perfiles/:perfilId/notificaciones",
   validateId,
+  validar(notificacionSchema),
   notificacionController.create,
 )
 routes.get(

@@ -1,30 +1,5 @@
-import { z } from "zod"
-import { ModalidadColaboracion } from "../domain/enums/ModalidadColaboracion.js"
-import { UnidadCompromiso } from "../domain/enums/UnidadCompromiso.js"
-import { BadRequestError } from "../errors/ApplicationErrors.js"
-import { objectIdSchema } from "../validations/objectId.js"
 import { personaColaboradoraDTO } from "../dtos/personaColaboradoraDTO.js"
 import { perfilDTO } from "../dtos/perfilDTO.js"
-
-const perfilSchema = z
-  .object({
-    nombre: z.string().optional(),
-    descripcion: z.string(),
-    unidadCompromiso: z.enum(UnidadCompromiso),
-    cantidadHoras: z.number(),
-    modalidadesColaboracion: z.array(z.enum(ModalidadColaboracion)),
-    habilidadesRequeridas: z.array(objectIdSchema),
-    habilidadesOpcionales: z.array(objectIdSchema),
-  })
-  .strict()
-
-const validar = (body) => {
-  const resultado = perfilSchema.safeParse(body)
-  if (resultado.error) {
-    throw new BadRequestError("Datos inválidos", resultado.error.issues)
-  }
-  return resultado.data
-}
 
 export default class PerfilController {
   constructor(perfilService) {
@@ -33,10 +8,7 @@ export default class PerfilController {
 
   create = async (req, res, next) => {
     try {
-      const perfil = await this.perfilService.create(
-        req.params.id,
-        validar(req.body),
-      )
+      const perfil = await this.perfilService.create(req.params.id, req.body)
       res.status(201).json(perfilDTO(perfil))
     } catch (error) {
       next(error)
@@ -48,7 +20,7 @@ export default class PerfilController {
       const perfil = await this.perfilService.update(
         req.params.id,
         req.params.perfilId,
-        validar(req.body),
+        req.body,
       )
       res.status(200).json(perfilDTO(perfil))
     } catch (error) {

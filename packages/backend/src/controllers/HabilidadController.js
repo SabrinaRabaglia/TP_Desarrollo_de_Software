@@ -1,14 +1,4 @@
-import { BadRequestError } from "../errors/ApplicationErrors.js"
-import { z } from "zod"
 import { habilidadDTO } from "../dtos/habilidadDTO.js"
-
-const habilidadSchema = z
-  .object({
-    titulo: z.string().min(1),
-    codigo: z.string().min(1),
-    descripcion: z.string().min(1),
-  })
-  .strict()
 
 export default class HabilidadController {
   constructor(habilidadService) {
@@ -17,11 +7,7 @@ export default class HabilidadController {
 
   create = async (req, res, next) => {
     try {
-      const resultado = habilidadSchema.safeParse(req.body)
-      if (resultado.error) {
-        throw new BadRequestError("Datos inválidos", resultado.error.issues)
-      }
-      const habilidad = await this.habilidadService.create(resultado.data)
+      const habilidad = await this.habilidadService.create(req.body)
       res.status(201).json(habilidadDTO(habilidad))
     } catch (error) {
       next(error)
@@ -30,13 +16,9 @@ export default class HabilidadController {
 
   update = async (req, res, next) => {
     try {
-      const resultado = habilidadSchema.safeParse(req.body)
-      if (resultado.error) {
-        throw new BadRequestError("Datos inválidos", resultado.error.issues)
-      }
       const habilidad = await this.habilidadService.update(
         req.params.id,
-        resultado.data,
+        req.body,
       )
       res.status(200).json(habilidadDTO(habilidad))
     } catch (error) {

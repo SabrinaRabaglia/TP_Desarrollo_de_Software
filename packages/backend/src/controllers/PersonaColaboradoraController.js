@@ -1,34 +1,4 @@
-import { BadRequestError } from "../errors/ApplicationErrors.js"
-import { TipoCuenta } from "../domain/enums/TipoCuenta.js"
-import { z } from "zod"
-import { objectIdSchema } from "../validations/objectId.js"
-import { TipoMedioContacto } from "../domain/enums/TipoMedioContacto.js"
 import { personaColaboradoraDTO } from "../dtos/personaColaboradoraDTO.js"
-const cuentaSchema = z
-  .object({
-    nombreUsuario: z.string(),
-    tipo: z.enum(Object.values(TipoCuenta)),
-  })
-  .strict()
-const medioDeContactoSchema = z
-  .object({
-    tipo: z.enum(Object.values(TipoMedioContacto)),
-    valor: z.string().min(1),
-  })
-  .strict()
-const personaColaboradoraSchema = z
-  .object({
-    nombreFantasia: z.string(),
-    nombre: z.string().optional(),
-    apellido: z.string().optional(),
-    pronombres: z.array(z.string()).optional(),
-    presentacion: z.string().optional(),
-    cuentas: z.array(cuentaSchema).optional(),
-    habilidades: z.array(objectIdSchema).optional(),
-    aceptaMensajeriaInterna: z.boolean().optional(),
-    mediosDeContacto: z.array(medioDeContactoSchema).optional(),
-  })
-  .strict()
 
 export default class PersonaColaboradoraController {
   constructor(personaColaboradoraService) {
@@ -37,12 +7,8 @@ export default class PersonaColaboradoraController {
 
   create = async (req, res, next) => {
     try {
-      const resultado = personaColaboradoraSchema.safeParse(req.body)
-      if (resultado.error) {
-        throw new BadRequestError("Datos inválidos", resultado.error.issues)
-      }
       const personaColaboradora = await this.personaColaboradoraService.create(
-        resultado.data,
+        req.body,
       )
       res.status(201).json(personaColaboradoraDTO(personaColaboradora))
     } catch (error) {
@@ -52,13 +18,9 @@ export default class PersonaColaboradoraController {
 
   update = async (req, res, next) => {
     try {
-      const resultado = personaColaboradoraSchema.safeParse(req.body)
-      if (resultado.error) {
-        throw new BadRequestError("Datos inválidos", resultado.error.issues)
-      }
       const personaColaboradora = await this.personaColaboradoraService.update(
         req.params.id,
-        resultado.data,
+        req.body,
       )
       res.status(200).json(personaColaboradoraDTO(personaColaboradora))
     } catch (error) {

@@ -1,6 +1,5 @@
 import { describe, expect, test, jest } from "@jest/globals"
 import ColectivoController from "../../../src/controllers/ColectivoController.js"
-import { BadRequestError } from "../../../src/errors/ApplicationErrors.js"
 import { colectivoDTO } from "../../../src/dtos/colectivoDTO.js"
 
 // El service devuelve el colectivo con sus proyectos; el controller lo pasa por el DTO.
@@ -103,69 +102,6 @@ describe("ColectivoController", () => {
         colectivoDTO(guardado(colectivoCreado)),
       )
     })
-    test("con body inválido (falta un campo), tira BadRequestError y no llama al service", async () => {
-      const colectivoServiceMock = mockColectivoService()
-      const controller = new ColectivoController(colectivoServiceMock)
-      const req = {
-        body: {
-          nombre: "Asamblea Ambiental del Sur",
-          descripcion:
-            "Grupo autoconvocado para la protección de la cuenca y humedales locales.",
-        },
-      }
-      const res = mockRes()
-      const next = jest.fn()
-
-      await controller.create(req, res, next)
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
-      expect(colectivoServiceMock.create).not.toHaveBeenCalled()
-    })
-    test.each([
-      ["pais", { pais: "Argentina" }],
-      ["provincia", { provincia: "2" }],
-    ])(
-      "con un %s que no es un id válido, tira BadRequestError",
-      async (_campo, cambios) => {
-        const colectivoServiceMock = mockColectivoService()
-        const controller = new ColectivoController(colectivoServiceMock)
-        const req = {
-          body: {
-            nombre: "Asamblea",
-            descripcion: "Descripción",
-            tipo: "Asamblea",
-            ...cambios,
-          },
-        }
-        const next = jest.fn()
-
-        await controller.create(req, mockRes(), next)
-
-        expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
-        expect(colectivoServiceMock.create).not.toHaveBeenCalled()
-      },
-    )
-    test("con un campo extra no declarado en el schema, tira BadRequestError", async () => {
-      const colectivoServiceMock = mockColectivoService()
-      const controller = new ColectivoController(colectivoServiceMock)
-      const req = {
-        body: {
-          nombre: "Asamblea Ambiental del Sur",
-          descripcion:
-            "Grupo autoconvocado para la protección de la cuenca y humedales locales.",
-          tipo: "asamblea",
-          pais: PAIS_ID,
-          provincia: PROVINCIA_ID,
-          ciudad: "Almagro",
-          extra: "no debería estar",
-        },
-      }
-      const res = mockRes()
-      const next = jest.fn()
-
-      await controller.create(req, res, next) // Se ejecuta normalmente
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
-      expect(colectivoServiceMock.create).not.toHaveBeenCalled()
-    })
   })
   describe("put", () => {
     test("con body valido actualiza el colectivo y responde con 200", async () => {
@@ -194,18 +130,6 @@ describe("ColectivoController", () => {
       expect(res.json).toHaveBeenCalledWith(
         colectivoDTO(guardado(colectivoGuardado)),
       )
-    })
-
-    test("con body invalido tira BadRequestError", async () => {
-      const colectivoServiceMock = mockColectivoService()
-      const controller = new ColectivoController(colectivoServiceMock)
-      const req = { params: { id: "1" }, body: { nombre: "Solo nombre" } }
-      const res = mockRes()
-      const next = jest.fn()
-
-      await controller.create(req, res, next)
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
-      expect(colectivoServiceMock.create).not.toHaveBeenCalled()
     })
   })
 

@@ -1,6 +1,5 @@
 import { describe, expect, test, jest } from "@jest/globals"
 import PersonaColaboradoraController from "../../../src/controllers/PersonaColaboradoraController.js"
-import { BadRequestError } from "../../../src/errors/ApplicationErrors.js"
 
 const OBJECT_ID_VALIDO = "65f1a2b3c4d5e6f708192a3b"
 
@@ -75,80 +74,6 @@ describe("PersonaColaboradoraController", () => {
       expect(service.create).toHaveBeenCalledWith(req.body)
       expect(res.status).toHaveBeenCalledWith(201)
     })
-
-    test("sin nombreFantasia, tira BadRequestError y no llama al service", async () => {
-      const service = crearPersonaColaboradoraServiceFalso()
-      const controller = new PersonaColaboradoraController(service)
-      const req = { body: {} }
-      const res = crearResFalso()
-      const next = jest.fn()
-
-      await controller.create(req, res, next)
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
-      expect(service.create).not.toHaveBeenCalled()
-    })
-
-    test.each(["react", "b8c65bfd-1234-4a12-8b12-abcdef123456"])("con un id de habilidad %s que no tiene formato ObjectId, tira BadRequestError", async (idInvalido) => {
-      const service = crearPersonaColaboradoraServiceFalso()
-      const controller = new PersonaColaboradoraController(service)
-      const req = {
-        body: { nombreFantasia: "anon123", habilidades: [idInvalido] },
-      }
-      const res = crearResFalso()
-      const next = jest.fn()
-
-      await controller.create(req, res, next)
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
-      expect(service.create).not.toHaveBeenCalled()
-    })
-
-    test("con una cuenta de tipo inválido (no GITHUB ni GITLAB), tira BadRequestError", async () => {
-      const service = crearPersonaColaboradoraServiceFalso()
-      const controller = new PersonaColaboradoraController(service)
-      const req = {
-        body: {
-          nombreFantasia: "anon123",
-          cuentas: [{ nombreUsuario: "anagomez", tipo: "MASTODON" }],
-        },
-      }
-      const res = crearResFalso()
-      const next = jest.fn()
-
-      await controller.create(req, res, next)
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
-      expect(service.create).not.toHaveBeenCalled()
-    })
-
-    test("con un medio de contacto de tipo inválido, tira BadRequestError", async () => {
-      const service = crearPersonaColaboradoraServiceFalso()
-      const controller = new PersonaColaboradoraController(service)
-      const req = {
-        body: {
-          nombreFantasia: "anon123",
-          mediosDeContacto: [{ tipo: "TELEGRAM_FALSO", valor: "12345" }],
-        },
-      }
-      const res = crearResFalso()
-      const next = jest.fn()
-
-      await controller.create(req, res, next)
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
-      expect(service.create).not.toHaveBeenCalled()
-    })
-
-    test("con un campo extra no declarado en el schema, tira BadRequestError", async () => {
-      const service = crearPersonaColaboradoraServiceFalso()
-      const controller = new PersonaColaboradoraController(service)
-      const req = {
-        body: { nombreFantasia: "anon123", extra: "no debería estar" },
-      }
-      const res = crearResFalso()
-      const next = jest.fn()
-
-      await controller.create(req, res, next)
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
-      expect(service.create).not.toHaveBeenCalled()
-    })
   })
 
   describe("update", () => {
@@ -169,18 +94,6 @@ describe("PersonaColaboradoraController", () => {
       expect(service.update).toHaveBeenCalledWith("1", req.body)
       expect(res.status).toHaveBeenCalledWith(200)
       expect(res.json).toHaveBeenCalledWith(personaActualizada)
-    })
-
-    test("con body inválido, tira BadRequestError y no llama al service", async () => {
-      const service = crearPersonaColaboradoraServiceFalso()
-      const controller = new PersonaColaboradoraController(service)
-      const req = { params: { id: "1" }, body: {} }
-      const res = crearResFalso()
-      const next = jest.fn()
-
-      await controller.update(req, res, next)
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
-      expect(service.update).not.toHaveBeenCalled()
     })
   })
 

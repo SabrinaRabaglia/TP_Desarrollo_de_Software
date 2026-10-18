@@ -1,6 +1,5 @@
 import { describe, expect, test, jest } from "@jest/globals"
 import HabilidadController from "../../../src/controllers/HabilidadController.js"
-import { BadRequestError } from "../../../src/errors/ApplicationErrors.js"
 
 const mockRes = () => ({
   status: jest.fn().mockReturnThis(),
@@ -15,7 +14,6 @@ const mockHabilidadService = () => ({
   getById: jest.fn(),
   getAll: jest.fn(),
 })
-
 
 describe("HabilidadController", () => {
   describe("create", () => {
@@ -39,38 +37,6 @@ describe("HabilidadController", () => {
       expect(habilidadServiceMock.create).toHaveBeenCalledWith(req.body)
       expect(res.status).toHaveBeenCalledWith(201)
       expect(res.json).toHaveBeenCalledWith(habilidadCreada)
-    })
-
-    test("con body inválido (falta un campo), tira BadRequestError y no llama al service", async () => {
-      const habilidadServiceMock = mockHabilidadService()
-      const controller = new HabilidadController(habilidadServiceMock)
-      const req = { body: { titulo: "React", codigo: "react" } }
-      const res = mockRes()
-      const next = jest.fn()
-
-      await controller.create(req, res, next);
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError));
-      expect(habilidadServiceMock .create).not.toHaveBeenCalled();
-    })
-
-    test("con un campo extra no declarado en el schema, tira BadRequestError", async () => {
-      const habilidadServiceMock = mockHabilidadService()
-      const controller = new HabilidadController(habilidadServiceMock)
-      const req = {
-        body: {
-          titulo: "React",
-          codigo: "react",
-          descripcion: "desc",
-          extra: "no debería estar",
-        },
-      }
-      const res = mockRes()
-      const next = jest.fn()
-
-      await controller.create(req, res, next); 
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError)); 
-      expect(habilidadServiceMock.create).not.toHaveBeenCalled();
-
     })
   })
 
@@ -96,24 +62,11 @@ describe("HabilidadController", () => {
       const res = mockRes()
       const next = jest.fn()
 
-
       await controller.update(req, res, next)
 
       expect(habilidadServiceMock.update).toHaveBeenCalledWith("1", req.body)
       expect(res.status).toHaveBeenCalledWith(200)
       expect(res.json).toHaveBeenCalledWith(habilidadActualizada)
-    })
-
-    test("con body inválido, tira BadRequestError y no llama al service", async () => {
-      const habilidadServiceMock = mockHabilidadService()
-      const controller = new HabilidadController(habilidadServiceMock)
-      const req = { params: { id: "1" }, body: {} }
-      const res = mockRes()
-      const next = jest.fn()
-
-      await controller.update(req, res, next); // Se ejecuta normalmente
-      expect(next).toHaveBeenCalledWith(expect.any(BadRequestError)); // Verificas el next
-      expect(habilidadServiceMock.update).not.toHaveBeenCalled();
     })
   })
 
