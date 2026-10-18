@@ -6,7 +6,7 @@ export default class PersonaColaboradoraRepository {
     this.model = PersonaColaboradoraModel
   }
 
-  async getAll() {
+  async findAll() {
     return await this.model.find().populate("habilidades")
   }
 
@@ -25,7 +25,7 @@ export default class PersonaColaboradoraRepository {
   }
 
   async deleteById(id) {
-    return Boolean(await this.model.findByIdAndDelete(id))
+    await this.model.findByIdAndDelete(id)
   }
 
   async save(personaColaboradora) {

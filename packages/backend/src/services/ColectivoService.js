@@ -141,6 +141,6 @@ export default class ColectivoService {
         "No se puede eliminar un colectivo con proyectos; eliminá sus proyectos primero",
       )
     }
-    await this.colectivoRepository.delete(id)
+    await this.colectivoRepository.deleteById(id)
   }
 }

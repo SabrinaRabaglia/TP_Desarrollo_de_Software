@@ -112,6 +112,6 @@ export default class ProyectoService {
   delete = async (id) => {
     await this.getById(id)
     await this.colaboracionRepository.deleteByProyecto(id)
-    await this.proyectoRepository.delete(id)
+    await this.proyectoRepository.deleteById(id)
   }
 }

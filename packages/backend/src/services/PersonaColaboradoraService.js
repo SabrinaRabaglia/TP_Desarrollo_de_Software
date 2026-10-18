@@ -90,7 +90,7 @@ export default class PersonaColaboradoraService {
   }
 
   getAll = async () => {
-    return await this.personaColaboradoraRepository.getAll()
+    return await this.personaColaboradoraRepository.findAll()
   }
 
   getAllConHabilidades = async (habilidades) => {

@@ -211,7 +211,7 @@ describe("ProyectoService", () => {
 
       await service.delete(creado.id)
 
-      expect(await colaboracionRepository.getAll()).toEqual([
+      expect(await colaboracionRepository.findAll()).toEqual([
         { personaColaboradora: persona, proyecto: { id: "otro-proyecto" } },
       ])
     })

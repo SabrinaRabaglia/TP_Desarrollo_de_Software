@@ -4,7 +4,7 @@ export default class HabilidadRepository {
   constructor() {
   }
 
-  async getAll() {
+  async findAll() {
     return HabilidadRepository.habilidades
   }
 
@@ -18,11 +18,9 @@ export default class HabilidadRepository {
 
   async deleteById(id) {
     const indice = HabilidadRepository.habilidades.findIndex((h) => h.id === id)
-    if (indice === -1) {
-      return false
+    if (indice !== -1) {
+      HabilidadRepository.habilidades.splice(indice, 1)
     }
-    HabilidadRepository.habilidades.splice(indice, 1)
-    return true
   }
 
   async save(habilidad) {

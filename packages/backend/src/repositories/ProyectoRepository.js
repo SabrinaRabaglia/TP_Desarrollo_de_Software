@@ -37,8 +37,8 @@ export default class ProyectoRepository {
     return await guardar(this.model, proyecto)
   }
 
-  async delete(id) {
-    return await this.model.findByIdAndDelete(id)
+  async deleteById(id) {
+    await this.model.findByIdAndDelete(id)
   }
 
   async findByEstadoYAlgunaHabilidadRequerida(estado, habilidadesIds) {

@@ -55,7 +55,7 @@ describe("PersonaColaboradoraService", () => {
     expect(persona.habilidades).toEqual([habilidad])
     expect(persona.aceptaMensajeriaInterna).toBe(true)
     expect(persona.mediosDeContacto).toEqual(datos.mediosDeContacto)
-    expect(await repository.getAll()).toEqual([persona])
+    expect(await repository.findAll()).toEqual([persona])
   })
 
   test("rechaza una habilidad inexistente sin guardar la persona", async () => {
@@ -66,7 +66,7 @@ describe("PersonaColaboradoraService", () => {
       }),
     ).rejects.toThrow(InvalidReference)
 
-    expect(await repository.getAll()).toEqual([])
+    expect(await repository.findAll()).toEqual([])
   })
 
   test("actualiza los datos, cuentas y habilidades conservando la identidad", async () => {
@@ -84,7 +84,7 @@ describe("PersonaColaboradoraService", () => {
     expect(actualizada.aceptaMensajeriaInterna).toBe(true)
     expect(actualizada.mediosDeContacto).toEqual(datos.mediosDeContacto)
     expect(await repository.findById(id)).toBe(actualizada)
-    expect(await repository.getAll()).toHaveLength(1)
+    expect(await repository.findAll()).toHaveLength(1)
   })
 
   test("una actualización rechazada deja intactos los datos guardados", async () => {
@@ -155,7 +155,7 @@ describe("PersonaColaboradoraService", () => {
     await service.delete(persona.id)
 
     await expect(service.getById(persona.id)).rejects.toThrow(EntityNotFound)
-    expect(await colaboracionRepository.getAll()).toEqual([
+    expect(await colaboracionRepository.findAll()).toEqual([
       { personaColaboradora: { id: "otra-persona" }, proyecto },
     ])
   })

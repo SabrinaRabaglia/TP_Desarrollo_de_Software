@@ -63,7 +63,7 @@ export default class ProyectoRepository {
     return nuevo
   }
 
-  async delete(id) {
+  async deleteById(id) {
     ProyectoRepository.proyectos = ProyectoRepository.proyectos.filter(
       (c) => c.id !== id,
     )

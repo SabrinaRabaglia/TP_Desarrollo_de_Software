@@ -31,5 +31,5 @@ export default class ColaboracionService {
     )
   }
 
-  getAll = async () => await this.colaboracionRepository.getAll()
+  getAll = async () => await this.colaboracionRepository.findAll()
 }

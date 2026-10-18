@@ -25,7 +25,7 @@ export default class ColectivoRepository {
     return await guardado.populate(UBICACION)
   }
 
-  async delete(id) {
-    return await this.model.findByIdAndDelete(id)
+  async deleteById(id) {
+    await this.model.findByIdAndDelete(id)
   }
 }

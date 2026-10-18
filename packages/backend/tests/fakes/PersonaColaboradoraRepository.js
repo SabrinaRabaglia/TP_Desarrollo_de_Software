@@ -5,7 +5,7 @@ export default class PersonaColaboradoraRepository {
     //this.personasColaboradoras = []
   }
 
-  async getAll() {
+  async findAll() {
     return PersonaColaboradoraRepository.personas
   }
 
@@ -36,11 +36,9 @@ export default class PersonaColaboradoraRepository {
     const indice = PersonaColaboradoraRepository.personas.findIndex(
       (p) => p.id === id,
     )
-    if (indice === -1) {
-      return false
+    if (indice !== -1) {
+      PersonaColaboradoraRepository.personas.splice(indice, 1)
     }
-    PersonaColaboradoraRepository.personas.splice(indice, 1)
-    return true
   }
 
   async save(personaColaboradora) {

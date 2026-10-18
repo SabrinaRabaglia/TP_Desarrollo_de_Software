@@ -11,7 +11,7 @@ export default class ColaboracionRepository {
     this.model = ColaboracionModel
   }
 
-  async getAll() {
+  async findAll() {
     return await this.model.find().populate(REFERENCIAS)
   }
 

@@ -3,19 +3,11 @@ export default class ColaboracionRepository {
     this.colaboraciones = []
   }
 
-  async getAll() {
+  async findAll() {
     return this.colaboraciones
   }
 
-  async getAllFilteredByProyecto(titulo) {
-    return this.colaboraciones.filter((c) => c.proyecto.titulo.includes(titulo))
-  }
 
-  async getAllFilteredByColaborador(nombre) {
-    return this.colaboraciones.filter(
-      (c) => c.personaColaboradora.nombre === nombre,
-    )
-  }
 
   async findByPersonaAndProyecto(personaId, proyectoId) {
     return this.colaboraciones.find(

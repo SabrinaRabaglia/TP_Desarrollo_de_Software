@@ -49,7 +49,7 @@ describe("ColaboracionService", () => {
   test.each([
     [
       "proyecto inexistente",
-      async () => await proyectoRepository.delete(proyecto.id),
+      async () => await proyectoRepository.deleteById(proyecto.id),
       InvalidReference,
     ],
     [

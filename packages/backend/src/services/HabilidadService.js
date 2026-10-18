@@ -93,6 +93,6 @@ export default class HabilidadService {
   }
 
   getAll = async () => {
-    return await this.habilidadRepository.getAll()
+    return await this.habilidadRepository.findAll()
   }
 }

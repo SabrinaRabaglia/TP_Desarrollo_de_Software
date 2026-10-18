@@ -6,7 +6,7 @@ export default class HabilidadRepository {
     this.model = HabilidadModel
   }
 
-  async getAll() {
+  async findAll() {
     return await this.model.find()
   }
 
@@ -19,7 +19,7 @@ export default class HabilidadRepository {
   }
 
   async deleteById(id) {
-    return Boolean(await this.model.findByIdAndDelete(id))
+    await this.model.findByIdAndDelete(id)
   }
 
   async save(habilidad) {

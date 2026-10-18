@@ -26,7 +26,7 @@ export default class ColectivoRepository {
     ColectivoRepository.colectivos[indice] = nuevo
     return nuevo
   }
-  async delete(id) {
+  async deleteById(id) {
     ColectivoRepository.colectivos = ColectivoRepository.colectivos.filter((c) => c.id !== id)
   }
 
