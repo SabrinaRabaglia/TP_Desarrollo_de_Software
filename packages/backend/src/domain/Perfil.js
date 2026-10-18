@@ -3,6 +3,7 @@ import { UnidadCompromiso } from "./enums/UnidadCompromiso.js"
 import { DomainValidationError } from "./errors/DomainErrors.js"
 
 const esListaNoVacia = (valor) => Array.isArray(valor) && valor.length > 0
+const idDe = (habilidad) => String(habilidad._id ?? habilidad.id ?? habilidad)
 
 export default class Perfil {
   constructor(datos) {
@@ -13,6 +14,13 @@ export default class Perfil {
   actualizar(datos) {
     Perfil.validarDatos(datos)
     this.asignar(datos)
+  }
+
+  cantidadDeHabilidadesOpcionalesDe(personaColaboradora) {
+    const suyas = new Set(personaColaboradora.habilidades.map(idDe))
+    return this.habilidadesOpcionales.filter((habilidad) =>
+      suyas.has(idDe(habilidad)),
+    ).length
   }
 
   asignar({

@@ -68,8 +68,13 @@ export default class PerfilService {
 
   buscarColaboradores = async (proyectoId, perfilId) => {
     const perfil = await this.getById(proyectoId, perfilId)
-    return await this.personaColaboradoraService.getAllConHabilidades(
+    const personas = await this.personaColaboradoraService.getAllConHabilidades(
       perfil.habilidadesRequeridas,
+    )
+    return personas.toSorted(
+      (una, otra) =>
+        perfil.cantidadDeHabilidadesOpcionalesDe(otra) -
+        perfil.cantidadDeHabilidadesOpcionalesDe(una),
     )
   }
 

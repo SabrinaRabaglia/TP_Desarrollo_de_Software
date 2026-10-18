@@ -77,4 +77,20 @@ describe("Perfil", () => {
     ).toThrow(DomainValidationError)
     expect({ ...perfil }).toEqual(datos)
   })
+
+  test("cuenta cuántas de sus habilidades opcionales tiene una persona", () => {
+    const perfil = new Perfil({
+      ...datos,
+      habilidadesOpcionales: ["soap_ui", "postman", "jmeter"],
+    })
+
+    expect(perfil.cantidadDeHabilidadesOpcionalesDe({ habilidades: [] })).toBe(
+      0,
+    )
+    expect(
+      perfil.cantidadDeHabilidadesOpcionalesDe({
+        habilidades: ["cypress", "postman", "jmeter"],
+      }),
+    ).toBe(2)
+  })
 })

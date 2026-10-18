@@ -213,13 +213,34 @@ describe("PerfilService", () => {
       )
     })
 
-    test("no tiene en cuenta las habilidades opcionales", async () => {
+    test("tener solo habilidades opcionales no alcanza para aparecer", async () => {
       const perfil = await service.create(proyecto.id, datos)
       const conRequerida = await crearPersona("con requerida", [habilidad1.id])
       await crearPersona("solo opcional", [habilidad2.id])
 
       expect(await service.buscarColaboradores(proyecto.id, perfil.id)).toEqual(
         [conRequerida],
+      )
+    })
+
+    test("ordena primero a quienes tienen más habilidades opcionales del perfil", async () => {
+      const habilidad3 = await new HabilidadService(
+        new HabilidadRepository(),
+      ).create({ titulo: "SQL", codigo: "sql", descripcion: "Bases de datos" })
+      const perfil = await service.create(proyecto.id, {
+        ...datos,
+        habilidadesOpcionales: [habilidad2.id, habilidad3.id],
+      })
+      const ninguna = await crearPersona("ninguna", [habilidad1.id])
+      const ambas = await crearPersona("ambas", [
+        habilidad1.id,
+        habilidad2.id,
+        habilidad3.id,
+      ])
+      const una = await crearPersona("una", [habilidad1.id, habilidad3.id])
+
+      expect(await service.buscarColaboradores(proyecto.id, perfil.id)).toEqual(
+        [ambas, una, ninguna],
       )
     })
 
