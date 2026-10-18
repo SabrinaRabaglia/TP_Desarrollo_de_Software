@@ -24,6 +24,14 @@ export default class PersonaColaboradoraRepository {
     )
   }
 
+  async existeConHabilidad(habilidadId) {
+    return PersonaColaboradoraRepository.personas.some((persona) =>
+      persona.habilidades.some(
+        (habilidad) => (habilidad.id ?? habilidad) === habilidadId,
+      ),
+    )
+  }
+
   async deleteById(id) {
     const indice = PersonaColaboradoraRepository.personas.findIndex(
       (p) => p.id === id,

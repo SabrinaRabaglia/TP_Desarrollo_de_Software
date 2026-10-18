@@ -26,7 +26,12 @@ const provinciaRepository = new ProvinciaRepository()
 const paisRepository = new PaisRepository()
 const habilidadRepository = new HabilidadRepository()
 
-const habilidadService = new HabilidadService(habilidadRepository)
+const personaColaboradoraRepository = new PersonaColaboradoraRepository()
+const habilidadService = new HabilidadService(
+  habilidadRepository,
+  personaColaboradoraRepository,
+  proyectoRepository,
+)
 const colectivoService = new ColectivoService(
   colectivoRepository,
   tipoColectivoRepository,
@@ -44,7 +49,7 @@ const proyectoService = new ProyectoService(
 const proyectoController = new ProyectoController(proyectoService)
 
 const personaColaboradoraService = new PersonaColaboradoraService(
-  new PersonaColaboradoraRepository(),
+  personaColaboradoraRepository,
   habilidadService,
   colaboracionRepository,
 )

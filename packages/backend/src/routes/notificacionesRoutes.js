@@ -23,7 +23,12 @@ const routes = Router()
 
 const proyectoRepository = new ProyectoRepository()
 const colaboracionRepository = new ColaboracionRepository()
-const habilidadService = new HabilidadService(new HabilidadRepository())
+const personaColaboradoraRepository = new PersonaColaboradoraRepository()
+const habilidadService = new HabilidadService(
+  new HabilidadRepository(),
+  personaColaboradoraRepository,
+  proyectoRepository,
+)
 const colectivoService = new ColectivoService(
   new ColectivoRepository(),
   new TipoColectivoRepository(),
@@ -37,7 +42,7 @@ const proyectoService = new ProyectoService(
   colaboracionRepository,
 )
 const personaColaboradoraService = new PersonaColaboradoraService(
-  new PersonaColaboradoraRepository(),
+  personaColaboradoraRepository,
   habilidadService,
   colaboracionRepository,
 )

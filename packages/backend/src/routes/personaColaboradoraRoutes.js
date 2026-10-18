@@ -7,12 +7,17 @@ import ColaboracionRepository from "../repositories/ColaboracionRepository.js"
 import PersonaColaboradoraService from "../services/PersonaColaboradoraService.js"
 import PersonaColaboradoraController from "../controllers/PersonaColaboradoraController.js"
 import HabilidadService from "../services/HabilidadService.js"
+import ProyectoRepository from "../repositories/ProyectoRepository.js"
 
 const routes = Router()
 
 const habilidadRepository = new HabilidadRepository()
-const habilidadService = new HabilidadService(habilidadRepository)
 const personaColaboradoraRepository = new PersonaColaboradoraRepository()
+const habilidadService = new HabilidadService(
+  habilidadRepository,
+  personaColaboradoraRepository,
+  new ProyectoRepository(),
+)
 const personaColaboradoraService = new PersonaColaboradoraService(
   personaColaboradoraRepository,
   habilidadService,

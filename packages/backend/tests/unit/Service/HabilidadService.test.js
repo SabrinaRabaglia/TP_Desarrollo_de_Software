@@ -1,7 +1,9 @@
 import { describe, expect, test, beforeEach } from "@jest/globals"
 import HabilidadService from "../../../src/services/HabilidadService.js"
 import HabilidadRepository from "../../fakes/HabilidadRepository.js"
-import { AlreadyExists, EntityNotFound } from "../../../src/errors/ApplicationErrors.js"
+import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraRepository.js"
+import ProyectoRepository from "../../fakes/ProyectoRepository.js"
+import { AlreadyExists, EntityInUse, EntityNotFound } from "../../../src/errors/ApplicationErrors.js"
 import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 
 describe("HabilidadService", () => {
@@ -167,13 +169,28 @@ describe("HabilidadService", () => {
   })
 
   describe("delete", () => {
-    test("elimina una habilidad existente", async () => {
-      const service = new HabilidadService(new HabilidadRepository())
-      const habilidad = await service.create({
-        titulo: "React",
-        codigo: "react",
-        descripcion: "desc",
-      })
+    const crearServicio = () =>
+      new HabilidadService(
+        new HabilidadRepository(),
+        new PersonaColaboradoraRepository(),
+        new ProyectoRepository(),
+      )
+    const crearReact = (service) =>
+      service.create({ titulo: "React", codigo: "react", descripcion: "desc" })
+    const proyectoConPerfil = (perfil) => ({
+      perfiles: [
+        { habilidadesRequeridas: [], habilidadesOpcionales: [], ...perfil },
+      ],
+    })
+
+    beforeEach(() => {
+      new PersonaColaboradoraRepository().deleteAll()
+      new ProyectoRepository().deleteAll()
+    })
+
+    test("elimina una habilidad que nadie usa", async () => {
+      const service = crearServicio()
+      const habilidad = await crearReact(service)
 
       await service.delete(habilidad.id)
 
@@ -181,9 +198,40 @@ describe("HabilidadService", () => {
     })
 
     test("tira EntityNotFound si el id no corresponde a ninguna habilidad", async () => {
-      const service = new HabilidadService(new HabilidadRepository())
-      
+      const service = crearServicio()
+
       await expect(service.delete("id-inexistente")).rejects.toThrow(EntityNotFound)
+    })
+
+    test("tira EntityInUse y no la borra si una persona colaboradora la tiene", async () => {
+      const service = crearServicio()
+      const habilidad = await crearReact(service)
+      await new PersonaColaboradoraRepository().save({ habilidades: [habilidad] })
+
+      await expect(service.delete(habilidad.id)).rejects.toThrow(EntityInUse)
+      expect(await service.getAll()).toEqual([habilidad])
+    })
+
+    test("tira EntityInUse y no la borra si un perfil la requiere", async () => {
+      const service = crearServicio()
+      const habilidad = await crearReact(service)
+      await new ProyectoRepository().save(
+        proyectoConPerfil({ habilidadesRequeridas: [habilidad] }),
+      )
+
+      await expect(service.delete(habilidad.id)).rejects.toThrow(EntityInUse)
+      expect(await service.getAll()).toEqual([habilidad])
+    })
+
+    test("tira EntityInUse y no la borra si un perfil la tiene como opcional", async () => {
+      const service = crearServicio()
+      const habilidad = await crearReact(service)
+      await new ProyectoRepository().save(
+        proyectoConPerfil({ habilidadesOpcionales: [habilidad] }),
+      )
+
+      await expect(service.delete(habilidad.id)).rejects.toThrow(EntityInUse)
+      expect(await service.getAll()).toEqual([habilidad])
     })
   })
 

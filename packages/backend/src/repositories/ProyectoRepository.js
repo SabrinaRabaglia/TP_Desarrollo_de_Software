@@ -22,6 +22,17 @@ export default class ProyectoRepository {
     return await this.model.find({ colectivo: colectivoId })
   }
 
+  async existePerfilConHabilidad(habilidadId) {
+    return Boolean(
+      await this.model.exists({
+        $or: [
+          { "perfiles.habilidadesRequeridas": habilidadId },
+          { "perfiles.habilidadesOpcionales": habilidadId },
+        ],
+      }),
+    )
+  }
+
   async save(proyecto) {
     return await guardar(this.model, proyecto)
   }

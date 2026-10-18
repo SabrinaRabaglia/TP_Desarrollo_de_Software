@@ -36,6 +36,17 @@ export default class ProyectoRepository {
     )
   }
 
+  async existePerfilConHabilidad(habilidadId) {
+    const usa = (habilidades) =>
+      habilidades.some((habilidad) => (habilidad.id ?? habilidad) === habilidadId)
+    return ProyectoRepository.proyectos.some((proyecto) =>
+      proyecto.perfiles.some(
+        (perfil) =>
+          usa(perfil.habilidadesRequeridas) || usa(perfil.habilidadesOpcionales),
+      ),
+    )
+  }
+
   async save(nuevo) {
     nuevo.id ??= randomUUID()
     for (const perfil of nuevo.perfiles ?? []) {

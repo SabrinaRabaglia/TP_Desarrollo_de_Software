@@ -1,13 +1,20 @@
 import {
   AlreadyExists,
+  EntityInUse,
   EntityNotFound,
   InvalidReference,
 } from "../errors/ApplicationErrors.js"
 import Habilidad from "../domain/Habilidad.js"
 
 export default class HabilidadService {
-  constructor(habilidadRepository) {
+  constructor(
+    habilidadRepository,
+    personaColaboradoraRepository,
+    proyectoRepository,
+  ) {
     this.habilidadRepository = habilidadRepository
+    this.personaColaboradoraRepository = personaColaboradoraRepository
+    this.proyectoRepository = proyectoRepository
   }
 
   create = async(nueva) => {
@@ -51,6 +58,16 @@ export default class HabilidadService {
     const habilidadExistente = await this.habilidadRepository.findById(id)
     if (!habilidadExistente) {
       throw new EntityNotFound("Habilidad no encontrada")
+    }
+    // Restringimos en vez de sacarla de todos lados: un perfil sin habilidades
+    // quedaría inválido para el dominio.
+    if (
+      (await this.personaColaboradoraRepository.existeConHabilidad(id)) ||
+      (await this.proyectoRepository.existePerfilConHabilidad(id))
+    ) {
+      throw new EntityInUse(
+        "La habilidad está en uso por personas colaboradoras o perfiles de proyectos",
+      )
     }
     await this.habilidadRepository.deleteById(id)
   }

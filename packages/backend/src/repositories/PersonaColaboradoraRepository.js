@@ -20,6 +20,10 @@ export default class PersonaColaboradoraRepository {
       .populate("habilidades")
   }
 
+  async existeConHabilidad(habilidadId) {
+    return Boolean(await this.model.exists({ habilidades: habilidadId }))
+  }
+
   async deleteById(id) {
     return Boolean(await this.model.findByIdAndDelete(id))
   }

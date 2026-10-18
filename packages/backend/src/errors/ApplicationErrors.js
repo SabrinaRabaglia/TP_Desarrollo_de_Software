@@ -10,3 +10,5 @@ export class EntityNotFound extends ApplicationError {}
 export class InvalidReference extends ApplicationError {}
 
 export class AlreadyExists extends ApplicationError {}
+
+export class EntityInUse extends ApplicationError {}

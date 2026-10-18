@@ -4,11 +4,17 @@ import validateId from "../middlewares/validateId.js"
 import HabilidadRepository from "../repositories/HabilidadRepository.js"
 import HabilidadService from "../services/HabilidadService.js"
 import HabilidadController from "../controllers/HabilidadController.js"
+import PersonaColaboradoraRepository from "../repositories/PersonaColaboradoraRepository.js"
+import ProyectoRepository from "../repositories/ProyectoRepository.js"
 
 const routes = Router()
 
 const habilidadRepository = new HabilidadRepository()
-const habilidadService = new HabilidadService(habilidadRepository)
+const habilidadService = new HabilidadService(
+  habilidadRepository,
+  new PersonaColaboradoraRepository(),
+  new ProyectoRepository(),
+)
 const habilidadController = new HabilidadController(habilidadService)
 
 routes.post("/habilidades", habilidadController.create)
