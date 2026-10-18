@@ -24,6 +24,12 @@ export default class ColaboracionRepository {
     )
   }
 
+  async findPersonasInscriptasEn(proyectoId) {
+    return this.colaboraciones
+      .filter((c) => c.proyecto.id === proyectoId)
+      .map((c) => c.personaColaboradora.id)
+  }
+
   async deleteByProyecto(proyectoId) {
     this.colaboraciones = this.colaboraciones.filter(
       (c) => c.proyecto.id !== proyectoId,

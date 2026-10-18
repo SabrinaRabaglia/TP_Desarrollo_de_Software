@@ -22,6 +22,13 @@ export default class ColaboracionRepository {
     })
   }
 
+  async findPersonasInscriptasEn(proyectoId) {
+    const ids = await this.model.distinct("personaColaboradora", {
+      proyecto: proyectoId,
+    })
+    return ids.map(String)
+  }
+
   async deleteByProyecto(proyectoId) {
     await this.model.deleteMany({ proyecto: proyectoId })
   }

@@ -178,6 +178,22 @@ describe("búsqueda de colaboradores según un perfil", () => {
     ).toEqual([personas.ana.id, personas.lucho.id])
   })
 
+  test("no sugiere a quienes ya están inscriptos en el proyecto", async () => {
+    await request(
+      "POST",
+      "/colaboraciones",
+      {
+        personaColaboradoraId: personas.lucho.id,
+        proyectoId: proyectos.mapa.id,
+      },
+      201,
+    )
+
+    expect(
+      (await colaboradores(proyectos.mapa)).map((persona) => persona.id),
+    ).toEqual([personas.ana.id])
+  })
+
   test("responde 404 si el perfil es de otro proyecto", async () => {
     await request(
       "GET",

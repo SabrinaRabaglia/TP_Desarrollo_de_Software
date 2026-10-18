@@ -32,12 +32,14 @@ describe("PerfilService", () => {
   let habilidad2
   let datos
   let personaColaboradoraService
+  let colaboracionRepository
 
   beforeEach(async () => {
     const proyectoRepository = new ProyectoRepository()
     const colectivoRepository = new ColectivoRepository()
     const habilidadRepository = new HabilidadRepository()
     const personaColaboradoraRepository = new PersonaColaboradoraRepository()
+    colaboracionRepository = new ColaboracionRepository()
 
     personaColaboradoraRepository.deleteAll()
     proyectoRepository.deleteAll()
@@ -60,13 +62,14 @@ describe("PerfilService", () => {
     personaColaboradoraService = new PersonaColaboradoraService(
       personaColaboradoraRepository,
       habilidadService,
-      new ColaboracionRepository(),
+      colaboracionRepository,
     )
     service = new PerfilService(
       proyectoService,
       proyectoRepository,
       habilidadService,
       personaColaboradoraService,
+      colaboracionRepository,
     )
 
     const colectivo = await colectivoService.create({
@@ -241,6 +244,26 @@ describe("PerfilService", () => {
 
       expect(await service.buscarColaboradores(proyecto.id, perfil.id)).toEqual(
         [ambas, una, ninguna],
+      )
+    })
+
+    test("no sugiere a quienes ya están inscriptos en el proyecto", async () => {
+      const perfil = await service.create(proyecto.id, datos)
+      const inscripta = await crearPersona("inscripta", [habilidad1.id])
+      const enOtroProyecto = await crearPersona("en otro proyecto", [
+        habilidad1.id,
+      ])
+      await colaboracionRepository.save({
+        personaColaboradora: { id: inscripta.id },
+        proyecto: { id: proyecto.id },
+      })
+      await colaboracionRepository.save({
+        personaColaboradora: { id: enOtroProyecto.id },
+        proyecto: { id: otroProyecto.id },
+      })
+
+      expect(await service.buscarColaboradores(proyecto.id, perfil.id)).toEqual(
+        [enOtroProyecto],
       )
     })
 

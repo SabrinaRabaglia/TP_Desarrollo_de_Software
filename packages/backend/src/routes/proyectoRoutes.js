@@ -60,6 +60,7 @@ const perfilService = new PerfilService(
   proyectoRepository,
   habilidadService,
   personaColaboradoraService,
+  colaboracionRepository,
 )
 const perfilController = new PerfilController(perfilService)
 

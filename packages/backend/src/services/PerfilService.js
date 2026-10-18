@@ -7,11 +7,13 @@ export default class PerfilService {
     proyectoRepository,
     habilidadService,
     personaColaboradoraService,
+    colaboracionRepository,
   ) {
     this.proyectoService = proyectoService
     this.proyectoRepository = proyectoRepository
     this.habilidadService = habilidadService
     this.personaColaboradoraService = personaColaboradoraService
+    this.colaboracionRepository = colaboracionRepository
   }
 
   buscarPerfil = (proyecto, perfilId) => {
@@ -71,11 +73,16 @@ export default class PerfilService {
     const personas = await this.personaColaboradoraService.getAllConHabilidades(
       perfil.habilidadesRequeridas,
     )
-    return personas.toSorted(
-      (una, otra) =>
-        perfil.cantidadDeHabilidadesOpcionalesDe(otra) -
-        perfil.cantidadDeHabilidadesOpcionalesDe(una),
+    const inscriptas = new Set(
+      await this.colaboracionRepository.findPersonasInscriptasEn(proyectoId),
     )
+    return personas
+      .filter((persona) => !inscriptas.has(String(persona.id)))
+      .toSorted(
+        (una, otra) =>
+          perfil.cantidadDeHabilidadesOpcionalesDe(otra) -
+          perfil.cantidadDeHabilidadesOpcionalesDe(una),
+      )
   }
 
   getAllByProyectoId = async (proyectoId) => {
