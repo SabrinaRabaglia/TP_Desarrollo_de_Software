@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Código a Voluntad - API",
-    "description": "Importar este archivo desde Postman > Import > Files. No hace falta un environment: la colección incluye baseUrl (http://localhost:8000) y las variables para los IDs.\n\nCon el backend iniciado, ejecutar las carpetas en el orden mostrado. Las altas guardan automáticamente los IDs para las solicitudes siguientes. Los ejemplos usan nombres únicos y se pueden volver a ejecutar. Ajustar baseUrl si se usa otro puerto o servidor.\n\nIncluye healthcheck, catálogos de países y provincias, CRUD de habilidades, personas, colectivos y proyectos, perfiles, inscripción/listado de colaboraciones, búsquedas de proyectos y colaboradores, notificaciones y cierre manual. La API no requiere autenticación y guarda los datos en MongoDB. Los ids son ObjectId de Mongo. La carpeta Catálogos guarda los ids de Argentina y de Buenos Aires para usarlos en los colectivos, así que hay que ejecutarla antes de Colectivos.\n\nEl cierre se ejecuta después de inscribir a la persona. Una vez cerrado, el proyecto no admite nuevas inscripciones ni reapertura. Para repetir ese flujo hay que crear un proyecto nuevo.\n\nLa carpeta final Limpieza elimina el proyecto, la persona, el colectivo y la habilidad creados en la ejecución. Las colaboraciones no tienen endpoint DELETE y quedan guardadas en la base. Omitir Limpieza si se quieren conservar los datos de ejemplo para probar manualmente.",
+    "description": "Importar este archivo desde Postman > Import > Files. No hace falta un environment: la colección incluye baseUrl (http://localhost:8000) y las variables para los IDs.\n\nCon el backend iniciado, ejecutar las carpetas en el orden mostrado. Las altas guardan automáticamente los IDs para las solicitudes siguientes. Los ejemplos usan nombres únicos y se pueden volver a ejecutar. Ajustar baseUrl si se usa otro puerto o servidor.\n\nIncluye healthcheck, catálogos de países y provincias, CRUD de habilidades, personas, colectivos y proyectos, perfiles, inscripción/listado de colaboraciones, búsquedas de proyectos y colaboradores, notificaciones y cierre manual. La API no requiere autenticación y guarda los datos en MongoDB. Los ids son ObjectId de Mongo. La carpeta Catálogos guarda los ids de Argentina y de Buenos Aires para usarlos en los colectivos, así que hay que ejecutarla antes de Colectivos.\n\nEl cierre se ejecuta después de inscribir a la persona. Una vez cerrado, el proyecto no admite nuevas inscripciones ni reapertura. Para repetir ese flujo hay que crear un proyecto nuevo.\n\nLa carpeta final Limpieza primero muestra los 409 al intentar borrar un colectivo con proyectos o una habilidad en uso, y después elimina el proyecto, la persona, el colectivo y la habilidad creados en la ejecución. Las colaboraciones se borran con el proyecto y la persona, y las notificaciones con la persona. Omitir Limpieza si se quieren conservar los datos de ejemplo para probar manualmente.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -1543,6 +1543,90 @@
       "name": "Limpieza",
       "item": [
         {
+          "name": "Eliminar colectivo con proyectos (409)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"colectivoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Colectivos > Crear colectivo.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 409\", () => pm.response.to.have.status(409))",
+                  "pm.test(\"explica por qué no se puede borrar\", () => pm.expect(pm.response.json().message).to.include(\"proyectos\"))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/colectivos/{{colectivoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "colectivos",
+                "{{colectivoId}}"
+              ]
+            },
+            "description": "Intenta eliminar el colectivo mientras todavía tiene el proyecto creado en la ejecución. Responde 409 y el colectivo no se borra: primero hay que eliminar sus proyectos."
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar habilidad en uso (409)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"habilidadId\")) {",
+                  "  throw new Error(\"Ejecutá primero Habilidades > Crear habilidad.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 409\", () => pm.response.to.have.status(409))",
+                  "pm.test(\"explica por qué no se puede borrar\", () => pm.expect(pm.response.json().message).to.include(\"en uso\"))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/habilidades/{{habilidadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "habilidades",
+                "{{habilidadId}}"
+              ]
+            },
+            "description": "Intenta eliminar la habilidad mientras la usan la persona y el perfil creados en la ejecución. Responde 409 y la habilidad no se borra."
+          },
+          "response": []
+        },
+        {
           "name": "Eliminar proyecto",
           "event": [
             {
@@ -1580,7 +1664,7 @@
                 "{{proyectoId}}"
               ]
             },
-            "description": "Elimina el proyecto y limpia `proyectoId`."
+            "description": "Elimina el proyecto junto con sus perfiles y colaboraciones, y limpia `proyectoId`."
           },
           "response": []
         },
@@ -1622,7 +1706,7 @@
                 "{{personaId}}"
               ]
             },
-            "description": "Elimina la persona y limpia `personaId`."
+            "description": "Elimina la persona junto con sus colaboraciones y las notificaciones que recibió, y limpia `personaId`."
           },
           "response": []
         },
@@ -1664,7 +1748,7 @@
                 "{{colectivoId}}"
               ]
             },
-            "description": "Elimina el colectivo y limpia `colectivoId`."
+            "description": "Elimina el colectivo, que ya no tiene proyectos, y limpia `colectivoId`."
           },
           "response": []
         },
@@ -1706,12 +1790,12 @@
                 "{{habilidadId}}"
               ]
             },
-            "description": "Elimina la habilidad y limpia `habilidadId`."
+            "description": "Elimina la habilidad, que ya no usa ninguna persona ni perfil, y limpia `habilidadId`."
           },
           "response": []
         }
       ],
-      "description": "Solicitudes DELETE para limpiar los recursos creados por la ejecución. Ejecutá esta carpeta al final y en el orden mostrado."
+      "description": "Solicitudes DELETE para limpiar los recursos creados por la ejecución. Ejecutá esta carpeta al final y en el orden mostrado.\n\nLas dos primeras muestran que no se puede borrar algo que otra entidad usa: un colectivo con proyectos o una habilidad asignada responden 409. Después se borran el proyecto y la persona, y recién ahí el colectivo y la habilidad quedan libres para borrarse."
     }
   ],
   "event": [
