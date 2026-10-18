@@ -1381,7 +1381,7 @@
           "Notificaciones"
         ],
         "summary": "Contactar a una persona por un perfil",
-        "description": "El colectivo dueño del proyecto le envía un mensaje interno a una persona colaboradora por uno de sus perfiles, y el mensaje se replica por todos los medios de contacto de la persona. Responde 409 si la persona no acepta mensajería interna o si el proyecto está cerrado, y 404 si el proyecto, el perfil o la persona no existen.",
+        "description": "El colectivo dueño del proyecto le envía un mensaje interno a una persona colaboradora por uno de sus perfiles, y el mensaje se replica por todos los medios de contacto de la persona. Si algún medio externo falla, el mensaje interno se guarda igual y se replica por los demás. Responde 409 si la persona no acepta mensajería interna o si el proyecto está cerrado, y 404 si el proyecto, el perfil o la persona no existen.",
         "operationId": "contactarPersonaPorPerfil",
         "parameters": [
           {
@@ -2436,7 +2436,7 @@
           },
           "mediosExternosUtilizados": {
             "type": "array",
-            "description": "Tipos de medio de contacto por los que se replicó la notificación. Los valores (emails y teléfonos) no se exponen.",
+            "description": "Tipos de medio de contacto por los que se replicó la notificación con éxito: si un envío falla, ese medio no figura. Los valores (emails y teléfonos) no se exponen.",
             "items": {
               "$ref": "#/components/schemas/TipoMedioContacto"
             }

@@ -144,6 +144,19 @@ describe("NotificacionService", () => {
       expect(notificacionRepository.notificaciones).toEqual([notificacion])
     })
 
+    test("si un canal externo falla, la notificación interna se guarda igual", async () => {
+      jest.spyOn(console, "error").mockImplementation(() => {})
+      canales.SMS.enviar.mockRejectedValue(new Error("SMS caído"))
+
+      const notificacion = await contactar(ana.id)
+
+      expect(notificacion.mediosExternosUtilizados).toEqual([
+        ana.mediosDeContacto[0],
+      ])
+      expect(notificacionRepository.notificaciones).toEqual([notificacion])
+      jest.restoreAllMocks()
+    })
+
     test("a una persona sin medios de contacto solo le llega el mensaje interno", async () => {
       const sol = await personaColaboradoraService.create({
         nombreFantasia: "sol.datos",
@@ -203,13 +216,6 @@ describe("NotificacionService", () => {
           contenido: "Hola",
         }),
       ).rejects.toThrow(EntityNotFound)
-    })
-
-    test("si falla un canal externo no guarda la notificación", async () => {
-      canales.SMS.enviar.mockRejectedValue(new Error("Sin señal"))
-
-      await expect(contactar(ana.id)).rejects.toThrow("Sin señal")
-      expect(notificacionRepository.notificaciones).toEqual([])
     })
   })
 

@@ -65,6 +65,27 @@ describe("NotificadorExterno", () => {
     }
   })
 
+  test("si un canal falla, envía por los demás y devuelve solo los que salieron bien", async () => {
+    const error = jest.spyOn(console, "error").mockImplementation(() => {})
+    const canales = crearCanales()
+    canales.WHATSAPP.enviar.mockRejectedValue(new Error("WhatsApp caído"))
+    const email = new MedioDeContacto("EMAIL", "ana@example.com")
+    const whatsapp = new MedioDeContacto("WHATSAPP", "+54 11 1234-5678")
+    const sms = new MedioDeContacto("SMS", "+54 11 8765-4321")
+
+    const utilizados = await new NotificadorExterno(canales).notificar(
+      crearPersona([email, whatsapp, sms]),
+      "Hola",
+    )
+
+    expect(utilizados).toEqual([email, sms])
+    expect(canales.EMAIL.enviar).toHaveBeenCalled()
+    expect(canales.SMS.enviar).toHaveBeenCalled()
+    expect(error).toHaveBeenCalledWith(
+      "[WHATSAPP] No se pudo enviar la notificación: WhatsApp caído",
+    )
+  })
+
   test("los canales simulados registran el envío con el tipo y el destino", async () => {
     const log = jest.spyOn(console, "log").mockImplementation(() => {})
 
