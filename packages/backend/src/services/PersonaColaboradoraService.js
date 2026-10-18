@@ -47,11 +47,7 @@ export default class PersonaColaboradoraService {
   }
 
   update = async (id, actualizada) => {
-    const personaExistente =
-      await this.personaColaboradoraRepository.findById(id)
-    if (!personaExistente) {
-      throw new EntityNotFound("Persona colaboradora no encontrada")
-    }
+    const personaExistente = await this.getById(id)
 
     PersonaColaboradora.validarDatos(actualizada)
 
@@ -79,11 +75,7 @@ export default class PersonaColaboradoraService {
     return await this.personaColaboradoraRepository.save(personaExistente)
   }
   delete = async (id) => {
-    const personaExistente =
-      await this.personaColaboradoraRepository.findById(id)
-    if (!personaExistente) {
-      throw new EntityNotFound("Persona colaboradora no encontrada")
-    }
+    await this.getById(id)
     await this.colaboracionRepository.deleteByPersona(id)
     await this.notificacionRepository.deleteByPersonaColaboradora(id)
     await this.personaColaboradoraRepository.deleteById(id)

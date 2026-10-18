@@ -33,10 +33,7 @@ export default class HabilidadService {
   }
 
   update = async (id, actualizada) => {
-    const habilidadExistente = await this.habilidadRepository.findById(id)
-    if (!habilidadExistente) {
-      throw new EntityNotFound("Habilidad no encontrada")
-    }
+    const habilidadExistente = await this.getById(id)
 
     Habilidad.validarDatos(actualizada)
 
@@ -55,10 +52,7 @@ export default class HabilidadService {
   }
 
   delete = async (id) => {
-    const habilidadExistente = await this.habilidadRepository.findById(id)
-    if (!habilidadExistente) {
-      throw new EntityNotFound("Habilidad no encontrada")
-    }
+    await this.getById(id)
     // Restringimos en vez de sacarla de todos lados: un perfil sin habilidades
     // quedaría inválido para el dominio.
     if (
