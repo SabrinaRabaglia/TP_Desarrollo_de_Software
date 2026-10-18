@@ -42,13 +42,18 @@ export default class ColectivoService {
     return await Promise.all(colectivos.map(this.conProyectos))
   }
 
-  getById = async (id) => {
+  buscarExistente = async (id) => {
     const colectivo = await this.colectivoRepository.findById(id)
     if (!colectivo) {
       throw new EntityNotFound("Colectivo no encontrado")
     }
-    return await this.conProyectos(colectivo)
+    return colectivo
   }
+
+  getById = async (id) => {
+    return await this.conProyectos(await this.buscarExistente(id))
+  }
+
   validarTipo = async (tipo) => {
     if (!(await this.tipoColectivoRepository.findByNombre(tipo))) {
       throw new InvalidReference(
@@ -57,92 +62,86 @@ export default class ColectivoService {
     }
   }
 
-  resolverUbicacion = async ({ pais, provincia }) => {
-    const provinciaId = provincia?.id ?? provincia
-    let instanciaProvincia = null
-    if (provinciaId) {
-      instanciaProvincia = await this.provinciaRepository.findById(provinciaId)
-      if (!instanciaProvincia)
-        throw new InvalidReference("Provincia no encontrada")
+  validarNombreDisponible = async (nombre, id = null) => {
+    const otro = await this.colectivoRepository.findByNombre(nombre)
+    if (otro && otro.id !== id) {
+      throw new AlreadyExists("Ya existe un colectivo con ese nombre")
     }
-
-    const paisId = pais?.id ?? pais
-    let instanciaPais = null
-    if (paisId) {
-      instanciaPais = await this.paisRepository.findById(paisId)
-      if (!instanciaPais) throw new InvalidReference("País no encontrado")
-    }
-
-    return { pais: instanciaPais, provincia: instanciaProvincia }
   }
 
-  create = async (nuevo) => {
-    Colectivo.validarDatos(nuevo)
-    await this.validarTipo(nuevo.tipo)
-    const { pais, provincia } = await this.resolverUbicacion(nuevo)
+  buscarReferencia = async (repository, id, mensaje) => {
+    if (!id) return null
+    const encontrado = await repository.findById(id)
+    if (!encontrado) throw new InvalidReference(mensaje)
+    return encontrado
+  }
 
+  resolverUbicacion = async ({ pais, provincia }) => ({
+    pais: await this.buscarReferencia(
+      this.paisRepository,
+      pais,
+      "País no encontrado",
+    ),
+    provincia: await this.buscarReferencia(
+      this.provinciaRepository,
+      provincia,
+      "Provincia no encontrada",
+    ),
+  })
+
+  create = async (nuevo) => {
     const colectivo = new Colectivo(
       nuevo.nombre,
       nuevo.descripcion,
       nuevo.tipo,
-      pais,
-      provincia,
+      null,
+      null,
       nuevo.ciudad,
     )
-
-    const colectivoExistente = await this.colectivoRepository.findByNombre(
-      colectivo.nombre,
-    )
-    if (colectivoExistente) {
-      throw new AlreadyExists("Ya existe un colectivo con ese nombre")
-    }
+    await this.validarTipo(colectivo.tipo)
+    Object.assign(colectivo, await this.resolverUbicacion(nuevo))
+    await this.validarNombreDisponible(colectivo.nombre)
 
     return this.toDTO(await this.colectivoRepository.save(colectivo), [])
   }
-  update = async (id, colectivoActualizado) => {
-    const colectivoExistente = await this.colectivoRepository.findById(id)
 
-    if (!colectivoExistente) throw new EntityNotFound("Colectivo no encontrado")
+  aplicarCambios = async (existente, datos) => {
+    Colectivo.validarDatos(datos)
+    await this.validarTipo(datos.tipo)
+    const { pais, provincia } = await this.resolverUbicacion(datos)
+    await this.validarNombreDisponible(datos.nombre, existente.id)
 
-    Colectivo.validarDatos(colectivoActualizado)
-    await this.validarTipo(colectivoActualizado.tipo)
-    const { pais, provincia } =
-      await this.resolverUbicacion(colectivoActualizado)
+    existente.nombre = datos.nombre
+    existente.descripcion = datos.descripcion
+    existente.tipo = datos.tipo
+    existente.pais = pais
+    existente.provincia = provincia
+    existente.ciudad = datos.ciudad || null
 
-    const otro = await this.colectivoRepository.findByNombre(
-      colectivoActualizado.nombre,
+    return await this.conProyectos(
+      await this.colectivoRepository.save(existente),
     )
-
-    if (otro && otro.id !== colectivoExistente.id)
-      throw new AlreadyExists("Ya existe un colectivo con ese nombre")
-    colectivoExistente.nombre = colectivoActualizado.nombre
-    colectivoExistente.descripcion = colectivoActualizado.descripcion
-    colectivoExistente.tipo = colectivoActualizado.tipo
-    colectivoExistente.pais = pais
-    colectivoExistente.provincia = provincia
-    colectivoExistente.ciudad = colectivoActualizado.ciudad || null
-
-    const colectivoGuardado =
-      await this.colectivoRepository.save(colectivoExistente)
-    return await this.conProyectos(colectivoGuardado)
   }
-  patch = async (id, cambios) => {
-    const existente = await this.colectivoRepository.findById(id)
-    if (!existente) throw new EntityNotFound("Colectivo no encontrado")
 
-    return this.update(id, {
+  update = async (id, datos) => {
+    return await this.aplicarCambios(await this.buscarExistente(id), datos)
+  }
+
+  patch = async (id, cambios) => {
+    const existente = await this.buscarExistente(id)
+    return await this.aplicarCambios(existente, {
       nombre: existente.nombre,
       descripcion: existente.descripcion,
       tipo: existente.tipo,
-      pais: existente.pais,
-      provincia: existente.provincia,
+      pais: existente.pais?.id ?? null,
+      provincia: existente.provincia?.id ?? null,
       ciudad: existente.ciudad,
       ...cambios,
     })
   }
+
   delete = async (id) => {
-    const colectivo = await this.colectivoRepository.findById(id)
-    if (!colectivo) throw new EntityNotFound("Colectivo no encontrado")
+    await this.buscarExistente(id)
     const proyectos = await this.proyectoRepository.findByColectivoId(id)
     if (proyectos.length > 0) {
       throw new EntityInUse(
