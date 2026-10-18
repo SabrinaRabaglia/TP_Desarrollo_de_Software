@@ -35,7 +35,7 @@ export default class ProyectoController {
     }
   }
 
-  put = async (req, res, next) => {
+  update = async (req, res, next) => {
     try {
       const id = req.params.id
       const actualizado = await this.proyectoService.update(id, req.body)

@@ -103,7 +103,7 @@ describe("ColectivoController", () => {
       )
     })
   })
-  describe("put", () => {
+  describe("update", () => {
     test("con body valido actualiza el colectivo y responde con 200", async () => {
       const colectivoServiceMock = mockColectivoService()
 
@@ -123,7 +123,7 @@ describe("ColectivoController", () => {
       const res = mockRes()
       const next = jest.fn()
 
-      await controller.put(req, res, next)
+      await controller.update(req, res, next)
 
       expect(colectivoServiceMock.update).toHaveBeenCalledWith("1", req.body)
       expect(res.status).toHaveBeenCalledWith(200)

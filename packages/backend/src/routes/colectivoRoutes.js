@@ -13,7 +13,7 @@ routes.put(
   "/colectivos/:id",
   validateId,
   validar(colectivoSchema),
-  colectivoController.put,
+  colectivoController.update,
 )
 routes.patch(
   "/colectivos/:id",

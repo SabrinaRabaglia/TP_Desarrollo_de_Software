@@ -133,7 +133,7 @@ describe("ProyectoController", () => {
     })
   })
 
-  describe("put", () => {
+  describe("update", () => {
     test("con body valido actualiza el proyecto y responde con 200", async () => {
       const proyectoServiceMock = mockProyectoService()
       const proyectoGuardado = { ...proyectoValido, id: "1" }
@@ -144,7 +144,7 @@ describe("ProyectoController", () => {
       const res = mockRes()
       const next = jest.fn()
 
-      await controller.put(req, res, next)
+      await controller.update(req, res, next)
 
       expect(proyectoServiceMock.update).toHaveBeenCalledWith(
         "1",

@@ -21,7 +21,7 @@ routes.put(
   "/proyectos/:id",
   validateId,
   validar(proyectoSchema),
-  proyectoController.put,
+  proyectoController.update,
 )
 routes.delete("/proyectos/:id", validateId, proyectoController.delete)
 routes.patch(
