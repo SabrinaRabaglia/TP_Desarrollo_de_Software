@@ -28,7 +28,7 @@ const mockColectivoService = () => ({
 
 describe("ColectivoController", () => {
   describe("getAll", () => {
-    test("Responde con 200 y la lista de colectivos que devuelve el service", async () => {
+    test("responde con 200 y la lista de colectivos que devuelve el service", async () => {
       const colectivoServiceMock = mockColectivoService()
       const lista = [{ nombre: "Asamblea Ambiental" }]
       colectivoServiceMock.getAll.mockReturnValue(lista.map(guardado))
@@ -48,7 +48,7 @@ describe("ColectivoController", () => {
     })
   })
   describe("getById", () => {
-    test("Responde con 200 y el colectivo obtenido según el id", async () => {
+    test("responde con 200 y el colectivo obtenido según el id", async () => {
       const colectivoServiceMock = mockColectivoService()
       const colectivo = { nombre: "Asamblea Ambiental" }
       colectivoServiceMock.getById.mockReturnValue(guardado(colectivo))
@@ -66,7 +66,7 @@ describe("ColectivoController", () => {
     })
   })
   describe("create", () => {
-    test("Con body valido, delega en el service y responde con 201 el colectivo creado", async () => {
+    test("con body válido, delega en el service y responde con 201 el colectivo creado", async () => {
       const colectivoCreado = {
         id: "colectivo-1",
         nombre: "Asamblea Ambiental del Sur",
@@ -104,7 +104,7 @@ describe("ColectivoController", () => {
     })
   })
   describe("update", () => {
-    test("con body valido actualiza el colectivo y responde con 200", async () => {
+    test("con body válido actualiza el colectivo y responde con 200", async () => {
       const colectivoServiceMock = mockColectivoService()
 
       const controller = new ColectivoController(colectivoServiceMock)
@@ -134,7 +134,7 @@ describe("ColectivoController", () => {
   })
 
   describe("patch", () => {
-    test("con actualización parcial valida delega en el service y responde con 200", async () => {
+    test("con actualización parcial válida delega en el service y responde con 200", async () => {
       const colectivoServiceMock = mockColectivoService()
       const actualizado = { nombre: "Nuevo Nombre" }
       colectivoServiceMock.patch.mockReturnValue(guardado(actualizado))

@@ -10,31 +10,31 @@ describe("MedioDeContacto", () => {
     expect(medio.valor).toBe("test@example.com")
   })
 
-  test("tira DomainValidationError si falta el tipo", () => {
+  test("lanza DomainValidationError si falta el tipo", () => {
     expect(() => new MedioDeContacto(undefined, "test@example.com")).toThrow(
       DomainValidationError,
     )
   })
 
-  test("tira DomainValidationError si el tipo no es EMAIL, WHATSAPP ni SMS", () => {
+  test("lanza DomainValidationError si el tipo no es EMAIL, WHATSAPP ni SMS", () => {
     expect(() => new MedioDeContacto("TELEGRAM", "@ana")).toThrow(
       DomainValidationError,
     )
   })
 
-  test("tira DomainValidationError si falta el valor", () => {
+  test("lanza DomainValidationError si falta el valor", () => {
     expect(() => new MedioDeContacto("EMAIL", "")).toThrow(
       DomainValidationError,
     )
   })
 
-  test("tira DomainValidationError si el formato del email es inválido", () => {
+  test("lanza DomainValidationError si el formato del email es inválido", () => {
     expect(() => new MedioDeContacto("EMAIL", "correo-sin-arroba")).toThrow(
       DomainValidationError,
     )
   })
 
-  test("tira DomainValidationError si el formato del teléfono de WhatsApp es inválido", () => {
+  test("lanza DomainValidationError si el formato del teléfono de WhatsApp es inválido", () => {
     expect(() => new MedioDeContacto("WHATSAPP", "abc-no-es-telefono")).toThrow(
       DomainValidationError,
     )

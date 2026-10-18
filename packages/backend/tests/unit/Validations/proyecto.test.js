@@ -30,7 +30,7 @@ describe("validación de proyectos", () => {
     expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
   })
 
-  test("con body inválido (falta un campo obligatorio), tira BadRequestError", async () => {
+  test("con body inválido (falta un campo obligatorio), lanza BadRequestError", async () => {
     const req = {
       body: {
         titulo: "Proyecto Incompleto",
@@ -44,7 +44,7 @@ describe("validación de proyectos", () => {
   })
 
   test.each([["colectivo", { colectivo: "Asamblea Ambiental del Sur" }]])(
-    "con un %s que no es un id válido, tira BadRequestError",
+    "con un %s que no es un id válido, lanza BadRequestError",
     async (_campo, cambios) => {
       const next = jest.fn()
       await validar(proyectoSchema)(
@@ -56,7 +56,7 @@ describe("validación de proyectos", () => {
     },
   )
 
-  test("con un campo extra no declarado en el schema, tira BadRequestError", async () => {
+  test("con un campo extra no declarado en el schema, lanza BadRequestError", async () => {
     const req = {
       body: {
         ...proyectoValido,
@@ -69,7 +69,7 @@ describe("validación de proyectos", () => {
     expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
   })
 
-  test("con body invalido tira BadRequestError", async () => {
+  test("con body inválido lanza BadRequestError", async () => {
     const req = { params: { id: "1" }, body: { titulo: "Solo título" } }
     const res = mockRes()
     const next = jest.fn()

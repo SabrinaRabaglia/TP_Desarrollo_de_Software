@@ -1,9 +1,6 @@
 import { randomUUID } from "node:crypto"
 export default class PersonaColaboradoraRepository {
   static personas = []
-  constructor() {
-    //this.personasColaboradoras = []
-  }
 
   async findAll() {
     return PersonaColaboradoraRepository.personas

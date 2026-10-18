@@ -48,7 +48,7 @@ describe("Perfil", () => {
       "con habilidades requeridas que no son una lista",
       { habilidadesRequeridas: undefined },
     ],
-  ])("tira DomainValidationError %s", (_caso, cambio) => {
+  ])("lanza DomainValidationError %s", (_caso, cambio) => {
     expect(() => new Perfil({ ...datos, ...cambio })).toThrow(
       DomainValidationError,
     )

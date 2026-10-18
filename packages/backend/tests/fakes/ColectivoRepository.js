@@ -1,10 +1,6 @@
 import { randomUUID } from "node:crypto"
 export default class ColectivoRepository {
-
   static colectivos = []
-  constructor() {
-    //this.colectivos = []
-  }
   async findAll() {
     return ColectivoRepository.colectivos
   }
@@ -18,7 +14,9 @@ export default class ColectivoRepository {
 
   async save(nuevo) {
     nuevo.id ??= randomUUID()
-    const indice = ColectivoRepository.colectivos.findIndex((c) => c.id === nuevo.id)
+    const indice = ColectivoRepository.colectivos.findIndex(
+      (c) => c.id === nuevo.id,
+    )
     if (indice === -1) {
       ColectivoRepository.colectivos.push(nuevo)
       return nuevo
@@ -27,10 +25,12 @@ export default class ColectivoRepository {
     return nuevo
   }
   async deleteById(id) {
-    ColectivoRepository.colectivos = ColectivoRepository.colectivos.filter((c) => c.id !== id)
+    ColectivoRepository.colectivos = ColectivoRepository.colectivos.filter(
+      (c) => c.id !== id,
+    )
   }
 
   deleteAll() {
-   ColectivoRepository.colectivos.length = 0; 
-}
+    ColectivoRepository.colectivos.length = 0
+  }
 }

@@ -7,7 +7,10 @@ import NotificacionRepository from "../../fakes/NotificacionRepository.js"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import Cuenta from "../../../src/domain/Cuenta.js"
 import Habilidad from "../../../src/domain/Habilidad.js"
-import { EntityNotFound, InvalidReference } from "../../../src/errors/ApplicationErrors.js"
+import {
+  EntityNotFound,
+  InvalidReference,
+} from "../../../src/errors/ApplicationErrors.js"
 import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 
 describe("PersonaColaboradoraService", () => {
@@ -21,7 +24,7 @@ describe("PersonaColaboradoraService", () => {
   beforeEach(() => {
     repository = new PersonaColaboradoraRepository()
     repository.deleteAll() // Limpiamos la memoria estática antes de cada test
-    
+
     habilidad = new Habilidad("React", "react", "Desarrollo web")
     habilidad.id = "habilidad-1"
     const habilidadService = new HabilidadService({
@@ -149,8 +152,14 @@ describe("PersonaColaboradoraService", () => {
   test("eliminar una persona elimina sus colaboraciones y conserva las de otras", async () => {
     const persona = await service.create(datos)
     const proyecto = { id: "proyecto-1" }
-    await colaboracionRepository.save({ personaColaboradora: { id: persona.id }, proyecto })
-    await colaboracionRepository.save({ personaColaboradora: { id: "otra-persona" }, proyecto })
+    await colaboracionRepository.save({
+      personaColaboradora: { id: persona.id },
+      proyecto,
+    })
+    await colaboracionRepository.save({
+      personaColaboradora: { id: "otra-persona" },
+      proyecto,
+    })
 
     await service.delete(persona.id)
 
@@ -162,12 +171,22 @@ describe("PersonaColaboradoraService", () => {
 
   test("eliminar una persona elimina sus notificaciones y conserva las de otras", async () => {
     const persona = await service.create(datos)
-    await notificacionRepository.save({ personaColaboradora: { id: persona.id }, fecha: new Date() })
-    const deOtra = await notificacionRepository.save({ personaColaboradora: { id: "otra-persona" }, fecha: new Date() })
+    await notificacionRepository.save({
+      personaColaboradora: { id: persona.id },
+      fecha: new Date(),
+    })
+    const deOtra = await notificacionRepository.save({
+      personaColaboradora: { id: "otra-persona" },
+      fecha: new Date(),
+    })
 
     await service.delete(persona.id)
 
-    expect(await notificacionRepository.findByPersonaColaboradora(persona.id)).toEqual([])
-    expect(await notificacionRepository.findByPersonaColaboradora("otra-persona")).toEqual([deOtra])
+    expect(
+      await notificacionRepository.findByPersonaColaboradora(persona.id),
+    ).toEqual([])
+    expect(
+      await notificacionRepository.findByPersonaColaboradora("otra-persona"),
+    ).toEqual([deOtra])
   })
 })

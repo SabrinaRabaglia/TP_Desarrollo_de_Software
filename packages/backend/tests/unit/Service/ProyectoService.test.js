@@ -50,11 +50,13 @@ describe("ProyectoService", () => {
       colaboracionRepository,
     )
 
-    const colectivo = (await colectivoService.create({
-      nombre: "Asamblea Ambiental",
-      descripcion: "Protección de humedales",
-      tipo: "Asamblea",
-    })).colectivo
+    const colectivo = (
+      await colectivoService.create({
+        nombre: "Asamblea Ambiental",
+        descripcion: "Protección de humedales",
+        tipo: "Asamblea",
+      })
+    ).colectivo
 
     dtoProyectoValido = {
       titulo: "Plataforma de Colaboración",
@@ -108,7 +110,7 @@ describe("ProyectoService", () => {
       expect(await service.getAll()).toHaveLength(0)
     })
 
-    test("tira AlreadyExists si ya existe un proyecto con el mismo título", async () => {
+    test("lanza AlreadyExists si ya existe un proyecto con el mismo título", async () => {
       await service.create(dtoProyectoValido)
 
       await expect(
@@ -169,11 +171,13 @@ describe("ProyectoService", () => {
 
     test("permite cambiar el colectivo por otro existente", async () => {
       const creado = await service.create(dtoProyectoValido)
-      const colectivo = (await colectivoService.create({
-        nombre: "Otra organización",
-        descripcion: "Proyecto comunitario",
-        tipo: "ONG",
-      })).colectivo
+      const colectivo = (
+        await colectivoService.create({
+          nombre: "Otra organización",
+          descripcion: "Proyecto comunitario",
+          tipo: "ONG",
+        })
+      ).colectivo
 
       await service.update(creado.id, { colectivo: colectivo.id })
 

@@ -34,7 +34,7 @@ describe("Notificacion", () => {
     ["sin colectivo", { colectivo: undefined }],
     ["sin persona colaboradora", { personaColaboradora: undefined }],
     ["sin perfil", { perfil: undefined }],
-  ])("tira DomainValidationError %s", (_caso, cambio) => {
+  ])("lanza DomainValidationError %s", (_caso, cambio) => {
     expect(() => new Notificacion({ ...datos, ...cambio })).toThrow(
       DomainValidationError,
     )

@@ -21,25 +21,25 @@ describe("Habilidad", () => {
     expect(habilidad.id).toBeUndefined()
   })
 
-  test("tira DomainValidationError si falta el título", () => {
+  test("lanza DomainValidationError si falta el título", () => {
     expect(() => new Habilidad(undefined, "react", "desc")).toThrow(
       DomainValidationError,
     )
   })
 
-  test("tira DomainValidationError si falta el código", () => {
+  test("lanza DomainValidationError si falta el código", () => {
     expect(() => new Habilidad("React", undefined, "desc")).toThrow(
       DomainValidationError,
     )
   })
 
-  test("tira DomainValidationError si falta la descripción", () => {
+  test("lanza DomainValidationError si falta la descripción", () => {
     expect(() => new Habilidad("React", "react", undefined)).toThrow(
       DomainValidationError,
     )
   })
 
-  test("tira DomainValidationError si el título es un string vacío", () => {
+  test("lanza DomainValidationError si el título es un string vacío", () => {
     expect(() => new Habilidad("", "react", "desc")).toThrow(
       DomainValidationError,
     )

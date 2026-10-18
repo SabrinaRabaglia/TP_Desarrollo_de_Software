@@ -1,9 +1,8 @@
-import Pais from '../../src/domain/Pais.js';
+import Pais from "../../src/domain/Pais.js"
 export default class PaisRepository {
   constructor() {
     this.paises = [new Pais("1", "Argentina")]
   }
-
 
   async findById(id) {
     return this.paises.find((pais) => pais.id === id)
@@ -11,7 +10,7 @@ export default class PaisRepository {
 
   async save(pais) {
     const indice = this.paises.findIndex((p) => p.id === pais.id)
-    if(indice === -1) {
+    if (indice === -1) {
       this.paises.push(pais)
       return pais
     }
@@ -19,5 +18,4 @@ export default class PaisRepository {
     this.paises[indice] = pais
     return pais
   }
-
 }

@@ -4,7 +4,7 @@ import TipoColectivo from "../../../src/domain/TipoColectivo"
 import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 
 describe("Colectivo", () => {
-  test("Se construye correctamente con datos validos", () => {
+  test("se construye correctamente con datos válidos", () => {
     const tipoColectivo = new TipoColectivo("Asamblea")
     const colectivo = new Colectivo(
       "Asamblea Ambiental del Sur",
@@ -24,7 +24,7 @@ describe("Colectivo", () => {
     expect(colectivo.provincia).toBe("CABA")
     expect(colectivo.ciudad).toBe("Almagro")
   })
-  test("Se construye el colectivo sin pais, provincia o ciudad", () => {
+  test("se construye el colectivo sin país, provincia o ciudad", () => {
     const tipoColectivo = new TipoColectivo("Fundación")
     const colectivo = new Colectivo(
       "Fundación EcoFuturo",
@@ -38,7 +38,7 @@ describe("Colectivo", () => {
     )
     expect(colectivo.tipo.nombre).toBe("Fundación")
   })
-  test("Falta de nombre del colectivo", () => {
+  test("falta de nombre del colectivo", () => {
     expect(
       () =>
         new Colectivo(
@@ -48,12 +48,12 @@ describe("Colectivo", () => {
         ),
     ).toThrow(DomainValidationError)
   })
-  test("Falta descripçion del colectivo", () => {
+  test("falta descripción del colectivo", () => {
     expect(
       () => new Colectivo("Fundacion EcoFuturo", undefined, "ONGs"),
     ).toThrow(DomainValidationError)
   })
-  test("Falta tipo del colectivo", () => {
+  test("falta tipo del colectivo", () => {
     expect(
       () =>
         new Colectivo(

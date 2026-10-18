@@ -113,7 +113,7 @@ describe("ProyectoController", () => {
   })
 
   describe("create", () => {
-    test("con body valido, delega en el service y responde con 201 el proyecto creado", async () => {
+    test("con body válido, delega en el service y responde con 201 el proyecto creado", async () => {
       const proyectoServiceMock = mockProyectoService()
       const proyectoCreado = { ...proyectoValido, id: "proyecto-1" }
       proyectoServiceMock.create.mockReturnValue(guardado(proyectoCreado))
@@ -134,7 +134,7 @@ describe("ProyectoController", () => {
   })
 
   describe("update", () => {
-    test("con body valido actualiza el proyecto y responde con 200", async () => {
+    test("con body válido actualiza el proyecto y responde con 200", async () => {
       const proyectoServiceMock = mockProyectoService()
       const proyectoGuardado = { ...proyectoValido, id: "1" }
       proyectoServiceMock.update.mockReturnValue(guardado(proyectoGuardado))
@@ -158,7 +158,7 @@ describe("ProyectoController", () => {
   })
 
   describe("patch", () => {
-    test("con actualización parcial valida delega en el service y responde con 200", async () => {
+    test("con actualización parcial válida delega en el service y responde con 200", async () => {
       const proyectoServiceMock = mockProyectoService()
       const cambiosParciales = { titulo: "Título Modificado" }
       const proyectoActualizado = { ...proyectoValido, ...cambiosParciales }

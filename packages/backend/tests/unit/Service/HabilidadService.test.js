@@ -3,11 +3,14 @@ import HabilidadService from "../../../src/services/HabilidadService.js"
 import HabilidadRepository from "../../fakes/HabilidadRepository.js"
 import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraRepository.js"
 import ProyectoRepository from "../../fakes/ProyectoRepository.js"
-import { AlreadyExists, EntityInUse, EntityNotFound } from "../../../src/errors/ApplicationErrors.js"
+import {
+  AlreadyExists,
+  EntityInUse,
+  EntityNotFound,
+} from "../../../src/errors/ApplicationErrors.js"
 import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 
 describe("HabilidadService", () => {
-
   // Limpiamos la memoria estática antes de cada test para evitar colisiones
   beforeEach(() => {
     new HabilidadRepository().deleteAll()
@@ -29,10 +32,14 @@ describe("HabilidadService", () => {
       expect(await service.getAll()).toEqual([habilidad])
     })
 
-    test("tira AlreadyExists si ya existe una habilidad con el mismo código", async () => {
+    test("lanza AlreadyExists si ya existe una habilidad con el mismo código", async () => {
       const service = new HabilidadService(new HabilidadRepository())
-      await service.create({ titulo: "React", codigo: "react", descripcion: "desc" })
-      
+      await service.create({
+        titulo: "React",
+        codigo: "react",
+        descripcion: "desc",
+      })
+
       const crearHabilidadConCodigoRepetido = async () =>
         await service.create({
           titulo: "REACT",
@@ -40,7 +47,9 @@ describe("HabilidadService", () => {
           descripcion: "otra desc",
         })
 
-      await expect(crearHabilidadConCodigoRepetido()).rejects.toThrow(AlreadyExists)
+      await expect(crearHabilidadConCodigoRepetido()).rejects.toThrow(
+        AlreadyExists,
+      )
       expect(await service.getAll()).toHaveLength(1)
     })
 
@@ -52,7 +61,7 @@ describe("HabilidadService", () => {
           titulo: "Desarrollo Web React",
           codigo: "react",
           descripcion: "desc",
-        })
+        }),
       ).rejects.toThrow(DomainValidationError)
 
       expect(await service.getAll()).toEqual([])
@@ -99,33 +108,37 @@ describe("HabilidadService", () => {
       expect(actualizada.descripcion).toBe("nueva desc")
     })
 
-    test("tira EntityNotFound si el id no corresponde a ninguna habilidad", async () => {
+    test("lanza EntityNotFound si el id no corresponde a ninguna habilidad", async () => {
       const service = new HabilidadService(new HabilidadRepository())
-      
+
       await expect(
         service.update("id-inexistente", {
           titulo: "x",
           codigo: "y",
           descripcion: "z",
-        })
+        }),
       ).rejects.toThrow(EntityNotFound)
     })
 
-    test("tira AlreadyExists si el nuevo código pertenece a OTRA habilidad existente", async () => {
+    test("lanza AlreadyExists si el nuevo código pertenece a OTRA habilidad existente", async () => {
       const service = new HabilidadService(new HabilidadRepository())
       const react = await service.create({
         titulo: "React",
         codigo: "react",
         descripcion: "desc",
       })
-      await service.create({ titulo: "Node", codigo: "node", descripcion: "desc" })
+      await service.create({
+        titulo: "Node",
+        codigo: "node",
+        descripcion: "desc",
+      })
 
       await expect(
         service.update(react.id, {
           titulo: "Node",
           codigo: "node",
           descripcion: "desc",
-        })
+        }),
       ).rejects.toThrow(AlreadyExists)
     })
 
@@ -161,7 +174,7 @@ describe("HabilidadService", () => {
           titulo: "Desarrollo Web React",
           codigo: "react",
           descripcion: "Nueva descripción",
-        })
+        }),
       ).rejects.toThrow(DomainValidationError)
 
       expect(await service.getById(habilidad.id)).toEqual(antes)
@@ -197,22 +210,26 @@ describe("HabilidadService", () => {
       expect(await service.getAll()).toEqual([])
     })
 
-    test("tira EntityNotFound si el id no corresponde a ninguna habilidad", async () => {
+    test("lanza EntityNotFound si el id no corresponde a ninguna habilidad", async () => {
       const service = crearServicio()
 
-      await expect(service.delete("id-inexistente")).rejects.toThrow(EntityNotFound)
+      await expect(service.delete("id-inexistente")).rejects.toThrow(
+        EntityNotFound,
+      )
     })
 
-    test("tira EntityInUse y no la borra si una persona colaboradora la tiene", async () => {
+    test("lanza EntityInUse y no la borra si una persona colaboradora la tiene", async () => {
       const service = crearServicio()
       const habilidad = await crearReact(service)
-      await new PersonaColaboradoraRepository().save({ habilidades: [habilidad] })
+      await new PersonaColaboradoraRepository().save({
+        habilidades: [habilidad],
+      })
 
       await expect(service.delete(habilidad.id)).rejects.toThrow(EntityInUse)
       expect(await service.getAll()).toEqual([habilidad])
     })
 
-    test("tira EntityInUse y no la borra si un perfil la requiere", async () => {
+    test("lanza EntityInUse y no la borra si un perfil la requiere", async () => {
       const service = crearServicio()
       const habilidad = await crearReact(service)
       await new ProyectoRepository().save(
@@ -223,7 +240,7 @@ describe("HabilidadService", () => {
       expect(await service.getAll()).toEqual([habilidad])
     })
 
-    test("tira EntityInUse y no la borra si un perfil la tiene como opcional", async () => {
+    test("lanza EntityInUse y no la borra si un perfil la tiene como opcional", async () => {
       const service = crearServicio()
       const habilidad = await crearReact(service)
       await new ProyectoRepository().save(
@@ -249,10 +266,12 @@ describe("HabilidadService", () => {
       expect(encontrada).toEqual(habilidad)
     })
 
-    test("tira EntityNotFound si el id no corresponde a ninguna habilidad", async () => {
+    test("lanza EntityNotFound si el id no corresponde a ninguna habilidad", async () => {
       const service = new HabilidadService(new HabilidadRepository())
 
-      await expect(service.getById("id-inexistente")).rejects.toThrow(EntityNotFound)
+      await expect(service.getById("id-inexistente")).rejects.toThrow(
+        EntityNotFound,
+      )
     })
   })
 

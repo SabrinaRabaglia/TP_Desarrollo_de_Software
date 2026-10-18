@@ -9,7 +9,7 @@ const PROVINCIA_ID = "65f1a2b3c4d5e6f708192a02"
 const mockRes = () => ({})
 
 describe("validación de colectivos", () => {
-  test("con body inválido (falta un campo), tira BadRequestError", async () => {
+  test("con body inválido (falta un campo), lanza BadRequestError", async () => {
     const req = {
       body: {
         nombre: "Asamblea Ambiental del Sur",
@@ -28,7 +28,7 @@ describe("validación de colectivos", () => {
     ["pais", { pais: "Argentina" }],
     ["provincia", { provincia: "2" }],
   ])(
-    "con un %s que no es un id válido, tira BadRequestError",
+    "con un %s que no es un id válido, lanza BadRequestError",
     async (_campo, cambios) => {
       const req = {
         body: {
@@ -46,7 +46,7 @@ describe("validación de colectivos", () => {
     },
   )
 
-  test("con un campo extra no declarado en el schema, tira BadRequestError", async () => {
+  test("con un campo extra no declarado en el schema, lanza BadRequestError", async () => {
     const req = {
       body: {
         nombre: "Asamblea Ambiental del Sur",
@@ -66,7 +66,7 @@ describe("validación de colectivos", () => {
     expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
   })
 
-  test("con body invalido tira BadRequestError", async () => {
+  test("con body inválido lanza BadRequestError", async () => {
     const req = { params: { id: "1" }, body: { nombre: "Solo nombre" } }
     const res = mockRes()
     const next = jest.fn()

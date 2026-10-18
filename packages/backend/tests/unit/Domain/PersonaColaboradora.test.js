@@ -65,14 +65,14 @@ describe("PersonaColaboradora", () => {
     expect(persona.id).toBeUndefined()
   })
 
-  test("tira DomainValidationError si falta nombreFantasia", () => {
+  test("lanza DomainValidationError si falta nombreFantasia", () => {
     const construirPersonaSinNombreFantasia = () =>
       new PersonaColaboradora(undefined)
 
     expect(construirPersonaSinNombreFantasia).toThrow(DomainValidationError)
   })
 
-  test("tira DomainValidationError si nombreFantasia es un string vacío", () => {
+  test("lanza DomainValidationError si nombreFantasia es un string vacío", () => {
     const construirPersonaConNombreFantasiaVacio = () =>
       new PersonaColaboradora("")
 

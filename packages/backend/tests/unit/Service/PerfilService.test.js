@@ -72,11 +72,13 @@ describe("PerfilService", () => {
       colaboracionRepository,
     )
 
-    const colectivo = (await colectivoService.create({
-      nombre: "Asamblea Ambiental",
-      descripcion: "Protección de humedales",
-      tipo: "Asamblea",
-    })).colectivo
+    const colectivo = (
+      await colectivoService.create({
+        nombre: "Asamblea Ambiental",
+        descripcion: "Protección de humedales",
+        tipo: "Asamblea",
+      })
+    ).colectivo
     proyecto = await proyectoService.create({
       titulo: "Plataforma de Colaboración",
       descripcion: "Plataforma para conectar colectivos sociales",

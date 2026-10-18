@@ -21,7 +21,7 @@ describe("Proyecto", () => {
     tipoColectivo,
   )
 
-  test("Se construye correctamente con valores por defecto", () => {
+  test("se construye correctamente con valores por defecto", () => {
     const fechaInicio = new Date()
     const proyecto = new Proyecto(
       "Limpieza del Río",
@@ -41,7 +41,7 @@ describe("Proyecto", () => {
     expect(proyecto.colaboraciones).toEqual([])
   })
 
-  test("Se construye correctamente pasando todos los parámetros explícitos", () => {
+  test("se construye correctamente pasando todos los parámetros explícitos", () => {
     const fechaAlta = new Date("2026-09-11")
     const fechaCierre = new Date("2026-12-31")
 
@@ -76,19 +76,19 @@ describe("Proyecto", () => {
     expect(proyecto.poseeHabilidadNecesaria(persona)).toBe(false)
   })
 
-  test("Falta el título del proyecto", () => {
+  test("falta el título del proyecto", () => {
     expect(
       () => new Proyecto(undefined, "Capacitación comunitaria", colectivo),
     ).toThrow(DomainValidationError)
   })
 
-  test("Falta la descripción del proyecto", () => {
+  test("falta la descripción del proyecto", () => {
     expect(
       () => new Proyecto("Taller de Reciclaje", undefined, colectivo),
     ).toThrow(DomainValidationError)
   })
 
-  test("Falta el colectivo del proyecto", () => {
+  test("falta el colectivo del proyecto", () => {
     expect(
       () =>
         new Proyecto(

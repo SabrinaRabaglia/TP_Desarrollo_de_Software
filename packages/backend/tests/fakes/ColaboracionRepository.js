@@ -7,8 +7,6 @@ export default class ColaboracionRepository {
     return this.colaboraciones
   }
 
-
-
   async findByPersonaAndProyecto(personaId, proyectoId) {
     return this.colaboraciones.find(
       (c) =>

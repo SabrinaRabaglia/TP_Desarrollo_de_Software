@@ -2,10 +2,6 @@ import { randomUUID } from "node:crypto"
 export default class ProyectoRepository {
   static proyectos = []
 
-  constructor() {
-    //this.proyectos = []
-  }
-
   async findAll() {
     return ProyectoRepository.proyectos
   }
@@ -38,11 +34,14 @@ export default class ProyectoRepository {
 
   async existePerfilConHabilidad(habilidadId) {
     const usa = (habilidades) =>
-      habilidades.some((habilidad) => (habilidad.id ?? habilidad) === habilidadId)
+      habilidades.some(
+        (habilidad) => (habilidad.id ?? habilidad) === habilidadId,
+      )
     return ProyectoRepository.proyectos.some((proyecto) =>
       proyecto.perfiles.some(
         (perfil) =>
-          usa(perfil.habilidadesRequeridas) || usa(perfil.habilidadesOpcionales),
+          usa(perfil.habilidadesRequeridas) ||
+          usa(perfil.habilidadesOpcionales),
       ),
     )
   }
@@ -72,5 +71,3 @@ export default class ProyectoRepository {
     ProyectoRepository.proyectos.length = 0
   }
 }
-
-export { ProyectoRepository }

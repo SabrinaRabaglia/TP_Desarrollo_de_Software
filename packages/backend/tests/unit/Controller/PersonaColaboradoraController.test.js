@@ -3,13 +3,13 @@ import PersonaColaboradoraController from "../../../src/controllers/PersonaColab
 
 const OBJECT_ID_VALIDO = "65f1a2b3c4d5e6f708192a3b"
 
-const crearResFalso = () => ({
+const mockRes = () => ({
   status: jest.fn().mockReturnThis(),
   json: jest.fn().mockReturnThis(),
   send: jest.fn().mockReturnThis(),
 })
 
-const crearPersonaColaboradoraServiceFalso = () => ({
+const mockPersonaColaboradoraService = () => ({
   create: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
@@ -21,11 +21,11 @@ describe("PersonaColaboradoraController", () => {
   describe("create", () => {
     test("con body válido (solo nombreFantasia), delega en el service y responde 201", async () => {
       const personaCreada = { id: "1", nombreFantasia: "anon123" }
-      const service = crearPersonaColaboradoraServiceFalso()
+      const service = mockPersonaColaboradoraService()
       service.create.mockReturnValue(personaCreada)
       const controller = new PersonaColaboradoraController(service)
       const req = { body: { nombreFantasia: "anon123" } }
-      const res = crearResFalso()
+      const res = mockRes()
       const next = jest.fn()
 
       await controller.create(req, res, next)
@@ -36,7 +36,7 @@ describe("PersonaColaboradoraController", () => {
     })
 
     test("con body válido incluyendo cuentas y habilidades (id con formato ObjectId), delega en el service", async () => {
-      const service = crearPersonaColaboradoraServiceFalso()
+      const service = mockPersonaColaboradoraService()
       service.create.mockReturnValue({ id: "1" })
       const controller = new PersonaColaboradoraController(service)
       const req = {
@@ -46,7 +46,7 @@ describe("PersonaColaboradoraController", () => {
           cuentas: [{ nombreUsuario: "anagomez", tipo: "GITHUB" }],
         },
       }
-      const res = crearResFalso()
+      const res = mockRes()
       const next = jest.fn()
 
       await controller.create(req, res, next)
@@ -56,7 +56,7 @@ describe("PersonaColaboradoraController", () => {
     })
 
     test("con body válido incluyendo aceptaMensajeriaInterna y mediosDeContacto, delega en el service", async () => {
-      const service = crearPersonaColaboradoraServiceFalso()
+      const service = mockPersonaColaboradoraService()
       service.create.mockReturnValue({ id: "1" })
       const controller = new PersonaColaboradoraController(service)
       const req = {
@@ -66,7 +66,7 @@ describe("PersonaColaboradoraController", () => {
           mediosDeContacto: [{ tipo: "EMAIL", valor: "test@example.com" }],
         },
       }
-      const res = crearResFalso()
+      const res = mockRes()
       const next = jest.fn()
 
       await controller.create(req, res, next)
@@ -79,14 +79,14 @@ describe("PersonaColaboradoraController", () => {
   describe("update", () => {
     test("con body válido, delega en el service pasando el id de la ruta y responde 200", async () => {
       const personaActualizada = { id: "1", nombreFantasia: "anon123-editado" }
-      const service = crearPersonaColaboradoraServiceFalso()
+      const service = mockPersonaColaboradoraService()
       service.update.mockReturnValue(personaActualizada)
       const controller = new PersonaColaboradoraController(service)
       const req = {
         params: { id: "1" },
         body: { nombreFantasia: "anon123-editado" },
       }
-      const res = crearResFalso()
+      const res = mockRes()
       const next = jest.fn()
 
       await controller.update(req, res, next)
@@ -99,10 +99,10 @@ describe("PersonaColaboradoraController", () => {
 
   describe("delete", () => {
     test("delega en el service con el id de la ruta y responde 204 sin body", async () => {
-      const service = crearPersonaColaboradoraServiceFalso()
+      const service = mockPersonaColaboradoraService()
       const controller = new PersonaColaboradoraController(service)
       const req = { params: { id: "1" } }
-      const res = crearResFalso()
+      const res = mockRes()
       const next = jest.fn()
 
       await controller.delete(req, res, next)
@@ -116,11 +116,11 @@ describe("PersonaColaboradoraController", () => {
   describe("getById", () => {
     test("delega en el service con el id de la ruta y responde 200 con la persona", async () => {
       const persona = { id: "1", nombreFantasia: "anon123" }
-      const service = crearPersonaColaboradoraServiceFalso()
+      const service = mockPersonaColaboradoraService()
       service.getById.mockReturnValue(persona)
       const controller = new PersonaColaboradoraController(service)
       const req = { params: { id: "1" } }
-      const res = crearResFalso()
+      const res = mockRes()
       const next = jest.fn()
 
       await controller.getById(req, res, next)
@@ -134,11 +134,11 @@ describe("PersonaColaboradoraController", () => {
   describe("getAll", () => {
     test("responde 200 con el listado que devuelve el service", async () => {
       const personas = [{ id: "1", nombreFantasia: "anon123" }]
-      const service = crearPersonaColaboradoraServiceFalso()
+      const service = mockPersonaColaboradoraService()
       service.getAll.mockReturnValue(personas)
       const controller = new PersonaColaboradoraController(service)
       const req = {}
-      const res = crearResFalso()
+      const res = mockRes()
       const next = jest.fn()
 
       await controller.getAll(req, res, next)

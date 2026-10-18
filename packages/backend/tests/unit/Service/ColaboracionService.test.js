@@ -6,7 +6,10 @@ import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraReposi
 import Proyecto from "../../../src/domain/Proyecto.js"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import Habilidad from "../../../src/domain/Habilidad.js"
-import { AlreadyExists, InvalidReference } from "../../../src/errors/ApplicationErrors.js"
+import {
+  AlreadyExists,
+  InvalidReference,
+} from "../../../src/errors/ApplicationErrors.js"
 import { DomainRuleError } from "../../../src/domain/errors/DomainErrors.js"
 
 describe("ColaboracionService", () => {
@@ -32,9 +35,15 @@ describe("ColaboracionService", () => {
     personaRepository.save(persona)
     proyecto = new Proyecto("Plataforma", "Desarrollo web", "colectivo-1")
     proyecto.id = "proyecto-1"
-    proyecto.perfiles = [{ habilidadesRequeridas: ["otra-habilidad", habilidad.id] }]
+    proyecto.perfiles = [
+      { habilidadesRequeridas: ["otra-habilidad", habilidad.id] },
+    ]
     proyectoRepository.save(proyecto)
-    datos = { proyectoId: proyecto.id, personaColaboradoraId: persona.id, esAnonima: false}
+    datos = {
+      proyectoId: proyecto.id,
+      personaColaboradoraId: persona.id,
+      esAnonima: false,
+    }
   })
 
   test("registra una única colaboración entre la persona y el proyecto", async () => {

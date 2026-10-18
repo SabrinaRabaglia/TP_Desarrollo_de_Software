@@ -109,7 +109,7 @@ describe("ColectivoService", () => {
       expect(await service.getAll()).toHaveLength(1)
     })
 
-    test("tira AlreadyExists si ya existe un colectivo con el mismo nombre", async () => {
+    test("lanza AlreadyExists si ya existe un colectivo con el mismo nombre", async () => {
       const service = new ColectivoService(
         new ColectivoRepository(),
         new TipoColectivoRepository(),
@@ -278,7 +278,7 @@ describe("ColectivoService", () => {
         expect(await service.getAll()).toHaveLength(0)
       })
 
-      test("tira EntityInUse y no lo borra si el colectivo tiene proyectos", async () => {
+      test("lanza EntityInUse y no lo borra si el colectivo tiene proyectos", async () => {
         const service = new ColectivoService(
           new ColectivoRepository(),
           new TipoColectivoRepository(),
