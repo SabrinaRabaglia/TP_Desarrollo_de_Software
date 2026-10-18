@@ -2,6 +2,7 @@ import { describe, expect, test, beforeEach } from "@jest/globals"
 import ColectivoService from "../../../src/services/ColectivoService.js"
 import {
   AlreadyExists,
+  EntityInUse,
   EntityNotFound,
   InvalidReference,
 } from "../../../src/errors/ApplicationErrors.js"
@@ -240,6 +241,10 @@ describe("ColectivoService", () => {
     })
 
     describe("delete", () => {
+      beforeEach(() => {
+        new ProyectoRepository().deleteAll()
+      })
+
       test("elimina el colectivo correctamente si existe", async () => {
         const service = new ColectivoService(
           new ColectivoRepository(),
@@ -257,6 +262,29 @@ describe("ColectivoService", () => {
         await service.delete(colectivo.id)
 
         expect(await service.getAll()).toHaveLength(0)
+      })
+
+      test("tira EntityInUse y no lo borra si el colectivo tiene proyectos", async () => {
+        const service = new ColectivoService(
+          new ColectivoRepository(),
+          new TipoColectivoRepository(),
+          new ProyectoRepository(),
+          new ProvinciaRepository(),
+          new PaisRepository()
+        )
+        const colectivo = await service.create({
+          nombre: "Asamblea Ambiental",
+          descripcion: "Protección de humedales locales",
+          tipo: "Asamblea",
+        })
+        await new ProyectoRepository().save({
+          titulo: "Mapa de humedales",
+          colectivo: colectivo.id,
+          perfiles: [],
+        })
+
+        await expect(service.delete(colectivo.id)).rejects.toThrow(EntityInUse)
+        expect(await service.getAll()).toHaveLength(1)
       })
     })
   })

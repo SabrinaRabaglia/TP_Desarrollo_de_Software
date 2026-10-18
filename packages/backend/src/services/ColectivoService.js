@@ -1,6 +1,7 @@
 import Colectivo from "../domain/Colectivo.js"
 import {
   AlreadyExists,
+  EntityInUse,
   EntityNotFound,
   InvalidReference,
 } from "../errors/ApplicationErrors.js"
@@ -139,6 +140,12 @@ export default class ColectivoService {
   delete = async (id) => {
     const colectivo = await this.colectivoRepository.findById(id)
     if (!colectivo) throw new EntityNotFound("Colectivo no encontrado")
+    const proyectos = await this.proyectoRepository.findByColectivoId(id)
+    if (proyectos.length > 0) {
+      throw new EntityInUse(
+        "No se puede eliminar un colectivo con proyectos; eliminá sus proyectos primero",
+      )
+    }
     await this.colectivoRepository.delete(id)
   }
 }
