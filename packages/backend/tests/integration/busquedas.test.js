@@ -194,6 +194,15 @@ describe("búsqueda de colaboradores según un perfil", () => {
     ).toEqual([personas.ana.id])
   })
 
+  test("responde 409 si el proyecto está cerrado", async () => {
+    await request(
+      "GET",
+      `/proyectos/${proyectos.cerrado.id}/perfiles/${proyectos.cerrado.perfil.id}/colaboradores`,
+      undefined,
+      409,
+    )
+  })
+
   test("responde 404 si el perfil es de otro proyecto", async () => {
     await request(
       "GET",

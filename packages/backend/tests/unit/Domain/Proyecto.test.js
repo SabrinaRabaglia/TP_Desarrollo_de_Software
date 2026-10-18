@@ -255,6 +255,17 @@ describe("Proyecto", () => {
       ).toThrow(DomainRuleError)
     })
 
+    test("un proyecto cerrado no puede buscar colaboradores", () => {
+      const proyecto = new Proyecto("Mapa", "Mapa de humedales", colectivo)
+      expect(() => proyecto.assertPuedeBuscarColaboradores()).not.toThrow()
+
+      proyecto.cerrar()
+
+      expect(() => proyecto.assertPuedeBuscarColaboradores()).toThrow(
+        DomainRuleError,
+      )
+    })
+
     test("un proyecto cerrado no puede contactar personas", () => {
       const proyecto = new Proyecto("Mapa", "Mapa de humedales", colectivo)
       proyecto.cerrar()

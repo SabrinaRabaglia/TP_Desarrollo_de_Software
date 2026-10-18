@@ -69,7 +69,11 @@ export default class PerfilService {
   }
 
   buscarColaboradores = async (proyectoId, perfilId) => {
-    const perfil = await this.getById(proyectoId, perfilId)
+    const { proyecto, perfil } = await this.buscarEnProyecto(
+      proyectoId,
+      perfilId,
+    )
+    proyecto.assertPuedeBuscarColaboradores()
     const personas = await this.personaColaboradoraService.getAllConHabilidades(
       perfil.habilidadesRequeridas,
     )

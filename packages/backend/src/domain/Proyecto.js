@@ -58,6 +58,14 @@ export default class Proyecto {
     }
   }
 
+  assertPuedeBuscarColaboradores() {
+    if (this.proyectoCerrado()) {
+      throw new DomainRuleError(
+        "Un proyecto cerrado no busca personas colaboradoras.",
+      )
+    }
+  }
+
   buscarPerfil(perfilId) {
     return this.perfiles.find((perfil) => perfil.id === perfilId)
   }

@@ -247,6 +247,16 @@ describe("PerfilService", () => {
       )
     })
 
+    test("lanza DomainRuleError si el proyecto está cerrado", async () => {
+      const perfil = await service.create(proyecto.id, datos)
+      await crearPersona("con requerida", [habilidad1.id])
+      await proyectoService.update(proyecto.id, { estado: "CERRADO" })
+
+      await expect(
+        service.buscarColaboradores(proyecto.id, perfil.id),
+      ).rejects.toThrow(DomainRuleError)
+    })
+
     test("no sugiere a quienes ya están inscriptos en el proyecto", async () => {
       const perfil = await service.create(proyecto.id, datos)
       const inscripta = await crearPersona("inscripta", [habilidad1.id])

@@ -1712,7 +1712,14 @@
               "listen": "test",
               "script": {
                 "type": "text/javascript",
-                "exec": []
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"el proyecto queda cerrado con fecha de cierre\", () => {",
+                  "  const proyecto = pm.response.json()",
+                  "  pm.expect(proyecto.estado).to.eql(\"CERRADO\")",
+                  "  pm.expect(proyecto.fechaCierre).to.be.a(\"string\")",
+                  "})"
+                ]
               }
             }
           ],
@@ -1741,9 +1748,57 @@
             "description": "Cierra el proyecto actualizando su estado. Responde 200 al cerrar, 409 si ya estaba cerrado o se intenta reabrir, y 404 si el proyecto no existe. La fecha la genera el servidor."
           },
           "response": []
+        },
+        {
+          "name": "Buscar colaboradores en proyecto cerrado (409)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"proyectoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Proyectos > Crear proyecto.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"perfilId\")) {",
+                  "  throw new Error(\"Ejecutá primero Perfiles > Crear perfil.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 409\", () => pm.response.to.have.status(409))",
+                  "pm.test(\"explica que un proyecto cerrado no busca colaboradores\", () => pm.expect(pm.response.json().message).to.include(\"cerrado\"))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}/perfiles/{{perfilId}}/colaboradores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoId}}",
+                "perfiles",
+                "{{perfilId}}",
+                "colaboradores"
+              ]
+            },
+            "description": "Repite la búsqueda de colaboradores del perfil {{perfilId}} con el proyecto ya cerrado. Responde 409: un proyecto cerrado no busca colaboradores, igual que no puede contactarlos ni cambiar sus perfiles."
+          },
+          "response": []
         }
       ],
-      "description": "Ejecutar después de la inscripción. Conserva las colaboraciones existentes y bloquea nuevas inscripciones."
+      "description": "Ejecutar después de la inscripción. Conserva las colaboraciones existentes y bloquea nuevas inscripciones. Después de cerrarlo, la búsqueda de colaboradores responde 409."
     },
     {
       "name": "Limpieza",
