@@ -12,6 +12,10 @@ export default class NotificacionRepository {
       .sort({ fecha: -1 })
   }
 
+  async deleteByPersonaColaboradora(personaColaboradoraId) {
+    await this.model.deleteMany({ personaColaboradora: personaColaboradoraId })
+  }
+
   async save(notificacion) {
     const guardada = await guardar(this.model, notificacion)
     return guardada.depopulate()

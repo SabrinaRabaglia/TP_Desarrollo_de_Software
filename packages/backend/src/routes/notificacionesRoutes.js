@@ -24,6 +24,7 @@ const routes = Router()
 const proyectoRepository = new ProyectoRepository()
 const colaboracionRepository = new ColaboracionRepository()
 const personaColaboradoraRepository = new PersonaColaboradoraRepository()
+const notificacionRepository = new NotificacionRepository()
 const habilidadService = new HabilidadService(
   new HabilidadRepository(),
   personaColaboradoraRepository,
@@ -45,6 +46,7 @@ const personaColaboradoraService = new PersonaColaboradoraService(
   personaColaboradoraRepository,
   habilidadService,
   colaboracionRepository,
+  notificacionRepository,
 )
 const perfilService = new PerfilService(
   proyectoService,
@@ -54,7 +56,7 @@ const perfilService = new PerfilService(
 )
 const notificacionController = new NotificacionController(
   new NotificacionService(
-    new NotificacionRepository(),
+    notificacionRepository,
     perfilService,
     personaColaboradoraService,
     new NotificadorExterno(),

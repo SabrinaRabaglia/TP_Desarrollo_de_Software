@@ -3,6 +3,7 @@ import PersonaColaboradoraService from "../../../src/services/PersonaColaborador
 import HabilidadService from "../../../src/services/HabilidadService.js"
 import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraRepository.js"
 import ColaboracionRepository from "../../fakes/ColaboracionRepository.js"
+import NotificacionRepository from "../../fakes/NotificacionRepository.js"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import Cuenta from "../../../src/domain/Cuenta.js"
 import Habilidad from "../../../src/domain/Habilidad.js"
@@ -13,6 +14,7 @@ describe("PersonaColaboradoraService", () => {
   let repository
   let service
   let colaboracionRepository
+  let notificacionRepository
   let habilidad
   let datos
 
@@ -26,10 +28,12 @@ describe("PersonaColaboradoraService", () => {
       findById: async (id) => (id === habilidad.id ? habilidad : undefined),
     })
     colaboracionRepository = new ColaboracionRepository()
+    notificacionRepository = new NotificacionRepository()
     service = new PersonaColaboradoraService(
       repository,
       habilidadService,
       colaboracionRepository,
+      notificacionRepository,
     )
     datos = {
       nombreFantasia: "anon123",
@@ -154,5 +158,16 @@ describe("PersonaColaboradoraService", () => {
     expect(await colaboracionRepository.getAll()).toEqual([
       { personaColaboradora: { id: "otra-persona" }, proyecto },
     ])
+  })
+
+  test("eliminar una persona elimina sus notificaciones y conserva las de otras", async () => {
+    const persona = await service.create(datos)
+    await notificacionRepository.save({ personaColaboradora: { id: persona.id }, fecha: new Date() })
+    const deOtra = await notificacionRepository.save({ personaColaboradora: { id: "otra-persona" }, fecha: new Date() })
+
+    await service.delete(persona.id)
+
+    expect(await notificacionRepository.findByPersonaColaboradora(persona.id)).toEqual([])
+    expect(await notificacionRepository.findByPersonaColaboradora("otra-persona")).toEqual([deOtra])
   })
 })

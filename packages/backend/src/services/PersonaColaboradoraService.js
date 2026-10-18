@@ -7,10 +7,12 @@ export default class PersonaColaboradoraService {
     personaColaboradoraRepository,
     habilidadService,
     colaboracionRepository,
+    notificacionRepository,
   ) {
     this.personaColaboradoraRepository = personaColaboradoraRepository
     this.habilidadService = habilidadService
     this.colaboracionRepository = colaboracionRepository
+    this.notificacionRepository = notificacionRepository
   }
 
   crearCuentas = (cuentas) => {
@@ -83,6 +85,7 @@ export default class PersonaColaboradoraService {
       throw new EntityNotFound("Persona colaboradora no encontrada")
     }
     await this.colaboracionRepository.deleteByPersona(id)
+    await this.notificacionRepository.deleteByPersonaColaboradora(id)
     await this.personaColaboradoraRepository.deleteById(id)
   }
 

@@ -499,7 +499,7 @@
           "Personas colaboradoras"
         ],
         "summary": "Eliminar persona colaboradora",
-        "description": "Elimina una persona colaboradora por id.",
+        "description": "Elimina una persona colaboradora por id, junto con sus colaboraciones y las notificaciones que recibió.",
         "operationId": "eliminarPersonaColaboradora",
         "parameters": [
           {

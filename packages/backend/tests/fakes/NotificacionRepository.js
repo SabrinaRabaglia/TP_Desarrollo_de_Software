@@ -14,6 +14,13 @@ export default class NotificacionRepository {
       .toSorted((a, b) => b.fecha - a.fecha)
   }
 
+  async deleteByPersonaColaboradora(personaColaboradoraId) {
+    this.notificaciones = this.notificaciones.filter(
+      (notificacion) =>
+        notificacion.personaColaboradora.id !== personaColaboradoraId,
+    )
+  }
+
   async save(notificacion) {
     notificacion.id ??= randomUUID()
     this.notificaciones.push(notificacion)

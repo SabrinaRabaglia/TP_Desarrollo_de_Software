@@ -12,6 +12,7 @@ import PaisRepository from "../repositories/PaisRepository.js"
 import HabilidadService from "../services/HabilidadService.js"
 import HabilidadRepository from "../repositories/HabilidadRepository.js"
 import ColaboracionRepository from "../repositories/ColaboracionRepository.js"
+import NotificacionRepository from "../repositories/NotificacionRepository.js"
 import PerfilService from "../services/PerfilService.js"
 import PerfilController from "../controllers/PerfilController.js"
 import PersonaColaboradoraService from "../services/PersonaColaboradoraService.js"
@@ -52,6 +53,7 @@ const personaColaboradoraService = new PersonaColaboradoraService(
   personaColaboradoraRepository,
   habilidadService,
   colaboracionRepository,
+  new NotificacionRepository(),
 )
 const perfilService = new PerfilService(
   proyectoService,
