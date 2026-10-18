@@ -135,12 +135,15 @@ Los dos procesos son idempotentes. Insertan lo que falta por su clave natural, n
 
 | Relación | Decisión | Por qué |
 |---|---|---|
-| Habilidad en Proyecto y Persona | Referencia | Es un catálogo compartido. Si se corrige una habilidad, el cambio se ve en todos lados. |
+| Habilidad en Perfil y Persona | Referencia | Es un catálogo compartido. Si se corrige una habilidad, el cambio se ve en todos lados. No se puede borrar una habilidad que alguien usa (`409`). |
 | País y provincia en Colectivo | Referencia | Catálogos precargados y compartidos. |
 | Tipo de colectivo | Nombre del catálogo (`String`) | Se valida contra la colección `tiposColectivo` y no tiene más datos que el nombre. |
-| Proyecto en Colectivo | Referencia en el proyecto (`proyecto.colectivo`) | Un colectivo puede tener muchos proyectos. La lista se arma con una consulta y no se guarda en el colectivo. |
+| Proyecto en Colectivo | Referencia en el proyecto (`proyecto.colectivo`) | Un colectivo puede tener muchos proyectos. La lista se arma con una consulta y no se guarda en el colectivo. No se puede borrar un colectivo con proyectos (`409`). |
+| Perfil en Proyecto | Embebido (`proyecto.perfiles`) | Es parte del proyecto: no existe fuera de él, se consulta junto con él y son pocos por proyecto. Cada perfil tiene su propio `_id`, que usan las rutas `/proyectos/:id/perfiles/:perfilId`. Al borrar el proyecto se borran sus perfiles. |
 | Cuentas en Persona | Embebido | Relación uno a pocos, sin existencia propia fuera de la persona. |
+| Medios de contacto en Persona | Embebido | Relación uno a pocos, sin existencia propia fuera de la persona. Quedan registrados pero la API no los muestra. |
 | Colaboración | Colección propia con referencias a persona y proyecto | Es una relación muchos a muchos que crece con el historial. Un índice único impide inscribir dos veces a la misma persona en el mismo proyecto. |
+| Notificación | Colección propia con referencias a colectivo, persona y perfil | Crece sin límite con el tiempo y se consulta por persona (su bandeja), con un índice sobre `personaColaboradora`. El perfil se guarda por id porque vive embebido en el proyecto. Los medios por los que se replicó se copian embebidos, como registro de a dónde se envió. Se borran junto con la persona. |
 
 ### Ids
 
