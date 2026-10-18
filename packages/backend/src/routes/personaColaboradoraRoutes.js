@@ -1,33 +1,8 @@
 import { Router } from "express"
 import validateId from "../middlewares/validateId.js"
-
-import PersonaColaboradoraRepository from "../repositories/PersonaColaboradoraRepository.js"
-import HabilidadRepository from "../repositories/HabilidadRepository.js"
-import ColaboracionRepository from "../repositories/ColaboracionRepository.js"
-import NotificacionRepository from "../repositories/NotificacionRepository.js"
-import PersonaColaboradoraService from "../services/PersonaColaboradoraService.js"
-import PersonaColaboradoraController from "../controllers/PersonaColaboradoraController.js"
-import HabilidadService from "../services/HabilidadService.js"
-import ProyectoRepository from "../repositories/ProyectoRepository.js"
+import { personaColaboradoraController } from "../dependencias.js"
 
 const routes = Router()
-
-const habilidadRepository = new HabilidadRepository()
-const personaColaboradoraRepository = new PersonaColaboradoraRepository()
-const habilidadService = new HabilidadService(
-  habilidadRepository,
-  personaColaboradoraRepository,
-  new ProyectoRepository(),
-)
-const personaColaboradoraService = new PersonaColaboradoraService(
-  personaColaboradoraRepository,
-  habilidadService,
-  new ColaboracionRepository(),
-  new NotificacionRepository(),
-)
-const personaColaboradoraController = new PersonaColaboradoraController(
-  personaColaboradoraService,
-)
 
 routes.post("/personas-colaboradoras", personaColaboradoraController.create)
 routes.get("/personas-colaboradoras", personaColaboradoraController.getAll)

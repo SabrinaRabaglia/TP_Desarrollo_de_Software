@@ -1,54 +1,8 @@
 import { Router } from "express"
 import validateId from "../middlewares/validateId.js"
-
-import ProyectoRepository from "../repositories/ProyectoRepository.js"
-import ProyectoService from "../services/ProyectoService.js"
-import ProyectoController from "../controllers/ProyectoController.js"
-import ColectivoRepository from "../repositories/ColectivoRepository.js"
-import HabilidadService from "../services/HabilidadService.js"
-import HabilidadRepository from "../repositories/HabilidadRepository.js"
-import ColaboracionRepository from "../repositories/ColaboracionRepository.js"
-import NotificacionRepository from "../repositories/NotificacionRepository.js"
-import PerfilService from "../services/PerfilService.js"
-import PerfilController from "../controllers/PerfilController.js"
-import PersonaColaboradoraService from "../services/PersonaColaboradoraService.js"
-import PersonaColaboradoraRepository from "../repositories/PersonaColaboradoraRepository.js"
+import { perfilController, proyectoController } from "../dependencias.js"
 
 const routes = Router()
-
-const proyectoRepository = new ProyectoRepository()
-const colectivoRepository = new ColectivoRepository()
-const habilidadRepository = new HabilidadRepository()
-
-const personaColaboradoraRepository = new PersonaColaboradoraRepository()
-const habilidadService = new HabilidadService(
-  habilidadRepository,
-  personaColaboradoraRepository,
-  proyectoRepository,
-)
-
-const colaboracionRepository = new ColaboracionRepository()
-const proyectoService = new ProyectoService(
-  proyectoRepository,
-  colectivoRepository,
-  colaboracionRepository,
-)
-const proyectoController = new ProyectoController(proyectoService)
-
-const personaColaboradoraService = new PersonaColaboradoraService(
-  personaColaboradoraRepository,
-  habilidadService,
-  colaboracionRepository,
-  new NotificacionRepository(),
-)
-const perfilService = new PerfilService(
-  proyectoService,
-  proyectoRepository,
-  habilidadService,
-  personaColaboradoraService,
-  colaboracionRepository,
-)
-const perfilController = new PerfilController(perfilService)
 
 routes.post("/proyectos", proyectoController.create)
 routes.get("/proyectos", proyectoController.getAll)
