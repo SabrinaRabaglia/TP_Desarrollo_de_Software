@@ -1161,6 +1161,153 @@
             "description": "Reemplaza los datos del perfil {{perfilId}}. Si el proyecto está cerrado responde 409."
           },
           "response": []
+        },
+        {
+          "name": "Crear perfil a eliminar",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"proyectoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Proyectos > Crear proyecto.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"habilidadId\")) {",
+                  "  throw new Error(\"Ejecutá primero Habilidades > Crear habilidad.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
+                  "pm.collectionVariables.set(\"perfilAEliminarId\", pm.response.json().id)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Perfil descartable\",\n  \"descripcion\": \"Perfil para probar el DELETE {{runSuffix}}\",\n  \"unidadCompromiso\": \"HORAS_MENSUALES\",\n  \"cantidadHoras\": 5,\n  \"modalidadesColaboracion\": [\n    \"GRATUITA\"\n  ],\n  \"habilidadesRequeridas\": [\n    \"{{habilidadId}}\"\n  ],\n  \"habilidadesOpcionales\": [\n    \"{{habilidadId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}/perfiles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoId}}",
+                "perfiles"
+              ]
+            },
+            "description": "Crea un segundo perfil en el proyecto {{proyectoId}} solo para probar el borrado, sin tocar el perfil principal que usan las búsquedas y las notificaciones. Guarda su id en perfilAEliminarId."
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar perfil",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"perfilAEliminarId\")) {",
+                  "  throw new Error(\"Ejecutá primero Perfiles > Crear perfil a eliminar.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 204\", () => pm.response.to.have.status(204))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}/perfiles/{{perfilAEliminarId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoId}}",
+                "perfiles",
+                "{{perfilAEliminarId}}"
+              ]
+            },
+            "description": "Elimina el perfil {{perfilAEliminarId}} del proyecto. El perfil está embebido en el documento del proyecto, así que se saca de su lista de perfiles. Un proyecto cerrado no admite este cambio: responde 409."
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener perfil eliminado (404)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"perfilAEliminarId\")) {",
+                  "  throw new Error(\"Ejecutá primero Perfiles > Crear perfil a eliminar.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 404\", () => pm.response.to.have.status(404))",
+                  "pm.collectionVariables.unset(\"perfilAEliminarId\")"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}/perfiles/{{perfilAEliminarId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoId}}",
+                "perfiles",
+                "{{perfilAEliminarId}}"
+              ]
+            },
+            "description": "Confirma que el perfil eliminado ya no existe y limpia perfilAEliminarId."
+          },
+          "response": []
         }
       ]
     },
@@ -1367,7 +1514,7 @@
                 "colaboradores"
               ]
             },
-            "description": "Lista las personas colaboradoras que tienen todas las habilidades requeridas del perfil {{perfilId}}."
+            "description": "Lista las personas colaboradoras que tienen todas las habilidades requeridas del perfil {{perfilId}}, primero las que tienen más habilidades opcionales del perfil."
           },
           "response": []
         },
@@ -1853,6 +2000,11 @@
     },
     {
       "key": "perfilId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "perfilAEliminarId",
       "value": "",
       "type": "string"
     }
