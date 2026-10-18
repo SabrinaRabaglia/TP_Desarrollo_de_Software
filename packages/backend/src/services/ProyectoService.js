@@ -24,9 +24,9 @@ const datosDelProyecto = ({
 })
 
 export default class ProyectoService {
-  constructor(proyectoRepository, colectivoService, colaboracionRepository) {
+  constructor(proyectoRepository, colectivoRepository, colaboracionRepository) {
     this.proyectoRepository = proyectoRepository
-    this.colectivoService = colectivoService
+    this.colectivoRepository = colectivoRepository
     this.colaboracionRepository = colaboracionRepository
   }
 
@@ -57,14 +57,15 @@ export default class ProyectoService {
     )
   }
 
-  validarReferencias = async (datos) => {
-    try {
-      await this.colectivoService.getById(datos.colectivo)
-    } catch (error) {
-      if (error instanceof EntityNotFound) {
-        throw new InvalidReference("Colectivo no encontrado")
-      }
-      throw error
+  validarColectivo = async (colectivoId) => {
+    if (!(await this.colectivoRepository.findById(colectivoId))) {
+      throw new InvalidReference("Colectivo no encontrado")
+    }
+  }
+
+  validarTituloDisponible = async (titulo) => {
+    if (await this.proyectoRepository.findByTitulo(titulo)) {
+      throw new AlreadyExists("Ya existe un proyecto con ese título")
     }
   }
 
@@ -78,11 +79,8 @@ export default class ProyectoService {
       nuevo.fechaCierre,
     )
 
-    await this.validarReferencias(nuevo)
-
-    if (await this.proyectoRepository.findByTitulo?.(proyecto.titulo)) {
-      throw new AlreadyExists("Ya existe un proyecto con ese título")
-    }
+    await this.validarColectivo(proyecto.colectivo)
+    await this.validarTituloDisponible(proyecto.titulo)
 
     return await this.proyectoRepository.save(proyecto)
   }
@@ -97,17 +95,9 @@ export default class ProyectoService {
       ...proyectoActualizado,
     }
     Proyecto.validarDatos(datosActualizados)
-    await this.validarReferencias(datosActualizados)
-
-    const existenteConMismoTitulo =
-      await this.proyectoRepository.findByTitulo?.(proyectoActualizado.titulo)
-    if (
-      proyectoActualizado.titulo &&
-      proyectoActualizado.titulo !== proyectoExistente.titulo &&
-      existenteConMismoTitulo &&
-      existenteConMismoTitulo.id !== id
-    ) {
-      throw new AlreadyExists("Ya existe un proyecto con ese título")
+    await this.validarColectivo(datosActualizados.colectivo)
+    if (datosActualizados.titulo !== proyectoExistente.titulo) {
+      await this.validarTituloDisponible(datosActualizados.titulo)
     }
 
     const { estado, ...resto } = proyectoActualizado

@@ -4,11 +4,7 @@ import validateId from "../middlewares/validateId.js"
 import ProyectoRepository from "../repositories/ProyectoRepository.js"
 import ProyectoService from "../services/ProyectoService.js"
 import ProyectoController from "../controllers/ProyectoController.js"
-import ColectivoService from "../services/ColectivoService.js"
 import ColectivoRepository from "../repositories/ColectivoRepository.js"
-import TipoColectivoRepository from "../repositories/TipoColectivoRepository.js"
-import ProvinciaRepository from "../repositories/ProvinciaRepository.js"
-import PaisRepository from "../repositories/PaisRepository.js"
 import HabilidadService from "../services/HabilidadService.js"
 import HabilidadRepository from "../repositories/HabilidadRepository.js"
 import ColaboracionRepository from "../repositories/ColaboracionRepository.js"
@@ -22,9 +18,6 @@ const routes = Router()
 
 const proyectoRepository = new ProyectoRepository()
 const colectivoRepository = new ColectivoRepository()
-const tipoColectivoRepository = new TipoColectivoRepository()
-const provinciaRepository = new ProvinciaRepository()
-const paisRepository = new PaisRepository()
 const habilidadRepository = new HabilidadRepository()
 
 const personaColaboradoraRepository = new PersonaColaboradoraRepository()
@@ -33,18 +26,11 @@ const habilidadService = new HabilidadService(
   personaColaboradoraRepository,
   proyectoRepository,
 )
-const colectivoService = new ColectivoService(
-  colectivoRepository,
-  tipoColectivoRepository,
-  proyectoRepository,
-  provinciaRepository,
-  paisRepository,
-)
 
 const colaboracionRepository = new ColaboracionRepository()
 const proyectoService = new ProyectoService(
   proyectoRepository,
-  colectivoService,
+  colectivoRepository,
   colaboracionRepository,
 )
 const proyectoController = new ProyectoController(proyectoService)

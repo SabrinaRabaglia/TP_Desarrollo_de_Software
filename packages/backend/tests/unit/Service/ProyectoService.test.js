@@ -46,7 +46,7 @@ describe("ProyectoService", () => {
     colaboracionRepository = new ColaboracionRepository()
     service = new ProyectoService(
       proyectoRepository,
-      colectivoService,
+      colectivoRepository,
       colaboracionRepository,
     )
 

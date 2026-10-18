@@ -8,11 +8,7 @@ import NotificadorExterno from "../services/NotificadorExterno.js"
 import PerfilService from "../services/PerfilService.js"
 import ProyectoService from "../services/ProyectoService.js"
 import ProyectoRepository from "../repositories/ProyectoRepository.js"
-import ColectivoService from "../services/ColectivoService.js"
 import ColectivoRepository from "../repositories/ColectivoRepository.js"
-import TipoColectivoRepository from "../repositories/TipoColectivoRepository.js"
-import ProvinciaRepository from "../repositories/ProvinciaRepository.js"
-import PaisRepository from "../repositories/PaisRepository.js"
 import HabilidadService from "../services/HabilidadService.js"
 import HabilidadRepository from "../repositories/HabilidadRepository.js"
 import ColaboracionRepository from "../repositories/ColaboracionRepository.js"
@@ -23,6 +19,7 @@ const routes = Router()
 
 const proyectoRepository = new ProyectoRepository()
 const colaboracionRepository = new ColaboracionRepository()
+const colectivoRepository = new ColectivoRepository()
 const personaColaboradoraRepository = new PersonaColaboradoraRepository()
 const notificacionRepository = new NotificacionRepository()
 const habilidadService = new HabilidadService(
@@ -30,16 +27,9 @@ const habilidadService = new HabilidadService(
   personaColaboradoraRepository,
   proyectoRepository,
 )
-const colectivoService = new ColectivoService(
-  new ColectivoRepository(),
-  new TipoColectivoRepository(),
-  proyectoRepository,
-  new ProvinciaRepository(),
-  new PaisRepository(),
-)
 const proyectoService = new ProyectoService(
   proyectoRepository,
-  colectivoService,
+  colectivoRepository,
   colaboracionRepository,
 )
 const personaColaboradoraService = new PersonaColaboradoraService(

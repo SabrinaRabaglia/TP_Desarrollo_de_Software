@@ -56,7 +56,7 @@ describe("PerfilService", () => {
     const habilidadService = new HabilidadService(habilidadRepository)
     proyectoService = new ProyectoService(
       proyectoRepository,
-      colectivoService,
+      colectivoRepository,
       new ColaboracionRepository(),
     )
     personaColaboradoraService = new PersonaColaboradoraService(
