@@ -6,9 +6,6 @@ import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraReposi
 import Proyecto from "../../../src/domain/Proyecto.js"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import Habilidad from "../../../src/domain/Habilidad.js"
-import Perfil from "../../../src/domain/Perfil.js"
-import { UnidadCompromiso } from "../../../src/domain/enums/UnidadCompromiso.js"
-import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColaboracion.js"
 import { AlreadyExists, InvalidReference } from "../../../src/errors/ApplicationErrors.js"
 import { DomainRuleError } from "../../../src/domain/errors/DomainErrors.js"
 
@@ -35,19 +32,7 @@ describe("ColaboracionService", () => {
     personaRepository.save(persona)
     proyecto = new Proyecto("Plataforma", "Desarrollo web", "colectivo-1")
     proyecto.id = "proyecto-1"
-    const perfilQueRequiere = (...habilidadesRequeridas) =>
-      new Perfil({
-        descripcion: "Perfil",
-        unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
-        cantidadHoras: 5,
-        modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
-        habilidadesRequeridas,
-        habilidadesOpcionales: ["docker"],
-      })
-    proyecto.perfiles = [
-      perfilQueRequiere("otra-habilidad", habilidad.id),
-      perfilQueRequiere(habilidad.id),
-    ]
+    proyecto.perfiles = [{ habilidadesRequeridas: ["otra-habilidad", habilidad.id] }]
     proyectoRepository.save(proyecto)
     datos = { proyectoId: proyecto.id, personaColaboradoraId: persona.id, esAnonima: false}
   })
@@ -83,13 +68,6 @@ describe("ColaboracionService", () => {
       "habilidades sin coincidencia",
       async () => {
         persona.habilidades = []
-      },
-      DomainRuleError,
-    ],
-    [
-      "persona que solo cubre parte de las requeridas de un perfil",
-      async () => {
-        proyecto.perfiles = [proyecto.perfiles[0]]
       },
       DomainRuleError,
     ],

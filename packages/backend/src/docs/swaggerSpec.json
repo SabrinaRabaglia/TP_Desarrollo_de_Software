@@ -1463,7 +1463,7 @@
           "Colaboraciones"
         ],
         "summary": "Inscribir una persona en un proyecto",
-        "description": "Crea una colaboración. Responde 404 si el proyecto o la persona no existen; 409 si el proyecto está cerrado, si la persona no tiene todas las habilidades requeridas de algún perfil del proyecto (el mismo criterio que las búsquedas) o si ya colabora en él.",
+        "description": "Crea una colaboración. Responde 404 si el proyecto o la persona no existen; 409 si el proyecto está cerrado, si la persona no tiene al menos una habilidad requerida por el proyecto o si ya colabora en él.",
         "operationId": "crearColaboracion",
         "requestBody": {
           "required": true,
@@ -2490,7 +2490,7 @@
         }
       },
       "Conflict": {
-        "description": "Conflicto: clave duplicada (código de habilidad, nombre de colectivo, título de proyecto, colaboración repetida) o violación de una regla de negocio (proyecto cerrado, no cubrir las habilidades requeridas de ningún perfil, reabrir un proyecto cerrado) o intento de borrar una entidad en uso (habilidad asignada a personas o perfiles, colectivo con proyectos).",
+        "description": "Conflicto: clave duplicada (código de habilidad, nombre de colectivo, título de proyecto, colaboración repetida) o violación de una regla de negocio (proyecto cerrado, sin habilidad requerida, reabrir un proyecto cerrado) o intento de borrar una entidad en uso (habilidad asignada a personas o perfiles, colectivo con proyectos).",
         "content": {
           "application/json": {
             "schema": {

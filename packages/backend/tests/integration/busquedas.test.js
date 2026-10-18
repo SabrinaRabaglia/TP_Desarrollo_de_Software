@@ -213,20 +213,16 @@ describe("búsqueda de colaboradores según un perfil", () => {
   })
 })
 
-describe("inscripción con el mismo criterio que las búsquedas", () => {
-  const inscribir = (persona, proyecto, status) =>
-    request(
+describe("inscripción según la consigna", () => {
+  test("alcanza con tener al menos una de las habilidades requeridas, aunque la búsqueda no la sugiera", async () => {
+    await request(
       "POST",
       "/colaboraciones",
-      { personaColaboradoraId: persona.id, proyectoId: proyecto.id },
-      status,
+      {
+        personaColaboradoraId: personas.lucho.id,
+        proyectoId: proyectos.web.id,
+      },
+      201,
     )
-
-  test("rechaza a quien cubre solo parte de las requeridas de un perfil", async () => {
-    await inscribir(personas.lucho, proyectos.web, 409)
-  })
-
-  test("acepta a quien cubre todas las requeridas de un perfil", async () => {
-    await inscribir(personas.ana, proyectos.web, 201)
   })
 })

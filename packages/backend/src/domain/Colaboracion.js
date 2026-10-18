@@ -10,9 +10,9 @@ export default class Colaboracion {
     if (proyecto.proyectoCerrado()) {
       throw new DomainRuleError("El proyecto no acepta nuevos colaboradores.")
     }
-    if (!proyecto.algunPerfilEsCubiertoPor(personaColaboradora)) {
+    if (!proyecto.poseeHabilidadNecesaria(personaColaboradora)) {
       throw new DomainRuleError(
-        "La persona debe tener todas las habilidades requeridas de algún perfil del proyecto.",
+        "La persona debe poseer al menos una habilidad requerida.",
       )
     }
     this.fechaInscripcion = new Date()

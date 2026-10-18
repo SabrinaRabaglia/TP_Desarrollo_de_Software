@@ -105,9 +105,13 @@ export default class Proyecto {
     this.colaboraciones.push(colaboracion)
   }
 
-  algunPerfilEsCubiertoPor(personaColaboradora) {
+  poseeHabilidadNecesaria(personaColaboradora) {
     return this.perfiles.some((perfil) =>
-      perfil.estaCubiertoPor(personaColaboradora.habilidades),
+      perfil.habilidadesRequeridas.some((idRequerido) =>
+        personaColaboradora.habilidades.some(
+          (habilidad) => String(habilidad.id) === String(idRequerido),
+        ),
+      ),
     )
   }
 
