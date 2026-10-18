@@ -6,7 +6,10 @@ export default class PaisRepository {
   }
 
   async findAll() {
-    return await this.model.find().collation({ locale: "es" }).sort({ nombre: 1 })
+    return await this.model
+      .find()
+      .collation({ locale: "es" })
+      .sort({ nombre: 1 })
   }
 
   async findById(id) {

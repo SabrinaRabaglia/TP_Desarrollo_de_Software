@@ -9,7 +9,7 @@ export default class Cuenta {
     if (tipo !== TipoCuenta.GITHUB && tipo !== TipoCuenta.GITLAB) {
       throw new DomainValidationError("El tipo de cuenta es inválido.")
     }
-    
+
     this.nombreUsuario = nombreUsuario
     this.tipo = tipo
   }

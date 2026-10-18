@@ -52,9 +52,7 @@
   "paths": {
     "/health": {
       "get": {
-        "tags": [
-          "Sistema"
-        ],
+        "tags": ["Sistema"],
         "summary": "Health check",
         "description": "Indica que el servidor está levantado. Devuelve siempre 200.",
         "operationId": "getHealth",
@@ -74,9 +72,7 @@
     },
     "/hello": {
       "get": {
-        "tags": [
-          "Sistema"
-        ],
+        "tags": ["Sistema"],
         "summary": "Saludo de prueba",
         "description": "Endpoint de prueba definido en `app.js`.",
         "operationId": "getHello",
@@ -96,9 +92,7 @@
     },
     "/habilidades": {
       "get": {
-        "tags": [
-          "Habilidades"
-        ],
+        "tags": ["Habilidades"],
         "summary": "Listar habilidades",
         "description": "Devuelve todas las habilidades registradas.",
         "operationId": "listarHabilidades",
@@ -119,9 +113,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Habilidades"
-        ],
+        "tags": ["Habilidades"],
         "summary": "Crear habilidad",
         "description": "Crea una habilidad. El `codigo` debe coincidir con el `titulo` normalizado (minúsculas, sin tildes, snake_case) y ser único.",
         "operationId": "crearHabilidad",
@@ -168,9 +160,7 @@
     },
     "/habilidades/{id}": {
       "get": {
-        "tags": [
-          "Habilidades"
-        ],
+        "tags": ["Habilidades"],
         "summary": "Obtener habilidad",
         "description": "Devuelve una habilidad por id.",
         "operationId": "obtenerHabilidad",
@@ -202,9 +192,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Habilidades"
-        ],
+        "tags": ["Habilidades"],
         "summary": "Actualizar habilidad",
         "description": "Reemplaza los datos de una habilidad. Se aplican las mismas reglas que al crear. Responde 409 si el `codigo` ya lo usa otra habilidad.",
         "operationId": "actualizarHabilidad",
@@ -257,9 +245,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Habilidades"
-        ],
+        "tags": ["Habilidades"],
         "summary": "Eliminar habilidad",
         "description": "Elimina una habilidad por id. Responde 409 si alguna persona colaboradora o algún perfil de proyecto la usa.",
         "operationId": "eliminarHabilidad",
@@ -289,9 +275,7 @@
     },
     "/personas-colaboradoras": {
       "get": {
-        "tags": [
-          "Personas colaboradoras"
-        ],
+        "tags": ["Personas colaboradoras"],
         "summary": "Listar personas colaboradoras",
         "description": "Devuelve todas las personas colaboradoras. Las habilidades vuelven como objetos completos.",
         "operationId": "listarPersonasColaboradoras",
@@ -312,9 +296,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Personas colaboradoras"
-        ],
+        "tags": ["Personas colaboradoras"],
         "summary": "Crear persona colaboradora",
         "description": "Crea una persona colaboradora. Cada id de `habilidades` debe existir; si alguno no existe responde 404.",
         "operationId": "crearPersonaColaboradora",
@@ -329,9 +311,7 @@
                 "nombreFantasia": "Ana la dev",
                 "nombre": "Ana",
                 "apellido": "Gómez",
-                "pronombres": [
-                  "ella"
-                ],
+                "pronombres": ["ella"],
                 "presentacion": "Desarrolladora frontend interesada en proyectos sociales.",
                 "cuentas": [
                   {
@@ -339,9 +319,7 @@
                     "tipo": "GITHUB"
                   }
                 ],
-                "habilidades": [
-                  "64f1a2b3c4d5e6f7a8b9c001"
-                ],
+                "habilidades": ["64f1a2b3c4d5e6f7a8b9c001"],
                 "aceptaMensajeriaInterna": true,
                 "mediosDeContacto": [
                   {
@@ -385,9 +363,7 @@
     },
     "/personas-colaboradoras/{id}": {
       "get": {
-        "tags": [
-          "Personas colaboradoras"
-        ],
+        "tags": ["Personas colaboradoras"],
         "summary": "Obtener persona colaboradora",
         "description": "Devuelve una persona colaboradora por id.",
         "operationId": "obtenerPersonaColaboradora",
@@ -419,9 +395,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Personas colaboradoras"
-        ],
+        "tags": ["Personas colaboradoras"],
         "summary": "Actualizar persona colaboradora",
         "description": "Reemplaza los datos de la persona. Los campos opcionales omitidos quedan en `null` (o lista vacía), salvo `mediosDeContacto`, que se conserva si se omite.",
         "operationId": "actualizarPersonaColaboradora",
@@ -441,9 +415,7 @@
                 "nombreFantasia": "Ana la dev",
                 "nombre": "Ana",
                 "apellido": "Gómez",
-                "pronombres": [
-                  "ella"
-                ],
+                "pronombres": ["ella"],
                 "presentacion": "Desarrolladora frontend interesada en proyectos sociales.",
                 "cuentas": [
                   {
@@ -451,9 +423,7 @@
                     "tipo": "GITHUB"
                   }
                 ],
-                "habilidades": [
-                  "64f1a2b3c4d5e6f7a8b9c001"
-                ],
+                "habilidades": ["64f1a2b3c4d5e6f7a8b9c001"],
                 "aceptaMensajeriaInterna": true,
                 "mediosDeContacto": [
                   {
@@ -495,9 +465,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Personas colaboradoras"
-        ],
+        "tags": ["Personas colaboradoras"],
         "summary": "Eliminar persona colaboradora",
         "description": "Elimina una persona colaboradora por id, junto con sus colaboraciones y las notificaciones que recibió.",
         "operationId": "eliminarPersonaColaboradora",
@@ -524,9 +492,7 @@
     },
     "/personas-colaboradoras/{id}/notificaciones": {
       "get": {
-        "tags": [
-          "Notificaciones"
-        ],
+        "tags": ["Notificaciones"],
         "summary": "Bandeja de una persona colaboradora",
         "description": "Devuelve los mensajes internos que recibió la persona, del más nuevo al más viejo. Responde 404 si la persona no existe.",
         "operationId": "listarNotificacionesDePersona",
@@ -563,9 +529,7 @@
     },
     "/colectivos": {
       "get": {
-        "tags": [
-          "Colectivos"
-        ],
+        "tags": ["Colectivos"],
         "summary": "Listar colectivos",
         "description": "Devuelve todos los colectivos con sus proyectos. País y provincia vuelven populados como `{ id, nombre }`.",
         "operationId": "listarColectivos",
@@ -586,9 +550,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Colectivos"
-        ],
+        "tags": ["Colectivos"],
         "summary": "Crear colectivo",
         "description": "Crea un colectivo. El `tipo` debe pertenecer al catálogo (Fundación, Asociación barrial, ONG, Asamblea). País y provincia se envían por id. El `nombre` es único.",
         "operationId": "crearColectivo",
@@ -641,9 +603,7 @@
     },
     "/colectivos/{id}": {
       "get": {
-        "tags": [
-          "Colectivos"
-        ],
+        "tags": ["Colectivos"],
         "summary": "Obtener colectivo",
         "description": "Devuelve un colectivo por id, con sus proyectos.",
         "operationId": "obtenerColectivo",
@@ -675,9 +635,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Colectivos"
-        ],
+        "tags": ["Colectivos"],
         "summary": "Reemplazar colectivo",
         "description": "Reemplaza todos los datos del colectivo. País, provincia y ciudad omitidos o `null` se borran.",
         "operationId": "reemplazarColectivo",
@@ -733,9 +691,7 @@
         }
       },
       "patch": {
-        "tags": [
-          "Colectivos"
-        ],
+        "tags": ["Colectivos"],
         "summary": "Actualizar parcialmente un colectivo",
         "description": "Modifica solo los campos enviados; los demás conservan su valor. Se valida el resultado final igual que en PUT.",
         "operationId": "actualizarColectivo",
@@ -786,9 +742,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Colectivos"
-        ],
+        "tags": ["Colectivos"],
         "summary": "Eliminar colectivo",
         "description": "Elimina un colectivo por id. Responde 409 si el colectivo todavía tiene proyectos.",
         "operationId": "eliminarColectivo",
@@ -818,9 +772,7 @@
     },
     "/proyectos": {
       "get": {
-        "tags": [
-          "Proyectos"
-        ],
+        "tags": ["Proyectos"],
         "summary": "Listar proyectos",
         "description": "Devuelve todos los proyectos. Con `habilidades`, busca los proyectos que encajan con las habilidades de una persona colaboradora: solo los publicados con algún perfil cuyas habilidades requeridas estén todas entre las pedidas. Es el mismo criterio que usa la búsqueda de colaboradores de un perfil.",
         "operationId": "listarProyectos",
@@ -860,9 +812,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Proyectos"
-        ],
+        "tags": ["Proyectos"],
         "summary": "Crear proyecto",
         "description": "Crea un proyecto. El colectivo debe existir (404 si no). El titulo es único.",
         "operationId": "crearProyecto",
@@ -915,9 +865,7 @@
     },
     "/proyectos/{id}": {
       "get": {
-        "tags": [
-          "Proyectos"
-        ],
+        "tags": ["Proyectos"],
         "summary": "Obtener proyecto",
         "description": "Devuelve un proyecto por id.",
         "operationId": "obtenerProyecto",
@@ -949,9 +897,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Proyectos"
-        ],
+        "tags": ["Proyectos"],
         "summary": "Reemplazar proyecto",
         "description": "Reemplaza los datos del proyecto; todos los campos son obligatorios. Enviar `estado: CERRADO` cierra el proyecto y fija `fechaCierre` en el momento actual. Un proyecto cerrado no se puede reabrir (409).",
         "operationId": "reemplazarProyecto",
@@ -1007,9 +953,7 @@
         }
       },
       "patch": {
-        "tags": [
-          "Proyectos"
-        ],
+        "tags": ["Proyectos"],
         "summary": "Actualizar parcialmente un proyecto",
         "description": "Modifica solo los campos enviados. Mismas reglas de cierre que PUT.",
         "operationId": "actualizarProyecto",
@@ -1060,9 +1004,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Proyectos"
-        ],
+        "tags": ["Proyectos"],
         "summary": "Eliminar proyecto",
         "description": "Elimina un proyecto por id.",
         "operationId": "eliminarProyecto",
@@ -1089,9 +1031,7 @@
     },
     "/proyectos/{id}/perfiles": {
       "get": {
-        "tags": [
-          "Perfiles"
-        ],
+        "tags": ["Perfiles"],
         "summary": "Listar los perfiles de un proyecto",
         "operationId": "listarPerfiles",
         "parameters": [
@@ -1125,9 +1065,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Perfiles"
-        ],
+        "tags": ["Perfiles"],
         "summary": "Agregar un perfil a un proyecto",
         "description": "Responde 404 si el proyecto o alguna habilidad no existen y 422 si el perfil no cumple las reglas del dominio. Un proyecto cerrado no admite cambios en sus perfiles: responde 409.",
         "operationId": "crearPerfil",
@@ -1148,15 +1086,9 @@
                 "descripcion": "Testing E2E con Cypress",
                 "unidadCompromiso": "HORAS_MENSUALES",
                 "cantidadHoras": 5,
-                "modalidadesColaboracion": [
-                  "GRATUITA"
-                ],
-                "habilidadesRequeridas": [
-                  "64f1a2b3c4d5e6f7a8b9c001"
-                ],
-                "habilidadesOpcionales": [
-                  "64f1a2b3c4d5e6f7a8b9c002"
-                ]
+                "modalidadesColaboracion": ["GRATUITA"],
+                "habilidadesRequeridas": ["64f1a2b3c4d5e6f7a8b9c001"],
+                "habilidadesOpcionales": ["64f1a2b3c4d5e6f7a8b9c002"]
               }
             }
           }
@@ -1192,9 +1124,7 @@
     },
     "/proyectos/{id}/perfiles/{perfilId}": {
       "get": {
-        "tags": [
-          "Perfiles"
-        ],
+        "tags": ["Perfiles"],
         "summary": "Obtener un perfil de un proyecto",
         "description": "Responde 404 si el perfil no pertenece a ese proyecto.",
         "operationId": "obtenerPerfil",
@@ -1229,9 +1159,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Perfiles"
-        ],
+        "tags": ["Perfiles"],
         "summary": "Actualizar un perfil",
         "description": "Reemplaza los datos del perfil. Si se omite el nombre queda en null. Un proyecto cerrado no admite cambios en sus perfiles: responde 409.",
         "operationId": "actualizarPerfil",
@@ -1255,15 +1183,9 @@
                 "descripcion": "Testing E2E con Cypress",
                 "unidadCompromiso": "HORAS_MENSUALES",
                 "cantidadHoras": 5,
-                "modalidadesColaboracion": [
-                  "GRATUITA"
-                ],
-                "habilidadesRequeridas": [
-                  "64f1a2b3c4d5e6f7a8b9c001"
-                ],
-                "habilidadesOpcionales": [
-                  "64f1a2b3c4d5e6f7a8b9c002"
-                ]
+                "modalidadesColaboracion": ["GRATUITA"],
+                "habilidadesRequeridas": ["64f1a2b3c4d5e6f7a8b9c001"],
+                "habilidadesOpcionales": ["64f1a2b3c4d5e6f7a8b9c002"]
               }
             }
           }
@@ -1297,9 +1219,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Perfiles"
-        ],
+        "tags": ["Perfiles"],
         "summary": "Eliminar un perfil",
         "description": "Un proyecto cerrado no admite cambios en sus perfiles: responde 409.",
         "operationId": "eliminarPerfil",
@@ -1332,9 +1252,7 @@
     },
     "/proyectos/{id}/perfiles/{perfilId}/colaboradores": {
       "get": {
-        "tags": [
-          "Perfiles"
-        ],
+        "tags": ["Perfiles"],
         "summary": "Buscar colaboradores para un perfil",
         "description": "Devuelve las personas colaboradoras que tienen todas las habilidades requeridas del perfil, ordenadas primero por quienes tienen más habilidades opcionales del perfil. Tener solo opcionales no alcanza para aparecer, y no se sugiere a quienes ya están inscriptos en el proyecto. Responde 404 si el proyecto no existe o el perfil no pertenece a ese proyecto, y 409 si el proyecto está cerrado: un proyecto cerrado no busca colaboradores.",
         "operationId": "buscarColaboradoresParaPerfil",
@@ -1377,9 +1295,7 @@
     },
     "/proyectos/{id}/perfiles/{perfilId}/notificaciones": {
       "post": {
-        "tags": [
-          "Notificaciones"
-        ],
+        "tags": ["Notificaciones"],
         "summary": "Contactar a una persona por un perfil",
         "description": "El colectivo dueño del proyecto le envía un mensaje interno a una persona colaboradora por uno de sus perfiles, y el mensaje se replica por todos los medios de contacto de la persona. Si algún medio externo falla, el mensaje interno se guarda igual y se replica por los demás. Responde 409 si la persona no acepta mensajería interna o si el proyecto está cerrado, y 404 si el proyecto, el perfil o la persona no existen.",
         "operationId": "contactarPersonaPorPerfil",
@@ -1436,9 +1352,7 @@
     },
     "/colaboraciones": {
       "get": {
-        "tags": [
-          "Colaboraciones"
-        ],
+        "tags": ["Colaboraciones"],
         "summary": "Listar colaboraciones",
         "description": "Devuelve todas las colaboraciones en forma resumida.",
         "operationId": "listarColaboraciones",
@@ -1459,9 +1373,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Colaboraciones"
-        ],
+        "tags": ["Colaboraciones"],
         "summary": "Inscribir una persona en un proyecto",
         "description": "Crea una colaboración. Responde 404 si el proyecto o la persona no existen; 409 si el proyecto está cerrado, si la persona no tiene al menos una habilidad requerida por el proyecto o si ya colabora en él.",
         "operationId": "crearColaboracion",
@@ -1508,9 +1420,7 @@
     },
     "/paises": {
       "get": {
-        "tags": [
-          "Catálogos"
-        ],
+        "tags": ["Catálogos"],
         "summary": "Listar paises",
         "description": "Devuelve paises del catálogo ordenados por nombre.",
         "operationId": "listarPaises",
@@ -1542,9 +1452,7 @@
     },
     "/provincias": {
       "get": {
-        "tags": [
-          "Catálogos"
-        ],
+        "tags": ["Catálogos"],
         "summary": "Listar provincias",
         "description": "Devuelve provincias del catálogo ordenados por nombre.",
         "operationId": "listarProvincias",
@@ -1609,27 +1517,16 @@
       },
       "TipoCuenta": {
         "type": "string",
-        "enum": [
-          "GITHUB",
-          "GITLAB"
-        ],
+        "enum": ["GITHUB", "GITLAB"],
         "description": "Plataforma de la cuenta."
       },
       "TipoMedioContacto": {
         "type": "string",
-        "enum": [
-          "EMAIL",
-          "WHATSAPP",
-          "SMS"
-        ]
+        "enum": ["EMAIL", "WHATSAPP", "SMS"]
       },
       "UnidadCompromiso": {
         "type": "string",
-        "enum": [
-          "HORAS_TOTALES",
-          "HORAS_SEMANALES",
-          "HORAS_MENSUALES"
-        ]
+        "enum": ["HORAS_TOTALES", "HORAS_SEMANALES", "HORAS_MENSUALES"]
       },
       "ModalidadColaboracion": {
         "type": "string",
@@ -1641,10 +1538,7 @@
       },
       "EstadoProyecto": {
         "type": "string",
-        "enum": [
-          "PUBLICADO",
-          "CERRADO"
-        ]
+        "enum": ["PUBLICADO", "CERRADO"]
       },
       "HealthResponse": {
         "type": "object",
@@ -1689,18 +1583,13 @@
                 }
               ]
             },
-            "example": [
-              "titulo"
-            ]
+            "example": ["titulo"]
           }
         }
       },
       "Error": {
         "type": "object",
-        "required": [
-          "message",
-          "details"
-        ],
+        "required": ["message", "details"],
         "properties": {
           "message": {
             "type": "string"
@@ -1717,11 +1606,7 @@
       "HabilidadInput": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "titulo",
-          "codigo",
-          "descripcion"
-        ],
+        "required": ["titulo", "codigo", "descripcion"],
         "properties": {
           "titulo": {
             "type": "string",
@@ -1743,12 +1628,7 @@
       },
       "Habilidad": {
         "type": "object",
-        "required": [
-          "id",
-          "titulo",
-          "codigo",
-          "descripcion"
-        ],
+        "required": ["id", "titulo", "codigo", "descripcion"],
         "properties": {
           "id": {
             "$ref": "#/components/schemas/ObjectId"
@@ -1773,10 +1653,7 @@
       "CuentaInput": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "nombreUsuario",
-          "tipo"
-        ],
+        "required": ["nombreUsuario", "tipo"],
         "properties": {
           "nombreUsuario": {
             "type": "string",
@@ -1789,10 +1666,7 @@
       },
       "Cuenta": {
         "type": "object",
-        "required": [
-          "nombreUsuario",
-          "tipo"
-        ],
+        "required": ["nombreUsuario", "tipo"],
         "properties": {
           "nombreUsuario": {
             "type": "string"
@@ -1805,10 +1679,7 @@
       "MedioDeContactoInput": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "tipo",
-          "valor"
-        ],
+        "required": ["tipo", "valor"],
         "description": "Un email válido, o un teléfono de 8 a 15 dígitos con + opcional para WhatsApp y SMS. Se ignoran espacios, guiones, puntos y paréntesis.",
         "properties": {
           "tipo": {
@@ -1823,9 +1694,7 @@
       "PersonaColaboradoraInput": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "nombreFantasia"
-        ],
+        "required": ["nombreFantasia"],
         "properties": {
           "nombreFantasia": {
             "type": "string",
@@ -1876,10 +1745,7 @@
       },
       "PersonaColaboradora": {
         "type": "object",
-        "required": [
-          "id",
-          "nombreFantasia"
-        ],
+        "required": ["id", "nombreFantasia"],
         "properties": {
           "id": {
             "$ref": "#/components/schemas/ObjectId"
@@ -1925,11 +1791,7 @@
       "ColectivoInput": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "nombre",
-          "descripcion",
-          "tipo"
-        ],
+        "required": ["nombre", "descripcion", "tipo"],
         "properties": {
           "nombre": {
             "type": "string",
@@ -1944,12 +1806,7 @@
           "tipo": {
             "type": "string",
             "description": "Nombre de un tipo del catálogo (se compara sin distinguir mayúsculas ni tildes).",
-            "enum": [
-              "Fundación",
-              "Asociación barrial",
-              "ONG",
-              "Asamblea"
-            ],
+            "enum": ["Fundación", "Asociación barrial", "ONG", "Asamblea"],
             "example": "Asamblea"
           },
           "pais": {
@@ -1988,12 +1845,7 @@
           },
           "tipo": {
             "type": "string",
-            "enum": [
-              "Fundación",
-              "Asociación barrial",
-              "ONG",
-              "Asamblea"
-            ]
+            "enum": ["Fundación", "Asociación barrial", "ONG", "Asamblea"]
           },
           "pais": {
             "$ref": "#/components/schemas/ColectivoInput/properties/pais"
@@ -2009,10 +1861,7 @@
       },
       "PaisProvincia": {
         "type": "object",
-        "required": [
-          "id",
-          "nombre"
-        ],
+        "required": ["id", "nombre"],
         "nullable": true,
         "properties": {
           "id": {
@@ -2026,12 +1875,7 @@
       },
       "Colectivo": {
         "type": "object",
-        "required": [
-          "id",
-          "nombre",
-          "descripcion",
-          "tipo"
-        ],
+        "required": ["id", "nombre", "descripcion", "tipo"],
         "properties": {
           "id": {
             "$ref": "#/components/schemas/ObjectId"
@@ -2185,10 +2029,7 @@
       "ColaboracionInput": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "personaColaboradoraId",
-          "proyectoId"
-        ],
+        "required": ["personaColaboradoraId", "proyectoId"],
         "properties": {
           "personaColaboradoraId": {
             "$ref": "#/components/schemas/ObjectId"
@@ -2225,10 +2066,7 @@
           },
           "personaColaboradora": {
             "type": "object",
-            "required": [
-              "id",
-              "nombreFantasia"
-            ],
+            "required": ["id", "nombreFantasia"],
             "properties": {
               "id": {
                 "$ref": "#/components/schemas/ObjectId"
@@ -2242,10 +2080,7 @@
           },
           "proyecto": {
             "type": "object",
-            "required": [
-              "id",
-              "titulo"
-            ],
+            "required": ["id", "titulo"],
             "properties": {
               "id": {
                 "$ref": "#/components/schemas/ObjectId"
@@ -2369,10 +2204,7 @@
       "NotificacionInput": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "personaColaboradora",
-          "contenido"
-        ],
+        "required": ["personaColaboradora", "contenido"],
         "properties": {
           "personaColaboradora": {
             "allOf": [
@@ -2465,9 +2297,7 @@
               "details": [
                 {
                   "code": "invalid_type",
-                  "path": [
-                    "titulo"
-                  ],
+                  "path": ["titulo"],
                   "message": "Invalid input: expected string, received undefined"
                 }
               ]

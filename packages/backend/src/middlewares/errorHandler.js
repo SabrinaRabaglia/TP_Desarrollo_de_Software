@@ -1,12 +1,15 @@
 import mongoose from "mongoose"
-import { BadRequestError } from "../errors/AppError.js"
 import {
   AlreadyExists,
+  BadRequestError,
   EntityInUse,
   EntityNotFound,
   InvalidReference,
 } from "../errors/ApplicationErrors.js"
-import { DomainValidationError, DomainRuleError } from "../domain/errors/DomainErrors.js"
+import {
+  DomainValidationError,
+  DomainRuleError,
+} from "../domain/errors/DomainErrors.js"
 
 const jsonError = (res, status, message, details = []) =>
   res.status(status).json({ message, details })

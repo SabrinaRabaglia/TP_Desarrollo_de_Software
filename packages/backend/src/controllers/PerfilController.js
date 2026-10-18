@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { ModalidadColaboracion } from "../domain/enums/ModalidadColaboracion.js"
 import { UnidadCompromiso } from "../domain/enums/UnidadCompromiso.js"
-import { BadRequestError } from "../errors/AppError.js"
+import { BadRequestError } from "../errors/ApplicationErrors.js"
 import { objectIdSchema } from "../validations/objectId.js"
 import { personaColaboradoraDTO } from "../dtos/personaColaboradoraDTO.js"
 

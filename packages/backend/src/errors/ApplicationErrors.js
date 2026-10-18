@@ -12,3 +12,10 @@ export class InvalidReference extends ApplicationError {}
 export class AlreadyExists extends ApplicationError {}
 
 export class EntityInUse extends ApplicationError {}
+
+export class BadRequestError extends ApplicationError {
+  constructor(message, details = []) {
+    super(message)
+    this.details = details
+  }
+}

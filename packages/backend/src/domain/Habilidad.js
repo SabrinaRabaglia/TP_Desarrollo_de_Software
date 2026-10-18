@@ -9,10 +9,11 @@ export default class Habilidad {
 
   static validarDatos({ titulo, codigo, descripcion }) {
     if (!titulo || !codigo || !descripcion) {
-      throw new DomainValidationError("Título, código y descripción son obligatorios.")
+      throw new DomainValidationError(
+        "Título, código y descripción son obligatorios.",
+      )
     }
     Habilidad.validarCodigo(titulo, codigo)
-    
   }
 
   static validarCodigo(titulo, codigo) {

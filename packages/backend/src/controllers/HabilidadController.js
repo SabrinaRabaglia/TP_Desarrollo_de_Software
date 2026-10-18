@@ -1,4 +1,4 @@
-import { BadRequestError } from "../errors/AppError.js"
+import { BadRequestError } from "../errors/ApplicationErrors.js"
 import { z } from "zod"
 
 const habilidadSchema = z
@@ -35,7 +35,7 @@ export default class HabilidadController {
       }
       const habilidad = await this.habilidadService.update(
         req.params.id,
-        resultado.data
+        resultado.data,
       )
       res.status(200).json(habilidad)
     } catch (error) {

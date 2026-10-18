@@ -3,5 +3,4 @@ export default class Provincia {
     this.id = id
     this.nombre = nombre
   }
-
 }

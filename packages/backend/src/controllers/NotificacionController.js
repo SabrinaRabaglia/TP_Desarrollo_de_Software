@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { BadRequestError } from "../errors/AppError.js"
+import { BadRequestError } from "../errors/ApplicationErrors.js"
 import { objectIdSchema } from "../validations/objectId.js"
 import { notificacionDTO } from "../dtos/notificacionDTO.js"
 

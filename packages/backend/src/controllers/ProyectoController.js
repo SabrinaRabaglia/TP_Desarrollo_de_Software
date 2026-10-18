@@ -1,6 +1,6 @@
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
 import { z } from "zod"
-import { BadRequestError } from "../errors/AppError.js"
+import { BadRequestError } from "../errors/ApplicationErrors.js"
 import { objectIdSchema } from "../validations/objectId.js"
 
 const proyectoSchema = z

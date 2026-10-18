@@ -17,7 +17,7 @@ export default class HabilidadService {
     this.proyectoRepository = proyectoRepository
   }
 
-  create = async(nueva) => {
+  create = async (nueva) => {
     const habilidad = new Habilidad(
       nueva.titulo,
       nueva.codigo,
@@ -74,7 +74,7 @@ export default class HabilidadService {
 
   getById = async (id) => {
     const habilidad = await this.habilidadRepository.findById(id)
-    
+
     if (!habilidad) {
       throw new EntityNotFound("Habilidad no encontrada")
     }

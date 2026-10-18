@@ -1,6 +1,6 @@
 import { describe, expect, test, jest } from "@jest/globals"
 import HabilidadController from "../../../src/controllers/HabilidadController.js"
-import { BadRequestError } from "../../../src/errors/AppError.js"
+import { BadRequestError } from "../../../src/errors/ApplicationErrors.js"
 
 const mockRes = () => ({
   status: jest.fn().mockReturnThis(),

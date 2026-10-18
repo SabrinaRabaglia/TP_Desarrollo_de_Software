@@ -3,7 +3,7 @@ import { AlreadyExists, InvalidReference } from "../errors/ApplicationErrors.js"
 
 export default class ColaboracionService {
   constructor(colaboracionRepository, proyectoRepository, personaRepository) {
-    this.colaboracionRepository = colaboracionRepository 
+    this.colaboracionRepository = colaboracionRepository
     this.proyectoRepository = proyectoRepository
     this.personaRepository = personaRepository
   }

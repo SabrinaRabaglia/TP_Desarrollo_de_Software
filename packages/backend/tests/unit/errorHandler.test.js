@@ -1,8 +1,8 @@
 import { expect, jest, test } from "@jest/globals"
 import mongoose from "mongoose"
-import { BadRequestError } from "../../src/errors/AppError.js"
 import {
   AlreadyExists,
+  BadRequestError,
   EntityNotFound,
   InvalidReference,
 } from "../../src/errors/ApplicationErrors.js"

@@ -1,6 +1,6 @@
 import { describe, expect, test, jest } from "@jest/globals"
 import ColectivoController from "../../../src/controllers/ColectivoController.js"
-import { BadRequestError } from "../../../src/errors/AppError.js"
+import { BadRequestError } from "../../../src/errors/ApplicationErrors.js"
 
 const PAIS_ID = "65f1a2b3c4d5e6f708192a01"
 const PROVINCIA_ID = "65f1a2b3c4d5e6f708192a02"

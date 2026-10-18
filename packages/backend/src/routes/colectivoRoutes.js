@@ -21,7 +21,7 @@ const colectivoService = new ColectivoService(
   tipoColectivoRepository,
   proyectoRepository,
   provinciaRepository,
-  paisRepository
+  paisRepository,
 )
 const colectivoController = new ColectivoController(colectivoService)
 

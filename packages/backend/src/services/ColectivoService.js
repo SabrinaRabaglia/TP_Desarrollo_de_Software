@@ -49,8 +49,8 @@ export default class ColectivoService {
     }
     return await this.conProyectos(colectivo)
   }
-  validarTipo = async(tipo) => {
-    if (!await this.tipoColectivoRepository.findByNombre(tipo)) {
+  validarTipo = async (tipo) => {
+    if (!(await this.tipoColectivoRepository.findByNombre(tipo))) {
       throw new InvalidReference(
         "El tipo de colectivo no pertenece al catálogo",
       )
@@ -62,7 +62,8 @@ export default class ColectivoService {
     let instanciaProvincia = null
     if (provinciaId) {
       instanciaProvincia = await this.provinciaRepository.findById(provinciaId)
-      if (!instanciaProvincia) throw new InvalidReference("Provincia no encontrada")
+      if (!instanciaProvincia)
+        throw new InvalidReference("Provincia no encontrada")
     }
 
     const paisId = pais?.id ?? pais
@@ -105,7 +106,8 @@ export default class ColectivoService {
 
     Colectivo.validarDatos(colectivoActualizado)
     await this.validarTipo(colectivoActualizado.tipo)
-    const { pais, provincia } = await this.resolverUbicacion(colectivoActualizado)
+    const { pais, provincia } =
+      await this.resolverUbicacion(colectivoActualizado)
 
     const otro = await this.colectivoRepository.findByNombre(
       colectivoActualizado.nombre,
@@ -120,7 +122,8 @@ export default class ColectivoService {
     colectivoExistente.provincia = provincia
     colectivoExistente.ciudad = colectivoActualizado.ciudad || null
 
-    const colectivoGuardado = await this.colectivoRepository.save(colectivoExistente)
+    const colectivoGuardado =
+      await this.colectivoRepository.save(colectivoExistente)
     return await this.conProyectos(colectivoGuardado)
   }
   patch = async (id, cambios) => {

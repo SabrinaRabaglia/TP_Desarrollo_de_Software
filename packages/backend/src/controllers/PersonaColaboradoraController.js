@@ -1,4 +1,4 @@
-import { BadRequestError } from "../errors/AppError.js"
+import { BadRequestError } from "../errors/ApplicationErrors.js"
 import { TipoCuenta } from "../domain/enums/TipoCuenta.js"
 import { z } from "zod"
 import { objectIdSchema } from "../validations/objectId.js"

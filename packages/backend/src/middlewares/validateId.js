@@ -1,4 +1,4 @@
-import { BadRequestError } from "../errors/AppError.js"
+import { BadRequestError } from "../errors/ApplicationErrors.js"
 import { OBJECT_ID } from "../validations/objectId.js"
 
 export default function validateId(req, _res, next) {

@@ -1,14 +1,6 @@
 import { z } from "zod"
-import { BadRequestError } from "../errors/AppError.js"
+import { BadRequestError } from "../errors/ApplicationErrors.js"
 import { objectIdSchema } from "../validations/objectId.js"
-
-
-//import ColectivoRepository from "../repositories/ColectivoRepository.js"
-//import TipoColectivoRepository from "../repositories/TipoColectivoRepository.js"
-//import ProyectoRepository from "../repositories/ProyectoRepository.js"
-//import ProvinciaRepository from "../repositories/ProvinciaRepository.js"
-//import PaisRepository from "../repositories/PaisRepository.js"
-
 
 const colectivoSchema = z
   .object({
@@ -23,11 +15,6 @@ const colectivoSchema = z
 export default class ColectivoController {
   constructor(colectivoService) {
     this.colectivoService = colectivoService
-    //new ColectivoRepository(),
-    //  new TipoColectivoRepository(),
-    //  new ProyectoRepository(),
-    //  new ProvinciaRepository(),
-    //  new PaisRepository()
   }
 
   getAll = async (req, res, next) => {
@@ -46,57 +33,55 @@ export default class ColectivoController {
     }
   }
   create = async (req, res, next) => {
-    try{
+    try {
       const body = req.body
-    const resultado = colectivoSchema.safeParse(body)
-    if (resultado.error) {
-      throw new BadRequestError("Datos inválidos", resultado.error.issues)
-    }
-    const creado = await this.colectivoService.create(resultado.data)
-    res.status(201).json(creado)
-    }
-    catch(error){
+      const resultado = colectivoSchema.safeParse(body)
+      if (resultado.error) {
+        throw new BadRequestError("Datos inválidos", resultado.error.issues)
+      }
+      const creado = await this.colectivoService.create(resultado.data)
+      res.status(201).json(creado)
+    } catch (error) {
       next(error)
     }
-    
   }
   put = async (req, res, next) => {
-    try{
+    try {
       const body = req.body
-    const resultado = colectivoSchema.safeParse(body)
-    if (resultado.error) {
-      throw new BadRequestError("Datos inválidos", resultado.error.issues)
-    }
-    const id = req.params.id
-    const actualizado = await this.colectivoService.update(id, resultado.data)
-    res.status(200).json(actualizado)
-    }
-    catch(error){
+      const resultado = colectivoSchema.safeParse(body)
+      if (resultado.error) {
+        throw new BadRequestError("Datos inválidos", resultado.error.issues)
+      }
+      const id = req.params.id
+      const actualizado = await this.colectivoService.update(id, resultado.data)
+      res.status(200).json(actualizado)
+    } catch (error) {
       next(error)
     }
   }
   patch = async (req, res, next) => {
-    try{
-    const { id } = req.params
-    const resultado = colectivoSchema.partial().safeParse(req.body)
-    if (resultado.error) {
-      throw new BadRequestError("Datos inválidos", resultado.error.issues)
-    }
-    const colectivoActualizado = await this.colectivoService.patch(id, resultado.data)
-    res.status(200).json(colectivoActualizado)
-    }
-    catch(error){
+    try {
+      const { id } = req.params
+      const resultado = colectivoSchema.partial().safeParse(req.body)
+      if (resultado.error) {
+        throw new BadRequestError("Datos inválidos", resultado.error.issues)
+      }
+      const colectivoActualizado = await this.colectivoService.patch(
+        id,
+        resultado.data,
+      )
+      res.status(200).json(colectivoActualizado)
+    } catch (error) {
       next(error)
     }
   }
 
   delete = async (req, res, next) => {
-    try{
+    try {
       const { id } = req.params
       await this.colectivoService.delete(id)
       res.status(204).send()
-    }
-    catch(error){
+    } catch (error) {
       next(error)
     }
   }

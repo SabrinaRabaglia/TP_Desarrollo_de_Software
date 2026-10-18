@@ -1,6 +1,6 @@
 import { describe, expect, test, jest } from "@jest/globals"
 import PersonaColaboradoraController from "../../../src/controllers/PersonaColaboradoraController.js"
-import { BadRequestError } from "../../../src/errors/AppError.js"
+import { BadRequestError } from "../../../src/errors/ApplicationErrors.js"
 
 const OBJECT_ID_VALIDO = "65f1a2b3c4d5e6f708192a3b"
 

@@ -1,6 +1,6 @@
 import { describe, expect, test, jest } from "@jest/globals"
 import ProyectoController from "../../../src/controllers/ProyectoController.js"
-import { BadRequestError } from "../../../src/errors/AppError.js"
+import { BadRequestError } from "../../../src/errors/ApplicationErrors.js"
 import { EstadoProyecto } from "../../../src/domain/enums/EstadoProyecto.js"
 const mockRes = () => ({
   status: jest.fn().mockReturnThis(),
