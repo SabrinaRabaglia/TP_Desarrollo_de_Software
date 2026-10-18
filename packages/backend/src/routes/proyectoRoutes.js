@@ -84,6 +84,8 @@ routes.delete(
   validateId,
   perfilController.delete,
 )
+// esto en realidad es una busqueda, la dejamos como subrecurso del perfil
+// lo mas puro seria GET /personas-colaboradoras?proyecto=:id&perfil=:perfilId
 routes.get(
   "/proyectos/:id/perfiles/:perfilId/colaboradores",
   validateId,

@@ -56,6 +56,9 @@ const notificacionController = new NotificacionController(
   ),
 )
 
+// se crean colgadas del perfil y se leen desde la persona, por eso quedan en dos lados
+// lo mas puro seria un /notificaciones solo, con proyecto y perfil en el body
+// y el get filtrando por ?personaColaboradora=:id
 routes.post(
   "/proyectos/:id/perfiles/:perfilId/notificaciones",
   validateId,
