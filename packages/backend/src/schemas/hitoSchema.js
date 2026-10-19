@@ -1,7 +1,31 @@
-import { z } from "zod";
+import mongoose from "mongoose";
+import opcionesJSON from "./opcionesJSON.js"
+import Hito from "../domain/Hito.js";
 
-export const hitoSchema = z.object({
-  fecha: z.coerce.date(),
-  porcentajeConcrecion: z.number().int().min(0).max(100),
-  descripcion: z.string()
-}).strict();
+const hitoSchema = new mongoose.Schema(
+  {
+    fecha: { type: Date, required: true },
+    porcentajeConcrecion: { 
+      type: Number, 
+      required: true, 
+      min: 0, 
+      max: 100 
+    },
+    descripcion: { type: String, required: true },
+    proyecto: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Proyecto",
+      required: true,
+    },
+  },
+  { 
+    timestamps: true, 
+    collection: "hitos",
+    
+    toJSON: opcionesJSON
+  }
+);
+
+hitoSchema.loadClass(Hito);
+
+export default mongoose.model("Hito", hitoSchema);

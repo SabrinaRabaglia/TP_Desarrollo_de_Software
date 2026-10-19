@@ -1,25 +1,25 @@
+import HitoModel from "../schemas/proyectoSchema.js"
+import guardar from "./guardar.js"
+
 export default class HitoRepository {
-  static hitos = [];
+  constructor() {
+      this.model = HitoModel
+    }
 
   async findById(id) {
-    return HitoRepository.hitos.find((h) => h.id === id);
+    return await this.model.findById(id);
   }
 
   async findByProyectoId(proyectoId) {
-    return HitoRepository.hitos.filter((h) => h.proyecto === proyectoId);
+    return await this.model.find({ proyecto: proyectoId }  );
   }
 
   async save(hito) {
-    const indice = HitoRepository.hitos.findIndex((h) => h.id === hito.id);
-    if (indice === -1) {
-      HitoRepository.hitos.push(hito);
-    } else {
-      HitoRepository.hitos[indice] = hito;
-    }
-    return hito;
+    return await guardar(this.model, hito)
   }
 
   async delete(id) {
-    HitoRepository.hitos = HitoRepository.hitos.filter((h) => h.id !== id);
+    return await this.model.findByIdAndDelete(id);
+    
   }
 }
