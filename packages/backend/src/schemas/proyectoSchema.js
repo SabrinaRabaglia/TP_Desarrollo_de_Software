@@ -3,6 +3,7 @@ import Proyecto from "../domain/Proyecto.js"
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
 import opcionesJSON from "./opcionesJSON.js"
 import perfilSchema from "./perfilSchema.js"
+import hitoSchema from "./hitoSchema.js";
 
 const proyectoSchema = new mongoose.Schema(
   {
@@ -21,6 +22,10 @@ const proyectoSchema = new mongoose.Schema(
       required: true,
     },
     perfiles: [perfilSchema],
+    hitos: [hitoSchema],
+    enlaceSistemaEnFuncionamiento: { type: String, default: null },
+    enlaceCodigoFuente: { type: String, default: null }
+    
   },
   { timestamps: true, collection: "proyectos", toJSON: opcionesJSON },
 )
