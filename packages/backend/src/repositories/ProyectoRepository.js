@@ -59,4 +59,9 @@ export default class ProyectoRepository {
       "perfiles.habilidadesRequeridas": { $in: habilidadesIds },
     })
   }
+
+  async findByHitoId(hitoId) {
+  // Busca un proyecto que tenga un subdocumento hito con ese _id
+  return await this.model.findOne({ "hitos._id": hitoId });
+}
 }

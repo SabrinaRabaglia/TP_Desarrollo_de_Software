@@ -25,7 +25,7 @@ export default class HitoService {
     proyecto.hitos.push(nuevoHito);
 
     // Guardamos el proyecto completo en la base de datos
-    await this.proyectoService.update(proyectoId, proyecto);
+    await this.proyectoService.update(proyectoId, { hitos: proyecto.hitos });
     
     // Devolvemos el hito recién creado (que Mongoose ya le asignó su _id/id)
     return proyecto.hitos[proyecto.hitos.length - 1];
@@ -47,7 +47,7 @@ export default class HitoService {
     }
     if (hitoActualizadoDto.descripcion) hito.descripcion = hitoActualizadoDto.descripcion;
 
-    await this.proyectoService.update(proyecto.id, proyecto);
+    await this.proyectoService.update(proyecto.id, { hitos: proyecto.hitos });
     return hito;
   }
 
@@ -56,6 +56,6 @@ export default class HitoService {
     if (!proyecto) throw new EntityNotFound("Hito no encontrado");
 
     proyecto.hitos.pull(hitoId); // Método nativo de Mongoose para remover subdocs
-    await this.proyectoService.update(proyecto.id, proyecto);
+    await this.proyectoService.update(proyecto.id, { hitos: proyecto.hitos });
   }
 }

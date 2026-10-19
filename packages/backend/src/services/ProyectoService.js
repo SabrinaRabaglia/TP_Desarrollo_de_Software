@@ -59,6 +59,14 @@ export default class ProyectoService {
     )
   }
 
+  findByHitoId = async (hitoId) => {
+  const proyecto = await this.proyectoRepository.findByHitoId(hitoId);
+  if (!proyecto) {
+    throw new EntityNotFound("No se encontró el proyecto para este hito"); 
+  }
+  return proyecto;
+};
+
   validarColectivo = async (colectivoId) => {
     if (!(await this.colectivoRepository.findById(colectivoId))) {
       throw new InvalidReference("Colectivo no encontrado")

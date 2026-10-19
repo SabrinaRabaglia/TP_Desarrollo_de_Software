@@ -40,7 +40,7 @@ describe("HitoService (Modelo Embebido)", () => {
     expect(resultado.porcentajeConcrecion).toBe(50);
     expect(resultado.descripcion).toBe("Avance de la fase 1");
     expect(proyectoMock.hitos).toHaveLength(1);
-    expect(proyectoServiceMock.update).toHaveBeenCalledWith("proyecto-123", proyectoMock);
+    expect(proyectoServiceMock.update).toHaveBeenCalledWith("proyecto-123", { hitos: proyectoMock.hitos });
   });
 
   test("rechaza un hito con porcentaje de concreción inválido (> 100)", async () => {
