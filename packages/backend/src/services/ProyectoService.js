@@ -39,6 +39,9 @@ export default class ProyectoService {
     if (!proyecto) {
       throw new EntityNotFound("Proyecto no encontrado")
     }
+    //busco los hitos y se los cargo al poyecto
+    const hitosDelProyecto = await this.hitoRepository.findByProyectoId(id);
+    proyecto.hitos = hitosDelProyecto;
     return proyecto
   }
 

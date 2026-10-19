@@ -21,6 +21,9 @@ const proyectoSchema = new mongoose.Schema(
       required: true,
     },
     perfiles: [perfilSchema],
+    enlaceSistemaEnFuncionamiento: { type: String, default: null },
+    enlaceCodigoFuente: { type: String, default: null }
+    
   },
   { timestamps: true, collection: "proyectos", toJSON: opcionesJSON },
 )
