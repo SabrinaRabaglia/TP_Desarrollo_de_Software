@@ -165,7 +165,7 @@ La persistencia usa MongoDB con Mongoose, siguiendo la guía de la cátedra. Cad
 ### Datos iniciales (seeds)
 
 - Al arrancar, el servidor carga los catálogos: país, las 24 provincias, los tipos de colectivo y las habilidades iniciales.
-- `npm run seed:backend` carga además los datos de prueba: colectivos, proyectos, personas y colaboraciones.
+- `npm run seed:backend` carga además los datos de prueba: colectivos, proyectos (con perfiles e hitos), personas y colaboraciones.
 
 Los dos procesos son idempotentes. Insertan lo que falta por su clave natural, nunca borran y no modifican lo que ya existe, así que se pueden correr cualquier cantidad de veces, también en producción.
 
