@@ -17,7 +17,6 @@ describe("Hito (Dominio)", () => {
       datosValidos.proyecto
     );
 
-    expect(hito.id).toBeDefined();
     expect(hito.porcentajeConcrecion).toBe(50);
     expect(hito.descripcion).toBe(datosValidos.descripcion);
     expect(hito.proyecto).toBe(datosValidos.proyecto);

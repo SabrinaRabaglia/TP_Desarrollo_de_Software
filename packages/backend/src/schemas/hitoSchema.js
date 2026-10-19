@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import opcionesJSON from "./opcionesJSON.js"
-import Hito from "../domain/Hito.js";
+import {Hito} from "../domain/Hito.js";
 
 const hitoSchema = new mongoose.Schema(
   {
@@ -8,15 +8,10 @@ const hitoSchema = new mongoose.Schema(
     porcentajeConcrecion: { 
       type: Number, 
       required: true, 
-      min: 0, 
-      max: 100 
+      min: 0,  max: 100 
     },
     descripcion: { type: String, required: true },
-    proyecto: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Proyecto",
-      required: true,
-    },
+    
   },
   { 
     timestamps: true, 
@@ -26,6 +21,7 @@ const hitoSchema = new mongoose.Schema(
   }
 );
 
+
 hitoSchema.loadClass(Hito);
 
-export default mongoose.model("Hito", hitoSchema);
+export default  hitoSchema;

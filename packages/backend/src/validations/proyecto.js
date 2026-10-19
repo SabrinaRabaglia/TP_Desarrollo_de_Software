@@ -10,6 +10,8 @@ export const proyectoSchema = z
     estado: z.enum(EstadoProyecto),
     fechaAlta: z.coerce.date(),
     fechaCierre: z.coerce.date().nullable(),
+    enlaceSistemaEnFuncionamiento: z.string().url().optional(),
+    enlaceCodigoFuente: z.string().url().optional()
   })
   .strict()
 

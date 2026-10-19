@@ -9,6 +9,8 @@ export const proyectoDTO = (proyecto) => ({
   fechaCierre: proyecto.fechaCierre,
   colectivo: proyecto.colectivo,
   perfiles: proyecto.perfiles.map(perfilDTO),
+  enlaceSistemaEnFuncionamiento: proyecto.enlaceSistemaEnFuncionamiento,
+  enlaceCodigoFuente: proyecto.enlaceCodigoFuente,
   createdAt: proyecto.createdAt,
   updatedAt: proyecto.updatedAt,
 })

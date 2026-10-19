@@ -34,15 +34,14 @@ export default class ProyectoService {
     return await this.proyectoRepository.findAll()
   }
 
-  getById = async (id) => {
-    const proyecto = await this.proyectoRepository.findById(id)
+  async getById(id) {
+    const proyecto = await this.proyectoRepository.findById(id);
     if (!proyecto) {
-      throw new EntityNotFound("Proyecto no encontrado")
+      throw new EntityNotFound("Proyecto no encontrado");
     }
-    //busco los hitos y se los cargo al poyecto
-    const hitosDelProyecto = await this.hitoRepository.findByProyectoId(id);
-    proyecto.hitos = hitosDelProyecto;
-    return proyecto
+    
+    // mongoose ya trae los hitos dentro de "proyecto.hitos"
+    return proyecto;
   }
 
   getAllByHabilidades = async (habilidadesIds) => {
@@ -80,6 +79,8 @@ export default class ProyectoService {
       nuevo.estado,
       nuevo.fechaAlta,
       nuevo.fechaCierre,
+      nuevo.enlaceSistemaEnFuncionamiento,
+      nuevo.enlaceCodigoFuente
     )
 
     await this.validarColectivo(proyecto.colectivo)

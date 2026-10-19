@@ -1,55 +1,61 @@
+import { EntityNotFound } from "../errors/ApplicationErrors.js";
 import { Hito } from "../domain/Hito.js";
-import { NotFoundError } from "../errors/AppError.js";
 
 export default class HitoService {
-  constructor(hitoRepository, proyectoService) {
-    this.hitoRepository = hitoRepository;
-    this.proyectoService = proyectoService;
+  constructor(proyectoService) {
+    this.proyectoService = proyectoService; // Inyectamos el servicio de proyectos
   }
 
-  getByProyectoId = async (proyectoId) => {
-    await this.proyectoService.getById(proyectoId); // Valida que el proyecto exista
-    return await this.hitoRepository.findByProyectoId(proyectoId);
-  };
-
-  create = async (proyectoId, nuevoHito) => {
+  async getByProyectoId(proyectoId) {
     const proyecto = await this.proyectoService.getById(proyectoId);
+    return proyecto.hitos || [];
+  }
 
-    const hito = new Hito(
-      nuevoHito.fecha,
-      nuevoHito.porcentajeConcrecion,
-      nuevoHito.descripcion,
-      proyecto
+  async create(proyectoId, hitoDto) {
+    const proyecto = await this.proyectoService.getById(proyectoId);
+    
+    
+    const nuevoHito = new Hito(
+      hitoDto.fecha,
+      hitoDto.porcentajeConcrecion,
+      hitoDto.descripcion
     );
 
-    const hitoGuardado = await this.hitoRepository.save(hito);
+    // Lo agregamos al array embebido del proyecto
+    proyecto.hitos.push(nuevoHito);
 
-    // Opcional en memoria: Actualizar el array interno del proyecto si tu diseño lo requiere
-    proyecto.hitos.push(hitoGuardado);
+    // Guardamos el proyecto completo en la base de datos
+    await this.proyectoService.update(proyectoId, proyecto);
+    
+    // Devolvemos el hito recién creado (que Mongoose ya le asignó su _id/id)
+    return proyecto.hitos[proyecto.hitos.length - 1];
+  }
+
+  async update(hitoId, hitoActualizadoDto) {
+    // Como los hitos están embebidos, necesitamos encontrar a qué proyecto pertenece este hito
+    // (O podés estructurar la ruta para recibir /proyectos/:proyectoId/hitos/:hitoId)
+    // Suponiendo búsqueda global o iterativa en proyectos:
+    const proyecto = await this.proyectoService.findByHitoId(hitoId); // O método equivalente
+    if (!proyecto) throw new EntityNotFound("Hito no encontrado");
+
+    const hito = proyecto.hitos.id(hitoId); // Método nativo de Mongoose para subdocs
+    if (!hito) throw new EntityNotFound("Hito no encontrado");
+
+    if (hitoActualizadoDto.fecha) hito.fecha = new Date(hitoActualizadoDto.fecha);
+    if (hitoActualizadoDto.porcentajeConcrecion !== undefined) {
+      hito.porcentajeConcrecion = hitoActualizadoDto.porcentajeConcrecion;
+    }
+    if (hitoActualizadoDto.descripcion) hito.descripcion = hitoActualizadoDto.descripcion;
+
     await this.proyectoService.update(proyecto.id, proyecto);
+    return hito;
+  }
 
-    return hitoGuardado;
-  };
+  async delete(hitoId) {
+    const proyecto = await this.proyectoService.findByHitoId(hitoId);
+    if (!proyecto) throw new EntityNotFound("Hito no encontrado");
 
-  update = async (id, hitoActualizado) => {
-    const hitoExistente = await this.hitoRepository.findById(id);
-    if (!hitoExistente) {
-      throw new NotFoundError("HITO NO ENCONTRADO!");
-    }
-
-    // Actualización parcial
-    if (hitoActualizado.fecha) hitoExistente.fecha = new Date(hitoActualizado.fecha);
-    if (hitoActualizado.porcentajeConcrecion !== undefined) hitoExistente.porcentajeConcrecion = hitoActualizado.porcentajeConcrecion;
-    if (hitoActualizado.descripcion) hitoExistente.descripcion = hitoActualizado.descripcion;
-
-    return await this.hitoRepository.save(hitoExistente);
-  };
-
-  delete = async (id) => {
-    const hito = await this.hitoRepository.findById(id);
-    if (!hito) {
-      throw new NotFoundError("HITO NO ENCONTRADO!");
-    }
-    await this.hitoRepository.delete(id);
-  };
+    proyecto.hitos.pull(hitoId); // Método nativo de Mongoose para remover subdocs
+    await this.proyectoService.update(proyecto.id, proyecto);
+  }
 }

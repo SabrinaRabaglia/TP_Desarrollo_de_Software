@@ -1,8 +1,7 @@
 import { z } from "zod";
 import HitoService from "../services/HitoService.js";
-import HitoRepository from "../repositories/HitoRepository.js";
 import ProyectoService from "../services/ProyectoService.js";
-import { BadRequestError } from "../errors/AppError.js";
+import { BadRequestError} from "../errors/ApplicationErrors.js";
 
 // Esquema Zod para validar la entrada
 const hitoSchema = z.object({
@@ -13,7 +12,7 @@ const hitoSchema = z.object({
 
 export default class HitoController {
   constructor(
-    hitoService = new HitoService(new HitoRepository(), new ProyectoService())
+    hitoService = new HitoService( new ProyectoService())
   ) {
     this.hitoService = hitoService;
   }

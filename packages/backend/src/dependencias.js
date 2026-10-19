@@ -17,7 +17,6 @@ import PersonaColaboradoraRepository from "./repositories/PersonaColaboradoraRep
 import ProvinciaRepository from "./repositories/ProvinciaRepository.js"
 import ProyectoRepository from "./repositories/ProyectoRepository.js"
 import TipoColectivoRepository from "./repositories/TipoColectivoRepository.js"
-import HitoRepository from "./repositories/HitoRepository.js" 
 
 import CatalogoService from "./services/CatalogoService.js"
 import ColaboracionService from "./services/ColaboracionService.js"
@@ -34,7 +33,6 @@ import ProyectoService from "./services/ProyectoService.js"
 // Único lugar donde se arman las dependencias (repositorio → servicio →
 // controller). Las rutas solo conocen a los controllers.
 
-const hitoRepository = new HitoRepository()
 const colaboracionRepository = new ColaboracionRepository()
 const colectivoRepository = new ColectivoRepository()
 const habilidadRepository = new HabilidadRepository()
@@ -88,7 +86,6 @@ const notificacionService = new NotificacionService(
   new NotificadorExterno(),
 )
 const hitoService = new HitoService(
-  hitoRepository,
   proyectoService
 )
 

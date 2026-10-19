@@ -67,6 +67,6 @@ routes.get(
 )
 
 //rutas de hitos: 
-routes.post("/:proyectoId/hitos", hitoController.create);
-routes.get("/:proyectoId/hitos", hitoController.getByProyectoId);
+routes.post("/:id/hitos", validateId, hitoController.create)
+routes.get("/:id/hitos", validateId, hitoController.getByProyectoId)
 export default routes
