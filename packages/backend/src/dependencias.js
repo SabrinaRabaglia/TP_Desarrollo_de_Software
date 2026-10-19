@@ -6,6 +6,8 @@ import NotificacionController from "./controllers/NotificacionController.js"
 import PerfilController from "./controllers/PerfilController.js"
 import PersonaColaboradoraController from "./controllers/PersonaColaboradoraController.js"
 import ProyectoController from "./controllers/ProyectoController.js"
+import HitoController from "./controllers/HitoController.js" 
+
 import ColaboracionRepository from "./repositories/ColaboracionRepository.js"
 import ColectivoRepository from "./repositories/ColectivoRepository.js"
 import HabilidadRepository from "./repositories/HabilidadRepository.js"
@@ -15,11 +17,15 @@ import PersonaColaboradoraRepository from "./repositories/PersonaColaboradoraRep
 import ProvinciaRepository from "./repositories/ProvinciaRepository.js"
 import ProyectoRepository from "./repositories/ProyectoRepository.js"
 import TipoColectivoRepository from "./repositories/TipoColectivoRepository.js"
+import HitoRepository from "./repositories/HitoRepository.js" 
+
 import CatalogoService from "./services/CatalogoService.js"
 import ColaboracionService from "./services/ColaboracionService.js"
 import ColectivoService from "./services/ColectivoService.js"
 import HabilidadService from "./services/HabilidadService.js"
 import NotificacionService from "./services/NotificacionService.js"
+import HitoService from "./services/HitoService.js" 
+
 import NotificadorExterno from "./services/NotificadorExterno.js"
 import PerfilService from "./services/PerfilService.js"
 import PersonaColaboradoraService from "./services/PersonaColaboradoraService.js"
@@ -28,6 +34,7 @@ import ProyectoService from "./services/ProyectoService.js"
 // Único lugar donde se arman las dependencias (repositorio → servicio →
 // controller). Las rutas solo conocen a los controllers.
 
+const hitoRepository = new HitoRepository()
 const colaboracionRepository = new ColaboracionRepository()
 const colectivoRepository = new ColectivoRepository()
 const habilidadRepository = new HabilidadRepository()
@@ -80,6 +87,10 @@ const notificacionService = new NotificacionService(
   personaColaboradoraService,
   new NotificadorExterno(),
 )
+const hitoService = new HitoService(
+  hitoRepository,
+  proyectoService
+)
 
 export const catalogoController = new CatalogoController(catalogoService)
 export const colaboracionController = new ColaboracionController(
@@ -95,3 +106,4 @@ export const personaColaboradoraController = new PersonaColaboradoraController(
   personaColaboradoraService,
 )
 export const proyectoController = new ProyectoController(proyectoService)
+export const hitoController = new HitoController(hitoService)

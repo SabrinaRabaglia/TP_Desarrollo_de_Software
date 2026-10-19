@@ -11,6 +11,7 @@ import personaColaboradoraRoutes from "./routes/personaColaboradoraRoutes.js"
 import proyectoRoutes from "./routes/proyectoRoutes.js"
 import notificacionRoutes from "./routes/notificacionesRoutes.js"
 import errorHandler from "./middlewares/errorHandler.js"
+import hitoRoutes from "./routes/hitoRoutes.js";
 
 const require = createRequire(import.meta.url)
 const swaggerSpec = require("./docs/swaggerSpec.json")
@@ -35,6 +36,7 @@ app.use(habilidadRoutes)
 app.use(personaColaboradoraRoutes)
 app.use(proyectoRoutes)
 app.use(notificacionRoutes)
+app.use(hitoRoutes)
 
 app.get("/hello", (req, res) => {
   res.json({ message: "hello world" })

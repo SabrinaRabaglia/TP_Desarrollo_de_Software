@@ -6,7 +6,7 @@ import {
   proyectoSchema,
 } from "../validations/proyecto.js"
 import validateId from "../middlewares/validateId.js"
-import { perfilController, proyectoController } from "../dependencias.js"
+import { perfilController, proyectoController, hitoController } from "../dependencias.js"
 
 const routes = Router()
 
@@ -65,4 +65,8 @@ routes.get(
   validateId,
   perfilController.buscarColaboradores,
 )
+
+//rutas de hitos: 
+routes.post("/:proyectoId/hitos", hitoController.create);
+routes.get("/:proyectoId/hitos", hitoController.getByProyectoId);
 export default routes
