@@ -47,6 +47,10 @@
     {
       "name": "Catálogos",
       "description": "Catálogos precargados de solo lectura. Sus ids se usan como país y provincia de un colectivo."
+    },
+    {
+      "name": "Hitos",
+      "description": "Gestión de los logros e hitos de los proyectos"
     }
   ],
   "paths": {
@@ -1350,6 +1354,160 @@
         }
       }
     },
+    "/proyectos/{proyectoId}/hitos": {
+      "get": {
+        "summary": "Obtener todos los hitos de un proyecto",
+        "tags": [
+          "Hitos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "proyectoId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del proyecto"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de hitos devuelta exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Hito"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Proyecto no encontrado"
+          }
+        }
+      },
+      "post": {
+        "summary": "Crear un nuevo hito para un proyecto",
+        "tags": [
+          "Hitos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "proyectoId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del proyecto"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HitoInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Hito creado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hito"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos inválidos (falla la validación de Zod)"
+          },
+          "404": {
+            "description": "Proyecto no encontrado"
+          }
+        }
+      }
+    },
+    "/hitos/{id}": {
+      "patch": {
+        "summary": "Actualizar parcialmente un hito",
+        "tags": [
+          "Hitos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del hito a actualizar"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HitoUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Hito actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hito"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos inválidos"
+          },
+          "404": {
+            "description": "Hito no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Eliminar un hito",
+        "tags": [
+          "Hitos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del hito a eliminar"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Hito eliminado exitosamente (Sin contenido)"
+          },
+          "404": {
+            "description": "Hito no encontrado"
+          }
+        }
+      }
+    },
     "/colaboraciones": {
       "get": {
         "tags": ["Colaboraciones"],
@@ -1486,6 +1644,8 @@
         }
       }
     }
+  
+    
   },
   "components": {
     "parameters": {
@@ -1946,6 +2106,16 @@
             "format": "date-time",
             "nullable": true,
             "description": "Obligatoria pero admite `null`. No puede ser anterior a `fechaAlta`."
+          },
+          "enlaceSistemaEnFuncionamiento": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "enlaceCodigoFuente": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
           }
         }
       },
@@ -1973,6 +2143,16 @@
           "fechaCierre": {
             "type": "string",
             "format": "date-time",
+            "nullable": true
+          },
+          "enlaceSistemaEnFuncionamiento": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "enlaceCodigoFuente": {
+            "type": "string",
+            "format": "uri",
             "nullable": true
           }
         }
@@ -2018,10 +2198,26 @@
             "format": "date-time",
             "nullable": true
           },
+          "enlaceSistemaEnFuncionamiento": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "enlaceCodigoFuente": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
           "perfiles": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Perfil"
+            }
+          },
+          "hitos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Hito"
             }
           }
         }
@@ -2280,6 +2476,81 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "Hito": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-15T00:00:00.000Z"
+          },
+          "porcentajeConcrecion": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "example": 50
+          },
+          "descripcion": {
+            "type": "string",
+            "example": "Se completó la primera fase del desarrollo"
+          },
+          "proyecto": {
+            "type": "string",
+            "description": "ID del proyecto al que pertenece",
+            "example": "proyecto-id-123"
+          }
+        }
+      },
+      "HitoInput": {
+        "type": "object",
+        "required": [
+          "fecha",
+          "porcentajeConcrecion",
+          "descripcion"
+        ],
+        "properties": {
+          "fecha": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-15T00:00:00.000Z"
+          },
+          "porcentajeConcrecion": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "example": 50
+          },
+          "descripcion": {
+            "type": "string",
+            "example": "Se completó la primera fase del desarrollo"
+          }
+        }
+      },
+      "HitoUpdate": {
+        "type": "object",
+        "properties": {
+          "fecha": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-11-20T00:00:00.000Z"
+          },
+          "porcentajeConcrecion": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "example": 75
+          },
+          "descripcion": {
+            "type": "string",
+            "example": "Actualización de la descripción del hito"
           }
         }
       }
