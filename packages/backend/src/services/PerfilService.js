@@ -1,5 +1,10 @@
 import Perfil from "../domain/Perfil.js"
-import { EntityNotFound } from "../errors/ApplicationErrors.js"
+import {
+  ConcurrentModification,
+  EntityNotFound,
+} from "../errors/ApplicationErrors.js"
+
+const MAXIMO_DE_INTENTOS = 3
 
 export default class PerfilService {
   constructor(
@@ -34,28 +39,48 @@ export default class PerfilService {
     ),
   })
 
+  // Los perfiles viven dentro del documento del proyecto: si otro pedido lo
+  // guarda entre nuestra lectura y nuestro guardado, se vuelve a leer y aplicar.
+  modificarProyecto = async (proyectoId, modificacion) => {
+    for (let intento = 1; ; intento++) {
+      try {
+        const proyecto = await this.proyectoService.getById(proyectoId)
+        const resultado = await modificacion(proyecto)
+        await this.proyectoRepository.save(proyecto)
+        return resultado
+      } catch (error) {
+        if (
+          !(error instanceof ConcurrentModification) ||
+          intento === MAXIMO_DE_INTENTOS
+        ) {
+          throw error
+        }
+      }
+    }
+  }
+
   create = async (proyectoId, datos) => {
-    const proyecto = await this.proyectoService.getById(proyectoId)
-    const perfil = proyecto.agregarPerfil(
-      new Perfil(await this.resolverHabilidades(datos)),
+    const perfil = await this.modificarProyecto(proyectoId, async (proyecto) =>
+      proyecto.agregarPerfil(new Perfil(await this.resolverHabilidades(datos))),
     )
-    await this.proyectoRepository.save(proyecto)
     return await this.getById(proyectoId, perfil.id)
   }
 
   update = async (proyectoId, perfilId, datos) => {
-    const proyecto = await this.proyectoService.getById(proyectoId)
-    const perfil = this.buscarPerfil(proyecto, perfilId)
-    proyecto.actualizarPerfil(perfil, await this.resolverHabilidades(datos))
-    await this.proyectoRepository.save(proyecto)
+    await this.modificarProyecto(proyectoId, async (proyecto) =>
+      proyecto.actualizarPerfil(
+        this.buscarPerfil(proyecto, perfilId),
+        await this.resolverHabilidades(datos),
+      ),
+    )
     return await this.getById(proyectoId, perfilId)
   }
 
   delete = async (proyectoId, perfilId) => {
-    const proyecto = await this.proyectoService.getById(proyectoId)
-    this.buscarPerfil(proyecto, perfilId)
-    proyecto.eliminarPerfil(perfilId)
-    await this.proyectoRepository.save(proyecto)
+    await this.modificarProyecto(proyectoId, async (proyecto) => {
+      this.buscarPerfil(proyecto, perfilId)
+      proyecto.eliminarPerfil(perfilId)
+    })
   }
 
   buscarEnProyecto = async (proyectoId, perfilId) => {

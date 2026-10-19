@@ -1,3 +1,5 @@
+import mongoose from "mongoose"
+import { ConcurrentModification } from "../errors/ApplicationErrors.js"
 import ProyectoModel from "../schemas/proyectoSchema.js"
 import guardar from "./guardar.js"
 
@@ -34,7 +36,17 @@ export default class ProyectoRepository {
   }
 
   async save(proyecto) {
-    return await guardar(this.model, proyecto)
+    try {
+      return await guardar(this.model, proyecto)
+    } catch (error) {
+      // Otro pedido guardó el proyecto entre que lo leímos y lo guardamos.
+      if (error instanceof mongoose.Error.VersionError) {
+        throw new ConcurrentModification(
+          "El proyecto se modificó mientras se procesaba el pedido. Volvé a intentar.",
+        )
+      }
+      throw error
+    }
   }
 
   async deleteById(id) {

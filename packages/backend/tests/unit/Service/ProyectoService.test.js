@@ -281,6 +281,99 @@ describe("ProyectoService", () => {
     })
   })
 
+  describe("perfiles del proyecto", () => {
+    const nuevoPerfil = (descripcion) =>
+      new Perfil({
+        descripcion,
+        unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
+        cantidadHoras: 5,
+        modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
+        habilidadesRequeridas: ["javascript"],
+        habilidadesOpcionales: ["docker"],
+      })
+
+    const crearConPerfiles = async (titulo, ...descripciones) => {
+      const proyecto = await service.create({ ...dtoProyectoValido, titulo })
+      for (const descripcion of descripciones) {
+        proyecto.agregarPerfil(nuevoPerfil(descripcion))
+      }
+      return await proyectoRepository.save(proyecto)
+    }
+
+    // El fake devuelve el mismo objeto que guarda: hace falta una copia profunda
+    // para que la comparación de después no sea contra sí mismo.
+    const copiaDePerfiles = (proyecto) => structuredClone(proyecto.perfiles)
+
+    test("editar título, descripción y colectivo no toca sus perfiles", async () => {
+      const proyecto = await crearConPerfiles(
+        "Con perfiles",
+        "Tester",
+        "Analista",
+      )
+      const perfilesAntes = copiaDePerfiles(proyecto)
+      const otroColectivo = (
+        await colectivoService.create({
+          nombre: "Otra organización",
+          descripcion: "Proyecto comunitario",
+          tipo: "ONG",
+        })
+      ).colectivo
+
+      await service.update(proyecto.id, {
+        titulo: "Título nuevo",
+        descripcion: "Descripción nueva",
+        colectivo: otroColectivo.id,
+      })
+
+      const actualizado = await service.getById(proyecto.id)
+      expect(actualizado.titulo).toBe("Título nuevo")
+      expect(actualizado.perfiles).toEqual(perfilesAntes)
+    })
+
+    test("cerrar el proyecto conserva sus perfiles", async () => {
+      const proyecto = await crearConPerfiles("A cerrar", "Tester")
+      const perfilesAntes = copiaDePerfiles(proyecto)
+
+      await service.update(proyecto.id, { estado: EstadoProyecto.CERRADO })
+
+      expect((await service.getById(proyecto.id)).perfiles).toEqual(
+        perfilesAntes,
+      )
+    })
+
+    test.each([
+      ["un colectivo inexistente", { colectivo: "colectivo-inexistente" }],
+      ["un título ya usado", { titulo: "Ocupado" }],
+    ])(
+      "una edición rechazada por %s no toca sus perfiles",
+      async (_caso, cambios) => {
+        await service.create({ ...dtoProyectoValido, titulo: "Ocupado" })
+        const proyecto = await crearConPerfiles("Con perfiles", "Tester")
+        const perfilesAntes = copiaDePerfiles(proyecto)
+
+        await expect(service.update(proyecto.id, cambios)).rejects.toThrow()
+
+        expect((await service.getById(proyecto.id)).perfiles).toEqual(
+          perfilesAntes,
+        )
+      },
+    )
+
+    test("borrar un proyecto borra sus perfiles y no toca los de otros proyectos", async () => {
+      const borrado = await crearConPerfiles("A borrar", "Tester", "Analista")
+      const otro = await crearConPerfiles("Se queda", "Diseñadora")
+      const perfilesDelOtro = copiaDePerfiles(otro)
+
+      await service.delete(borrado.id)
+
+      await expect(service.getById(borrado.id)).rejects.toThrow(EntityNotFound)
+      const restantes = await service.getAll()
+      expect(restantes.map((proyecto) => proyecto.id)).toEqual([otro.id])
+      expect(restantes[0].perfiles).toEqual(perfilesDelOtro)
+      expect(await service.getAllByHabilidades(["javascript"])).toEqual([otro])
+    })
+  })
+
   describe("getAllByHabilidades", () => {
     const crearConPerfil = async (titulo, habilidadesRequeridas) => {
       const proyecto = await service.create({ ...dtoProyectoValido, titulo })
