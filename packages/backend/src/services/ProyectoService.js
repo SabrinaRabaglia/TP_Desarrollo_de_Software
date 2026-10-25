@@ -40,7 +40,6 @@ export default class ProyectoService {
       throw new EntityNotFound("Proyecto no encontrado");
     }
     
-    // mongoose ya trae los hitos dentro de "proyecto.hitos"
     return proyecto;
   }
 

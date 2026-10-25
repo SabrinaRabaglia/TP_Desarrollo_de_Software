@@ -11,4 +11,5 @@ routes.patch("/hitos/:id", validateId, hitoController.update);
 //borrar un hito dado su id
 routes.delete("/hitos/:id", validateId, hitoController.delete);
 
+
 export default routes;

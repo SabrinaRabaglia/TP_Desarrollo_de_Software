@@ -19,7 +19,7 @@ export default class HitoController {
 
   create = async (req, res, next) => {
     try {
-      const { proyectoId } = req.params; 
+      const { id } = req.params; 
       const resultado = hitoSchema.safeParse(req.body);
       
       if (resultado.error) {
@@ -27,10 +27,9 @@ export default class HitoController {
         throw new BadRequestError("Datos inválidos", resultado.error.issues);
       }
       
-      const nuevoHito = await this.hitoService.create(proyectoId, resultado.data);
+      const nuevoHito = await this.hitoService.create(id, resultado.data);
       res.status(201).json(nuevoHito);
     } catch (error) {
-      // Delegamos el error al middleware traductor
       next(error); 
     }
   };
@@ -38,10 +37,9 @@ export default class HitoController {
  // Obtener todos los hitos de un proyecto
   getByProyectoId = async (req, res, next) => {
     try {
-      // Extraemos el proyectoId de los parámetros de la ruta (ej: /proyectos/:proyectoId/hitos)
-      const { proyectoId } = req.params;
+      const { id } = req.params;
       
-      const hitos = await this.hitoService.getByProyectoId(proyectoId);
+      const hitos = await this.hitoService.getByProyectoId(id);
       
       res.status(200).json(hitos);
     } catch (error) {

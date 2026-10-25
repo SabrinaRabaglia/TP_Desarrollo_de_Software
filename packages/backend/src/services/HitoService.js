@@ -32,14 +32,11 @@ export default class HitoService {
   }
 
   async update(hitoId, hitoActualizadoDto) {
-    // Como los hitos están embebidos, necesitamos encontrar a qué proyecto pertenece este hito
-    // (O podés estructurar la ruta para recibir /proyectos/:proyectoId/hitos/:hitoId)
-    // Suponiendo búsqueda global o iterativa en proyectos:
-    const proyecto = await this.proyectoService.findByHitoId(hitoId); // O método equivalente
+    
+    const proyecto = await this.proyectoService.findByHitoId(hitoId); 
     if (!proyecto) throw new EntityNotFound("Hito no encontrado");
 
-    const hito = proyecto.hitos.id(hitoId); // Método nativo de Mongoose para subdocs
-    if (!hito) throw new EntityNotFound("Hito no encontrado");
+    const hito = proyecto.hitos.id(hitoId); 
 
     if (hitoActualizadoDto.fecha) hito.fecha = new Date(hitoActualizadoDto.fecha);
     if (hitoActualizadoDto.porcentajeConcrecion !== undefined) {
