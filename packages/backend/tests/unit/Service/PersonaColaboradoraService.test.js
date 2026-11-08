@@ -205,7 +205,7 @@ describe("PersonaColaboradoraService", () => {
     await service.deleteMedioDeContacto(persona.id, "contacto-1")
 
     expect((await repository.findById(persona.id)).mediosDeContacto).toEqual([
-      { tipo: "WHATSAPP", valor: "+5491123456789" },
+      { _id: "contacto-2", tipo: "WHATSAPP", valor: "+5491123456789" },
     ])
   })
 

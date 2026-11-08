@@ -20,11 +20,15 @@ const mockPersonaColaboradoraService = () => ({
 describe("PersonaColaboradoraController", () => {
   describe("create", () => {
     test("con body válido (solo nombreFantasia), delega en el service y responde 201", async () => {
-      const personaCreada = { id: "1", nombreFantasia: "anon123" }
+      const personaCreada = {
+        id: "1",
+        nombreFantasia: "anon123",
+        mediosDeContacto: [],
+      }
       const service = mockPersonaColaboradoraService()
       service.create.mockReturnValue(personaCreada)
       const controller = new PersonaColaboradoraController(service)
-      const req = { body: { nombreFantasia: "anon123" } }
+      const req = { body: { nombreFantasia: "anon123", mediosDeContacto: [] } }
       const res = mockRes()
       const next = jest.fn()
 
@@ -78,7 +82,11 @@ describe("PersonaColaboradoraController", () => {
 
   describe("update", () => {
     test("con body válido, delega en el service pasando el id de la ruta y responde 200", async () => {
-      const personaActualizada = { id: "1", nombreFantasia: "anon123-editado" }
+      const personaActualizada = {
+        id: "1",
+        nombreFantasia: "anon123-editado",
+        mediosDeContacto: [],
+      }
       const service = mockPersonaColaboradoraService()
       service.update.mockReturnValue(personaActualizada)
       const controller = new PersonaColaboradoraController(service)
@@ -135,7 +143,11 @@ describe("PersonaColaboradoraController", () => {
 
   describe("getById", () => {
     test("delega en el service con el id de la ruta y responde 200 con la persona", async () => {
-      const persona = { id: "1", nombreFantasia: "anon123" }
+      const persona = {
+        id: "1",
+        nombreFantasia: "anon123",
+        mediosDeContacto: [],
+      }
       const service = mockPersonaColaboradoraService()
       service.getById.mockReturnValue(persona)
       const controller = new PersonaColaboradoraController(service)
@@ -153,7 +165,9 @@ describe("PersonaColaboradoraController", () => {
 
   describe("getAll", () => {
     test("responde 200 con el listado que devuelve el service", async () => {
-      const personas = [{ id: "1", nombreFantasia: "anon123" }]
+      const personas = [
+        { id: "1", nombreFantasia: "anon123", mediosDeContacto: [] },
+      ]
       const service = mockPersonaColaboradoraService()
       service.getAll.mockReturnValue(personas)
       const controller = new PersonaColaboradoraController(service)
