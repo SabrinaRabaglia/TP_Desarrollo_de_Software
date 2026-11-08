@@ -62,6 +62,7 @@ describe("NotificacionService", () => {
       colaboracionRepository,
     )
     personaColaboradoraService = new PersonaColaboradoraService(
+      proyectoRepository,
       personaColaboradoraRepository,
       habilidadService,
       colaboracionRepository,

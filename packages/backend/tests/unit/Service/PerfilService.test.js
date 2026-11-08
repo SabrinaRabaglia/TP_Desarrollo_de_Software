@@ -62,6 +62,7 @@ describe("PerfilService", () => {
       new ColaboracionRepository(),
     )
     personaColaboradoraService = new PersonaColaboradoraService(
+      proyectoRepository,
       personaColaboradoraRepository,
       habilidadService,
       colaboracionRepository,

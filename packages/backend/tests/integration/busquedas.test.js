@@ -157,14 +157,18 @@ describe("búsqueda de proyectos según habilidades", () => {
 })
 
 describe("búsqueda de colaboradores según un perfil", () => {
-  const colaboradores = (proyecto) =>
-    request(
-      "GET",
-      `/proyectos/${proyecto.id}/perfiles/${proyecto.perfil.id}/colaboradores`,
-    )
+  const colaboradores = (...perfiles) => {
+  const query = new URLSearchParams()
+
+  perfiles.forEach((perfil) => {
+    query.append("perfiles", perfil.id)
+  })
+
+  return request("GET", `/personas-colaboradoras?${query}`)
+}
 
   test("devuelve las personas con todas las habilidades requeridas, sin sus medios de contacto", async () => {
-    const encontradas = await colaboradores(proyectos.web)
+    const encontradas = await colaboradores(proyectos.web.perfil)
 
     expect(encontradas).toEqual([
       expect.objectContaining({
@@ -174,7 +178,7 @@ describe("búsqueda de colaboradores según un perfil", () => {
     ])
     expect(encontradas[0]).not.toHaveProperty("mediosDeContacto")
     expect(
-      (await colaboradores(proyectos.mapa)).map((persona) => persona.id),
+      (await colaboradores(proyectos.mapa.perfil)).map((persona) => persona.id),
     ).toEqual([personas.ana.id, personas.lucho.id])
   })
 
@@ -190,18 +194,18 @@ describe("búsqueda de colaboradores según un perfil", () => {
     )
 
     expect(
-      (await colaboradores(proyectos.mapa)).map((persona) => persona.id),
+      (await colaboradores(proyectos.mapa.perfil)).map((persona) => persona.id),
     ).toEqual([personas.ana.id])
   })
 
   test("responde 409 si el proyecto está cerrado", async () => {
-    await request(
-      "GET",
-      `/proyectos/${proyectos.cerrado.id}/perfiles/${proyectos.cerrado.perfil.id}/colaboradores`,
-      undefined,
-      409,
-    )
-  })
+  await request(
+    "GET",
+    `/personas-colaboradoras?perfiles=${proyectos.cerrado.perfil.id}`,
+    undefined,
+    409,
+  )
+})
 
   test("responde 404 si el perfil es de otro proyecto", async () => {
     await request(
