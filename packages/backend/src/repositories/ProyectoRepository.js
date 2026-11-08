@@ -24,6 +24,22 @@ export default class ProyectoRepository {
     return await this.model.find({ colectivo: colectivoId })
   }
 
+  async findProyectoYPerfilPorId(perfilId) {
+    const id = new mongoose.Types.ObjectId(perfilId)
+
+    const proyecto = await this.model.findOne({
+      "perfiles._id": id,
+    })
+
+    if (!proyecto) {
+      return { proyecto: null, perfil: null }
+    }
+
+    const perfil = proyecto.perfiles.id(id)
+
+    return { proyecto, perfil }
+}
+
   async existePerfilConHabilidad(habilidadId) {
     return Boolean(
       await this.model.exists({

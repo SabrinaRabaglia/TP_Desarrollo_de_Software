@@ -62,6 +62,7 @@ const proyectoService = new ProyectoService(
   colaboracionRepository,
 )
 const personaColaboradoraService = new PersonaColaboradoraService(
+  proyectoRepository,
   personaColaboradoraRepository,
   habilidadService,
   colaboracionRepository,
