@@ -20,9 +20,14 @@ export default class PersonaColaboradoraService {
       (cuenta) => new Cuenta(cuenta.nombreUsuario, cuenta.tipo),
     )
   }
-  crearMediosDeContacto = (medios) => {
+  crearMediosDeContacto = (medios, preservarIds = false) => {
     return (medios ?? []).map(
-      (medio) => new MedioDeContacto(medio.tipo, medio.valor),
+      (medio) =>
+        new MedioDeContacto(
+          medio.tipo,
+          medio.valor,
+          preservarIds ? medio.id : undefined,
+        ),
     )
   }
   create = async (nueva) => {
@@ -55,7 +60,7 @@ export default class PersonaColaboradoraService {
     const mediosDeContacto =
       actualizada.mediosDeContacto === undefined
         ? personaExistente.mediosDeContacto
-        : this.crearMediosDeContacto(actualizada.mediosDeContacto)
+        : this.crearMediosDeContacto(actualizada.mediosDeContacto, true)
 
     const habilidades = await this.habilidadService.buscarReferenciadas(
       actualizada.habilidades ?? [],
@@ -79,6 +84,19 @@ export default class PersonaColaboradoraService {
     await this.colaboracionRepository.deleteByPersona(id)
     await this.notificacionRepository.deleteByPersonaColaboradora(id)
     await this.personaColaboradoraRepository.deleteById(id)
+  }
+
+  deleteMedioDeContacto = async (id, contactoId) => {
+    const personaColaboradora = await this.getById(id)
+    const indice = personaColaboradora.mediosDeContacto.findIndex(
+      (medio) => String(medio._id ?? medio.id) === contactoId,
+    )
+    if (indice === -1) {
+      throw new EntityNotFound("Medio de contacto no encontrado")
+    }
+
+    personaColaboradora.mediosDeContacto.splice(indice, 1)
+    return await this.personaColaboradoraRepository.save(personaColaboradora)
   }
 
   getAll = async () => {

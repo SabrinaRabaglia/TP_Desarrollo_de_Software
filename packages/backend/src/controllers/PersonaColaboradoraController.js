@@ -37,6 +37,18 @@ export default class PersonaColaboradoraController {
     }
   }
 
+  deleteMedioDeContacto = async (req, res, next) => {
+    try {
+      await this.personaColaboradoraService.deleteMedioDeContacto(
+        req.params.id,
+        req.params.contactoId,
+      )
+      res.status(204).send()
+    } catch (error) {
+      next(error)
+    }
+  }
+
   getById = async (req, res, next) => {
     try {
       const personaColaboradora = await this.personaColaboradoraService.getById(

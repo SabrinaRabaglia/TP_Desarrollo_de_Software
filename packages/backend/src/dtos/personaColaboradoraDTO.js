@@ -8,6 +8,10 @@ export const personaColaboradoraDTO = (persona) => ({
   cuentas: persona.cuentas,
   habilidades: persona.habilidades,
   aceptaMensajeriaInterna: persona.aceptaMensajeriaInterna,
+  mediosDeContacto: persona.mediosDeContacto.map((medio) => ({
+    id: String(medio.id ?? medio._id),
+    tipo: medio.tipo,
+  })),
   createdAt: persona.createdAt,
   updatedAt: persona.updatedAt,
 })

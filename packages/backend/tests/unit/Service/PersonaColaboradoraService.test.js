@@ -189,4 +189,35 @@ describe("PersonaColaboradoraService", () => {
       await notificacionRepository.findByPersonaColaboradora("otra-persona"),
     ).toEqual([deOtra])
   })
+
+  test("elimina solo el medio de contacto indicado y conserva los demás", async () => {
+    const persona = await service.create({
+      ...datos,
+      mediosDeContacto: [
+        { tipo: "EMAIL", valor: "ana@example.com" },
+        { tipo: "WHATSAPP", valor: "+5491123456789" },
+      ],
+    })
+    persona.mediosDeContacto[0]._id = "contacto-1"
+    persona.mediosDeContacto[1]._id = "contacto-2"
+    await repository.save(persona)
+
+    await service.deleteMedioDeContacto(persona.id, "contacto-1")
+
+    expect((await repository.findById(persona.id)).mediosDeContacto).toEqual([
+      { tipo: "WHATSAPP", valor: "+5491123456789" },
+    ])
+  })
+
+  test("no elimina contactos si el medio indicado no existe", async () => {
+    const persona = await service.create(datos)
+
+    await expect(
+      service.deleteMedioDeContacto(persona.id, "contacto-inexistente"),
+    ).rejects.toThrow(EntityNotFound)
+
+    expect((await repository.findById(persona.id)).mediosDeContacto).toEqual(
+      datos.mediosDeContacto,
+    )
+  })
 })

@@ -113,6 +113,26 @@ describe("PersonaColaboradoraController", () => {
     })
   })
 
+  describe("deleteMedioDeContacto", () => {
+    test("delega con el id y el medio de contacto y responde 204", async () => {
+      const service = mockPersonaColaboradoraService()
+      service.deleteMedioDeContacto = jest.fn()
+      const controller = new PersonaColaboradoraController(service)
+      const req = { params: { id: "1", contactoId: "contacto-1" } }
+      const res = mockRes()
+      const next = jest.fn()
+
+      await controller.deleteMedioDeContacto(req, res, next)
+
+      expect(service.deleteMedioDeContacto).toHaveBeenCalledWith(
+        "1",
+        "contacto-1",
+      )
+      expect(res.status).toHaveBeenCalledWith(204)
+      expect(res.send).toHaveBeenCalled()
+    })
+  })
+
   describe("getById", () => {
     test("delega en el service con el id de la ruta y responde 200 con la persona", async () => {
       const persona = { id: "1", nombreFantasia: "anon123" }

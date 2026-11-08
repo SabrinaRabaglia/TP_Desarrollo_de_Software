@@ -10,8 +10,9 @@ const cuentaSchema = z
   })
   .strict()
 
-const medioDeContactoSchema = z
+export const medioDeContactoSchema = z
   .object({
+    id: objectIdSchema.optional(),
     tipo: z.enum(Object.values(TipoMedioContacto)),
     valor: z.string().min(1),
   })

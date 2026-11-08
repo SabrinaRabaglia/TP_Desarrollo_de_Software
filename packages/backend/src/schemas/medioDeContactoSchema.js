@@ -11,7 +11,6 @@ const medioDeContactoSchema = new mongoose.Schema(
     },
     valor: { type: String, required: true },
   },
-  { _id: false },
 )
 
 medioDeContactoSchema.loadClass(MedioDeContacto)

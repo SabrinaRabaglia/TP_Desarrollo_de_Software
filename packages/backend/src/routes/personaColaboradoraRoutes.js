@@ -1,7 +1,7 @@
 import { Router } from "express"
 import validar from "../middlewares/validar.js"
 import { personaColaboradoraSchema } from "../validations/personaColaboradora.js"
-import validateId from "../middlewares/validateId.js"
+import validateId, { validateIdParam } from "../middlewares/validateId.js"
 import { personaColaboradoraController } from "../dependencias.js"
 
 const routes = Router()
@@ -27,5 +27,11 @@ routes.delete(
   "/personas-colaboradoras/:id",
   validateId,
   personaColaboradoraController.delete,
+)
+routes.delete(
+  "/personas-colaboradoras/:id/medios-de-contacto/:contactoId",
+  validateId,
+  validateIdParam("contactoId"),
+  personaColaboradoraController.deleteMedioDeContacto,
 )
 export default routes

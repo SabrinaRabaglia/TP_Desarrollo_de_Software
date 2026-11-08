@@ -2,10 +2,13 @@ import { TipoMedioContacto } from "./enums/TipoMedioContacto.js"
 import { DomainValidationError } from "./errors/DomainErrors.js"
 
 export default class MedioDeContacto {
-  constructor(tipo, valor) {
+  constructor(tipo, valor, id) {
     MedioDeContacto.validarDatos({ tipo, valor })
     this.tipo = tipo
     this.valor = valor
+    if (id !== undefined) {
+      this._id = id
+    }
   }
   static validarDatos({ tipo, valor }) {
     if (!tipo) {
