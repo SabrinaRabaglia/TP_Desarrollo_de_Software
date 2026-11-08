@@ -281,8 +281,24 @@
       "get": {
         "tags": ["Personas colaboradoras"],
         "summary": "Listar personas colaboradoras",
-        "description": "Devuelve todas las personas colaboradoras. Las habilidades vuelven como objetos completos.",
+        "description": "Devuelve todas las personas colaboradoras. Las habilidades vuelven como objetos completos. Con el parámetro `perfiles` busca colaboradores para esos perfiles: devuelve a quienes tienen todas las habilidades requeridas de alguno de ellos, ordenadas primero por quienes tienen más habilidades opcionales del perfil. Tener solo opcionales no alcanza para aparecer, y no se sugiere a quienes ya están inscriptos en el proyecto del perfil. Responde 404 si algún perfil no existe y 409 si su proyecto está cerrado.",
         "operationId": "listarPersonasColaboradoras",
+        "parameters": [
+          {
+            "name": "perfiles",
+            "in": "query",
+            "required": false,
+            "description": "Ids de perfiles para los que se buscan colaboradores. Se puede repetir.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
+          }
+        ],
         "responses": {
           "200": {
             "description": "Lista de personas colaboradoras",
@@ -296,6 +312,18 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       },
@@ -1254,49 +1282,6 @@
         }
       }
     },
-    "/proyectos/{id}/perfiles/{perfilId}/colaboradores": {
-      "get": {
-        "tags": ["Perfiles"],
-        "summary": "Buscar colaboradores para un perfil",
-        "description": "Devuelve las personas colaboradoras que tienen todas las habilidades requeridas del perfil, ordenadas primero por quienes tienen más habilidades opcionales del perfil. Tener solo opcionales no alcanza para aparecer, y no se sugiere a quienes ya están inscriptos en el proyecto. Responde 404 si el proyecto no existe o el perfil no pertenece a ese proyecto, y 409 si el proyecto está cerrado: un proyecto cerrado no busca colaboradores.",
-        "operationId": "buscarColaboradoresParaPerfil",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/IdPath"
-          },
-          {
-            "$ref": "#/components/parameters/PerfilIdPath"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Personas colaboradoras que encajan con el perfil",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PersonaColaboradora"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalServerError"
-          }
-        }
-      }
-    },
     "/proyectos/{id}/perfiles/{perfilId}/notificaciones": {
       "post": {
         "tags": ["Notificaciones"],
@@ -1357,9 +1342,7 @@
     "/proyectos/{proyectoId}/hitos": {
       "get": {
         "summary": "Obtener todos los hitos de un proyecto",
-        "tags": [
-          "Hitos"
-        ],
+        "tags": ["Hitos"],
         "parameters": [
           {
             "in": "path",
@@ -1392,9 +1375,7 @@
       },
       "post": {
         "summary": "Crear un nuevo hito para un proyecto",
-        "tags": [
-          "Hitos"
-        ],
+        "tags": ["Hitos"],
         "parameters": [
           {
             "in": "path",
@@ -1439,9 +1420,7 @@
     "/hitos/{id}": {
       "patch": {
         "summary": "Actualizar parcialmente un hito",
-        "tags": [
-          "Hitos"
-        ],
+        "tags": ["Hitos"],
         "parameters": [
           {
             "in": "path",
@@ -1484,9 +1463,7 @@
       },
       "delete": {
         "summary": "Eliminar un hito",
-        "tags": [
-          "Hitos"
-        ],
+        "tags": ["Hitos"],
         "parameters": [
           {
             "in": "path",
@@ -1644,8 +1621,6 @@
         }
       }
     }
-  
-    
   },
   "components": {
     "parameters": {
@@ -2511,11 +2486,7 @@
       },
       "HitoInput": {
         "type": "object",
-        "required": [
-          "fecha",
-          "porcentajeConcrecion",
-          "descripcion"
-        ],
+        "required": ["fecha", "porcentajeConcrecion", "descripcion"],
         "properties": {
           "fecha": {
             "type": "string",

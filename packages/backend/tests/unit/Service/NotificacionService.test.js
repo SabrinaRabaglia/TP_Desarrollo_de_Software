@@ -71,8 +71,6 @@ describe("NotificacionService", () => {
       proyectoService,
       proyectoRepository,
       habilidadService,
-      personaColaboradoraService,
-      colaboracionRepository,
     )
     canales = {
       EMAIL: { enviar: jest.fn(async () => {}) },

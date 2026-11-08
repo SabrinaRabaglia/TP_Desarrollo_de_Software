@@ -106,47 +106,49 @@ export default class PersonaColaboradoraService {
   }
 
   getAllByPerfiles = async (perfilesIds) => {
-  const personasPorId = new Map()
+    const personasPorId = new Map()
 
-  for (const perfilId of perfilesIds) {
-    const { proyecto, perfil } =
-      await this.proyectoRepository.findProyectoYPerfilPorId(perfilId)
+    for (const perfilId of perfilesIds) {
+      const { proyecto, perfil } =
+        await this.proyectoRepository.findProyectoYPerfilPorId(perfilId)
 
-    if (!proyecto || !perfil) {
-      throw new EntityNotFound("Perfil no encontrado")
-    }
-
-    proyecto.assertPuedeBuscarColaboradores()
-
-    const personas = await this.getAllConHabilidades(perfil.habilidadesRequeridas)
-
-    const inscriptas = new Set(
-      await this.colaboracionRepository.findPersonasInscriptasEn(proyecto.id),
-    )
-
-    for (const persona of personas) {
-      if (inscriptas.has(String(persona.id))) {
-        continue
+      if (!proyecto || !perfil) {
+        throw new EntityNotFound("Perfil no encontrado")
       }
 
-      const puntaje = perfil.cantidadDeHabilidadesOpcionalesDe(persona)
-      const personaId = String(persona.id)
+      proyecto.assertPuedeBuscarColaboradores()
 
-      const personaRegistrada = personasPorId.get(personaId)
+      const personas = await this.getAllConHabilidades(
+        perfil.habilidadesRequeridas,
+      )
 
-      if (!personaRegistrada || puntaje > personaRegistrada.puntaje) {
-        personasPorId.set(personaId, {
-          persona,
-          puntaje,
-        })
+      const inscriptas = new Set(
+        await this.colaboracionRepository.findPersonasInscriptasEn(proyecto.id),
+      )
+
+      for (const persona of personas) {
+        if (inscriptas.has(String(persona.id))) {
+          continue
+        }
+
+        const puntaje = perfil.cantidadDeHabilidadesOpcionalesDe(persona)
+        const personaId = String(persona.id)
+
+        const personaRegistrada = personasPorId.get(personaId)
+
+        if (!personaRegistrada || puntaje > personaRegistrada.puntaje) {
+          personasPorId.set(personaId, {
+            persona,
+            puntaje,
+          })
+        }
       }
     }
+
+    return [...personasPorId.values()]
+      .toSorted((una, otra) => otra.puntaje - una.puntaje)
+      .map(({ persona }) => persona)
   }
-
-  return [...personasPorId.values()]
-    .toSorted((una, otra) => otra.puntaje - una.puntaje)
-    .map(({ persona }) => persona)
-}
 
   getAllConHabilidades = async (habilidades) => {
     return await this.personaColaboradoraRepository.findConTodasLasHabilidades(

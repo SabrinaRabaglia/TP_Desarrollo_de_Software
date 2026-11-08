@@ -158,14 +158,14 @@ describe("búsqueda de proyectos según habilidades", () => {
 
 describe("búsqueda de colaboradores según un perfil", () => {
   const colaboradores = (...perfiles) => {
-  const query = new URLSearchParams()
+    const query = new URLSearchParams()
 
-  perfiles.forEach((perfil) => {
-    query.append("perfiles", perfil.id)
-  })
+    perfiles.forEach((perfil) => {
+      query.append("perfiles", perfil.id)
+    })
 
-  return request("GET", `/personas-colaboradoras?${query}`)
-}
+    return request("GET", `/personas-colaboradoras?${query}`)
+  }
 
   test("devuelve las personas con todas las habilidades requeridas, sin sus medios de contacto", async () => {
     const encontradas = await colaboradores(proyectos.web.perfil)
@@ -199,21 +199,25 @@ describe("búsqueda de colaboradores según un perfil", () => {
   })
 
   test("responde 409 si el proyecto está cerrado", async () => {
-  await request(
-    "GET",
-    `/personas-colaboradoras?perfiles=${proyectos.cerrado.perfil.id}`,
-    undefined,
-    409,
-  )
-})
-
-  test("responde 404 si el perfil es de otro proyecto", async () => {
     await request(
       "GET",
-      `/proyectos/${proyectos.web.id}/perfiles/${proyectos.mapa.perfil.id}/colaboradores`,
+      `/personas-colaboradoras?perfiles=${proyectos.cerrado.perfil.id}`,
+      undefined,
+      409,
+    )
+  })
+
+  test("responde 404 si el perfil no existe", async () => {
+    await request(
+      "GET",
+      "/personas-colaboradoras?perfiles=64f1a2b3c4d5e6f7a8b9cfff",
       undefined,
       404,
     )
+  })
+
+  test("responde 400 si el id del perfil es inválido", async () => {
+    await request("GET", "/personas-colaboradoras?perfiles=abc", undefined, 400)
   })
 })
 

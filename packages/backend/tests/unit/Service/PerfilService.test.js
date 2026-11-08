@@ -71,8 +71,6 @@ describe("PerfilService", () => {
       proyectoService,
       proyectoRepository,
       habilidadService,
-      personaColaboradoraService,
-      colaboracionRepository,
     )
 
     const colectivo = (
@@ -199,7 +197,12 @@ describe("PerfilService", () => {
     })
   })
 
-  describe("buscarColaboradores", () => {
+  describe("búsqueda de colaboradores por perfiles", () => {
+    const buscarColaboradores = (...perfiles) =>
+      personaColaboradoraService.getAllByPerfiles(
+        perfiles.map((perfil) => perfil.id),
+      )
+
     const crearPersona = (nombreFantasia, habilidades) =>
       personaColaboradoraService.create({ nombreFantasia, habilidades })
 
@@ -216,9 +219,7 @@ describe("PerfilService", () => {
       await crearPersona("solo javascript", [habilidad1.id])
       await crearPersona("sin habilidades", [])
 
-      expect(await service.buscarColaboradores(proyecto.id, perfil.id)).toEqual(
-        [completa],
-      )
+      expect(await buscarColaboradores(perfil)).toEqual([completa])
     })
 
     test("tener solo habilidades opcionales no alcanza para aparecer", async () => {
@@ -226,9 +227,7 @@ describe("PerfilService", () => {
       const conRequerida = await crearPersona("con requerida", [habilidad1.id])
       await crearPersona("solo opcional", [habilidad2.id])
 
-      expect(await service.buscarColaboradores(proyecto.id, perfil.id)).toEqual(
-        [conRequerida],
-      )
+      expect(await buscarColaboradores(perfil)).toEqual([conRequerida])
     })
 
     test("ordena primero a quienes tienen más habilidades opcionales del perfil", async () => {
@@ -247,9 +246,7 @@ describe("PerfilService", () => {
       ])
       const una = await crearPersona("una", [habilidad1.id, habilidad3.id])
 
-      expect(await service.buscarColaboradores(proyecto.id, perfil.id)).toEqual(
-        [ambas, una, ninguna],
-      )
+      expect(await buscarColaboradores(perfil)).toEqual([ambas, una, ninguna])
     })
 
     test("lanza DomainRuleError si el proyecto está cerrado", async () => {
@@ -257,9 +254,7 @@ describe("PerfilService", () => {
       await crearPersona("con requerida", [habilidad1.id])
       await proyectoService.update(proyecto.id, { estado: "CERRADO" })
 
-      await expect(
-        service.buscarColaboradores(proyecto.id, perfil.id),
-      ).rejects.toThrow(DomainRuleError)
+      await expect(buscarColaboradores(perfil)).rejects.toThrow(DomainRuleError)
     })
 
     test("no sugiere a quienes ya están inscriptos en el proyecto", async () => {
@@ -277,17 +272,34 @@ describe("PerfilService", () => {
         proyecto: { id: otroProyecto.id },
       })
 
-      expect(await service.buscarColaboradores(proyecto.id, perfil.id)).toEqual(
-        [enOtroProyecto],
-      )
+      expect(await buscarColaboradores(perfil)).toEqual([enOtroProyecto])
     })
 
-    test("lanza EntityNotFound si el perfil es de otro proyecto", async () => {
-      const perfil = await service.create(otroProyecto.id, datos)
-
+    test("lanza EntityNotFound si el perfil no existe", async () => {
       await expect(
-        service.buscarColaboradores(proyecto.id, perfil.id),
+        personaColaboradoraService.getAllByPerfiles(["perfil-inexistente"]),
       ).rejects.toThrow(EntityNotFound)
+    })
+
+    test("con varios perfiles no repite personas y las ordena por su mejor puntaje", async () => {
+      const habilidad3 = await new HabilidadService(
+        new HabilidadRepository(),
+      ).create({ titulo: "SQL", codigo: "sql", descripcion: "Bases de datos" })
+      const perfil = await service.create(proyecto.id, datos)
+      const perfilConSql = await service.create(otroProyecto.id, {
+        ...datos,
+        habilidadesOpcionales: [habilidad3.id],
+      })
+      const soloJs = await crearPersona("solo javascript", [habilidad1.id])
+      const conSql = await crearPersona("con sql", [
+        habilidad1.id,
+        habilidad3.id,
+      ])
+
+      expect(await buscarColaboradores(perfil, perfilConSql)).toEqual([
+        conSql,
+        soloJs,
+      ])
     })
   })
 

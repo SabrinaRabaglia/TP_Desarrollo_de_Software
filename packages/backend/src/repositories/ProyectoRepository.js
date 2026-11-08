@@ -25,20 +25,9 @@ export default class ProyectoRepository {
   }
 
   async findProyectoYPerfilPorId(perfilId) {
-    const id = new mongoose.Types.ObjectId(perfilId)
-
-    const proyecto = await this.model.findOne({
-      "perfiles._id": id,
-    })
-
-    if (!proyecto) {
-      return { proyecto: null, perfil: null }
-    }
-
-    const perfil = proyecto.perfiles.id(id)
-
-    return { proyecto, perfil }
-}
+    const proyecto = await this.model.findOne({ "perfiles._id": perfilId })
+    return { proyecto, perfil: proyecto?.perfiles.id(perfilId) ?? null }
+  }
 
   async existePerfilConHabilidad(habilidadId) {
     return Boolean(
@@ -77,7 +66,7 @@ export default class ProyectoRepository {
   }
 
   async findByHitoId(hitoId) {
-  // Busca un proyecto que tenga un subdocumento hito con ese _id
-  return await this.model.findOne({ "hitos._id": hitoId });
-}
+    // Busca un proyecto que tenga un subdocumento hito con ese _id
+    return await this.model.findOne({ "hitos._id": hitoId })
+  }
 }

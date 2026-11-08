@@ -62,9 +62,7 @@ export default class PersonaColaboradoraController {
 
   getAll = async (req, res, next) => {
     try {
-       const perfiles = req.query.perfiles
-      ? [].concat(req.query.perfiles)
-      : null
+      const perfiles = req.query.perfiles ? [].concat(req.query.perfiles) : null
       const personas = perfiles
         ? await this.personaColaboradoraService.getAllByPerfiles(perfiles)
         : await this.personaColaboradoraService.getAll()
