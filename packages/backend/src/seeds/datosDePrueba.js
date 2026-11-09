@@ -1,4 +1,6 @@
+import { hashear } from "../auth/contrasenas.js"
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
+import { RolUsuario } from "../domain/enums/RolUsuario.js"
 import { ModalidadColaboracion } from "../domain/enums/ModalidadColaboracion.js"
 import { TipoCuenta } from "../domain/enums/TipoCuenta.js"
 import { TipoMedioContacto } from "../domain/enums/TipoMedioContacto.js"
@@ -12,6 +14,7 @@ import PaisModel from "../schemas/paisSchema.js"
 import PersonaColaboradoraModel from "../schemas/personaColaboradoraSchema.js"
 import ProvinciaModel from "../schemas/provinciaSchema.js"
 import ProyectoModel from "../schemas/proyectoSchema.js"
+import UsuarioModel from "../schemas/usuarioSchema.js"
 import { sembrar } from "./catalogos.js"
 
 const idsPor = async (model, campo) => {
@@ -20,6 +23,15 @@ const idsPor = async (model, campo) => {
     documentos.map((documento) => [documento[campo], documento._id]),
   )
 }
+
+const CONTRASENA_DE_PRUEBA = "secreto123"
+
+const usuario = async (email, rol, entidad) => ({
+  email,
+  hashContrasena: await hashear(CONTRASENA_DE_PRUEBA),
+  rol,
+  entidad,
+})
 
 export default async function sembrarDatosDePrueba() {
   const paises = await idsPor(PaisModel, "nombre")
@@ -307,5 +319,34 @@ export default async function sembrarDatosDePrueba() {
         proyecto: proyectos["Mapa de humedales"],
       },
     ],
+  )
+
+  await sembrar(
+    UsuarioModel,
+    ["email"],
+    await Promise.all([
+      usuario(
+        "huerta@colectivo.test",
+        RolUsuario.COLECTIVO,
+        colectivos["Huerta Comunitaria Sur"],
+      ),
+      usuario(
+        "codigoabierto@colectivo.test",
+        RolUsuario.COLECTIVO,
+        colectivos["Fundación Código Abierto"],
+      ),
+      usuario(
+        "litoral@colectivo.test",
+        RolUsuario.COLECTIVO,
+        colectivos["Asamblea Ambiental del Litoral"],
+      ),
+      ...["anag", "lucho_dev", "sol.datos", "anon123"].map((nombreFantasia) =>
+        usuario(
+          `${nombreFantasia}@persona.test`,
+          RolUsuario.PERSONA_COLABORADORA,
+          personas[nombreFantasia],
+        ),
+      ),
+    ]),
   )
 }

@@ -6,6 +6,7 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "seed": "node src/seeds/seed.js",
+    "token": "node src/scripts/token.js",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
     "test:unit": "cross-env NODE_OPTIONS=--experimental-vm-modules jest tests/unit",
     "format:backend": "prettier packages/backend --write",
