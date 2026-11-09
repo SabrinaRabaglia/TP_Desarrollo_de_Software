@@ -26,6 +26,7 @@ enum TipoMedioContacto{
     EMAIL
     WHATSAPP
     SMS
+    TELEGRAM
 }
 class Colectivo {
     nombre: String

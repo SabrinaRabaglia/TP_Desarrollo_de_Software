@@ -97,6 +97,11 @@ describe("NotificadorExterno", () => {
     expect(log).toHaveBeenCalledWith(
       "[SMS] Notificación a +54 11 1234-5678: Hola",
     )
-    expect(Object.keys(canalesSimulados)).toEqual(["EMAIL", "WHATSAPP", "SMS"])
+    expect(Object.keys(canalesSimulados)).toEqual([
+      "EMAIL",
+      "WHATSAPP",
+      "SMS",
+      "TELEGRAM",
+    ])
   })
 })

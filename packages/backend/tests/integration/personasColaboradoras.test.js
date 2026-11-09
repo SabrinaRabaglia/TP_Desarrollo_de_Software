@@ -112,4 +112,28 @@ describe("medios de contacto de las personas colaboradoras", () => {
     )
     expect(await mediosGuardados(persona.id)).toEqual(mediosDeContacto)
   })
+
+  test("un medio TELEGRAM guarda el chat id y rechaza un usuario con arroba", async () => {
+    const telegram = [{ tipo: "TELEGRAM", valor: "987654321" }]
+    const persona = await request(
+      "POST",
+      "/personas-colaboradoras",
+      { nombreFantasia: "tele", mediosDeContacto: telegram },
+      201,
+    )
+
+    expect(persona.mediosDeContacto).toEqual([
+      { id: expect.any(String), tipo: "TELEGRAM" },
+    ])
+    expect(await mediosGuardados(persona.id)).toEqual(telegram)
+    await request(
+      "POST",
+      "/personas-colaboradoras",
+      {
+        nombreFantasia: "tele2",
+        mediosDeContacto: [{ tipo: "TELEGRAM", valor: "@usuario" }],
+      },
+      422,
+    )
+  })
 })

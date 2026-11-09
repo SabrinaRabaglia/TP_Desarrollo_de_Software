@@ -1663,7 +1663,8 @@
       },
       "TipoMedioContacto": {
         "type": "string",
-        "enum": ["EMAIL", "WHATSAPP", "SMS"]
+        "enum": ["EMAIL", "WHATSAPP", "SMS", "TELEGRAM"],
+        "description": "Para TELEGRAM el valor es el chat id numérico que la persona obtiene al escribirle al bot."
       },
       "UnidadCompromiso": {
         "type": "string",

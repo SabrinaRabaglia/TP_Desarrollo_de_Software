@@ -63,6 +63,36 @@ MONGODB_DB_NAME=codigo-a-voluntad
 - **`MONGODB_URI`**: URI de conexión a MongoDB. El `authSource=admin` va dentro de la URI porque el usuario `root` del contenedor vive en la base `admin`.
 - **`MONGODB_DB_NAME`**: Nombre de la base. Mongo la crea sola con el primer documento.
 
+#### Notificaciones por medios externos
+
+Cuando un colectivo contacta a una persona, la notificación interna se replica por sus medios de contacto. Email y Telegram se envían de verdad si están configurados; sin configuración, y también WhatsApp y SMS, el envío se simula con un `console.log` y el servidor avisa al arrancar cuáles medios quedaron simulados.
+
+```
+# Email por SMTP (sirve cualquier proveedor: Gmail con contraseña de aplicación, Brevo, Mailtrap)
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=avisos@example.com
+SMTP_PASS=la-contraseña
+EMAIL_FROM=avisos@example.com
+
+# Telegram por la Bot API. El token lo da @BotFather.
+TELEGRAM_BOT_TOKEN=123456:ABC-DEF
+```
+
+- **`SMTP_HOST`**, **`SMTP_PORT`**, **`SMTP_USER`**, **`SMTP_PASS`**: el servidor SMTP. El puerto 465 usa TLS implícito; en cualquier otro, 587 por defecto, se exige STARTTLS y el envío falla si el servidor no lo ofrece. Sin `SMTP_USER` se conecta sin autenticación; con `SMTP_USER` y sin `SMTP_PASS` el servidor no arranca. Cada etapa de la conexión tiene un timeout de 10 a 15 segundos, igual que el pedido a Telegram.
+- **`EMAIL_FROM`**: remitente de los correos. Si falta, se usa `SMTP_USER`.
+- **`TELEGRAM_BOT_TOKEN`**: token del bot. Cada persona carga como medio de contacto `TELEGRAM` el chat id numérico que obtiene al escribirle al bot, porque la Bot API solo puede iniciar conversaciones con quienes ya le hablaron.
+
+En producción (Azure Container Apps) se configuran una sola vez y los deploys posteriores las conservan:
+
+```bash
+az containerapp secret set --name ca-ddso-backend --resource-group rg-ddso-backend --secrets smtp-pass=<contraseña> telegram-bot-token=<token>
+```
+
+```bash
+az containerapp update --name ca-ddso-backend --resource-group rg-ddso-backend --set-env-vars SMTP_HOST=smtp.example.com SMTP_PORT=587 SMTP_USER=avisos@example.com EMAIL_FROM=avisos@example.com SMTP_PASS=secretref:smtp-pass TELEGRAM_BOT_TOKEN=secretref:telegram-bot-token
+```
+
 ### 3\. Levantar MongoDB
 
 El backend necesita MongoDB para arrancar. Con Docker:

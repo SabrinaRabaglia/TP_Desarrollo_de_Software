@@ -26,6 +26,7 @@ import NotificacionService from "./services/NotificacionService.js"
 import HitoService from "./services/HitoService.js"
 
 import NotificadorExterno from "./services/NotificadorExterno.js"
+import { crearCanales } from "./canales/canales.js"
 import PerfilService from "./services/PerfilService.js"
 import PersonaColaboradoraService from "./services/PersonaColaboradoraService.js"
 import ProyectoService from "./services/ProyectoService.js"
@@ -40,6 +41,9 @@ const notificacionRepository = new NotificacionRepository()
 const paisRepository = new PaisRepository()
 const personaColaboradoraRepository = new PersonaColaboradoraRepository()
 const provinciaRepository = new ProvinciaRepository()
+const { canales, simulados } = crearCanales(process.env)
+export const mediosSimulados = simulados
+
 const proyectoRepository = new ProyectoRepository()
 const tipoColectivoRepository = new TipoColectivoRepository()
 
@@ -82,7 +86,7 @@ const notificacionService = new NotificacionService(
   notificacionRepository,
   perfilService,
   personaColaboradoraService,
-  new NotificadorExterno(),
+  new NotificadorExterno(canales),
 )
 const hitoService = new HitoService(proyectoService, proyectoRepository)
 
