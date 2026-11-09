@@ -15,7 +15,18 @@ export default defineConfig([
   },
   {
     files: ["packages/frontend/src/**/*.{js,jsx,mjs,cjs}"],
-    ...pluginReact.configs.flat.recommended,
+    extends: [
+      pluginReact.configs.flat.recommended,
+      pluginReact.configs.flat["jsx-runtime"],
+    ],
+    languageOptions: { globals: globals.browser },
     settings: { react: { version: "detect" } },
+    rules: {
+      "react/prop-types": "off",
+    },
+  },
+  {
+    files: ["packages/frontend/src/**/*.test.{js,jsx}"],
+    languageOptions: { globals: globals.jest },
   },
 ])
