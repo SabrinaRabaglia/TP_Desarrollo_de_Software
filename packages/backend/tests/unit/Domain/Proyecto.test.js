@@ -172,50 +172,78 @@ describe("Proyecto", () => {
 
     const crearProyectoConPerfil = () => {
       const proyecto = new Proyecto("Mapa", "Mapa de humedales", colectivo)
-      const perfil = proyecto.agregarPerfil(crearPerfil("Tester"))
+      const perfil = crearPerfil("Tester")
       perfil.id = "perfil-1"
+      proyecto.perfiles.push(perfil)
       return { proyecto, perfil }
     }
 
-    test("agregar un perfil lo suma al proyecto y lo devuelve", () => {
+    test("busca un perfil por id", () => {
       const { proyecto, perfil } = crearProyectoConPerfil()
 
-      expect(proyecto.perfiles).toEqual([perfil])
       expect(proyecto.buscarPerfil("perfil-1")).toBe(perfil)
       expect(proyecto.buscarPerfil("otro")).toBeUndefined()
     })
 
-    test("actualizar un perfil delega en el perfil", () => {
-      const { proyecto, perfil } = crearProyectoConPerfil()
-
-      proyecto.actualizarPerfil(perfil, { ...crearPerfil("Analista") })
-
-      expect(perfil.descripcion).toBe("Analista")
-    })
-
-    test("eliminar un perfil conserva los demás", () => {
+    test("un proyecto publicado admite modificar sus perfiles", () => {
       const { proyecto } = crearProyectoConPerfil()
-      const otro = proyecto.agregarPerfil(crearPerfil("Analista"))
-      otro.id = "perfil-2"
 
-      proyecto.eliminarPerfil("perfil-1")
-
-      expect(proyecto.perfiles).toEqual([otro])
+      expect(() => proyecto.assertPuedeModificarPerfiles()).not.toThrow()
     })
 
-    test("un proyecto cerrado no admite agregar, actualizar ni eliminar perfiles", () => {
-      const { proyecto, perfil } = crearProyectoConPerfil()
+    test("un proyecto cerrado no admite modificar sus perfiles", () => {
+      const { proyecto } = crearProyectoConPerfil()
       proyecto.cerrar()
 
-      expect(() => proyecto.agregarPerfil(crearPerfil("Analista"))).toThrow(
+      expect(() => proyecto.assertPuedeModificarPerfiles()).toThrow(
         DomainRuleError,
       )
+    })
+  })
+
+  describe("hitos", () => {
+    const proyecto = new Proyecto(
+      "Mapa",
+      "Mapa de humedales",
+      colectivo,
+      EstadoProyecto.PUBLICADO,
+      new Date("2026-10-01"),
+    )
+
+    test("admite un hito desde la fecha de alta en adelante", () => {
       expect(() =>
-        proyecto.actualizarPerfil(perfil, { ...crearPerfil("Analista") }),
-      ).toThrow(DomainRuleError)
-      expect(() => proyecto.eliminarPerfil("perfil-1")).toThrow(DomainRuleError)
-      expect(proyecto.perfiles).toEqual([perfil])
-      expect(perfil.descripcion).toBe("Tester")
+        proyecto.assertAdmiteHito({ fecha: new Date("2026-10-01") }),
+      ).not.toThrow()
+      expect(() =>
+        proyecto.assertAdmiteHito({ fecha: new Date("2026-10-20") }),
+      ).not.toThrow()
+    })
+
+    test("rechaza un hito anterior a la fecha de alta", () => {
+      expect(() =>
+        proyecto.assertAdmiteHito({ fecha: new Date("2026-09-30") }),
+      ).toThrow(DomainValidationError)
+    })
+
+    test("compara por día: admite un hito del mismo día aunque el alta tenga hora", () => {
+      const conHora = new Proyecto(
+        "Mapa",
+        "Mapa de humedales",
+        colectivo,
+        EstadoProyecto.PUBLICADO,
+        new Date("2026-10-01T15:00:00.000Z"),
+      )
+
+      expect(() =>
+        conHora.assertAdmiteHito({ fecha: new Date("2026-10-01") }),
+      ).not.toThrow()
+      expect(() =>
+        conHora.assertAdmiteHito({ fecha: new Date("2026-09-30T23:59:59Z") }),
+      ).toThrow(DomainValidationError)
+    })
+
+    test("unos cambios sin fecha no tienen nada que comprobar", () => {
+      expect(() => proyecto.assertAdmiteHito({})).not.toThrow()
     })
   })
 

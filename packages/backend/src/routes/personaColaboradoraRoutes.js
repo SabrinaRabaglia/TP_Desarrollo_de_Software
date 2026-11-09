@@ -1,6 +1,9 @@
 import { Router } from "express"
 import validar from "../middlewares/validar.js"
-import { personaColaboradoraSchema } from "../validations/personaColaboradora.js"
+import {
+  busquedaPersonasSchema,
+  personaColaboradoraSchema,
+} from "../validations/personaColaboradora.js"
 import validateId, { validateIdParam } from "../middlewares/validateId.js"
 import { personaColaboradoraController } from "../dependencias.js"
 
@@ -11,7 +14,11 @@ routes.post(
   validar(personaColaboradoraSchema),
   personaColaboradoraController.create,
 )
-routes.get("/personas-colaboradoras", personaColaboradoraController.getAll)
+routes.get(
+  "/personas-colaboradoras",
+  validar(busquedaPersonasSchema, "query"),
+  personaColaboradoraController.getAll,
+)
 routes.get(
   "/personas-colaboradoras/:id",
   validateId,

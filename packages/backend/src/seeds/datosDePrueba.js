@@ -2,6 +2,7 @@ import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
 import { ModalidadColaboracion } from "../domain/enums/ModalidadColaboracion.js"
 import { TipoCuenta } from "../domain/enums/TipoCuenta.js"
 import { TipoMedioContacto } from "../domain/enums/TipoMedioContacto.js"
+import { EstadoEnvio } from "../domain/enums/EstadoEnvio.js"
 import { UnidadCompromiso } from "../domain/enums/UnidadCompromiso.js"
 import ColaboracionModel from "../schemas/colaboracionSchema.js"
 import ColectivoModel from "../schemas/colectivoSchema.js"
@@ -225,9 +226,25 @@ export default async function sembrarDatosDePrueba() {
         colectivo: colectivos["Huerta Comunitaria Sur"],
         personaColaboradora: personas["anag"],
         perfil: sitioWeb.perfiles[0]._id,
-        mediosExternosUtilizados: [
-          { tipo: TipoMedioContacto.EMAIL, valor: "ana.gomez@example.com" },
-          { tipo: TipoMedioContacto.WHATSAPP, valor: "+54 9 11 2345-6789" },
+        envios: [
+          {
+            medio: {
+              tipo: TipoMedioContacto.EMAIL,
+              valor: "ana.gomez@example.com",
+            },
+            estado: EstadoEnvio.ENVIADO,
+            intentos: 1,
+            enviadoEn: new Date("2026-09-10T00:00:05.000Z"),
+          },
+          {
+            medio: {
+              tipo: TipoMedioContacto.WHATSAPP,
+              valor: "+54 9 11 2345-6789",
+            },
+            estado: EstadoEnvio.ENVIADO,
+            intentos: 1,
+            enviadoEn: new Date("2026-09-10T00:00:05.000Z"),
+          },
         ],
       },
     ],

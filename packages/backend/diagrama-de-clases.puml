@@ -26,6 +26,7 @@ enum TipoMedioContacto{
     EMAIL
     WHATSAPP
     SMS
+    TELEGRAM
 }
 class Colectivo {
     nombre: String
@@ -49,10 +50,7 @@ class Proyecto {
     colaboraciones: Colaboracion[]
 
     cerrar():void
-    agregarPerfil(perfil: Perfil): Perfil
     buscarPerfil(perfilId: String): Perfil
-    actualizarPerfil(perfil: Perfil, datos): void
-    eliminarPerfil(perfilId: String): void
     contactar(perfil: Perfil, personaColaboradora: PersonaColaboradora, contenido: String): Notificacion
     agregarColaboracion(colaboracion: Colaboracion): void
     poseeHabilidadNecesaria(personaColaboradora: PersonaColaboradora): boolean
@@ -91,15 +89,36 @@ class PersonaColaboradora {
     assertAceptaMensajeriaInterna(): void
 }
 
+enum EstadoEnvio {
+    PENDIENTE
+    ENVIADO
+    FALLIDO
+}
+
+class Envio {
+    medio: MedioDeContacto
+    estado: EstadoEnvio
+    intentos: int
+    ultimoError: String
+    enviadoEn: Date
+}
+
 class Notificacion {
     fecha: Date
     contenido: String
     colectivo: Colectivo
     personaColaboradora: PersonaColaboradora
     perfil: Perfil
-    mediosExternosUtilizados: MedioDeContacto[]
+    envios: Envio[]
+    procesandoDesde: Date
+    reintentarDesde: Date
 
-    registrarMediosExternos(medios: MedioDeContacto[]): void
+    pendienteDeEnvio(): boolean
+    mediosExternosUtilizados(): TipoMedioContacto[]
+    enviosPendientes(): Envio[]
+    registrarEnvioExitoso(envio: Envio, fecha: Date): void
+    registrarEnvioFallido(envio: Envio, error: String, maximoDeIntentos: int): void
+    liberar(reintentarDesde: Date): void
 }
 
 class Colaboracion {
@@ -154,7 +173,9 @@ PersonaColaboradora --> Notificacion
 Notificacion --> Colectivo
 Notificacion --> PersonaColaboradora
 Notificacion --> Perfil
-Notificacion --> MedioDeContacto
+Notificacion *-- Envio
+Envio --> MedioDeContacto
+Envio --> EstadoEnvio
 Perfil --> UnidadCompromiso
 Perfil --> ModalidadColaboracion
 Proyecto --> EstadoProyecto 

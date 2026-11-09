@@ -1,5 +1,3 @@
-import { personaColaboradoraDTO } from "../dtos/personaColaboradoraDTO.js"
-
 export default class PersonaColaboradoraController {
   constructor(personaColaboradoraService) {
     this.personaColaboradoraService = personaColaboradoraService
@@ -7,10 +5,9 @@ export default class PersonaColaboradoraController {
 
   create = async (req, res, next) => {
     try {
-      const personaColaboradora = await this.personaColaboradoraService.create(
-        req.body,
-      )
-      res.status(201).json(personaColaboradoraDTO(personaColaboradora))
+      res
+        .status(201)
+        .json(await this.personaColaboradoraService.create(req.body))
     } catch (error) {
       next(error)
     }
@@ -18,11 +15,11 @@ export default class PersonaColaboradoraController {
 
   update = async (req, res, next) => {
     try {
-      const personaColaboradora = await this.personaColaboradoraService.update(
-        req.params.id,
-        req.body,
-      )
-      res.status(200).json(personaColaboradoraDTO(personaColaboradora))
+      res
+        .status(200)
+        .json(
+          await this.personaColaboradoraService.update(req.params.id, req.body),
+        )
     } catch (error) {
       next(error)
     }
@@ -51,10 +48,9 @@ export default class PersonaColaboradoraController {
 
   getById = async (req, res, next) => {
     try {
-      const personaColaboradora = await this.personaColaboradoraService.getById(
-        req.params.id,
-      )
-      res.status(200).json(personaColaboradoraDTO(personaColaboradora))
+      res
+        .status(200)
+        .json(await this.personaColaboradoraService.getById(req.params.id))
     } catch (error) {
       next(error)
     }
@@ -62,11 +58,11 @@ export default class PersonaColaboradoraController {
 
   getAll = async (req, res, next) => {
     try {
-      const perfiles = req.query.perfiles ? [].concat(req.query.perfiles) : null
+      const { perfiles } = req.query
       const personas = perfiles
         ? await this.personaColaboradoraService.getAllByPerfiles(perfiles)
         : await this.personaColaboradoraService.getAll()
-      res.status(200).json(personas.map(personaColaboradoraDTO))
+      res.status(200).json(personas)
     } catch (error) {
       next(error)
     }

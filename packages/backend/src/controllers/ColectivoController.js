@@ -1,5 +1,3 @@
-import { colectivoDTO } from "../dtos/colectivoDTO.js"
-
 export default class ColectivoController {
   constructor(colectivoService) {
     this.colectivoService = colectivoService
@@ -7,48 +5,43 @@ export default class ColectivoController {
 
   getAll = async (req, res, next) => {
     try {
-      res
-        .status(200)
-        .json((await this.colectivoService.getAll()).map(colectivoDTO))
+      res.status(200).json(await this.colectivoService.getAll())
     } catch (error) {
       next(error)
     }
   }
+
   getById = async (req, res, next) => {
-    const { id } = req.params
     try {
-      res
-        .status(200)
-        .json(colectivoDTO(await this.colectivoService.getById(id)))
+      res.status(200).json(await this.colectivoService.getById(req.params.id))
     } catch (error) {
       next(error)
     }
   }
+
   create = async (req, res, next) => {
     try {
-      const creado = await this.colectivoService.create(req.body)
-      res.status(201).json(colectivoDTO(creado))
+      res.status(201).json(await this.colectivoService.create(req.body))
     } catch (error) {
       next(error)
     }
   }
+
   update = async (req, res, next) => {
     try {
-      const id = req.params.id
-      const actualizado = await this.colectivoService.update(id, req.body)
-      res.status(200).json(colectivoDTO(actualizado))
+      res
+        .status(200)
+        .json(await this.colectivoService.update(req.params.id, req.body))
     } catch (error) {
       next(error)
     }
   }
+
   patch = async (req, res, next) => {
     try {
-      const { id } = req.params
-      const colectivoActualizado = await this.colectivoService.patch(
-        id,
-        req.body,
-      )
-      res.status(200).json(colectivoDTO(colectivoActualizado))
+      res
+        .status(200)
+        .json(await this.colectivoService.patch(req.params.id, req.body))
     } catch (error) {
       next(error)
     }
@@ -56,8 +49,7 @@ export default class ColectivoController {
 
   delete = async (req, res, next) => {
     try {
-      const { id } = req.params
-      await this.colectivoService.delete(id)
+      await this.colectivoService.delete(req.params.id)
       res.status(204).send()
     } catch (error) {
       next(error)

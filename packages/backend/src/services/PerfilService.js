@@ -1,10 +1,5 @@
 import Perfil from "../domain/Perfil.js"
-import {
-  ConcurrentModification,
-  EntityNotFound,
-} from "../errors/ApplicationErrors.js"
-
-const MAXIMO_DE_INTENTOS = 3
+import { EntityNotFound } from "../errors/ApplicationErrors.js"
 
 export default class PerfilService {
   constructor(proyectoService, proyectoRepository, habilidadService) {
@@ -31,48 +26,48 @@ export default class PerfilService {
     ),
   })
 
-  // Los perfiles viven dentro del documento del proyecto: si otro pedido lo
-  // guarda entre nuestra lectura y nuestro guardado, se vuelve a leer y aplicar.
-  modificarProyecto = async (proyectoId, modificacion) => {
-    for (let intento = 1; ; intento++) {
-      try {
-        const proyecto = await this.proyectoService.getById(proyectoId)
-        const resultado = await modificacion(proyecto)
-        await this.proyectoRepository.save(proyecto)
-        return resultado
-      } catch (error) {
-        if (
-          !(error instanceof ConcurrentModification) ||
-          intento === MAXIMO_DE_INTENTOS
-        ) {
-          throw error
-        }
-      }
+  armarPerfil = async (datos) =>
+    new Perfil(await this.resolverHabilidades(datos))
+
+  rechazar = async (proyectoId, perfilId) => {
+    const proyecto = await this.proyectoService.getById(proyectoId)
+    proyecto.assertPuedeModificarPerfiles()
+    if (perfilId !== undefined) {
+      this.buscarPerfil(proyecto, perfilId)
     }
   }
 
   create = async (proyectoId, datos) => {
-    const perfil = await this.modificarProyecto(proyectoId, async (proyecto) =>
-      proyecto.agregarPerfil(new Perfil(await this.resolverHabilidades(datos))),
+    const perfil = await this.proyectoRepository.agregarPerfil(
+      proyectoId,
+      await this.armarPerfil(datos),
     )
-    return await this.getById(proyectoId, perfil.id)
+    if (!perfil) {
+      await this.rechazar(proyectoId)
+    }
+    return perfil
   }
 
   update = async (proyectoId, perfilId, datos) => {
-    await this.modificarProyecto(proyectoId, async (proyecto) =>
-      proyecto.actualizarPerfil(
-        this.buscarPerfil(proyecto, perfilId),
-        await this.resolverHabilidades(datos),
-      ),
+    const perfil = await this.proyectoRepository.actualizarPerfil(
+      proyectoId,
+      perfilId,
+      await this.armarPerfil(datos),
     )
-    return await this.getById(proyectoId, perfilId)
+    if (!perfil) {
+      await this.rechazar(proyectoId, perfilId)
+    }
+    return perfil
   }
 
   delete = async (proyectoId, perfilId) => {
-    await this.modificarProyecto(proyectoId, async (proyecto) => {
-      this.buscarPerfil(proyecto, perfilId)
-      proyecto.eliminarPerfil(perfilId)
-    })
+    const eliminado = await this.proyectoRepository.eliminarPerfil(
+      proyectoId,
+      perfilId,
+    )
+    if (!eliminado) {
+      await this.rechazar(proyectoId, perfilId)
+    }
   }
 
   buscarEnProyecto = async (proyectoId, perfilId) => {

@@ -1,58 +1,57 @@
-import { EntityNotFound } from "../errors/ApplicationErrors.js";
-import { Hito } from "../domain/Hito.js";
+import {
+  ConcurrentModification,
+  EntityNotFound,
+} from "../errors/ApplicationErrors.js"
+import { Hito } from "../domain/Hito.js"
 
 export default class HitoService {
-  constructor(proyectoService) {
-    this.proyectoService = proyectoService; // Inyectamos el servicio de proyectos
+  constructor(proyectoService, proyectoRepository) {
+    this.proyectoService = proyectoService
+    this.proyectoRepository = proyectoRepository
   }
 
-  async getByProyectoId(proyectoId) {
-    const proyecto = await this.proyectoService.getById(proyectoId);
-    return proyecto.hitos || [];
+  getByProyectoId = async (proyectoId) => {
+    const proyecto = await this.proyectoService.getById(proyectoId)
+    return proyecto.hitos
   }
 
-  async create(proyectoId, hitoDto) {
-    const proyecto = await this.proyectoService.getById(proyectoId);
-    
-    
-    const nuevoHito = new Hito(
-      hitoDto.fecha,
-      hitoDto.porcentajeConcrecion,
-      hitoDto.descripcion
-    );
-
-    // Lo agregamos al array embebido del proyecto
-    proyecto.hitos.push(nuevoHito);
-
-    // Guardamos el proyecto completo en la base de datos
-    await this.proyectoService.update(proyectoId, { hitos: proyecto.hitos });
-    
-    // Devolvemos el hito recién creado (que Mongoose ya le asignó su _id/id)
-    return proyecto.hitos[proyecto.hitos.length - 1];
+  rechazar = (proyecto, hito) => {
+    proyecto.assertAdmiteHito(hito)
+    throw new ConcurrentModification(
+      "El proyecto cambió mientras se procesaba el hito. Volvé a intentar.",
+    )
   }
 
-  async update(hitoId, hitoActualizadoDto) {
-    
-    const proyecto = await this.proyectoService.findByHitoId(hitoId); 
-    if (!proyecto) throw new EntityNotFound("Hito no encontrado");
-
-    const hito = proyecto.hitos.id(hitoId); 
-
-    if (hitoActualizadoDto.fecha) hito.fecha = new Date(hitoActualizadoDto.fecha);
-    if (hitoActualizadoDto.porcentajeConcrecion !== undefined) {
-      hito.porcentajeConcrecion = hitoActualizadoDto.porcentajeConcrecion;
+  create = async (proyectoId, datos) => {
+    const hito = new Hito(
+      datos.fecha,
+      datos.porcentajeConcrecion,
+      datos.descripcion,
+    )
+    const creado = await this.proyectoRepository.agregarHito(proyectoId, hito)
+    if (!creado) {
+      this.rechazar(await this.proyectoService.getById(proyectoId), hito)
     }
-    if (hitoActualizadoDto.descripcion) hito.descripcion = hitoActualizadoDto.descripcion;
-
-    await this.proyectoService.update(proyecto.id, { hitos: proyecto.hitos });
-    return hito;
+    return creado
   }
 
-  async delete(hitoId) {
-    const proyecto = await this.proyectoService.findByHitoId(hitoId);
-    if (!proyecto) throw new EntityNotFound("Hito no encontrado");
+  update = async (hitoId, cambios) => {
+    Hito.validarCambios(cambios)
+    const hito = await this.proyectoRepository.actualizarHito(hitoId, cambios)
+    if (!hito) {
+      const proyecto = await this.proyectoRepository.findByHitoId(hitoId)
+      if (!proyecto) {
+        throw new EntityNotFound("Hito no encontrado")
+      }
+      this.rechazar(proyecto, cambios)
+    }
+    return hito
+  }
 
-    proyecto.hitos.pull(hitoId); // Método nativo de Mongoose para remover subdocs
-    await this.proyectoService.update(proyecto.id, { hitos: proyecto.hitos });
+  delete = async (hitoId) => {
+    const eliminado = await this.proyectoRepository.eliminarHito(hitoId)
+    if (!eliminado) {
+      throw new EntityNotFound("Hito no encontrado")
+    }
   }
 }

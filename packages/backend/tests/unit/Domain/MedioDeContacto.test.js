@@ -59,4 +59,20 @@ describe("MedioDeContacto", () => {
       )
     },
   )
+
+  test.each(["123456789", "-1001234567890"])(
+    "acepta el chat id de Telegram %s",
+    (chatId) => {
+      expect(new MedioDeContacto("TELEGRAM", chatId).valor).toBe(chatId)
+    },
+  )
+
+  test.each(["@usuario", "12 34", "abc", ""])(
+    "rechaza el valor de Telegram %s",
+    (valor) => {
+      expect(() => new MedioDeContacto("TELEGRAM", valor)).toThrow(
+        DomainValidationError,
+      )
+    },
+  )
 })

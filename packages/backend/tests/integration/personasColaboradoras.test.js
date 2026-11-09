@@ -26,7 +26,7 @@ const request = async (method, path, body, status = 200) => {
     body: body === undefined ? undefined : JSON.stringify(body),
   })
   expect(response.status).toBe(status)
-  return response.json()
+  return response.status === 204 ? null : response.json()
 }
 
 const mediosGuardados = async (id) =>
@@ -111,5 +111,68 @@ describe("medios de contacto de las personas colaboradoras", () => {
       422,
     )
     expect(await mediosGuardados(persona.id)).toEqual(mediosDeContacto)
+  })
+
+  test("se puede borrar un medio por su id, también dos a la vez, y los que no existen responden 404", async () => {
+    const persona = await request(
+      "POST",
+      "/personas-colaboradoras",
+      {
+        nombreFantasia: "mar",
+        mediosDeContacto: [
+          ...mediosDeContacto,
+          { tipo: "SMS", valor: "+54 9 341 456-7890" },
+        ],
+      },
+      201,
+    )
+    const [email, whatsapp, sms] = persona.mediosDeContacto
+    const medios = `/personas-colaboradoras/${persona.id}/medios-de-contacto`
+
+    await request("DELETE", `${medios}/${email.id}`, undefined, 204)
+    expect(
+      (await request("GET", `/personas-colaboradoras/${persona.id}`))
+        .mediosDeContacto,
+    ).toEqual([whatsapp, sms])
+
+    const respuestas = await Promise.all([
+      fetch(`${base}${medios}/${whatsapp.id}`, { method: "DELETE" }),
+      fetch(`${base}${medios}/${sms.id}`, { method: "DELETE" }),
+    ])
+    expect(respuestas.map((r) => r.status)).toEqual([204, 204])
+    expect(await mediosGuardados(persona.id)).toEqual([])
+
+    await request("DELETE", `${medios}/${email.id}`, undefined, 404)
+    await request(
+      "DELETE",
+      `/personas-colaboradoras/64f1a2b3c4d5e6f7a8b9c0ff/medios-de-contacto/${email.id}`,
+      undefined,
+      404,
+    )
+    await request("DELETE", `${medios}/abc`, undefined, 400)
+  })
+
+  test("un medio TELEGRAM guarda el chat id y rechaza un usuario con arroba", async () => {
+    const telegram = [{ tipo: "TELEGRAM", valor: "987654321" }]
+    const persona = await request(
+      "POST",
+      "/personas-colaboradoras",
+      { nombreFantasia: "tele", mediosDeContacto: telegram },
+      201,
+    )
+
+    expect(persona.mediosDeContacto).toEqual([
+      { id: expect.any(String), tipo: "TELEGRAM" },
+    ])
+    expect(await mediosGuardados(persona.id)).toEqual(telegram)
+    await request(
+      "POST",
+      "/personas-colaboradoras",
+      {
+        nombreFantasia: "tele2",
+        mediosDeContacto: [{ tipo: "TELEGRAM", valor: "@usuario" }],
+      },
+      422,
+    )
   })
 })

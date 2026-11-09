@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto"
 export default class NotificacionRepository {
   constructor() {
     this.notificaciones = []
+    this.reclamos = new Map()
   }
 
   async findByPersonaColaboradora(personaColaboradoraId) {
@@ -21,9 +22,38 @@ export default class NotificacionRepository {
     )
   }
 
+  async reclamarPendiente(ahora, bloqueoVencidoAntesDe) {
+    const notificacion = this.notificaciones
+      .toSorted((a, b) => a.fecha - b.fecha)
+      .find(
+        (candidata) =>
+          candidata.pendienteDeEnvio &&
+          (candidata.procesandoDesde === null ||
+            candidata.procesandoDesde < bloqueoVencidoAntesDe) &&
+          (candidata.reintentarDesde === null ||
+            candidata.reintentarDesde <= ahora),
+      )
+    if (!notificacion) {
+      return null
+    }
+    notificacion.procesandoDesde = ahora
+    this.reclamos.set(notificacion.id, ahora)
+    return notificacion
+  }
+
+  async liberar(notificacion, reclamadaEn) {
+    if (this.reclamos.get(notificacion.id) !== reclamadaEn) {
+      return false
+    }
+    this.reclamos.delete(notificacion.id)
+    return true
+  }
+
   async save(notificacion) {
     notificacion.id ??= randomUUID()
-    this.notificaciones.push(notificacion)
+    if (!this.notificaciones.includes(notificacion)) {
+      this.notificaciones.push(notificacion)
+    }
     return notificacion
   }
 }

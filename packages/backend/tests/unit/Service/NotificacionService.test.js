@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, jest, test } from "@jest/globals"
 import NotificacionService from "../../../src/services/NotificacionService.js"
-import NotificadorExterno from "../../../src/services/NotificadorExterno.js"
 import PerfilService from "../../../src/services/PerfilService.js"
 import ProyectoService from "../../../src/services/ProyectoService.js"
 import ColectivoService from "../../../src/services/ColectivoService.js"
@@ -29,7 +28,7 @@ import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColabo
 describe("NotificacionService", () => {
   let service
   let notificacionRepository
-  let canales
+  let envios
   let proyectoService
   let personaColaboradoraService
   let colectivo
@@ -72,26 +71,20 @@ describe("NotificacionService", () => {
       proyectoRepository,
       habilidadService,
     )
-    canales = {
-      EMAIL: { enviar: jest.fn(async () => {}) },
-      WHATSAPP: { enviar: jest.fn(async () => {}) },
-      SMS: { enviar: jest.fn(async () => {}) },
-    }
+    envios = { despertar: jest.fn() }
     notificacionRepository = new NotificacionRepository()
     service = new NotificacionService(
       notificacionRepository,
       perfilService,
       personaColaboradoraService,
-      new NotificadorExterno(canales),
+      envios,
     )
 
-    colectivo = (
-      await colectivoService.create({
-        nombre: "Huerta Comunitaria Sur",
-        descripcion: "Huertas urbanas",
-        tipo: "Asociación barrial",
-      })
-    ).colectivo
+    colectivo = await colectivoService.create({
+      nombre: "Huerta Comunitaria Sur",
+      descripcion: "Huertas urbanas",
+      tipo: "Asociación barrial",
+    })
     proyecto = await proyectoService.create({
       titulo: "Sitio web de la huerta",
       descripcion: "Publicar el calendario de talleres",
@@ -124,38 +117,21 @@ describe("NotificacionService", () => {
     service.create(proyecto.id, perfil.id, { personaColaboradora, contenido })
 
   describe("create", () => {
-    test("guarda la notificación del colectivo del proyecto y la replica por los medios de contacto", async () => {
+    test("guarda la notificación con un envío pendiente por cada medio de contacto y despierta al proceso de envío", async () => {
       const notificacion = await contactar(ana.id)
 
       expect(notificacion.contenido).toBe("Hola")
       expect(notificacion.colectivo).toBe(colectivo.id)
       expect(notificacion.personaColaboradora).toBe(ana)
       expect(notificacion.perfil).toBe(perfil)
-      expect(notificacion.mediosExternosUtilizados).toEqual(
-        ana.mediosDeContacto,
-      )
-      expect(canales.EMAIL.enviar).toHaveBeenCalledWith(
-        "ana@example.com",
-        "Hola",
-      )
-      expect(canales.SMS.enviar).toHaveBeenCalledWith(
-        "+54 9 11 2345-6789",
-        "Hola",
-      )
-      expect(notificacionRepository.notificaciones).toEqual([notificacion])
-    })
-
-    test("si un canal externo falla, la notificación interna se guarda igual", async () => {
-      jest.spyOn(console, "error").mockImplementation(() => {})
-      canales.SMS.enviar.mockRejectedValue(new Error("SMS caído"))
-
-      const notificacion = await contactar(ana.id)
-
-      expect(notificacion.mediosExternosUtilizados).toEqual([
-        ana.mediosDeContacto[0],
+      expect(notificacion.pendienteDeEnvio).toBe(true)
+      expect(notificacion.mediosExternosUtilizados).toEqual([])
+      expect(notificacion.envios.map((envio) => envio.medio)).toEqual([
+        { tipo: "EMAIL", valor: "ana@example.com" },
+        { tipo: "SMS", valor: "+54 9 11 2345-6789" },
       ])
       expect(notificacionRepository.notificaciones).toEqual([notificacion])
-      jest.restoreAllMocks()
+      expect(envios.despertar).toHaveBeenCalledTimes(1)
     })
 
     test("a una persona sin medios de contacto solo le llega el mensaje interno", async () => {
@@ -166,6 +142,7 @@ describe("NotificacionService", () => {
 
       const notificacion = await contactar(sol.id)
 
+      expect(notificacion.pendienteDeEnvio).toBe(false)
       expect(notificacion.mediosExternosUtilizados).toEqual([])
       expect(notificacionRepository.notificaciones).toEqual([notificacion])
     })
@@ -197,7 +174,7 @@ describe("NotificacionService", () => {
         await expect(
           contactar(await destinataria(), contenido),
         ).rejects.toThrow(error)
-        expect(canales.EMAIL.enviar).not.toHaveBeenCalled()
+        expect(envios.despertar).not.toHaveBeenCalled()
         expect(notificacionRepository.notificaciones).toEqual([])
       },
     )
@@ -206,7 +183,7 @@ describe("NotificacionService", () => {
       await proyectoService.update(proyecto.id, { estado: "CERRADO" })
 
       await expect(contactar(ana.id)).rejects.toThrow(DomainRuleError)
-      expect(canales.EMAIL.enviar).not.toHaveBeenCalled()
+      expect(envios.despertar).not.toHaveBeenCalled()
       expect(notificacionRepository.notificaciones).toEqual([])
     })
 

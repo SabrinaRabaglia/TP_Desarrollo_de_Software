@@ -1,5 +1,3 @@
-import { habilidadDTO } from "../dtos/habilidadDTO.js"
-
 export default class HabilidadController {
   constructor(habilidadService) {
     this.habilidadService = habilidadService
@@ -7,8 +5,7 @@ export default class HabilidadController {
 
   create = async (req, res, next) => {
     try {
-      const habilidad = await this.habilidadService.create(req.body)
-      res.status(201).json(habilidadDTO(habilidad))
+      res.status(201).json(await this.habilidadService.create(req.body))
     } catch (error) {
       next(error)
     }
@@ -16,11 +13,9 @@ export default class HabilidadController {
 
   update = async (req, res, next) => {
     try {
-      const habilidad = await this.habilidadService.update(
-        req.params.id,
-        req.body,
-      )
-      res.status(200).json(habilidadDTO(habilidad))
+      res
+        .status(200)
+        .json(await this.habilidadService.update(req.params.id, req.body))
     } catch (error) {
       next(error)
     }
@@ -37,8 +32,7 @@ export default class HabilidadController {
 
   getById = async (req, res, next) => {
     try {
-      const habilidad = await this.habilidadService.getById(req.params.id)
-      res.status(200).json(habilidadDTO(habilidad))
+      res.status(200).json(await this.habilidadService.getById(req.params.id))
     } catch (error) {
       next(error)
     }
@@ -46,9 +40,7 @@ export default class HabilidadController {
 
   getAll = async (req, res, next) => {
     try {
-      res
-        .status(200)
-        .json((await this.habilidadService.getAll()).map(habilidadDTO))
+      res.status(200).json(await this.habilidadService.getAll())
     } catch (error) {
       next(error)
     }

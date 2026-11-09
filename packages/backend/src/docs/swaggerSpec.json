@@ -522,6 +522,32 @@
         }
       }
     },
+    "/personas-colaboradoras/{id}/medios-de-contacto/{contactoId}": {
+      "delete": {
+        "tags": ["Personas colaboradoras"],
+        "summary": "Eliminar un medio de contacto",
+        "description": "Quita un medio de contacto de la persona por su id. Los ids de los medios vienen en `mediosDeContacto` de la persona. La operación es atómica: dos borrados simultáneos de medios distintos aplican los dos.",
+        "operationId": "eliminarMedioDeContacto",
+        "parameters": [
+          { "$ref": "#/components/parameters/IdPath" },
+          { "$ref": "#/components/parameters/ContactoIdPath" }
+        ],
+        "responses": {
+          "204": {
+            "description": "Eliminado correctamente. No devuelve contenido."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "description": "La persona o el medio de contacto no existen."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
     "/personas-colaboradoras/{id}/notificaciones": {
       "get": {
         "tags": ["Notificaciones"],
@@ -860,7 +886,6 @@
                 "descripcion": "Plataforma para conectar colectivos sociales y personas voluntarias.",
                 "colectivo": "64f1a2b3c4d5e6f7a8b9c002",
                 "estado": "PUBLICADO",
-                "fechaAlta": "2026-09-01T00:00:00.000Z",
                 "fechaCierre": null
               }
             }
@@ -950,7 +975,6 @@
                 "descripcion": "Plataforma para conectar colectivos sociales y personas voluntarias.",
                 "colectivo": "64f1a2b3c4d5e6f7a8b9c002",
                 "estado": "PUBLICADO",
-                "fechaAlta": "2026-09-01T00:00:00.000Z",
                 "fechaCierre": null
               }
             }
@@ -1413,6 +1437,9 @@
           },
           "404": {
             "description": "Proyecto no encontrado"
+          },
+          "422": {
+            "description": "La fecha del hito es anterior al alta del proyecto"
           }
         }
       }
@@ -1458,6 +1485,9 @@
           },
           "404": {
             "description": "Hito no encontrado"
+          },
+          "422": {
+            "description": "La fecha del hito es anterior al alta del proyecto"
           }
         }
       },
@@ -1633,6 +1663,15 @@
           "$ref": "#/components/schemas/ObjectId"
         }
       },
+      "ContactoIdPath": {
+        "name": "contactoId",
+        "in": "path",
+        "required": true,
+        "description": "Id del medio de contacto dentro de la persona.",
+        "schema": {
+          "$ref": "#/components/schemas/ObjectId"
+        }
+      },
       "PerfilIdPath": {
         "name": "perfilId",
         "in": "path",
@@ -1657,7 +1696,8 @@
       },
       "TipoMedioContacto": {
         "type": "string",
-        "enum": ["EMAIL", "WHATSAPP", "SMS"]
+        "enum": ["EMAIL", "WHATSAPP", "SMS", "TELEGRAM"],
+        "description": "Para TELEGRAM el valor es el chat id numérico que la persona obtiene al escribirle al bot."
       },
       "UnidadCompromiso": {
         "type": "string",
@@ -2039,7 +2079,9 @@
             "items": {
               "$ref": "#/components/schemas/Proyecto"
             }
-          }
+          },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
         }
       },
       "ProyectoInput": {
@@ -2050,7 +2092,6 @@
           "descripcion",
           "colectivo",
           "estado",
-          "fechaAlta",
           "fechaCierre"
         ],
         "properties": {
@@ -2072,15 +2113,11 @@
           "estado": {
             "$ref": "#/components/schemas/EstadoProyecto"
           },
-          "fechaAlta": {
-            "type": "string",
-            "format": "date-time"
-          },
           "fechaCierre": {
             "type": "string",
             "format": "date-time",
             "nullable": true,
-            "description": "Obligatoria pero admite `null`. No puede ser anterior a `fechaAlta`."
+            "description": "Obligatoria pero admite `null`. No puede ser anterior a la fecha de alta."
           },
           "enlaceSistemaEnFuncionamiento": {
             "type": "string",
@@ -2110,10 +2147,6 @@
           },
           "estado": {
             "$ref": "#/components/schemas/EstadoProyecto"
-          },
-          "fechaAlta": {
-            "type": "string",
-            "format": "date-time"
           },
           "fechaCierre": {
             "type": "string",
@@ -2166,7 +2199,8 @@
           },
           "fechaAlta": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "La asigna el servidor al crear el proyecto. No se acepta en el body."
           },
           "fechaCierre": {
             "type": "string",
@@ -2400,7 +2434,8 @@
           "colectivo",
           "personaColaboradora",
           "perfil",
-          "mediosExternosUtilizados"
+          "mediosExternosUtilizados",
+          "pendienteDeEnvio"
         ],
         "properties": {
           "id": {
@@ -2439,10 +2474,14 @@
           },
           "mediosExternosUtilizados": {
             "type": "array",
-            "description": "Tipos de medio de contacto por los que se replicó la notificación con éxito: si un envío falla, ese medio no figura. Los valores (emails y teléfonos) no se exponen.",
+            "description": "Tipos de medio de contacto por los que ya se replicó la notificación. El envío es asíncrono: recién creada viene vacío y se completa a medida que un proceso periódico despacha cada medio. Un medio cuyo envío agotó los reintentos no figura. Los valores (emails y teléfonos) no se exponen.",
             "items": {
               "$ref": "#/components/schemas/TipoMedioContacto"
             }
+          },
+          "pendienteDeEnvio": {
+            "type": "boolean",
+            "description": "true mientras quede algún medio de contacto por el que todavía no se envió ni se agotaron los reintentos."
           },
           "createdAt": {
             "type": "string",
@@ -2487,10 +2526,12 @@
       "HitoInput": {
         "type": "object",
         "required": ["fecha", "porcentajeConcrecion", "descripcion"],
+        "additionalProperties": false,
         "properties": {
           "fecha": {
             "type": "string",
             "format": "date-time",
+            "description": "Fecha ISO (día o fecha y hora). No puede ser futura ni anterior al día de alta del proyecto.",
             "example": "2026-10-15T00:00:00.000Z"
           },
           "porcentajeConcrecion": {
@@ -2501,16 +2542,19 @@
           },
           "descripcion": {
             "type": "string",
+            "minLength": 1,
             "example": "Se completó la primera fase del desarrollo"
           }
         }
       },
       "HitoUpdate": {
         "type": "object",
+        "additionalProperties": false,
         "properties": {
           "fecha": {
             "type": "string",
             "format": "date-time",
+            "description": "Fecha ISO (día o fecha y hora). No puede ser futura ni anterior al día de alta del proyecto.",
             "example": "2026-11-20T00:00:00.000Z"
           },
           "porcentajeConcrecion": {
@@ -2521,6 +2565,7 @@
           },
           "descripcion": {
             "type": "string",
+            "minLength": 1,
             "example": "Actualización de la descripción del hito"
           }
         }

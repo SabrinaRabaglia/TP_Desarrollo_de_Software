@@ -20,28 +20,17 @@ export default class ColectivoService {
     this.provinciaRepository = provinciaRepository
     this.paisRepository = paisRepository
   }
-  // Devuelve el colectivo junto con sus proyectos, que se guardan del lado
-  // del proyecto (proyecto.colectivo) y no dentro del colectivo.
-  conProyectos = async (colectivo) => ({
-    colectivo,
-    proyectos: await this.proyectoRepository.findByColectivoId(colectivo.id),
-  })
 
   getAll = async () => {
-    const colectivos = await this.colectivoRepository.findAll()
-    return await Promise.all(colectivos.map(this.conProyectos))
+    return await this.colectivoRepository.findAll()
   }
 
-  buscarExistente = async (id) => {
+  getById = async (id) => {
     const colectivo = await this.colectivoRepository.findById(id)
     if (!colectivo) {
       throw new EntityNotFound("Colectivo no encontrado")
     }
     return colectivo
-  }
-
-  getById = async (id) => {
-    return await this.conProyectos(await this.buscarExistente(id))
   }
 
   validarTipo = async (tipo) => {
@@ -92,10 +81,7 @@ export default class ColectivoService {
     Object.assign(colectivo, await this.resolverUbicacion(nuevo))
     await this.validarNombreDisponible(colectivo.nombre)
 
-    return {
-      colectivo: await this.colectivoRepository.save(colectivo),
-      proyectos: [],
-    }
+    return await this.colectivoRepository.save(colectivo)
   }
 
   aplicarCambios = async (existente, datos) => {
@@ -111,17 +97,15 @@ export default class ColectivoService {
     existente.provincia = provincia
     existente.ciudad = datos.ciudad || null
 
-    return await this.conProyectos(
-      await this.colectivoRepository.save(existente),
-    )
+    return await this.colectivoRepository.save(existente)
   }
 
   update = async (id, datos) => {
-    return await this.aplicarCambios(await this.buscarExistente(id), datos)
+    return await this.aplicarCambios(await this.getById(id), datos)
   }
 
   patch = async (id, cambios) => {
-    const existente = await this.buscarExistente(id)
+    const existente = await this.getById(id)
     return await this.aplicarCambios(existente, {
       nombre: existente.nombre,
       descripcion: existente.descripcion,
@@ -134,7 +118,7 @@ export default class ColectivoService {
   }
 
   delete = async (id) => {
-    await this.buscarExistente(id)
+    await this.getById(id)
     const proyectos = await this.proyectoRepository.findByColectivoId(id)
     if (proyectos.length > 0) {
       throw new EntityInUse(

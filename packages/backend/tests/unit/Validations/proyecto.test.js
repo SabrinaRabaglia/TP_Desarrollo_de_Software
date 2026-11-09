@@ -13,7 +13,6 @@ const proyectoValido = {
     "Desarrollo de plataforma para conectar colectivos y voluntarios.",
   colectivo: "65f1a2b3c4d5e6f708192a10",
   estado: EstadoProyecto.PUBLICADO,
-  fechaAlta: "2026-09-01T00:00:00.000Z",
   fechaCierre: null,
 }
 
@@ -56,13 +55,14 @@ describe("validación de proyectos", () => {
     },
   )
 
-  test("con un campo extra no declarado en el schema, lanza BadRequestError", async () => {
-    const req = {
-      body: {
-        ...proyectoValido,
-        campoInexistente: "no debería estar",
-      },
-    }
+  test.each([
+    ["un campo extra no declarado en el schema", { campoInexistente: "no" }],
+    [
+      "la fecha de alta, que la asigna el servidor",
+      { fechaAlta: "2026-09-01" },
+    ],
+  ])("con %s, lanza BadRequestError", async (_caso, extra) => {
+    const req = { body: { ...proyectoValido, ...extra } }
     const res = mockRes()
     const next = jest.fn()
     await validar(proyectoSchema)(req, res, next)

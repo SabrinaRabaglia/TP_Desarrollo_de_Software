@@ -1,5 +1,3 @@
-import { colaboracionDTO } from "../dtos/colaboracionDTO.js"
-
 export default class ColaboracionController {
   constructor(colaboracionService) {
     this.colaboracionService = colaboracionService
@@ -7,8 +5,7 @@ export default class ColaboracionController {
 
   create = async (req, res, next) => {
     try {
-      const colaboracion = await this.colaboracionService.create(req.body)
-      res.status(201).json(colaboracionDTO(colaboracion))
+      res.status(201).json(await this.colaboracionService.create(req.body))
     } catch (error) {
       next(error)
     }
@@ -16,8 +13,7 @@ export default class ColaboracionController {
 
   getAll = async (_req, res, next) => {
     try {
-      const colaboraciones = await this.colaboracionService.getAll()
-      res.status(200).json(colaboraciones.map(colaboracionDTO))
+      res.status(200).json(await this.colaboracionService.getAll())
     } catch (error) {
       next(error)
     }

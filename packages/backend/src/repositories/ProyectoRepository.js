@@ -1,7 +1,15 @@
 import mongoose from "mongoose"
-import { ConcurrentModification } from "../errors/ApplicationErrors.js"
+import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
+import { inicioDelDiaSiguiente } from "../domain/fechas.js"
 import ProyectoModel from "../schemas/proyectoSchema.js"
 import guardar from "./guardar.js"
+
+const abierto = { estado: { $ne: EstadoProyecto.CERRADO } }
+const CAMPOS_DEL_HITO = ["fecha", "porcentajeConcrecion", "descripcion"]
+const dadoDeAltaAntesDe = (fecha) =>
+  fecha === undefined
+    ? {}
+    : { fechaAlta: { $lt: inicioDelDiaSiguiente(fecha) } }
 
 export default class ProyectoRepository {
   constructor() {
@@ -41,17 +49,7 @@ export default class ProyectoRepository {
   }
 
   async save(proyecto) {
-    try {
-      return await guardar(this.model, proyecto)
-    } catch (error) {
-      // Otro pedido guardó el proyecto entre que lo leímos y lo guardamos.
-      if (error instanceof mongoose.Error.VersionError) {
-        throw new ConcurrentModification(
-          "El proyecto se modificó mientras se procesaba el pedido. Volvé a intentar.",
-        )
-      }
-      throw error
-    }
+    return await guardar(this.model, proyecto)
   }
 
   async deleteById(id) {
@@ -65,8 +63,67 @@ export default class ProyectoRepository {
     })
   }
 
+  async agregarPerfil(proyectoId, perfil) {
+    const _id = new mongoose.Types.ObjectId()
+    const proyecto = await this.model.findOneAndUpdate(
+      { _id: proyectoId, ...abierto },
+      { $push: { perfiles: { ...perfil, _id } } },
+      { new: true, runValidators: true },
+    )
+    return proyecto?.perfiles.id(_id) ?? null
+  }
+
+  async actualizarPerfil(proyectoId, perfilId, perfil) {
+    const proyecto = await this.model.findOneAndUpdate(
+      { _id: proyectoId, "perfiles._id": perfilId, ...abierto },
+      { $set: { "perfiles.$": { ...perfil, _id: perfilId } } },
+      { new: true, runValidators: true },
+    )
+    return proyecto?.perfiles.id(perfilId) ?? null
+  }
+
+  async eliminarPerfil(proyectoId, perfilId) {
+    const { matchedCount } = await this.model.updateOne(
+      { _id: proyectoId, "perfiles._id": perfilId, ...abierto },
+      { $pull: { perfiles: { _id: perfilId } } },
+    )
+    return matchedCount === 1
+  }
+
   async findByHitoId(hitoId) {
-    // Busca un proyecto que tenga un subdocumento hito con ese _id
     return await this.model.findOne({ "hitos._id": hitoId })
+  }
+
+  async agregarHito(proyectoId, hito) {
+    const _id = new mongoose.Types.ObjectId()
+    const proyecto = await this.model.findOneAndUpdate(
+      { _id: proyectoId, ...dadoDeAltaAntesDe(hito.fecha) },
+      { $push: { hitos: { ...hito, _id } } },
+      { new: true, runValidators: true },
+    )
+    return proyecto?.hitos.id(_id) ?? null
+  }
+
+  async actualizarHito(hitoId, cambios) {
+    const $set = Object.fromEntries(
+      CAMPOS_DEL_HITO.filter((campo) => campo in cambios).map((campo) => [
+        `hitos.$.${campo}`,
+        cambios[campo],
+      ]),
+    )
+    const proyecto = await this.model.findOneAndUpdate(
+      { "hitos._id": hitoId, ...dadoDeAltaAntesDe(cambios.fecha) },
+      { $set },
+      { new: true, runValidators: true },
+    )
+    return proyecto?.hitos.id(hitoId) ?? null
+  }
+
+  async eliminarHito(hitoId) {
+    const { matchedCount } = await this.model.updateOne(
+      { "hitos._id": hitoId },
+      { $pull: { hitos: { _id: hitoId } } },
+    )
+    return matchedCount === 1
   }
 }

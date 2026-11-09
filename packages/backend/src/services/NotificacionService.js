@@ -8,12 +8,12 @@ export default class NotificacionService {
     notificacionRepository,
     perfilService,
     personaColaboradoraService,
-    notificador,
+    envioDeNotificaciones,
   ) {
     this.notificacionRepository = notificacionRepository
     this.perfilService = perfilService
     this.personaColaboradoraService = personaColaboradoraService
-    this.notificador = notificador
+    this.envioDeNotificaciones = envioDeNotificaciones
   }
 
   buscarDestinataria = async (personaColaboradoraId) => {
@@ -35,11 +35,11 @@ export default class NotificacionService {
       perfilId,
     )
     const destinataria = await this.buscarDestinataria(personaColaboradora)
-    const notificacion = proyecto.contactar(perfil, destinataria, contenido)
-    notificacion.registrarMediosExternos(
-      await this.notificador.notificar(destinataria, contenido),
+    const notificacion = await this.notificacionRepository.save(
+      proyecto.contactar(perfil, destinataria, contenido),
     )
-    return await this.notificacionRepository.save(notificacion)
+    this.envioDeNotificaciones.despertar()
+    return notificacion
   }
 
   getAllByPersonaColaboradora = async (personaColaboradoraId) => {

@@ -28,6 +28,14 @@ export default class PersonaColaboradoraRepository {
     await this.model.findByIdAndDelete(id)
   }
 
+  async eliminarMedioDeContacto(personaId, contactoId) {
+    const { matchedCount } = await this.model.updateOne(
+      { _id: personaId, "mediosDeContacto._id": contactoId },
+      { $pull: { mediosDeContacto: { _id: contactoId } } },
+    )
+    return matchedCount === 1
+  }
+
   async save(personaColaboradora) {
     const guardada = await guardar(this.model, personaColaboradora)
     return await guardada.populate("habilidades")

@@ -1,5 +1,3 @@
-import { proyectoDTO } from "../dtos/proyectoDTO.js"
-
 export default class ProyectoController {
   constructor(proyectoService) {
     this.proyectoService = proyectoService
@@ -11,7 +9,7 @@ export default class ProyectoController {
       const proyectos = habilidades
         ? await this.proyectoService.getAllByHabilidades(habilidades)
         : await this.proyectoService.getAll()
-      res.status(200).json(proyectos.map(proyectoDTO))
+      res.status(200).json(proyectos)
     } catch (error) {
       next(error)
     }
@@ -19,8 +17,7 @@ export default class ProyectoController {
 
   getById = async (req, res, next) => {
     try {
-      const { id } = req.params
-      res.status(200).json(proyectoDTO(await this.proyectoService.getById(id)))
+      res.status(200).json(await this.proyectoService.getById(req.params.id))
     } catch (error) {
       next(error)
     }
@@ -28,8 +25,7 @@ export default class ProyectoController {
 
   create = async (req, res, next) => {
     try {
-      const creado = await this.proyectoService.create(req.body)
-      res.status(201).json(proyectoDTO(creado))
+      res.status(201).json(await this.proyectoService.create(req.body))
     } catch (error) {
       next(error)
     }
@@ -37,9 +33,9 @@ export default class ProyectoController {
 
   update = async (req, res, next) => {
     try {
-      const id = req.params.id
-      const actualizado = await this.proyectoService.update(id, req.body)
-      res.status(200).json(proyectoDTO(actualizado))
+      res
+        .status(200)
+        .json(await this.proyectoService.update(req.params.id, req.body))
     } catch (error) {
       next(error)
     }
@@ -47,12 +43,9 @@ export default class ProyectoController {
 
   patch = async (req, res, next) => {
     try {
-      const { id } = req.params
-      const proyectoActualizado = await this.proyectoService.update(
-        id,
-        req.body,
-      )
-      res.status(200).json(proyectoDTO(proyectoActualizado))
+      res
+        .status(200)
+        .json(await this.proyectoService.update(req.params.id, req.body))
     } catch (error) {
       next(error)
     }
@@ -60,8 +53,7 @@ export default class ProyectoController {
 
   delete = async (req, res, next) => {
     try {
-      const { id } = req.params
-      await this.proyectoService.delete(id)
+      await this.proyectoService.delete(req.params.id)
       res.status(204).send()
     } catch (error) {
       next(error)

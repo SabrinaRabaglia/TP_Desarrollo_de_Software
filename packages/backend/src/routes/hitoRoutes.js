@@ -1,15 +1,17 @@
-import { Router } from "express";
-import { hitoController } from "../dependencias.js"; 
-
+import { Router } from "express"
+import validar from "../middlewares/validar.js"
 import validateId from "../middlewares/validateId.js"
+import { cambiosDeHitoSchema } from "../validations/hito.js"
+import { hitoController } from "../dependencias.js"
 
-const routes = Router();
+const routes = Router()
 
-// actualizar un hito dado su id
-routes.patch("/hitos/:id", validateId, hitoController.update);
+routes.patch(
+  "/hitos/:id",
+  validateId,
+  validar(cambiosDeHitoSchema),
+  hitoController.update,
+)
+routes.delete("/hitos/:id", validateId, hitoController.delete)
 
-//borrar un hito dado su id
-routes.delete("/hitos/:id", validateId, hitoController.delete);
-
-
-export default routes;
+export default routes

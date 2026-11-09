@@ -63,6 +63,41 @@ MONGODB_DB_NAME=codigo-a-voluntad
 - **`MONGODB_URI`**: URI de conexión a MongoDB. El `authSource=admin` va dentro de la URI porque el usuario `root` del contenedor vive en la base `admin`.
 - **`MONGODB_DB_NAME`**: Nombre de la base. Mongo la crea sola con el primer documento.
 
+#### Notificaciones por medios externos
+
+Cuando un colectivo contacta a una persona, la notificación interna se replica por sus medios de contacto. Email y Telegram se envían de verdad si están configurados; sin configuración, y también WhatsApp y SMS, el envío se simula con un `console.log` y el servidor avisa al arrancar cuáles medios quedaron simulados.
+
+```
+# Email por SMTP (sirve cualquier proveedor: Gmail con contraseña de aplicación, Brevo, Mailtrap)
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=avisos@example.com
+SMTP_PASS=la-contraseña
+EMAIL_FROM=avisos@example.com
+
+# Telegram por la Bot API. El token lo da @BotFather.
+TELEGRAM_BOT_TOKEN=123456:ABC-DEF
+```
+
+- **`SMTP_HOST`**, **`SMTP_PORT`**, **`SMTP_USER`**, **`SMTP_PASS`**: el servidor SMTP. El puerto 465 usa TLS implícito; en cualquier otro, 587 por defecto, se exige STARTTLS y el envío falla si el servidor no lo ofrece. Sin `SMTP_USER` se conecta sin autenticación; con `SMTP_USER` y sin `SMTP_PASS` el servidor no arranca. Cada etapa de la conexión tiene un timeout de 10 a 15 segundos, igual que el pedido a Telegram.
+- **`EMAIL_FROM`**: remitente de los correos. Si falta, se usa `SMTP_USER`.
+- **`TELEGRAM_BOT_TOKEN`**: token del bot. Cada persona carga como medio de contacto `TELEGRAM` el chat id numérico que obtiene al escribirle al bot, porque la Bot API solo puede iniciar conversaciones con quienes ya le hablaron.
+
+El envío es asíncrono. Al contactar a una persona, la notificación se guarda con un envío `PENDIENTE` por cada medio de contacto y la respuesta vuelve enseguida con `pendienteDeEnvio: true` y `mediosExternosUtilizados` vacío. Un proceso dentro del servidor reclama las notificaciones pendientes, las envía por cada canal y, si un canal falla, lo reintenta en la próxima pasada hasta agotar los intentos, momento en que el envío queda `FALLIDO`. A medida que salen, `mediosExternosUtilizados` lista los tipos por los que se replicó.
+
+- **`NOTIFICACIONES_INTERVALO_MS`**: cada cuánto corre la pasada de envíos y cuánto espera un envío fallido antes de reintentarse. Por defecto 30000.
+- **`NOTIFICACIONES_MAXIMO_INTENTOS`**: intentos por medio antes de darlo por fallido. Por defecto 5.
+
+En producción (Azure Container Apps) se configuran una sola vez y los deploys posteriores las conservan:
+
+```bash
+az containerapp secret set --name ca-ddso-backend --resource-group rg-ddso-backend --secrets smtp-pass=<contraseña> telegram-bot-token=<token>
+```
+
+```bash
+az containerapp update --name ca-ddso-backend --resource-group rg-ddso-backend --set-env-vars SMTP_HOST=smtp.example.com SMTP_PORT=587 SMTP_USER=avisos@example.com EMAIL_FROM=avisos@example.com SMTP_PASS=secretref:smtp-pass TELEGRAM_BOT_TOKEN=secretref:telegram-bot-token
+```
+
 ### 3\. Levantar MongoDB
 
 El backend necesita MongoDB para arrancar. Con Docker:
@@ -124,7 +159,7 @@ La persistencia usa MongoDB con Mongoose, siguiendo la guía de la cátedra. Cad
 - `src/repositories/`: la única capa que conoce a Mongoose.
 - `src/config/database.js`: la conexión, que se abre en `src/server.js` antes de levantar el servidor.
 - `src/validations/` y `src/middlewares/validar.js`: los schemas de zod de cada recurso. Las rutas validan el body o la query con `validar(schema)` antes de llegar al controller; si no pasa, responde `400`.
-- `src/dtos/`: lo que expone la API. Los servicios devuelven entidades del dominio (porque otros servicios también los usan) y cada controller pasa la respuesta por su DTO.
+- La forma pública de cada entidad la define el `toJSON` de su schema, en `src/schemas/`. Los servicios devuelven documentos (porque otros servicios también los usan) y cada controller responde `res.json(documento)`. Las reglas de exposición viven ahí: un medio de contacto nunca muestra su `valor`, una notificación lista solo los tipos de los medios usados, una colaboración anónima oculta a la persona, y un colectivo trae sus proyectos por un populate virtual.
 - `src/dependencias.js`: el único lugar donde se crean los repositorios, servicios y controllers. Las rutas de `src/routes/` solo mapean cada URL a un método del controller.
 
 ### Datos iniciales (seeds)
@@ -146,7 +181,7 @@ Los dos procesos son idempotentes. Insertan lo que falta por su clave natural, n
 | Cuentas en Persona | Embebido | Relación uno a pocos, sin existencia propia fuera de la persona. |
 | Medios de contacto en Persona | Embebido | Relación uno a pocos, sin existencia propia fuera de la persona. Quedan registrados pero la API no los muestra. |
 | Colaboración | Colección propia con referencias a persona y proyecto | Es una relación muchos a muchos que crece con el historial. Un índice único impide inscribir dos veces a la misma persona en el mismo proyecto. |
-| Notificación | Colección propia con referencias a colectivo, persona y perfil | Crece sin límite con el tiempo y se consulta por persona (su bandeja), con un índice sobre `personaColaboradora`. El perfil se guarda por id porque vive embebido en el proyecto. Los medios por los que se replicó se copian embebidos, como registro de a dónde se envió. Se borran junto con la persona. |
+| Notificación | Colección propia con referencias a colectivo, persona y perfil | Crece sin límite con el tiempo y se consulta por persona (su bandeja), con un índice sobre `personaColaboradora`. El perfil se guarda por id porque vive embebido en el proyecto. Guarda un envío embebido por cada medio de contacto de la persona, con su estado (`PENDIENTE`, `ENVIADO`, `FALLIDO`), intentos y último error; un proceso periódico los despacha y reintenta. Se borran junto con la persona. |
 
 ### Ids
 

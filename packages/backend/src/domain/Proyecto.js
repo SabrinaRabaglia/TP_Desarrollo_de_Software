@@ -4,6 +4,7 @@ import {
   DomainRuleError,
 } from "./errors/DomainErrors.js"
 import Notificacion from "./Notificacion.js"
+import { inicioDelDiaSiguiente } from "./fechas.js"
 
 export default class Proyecto {
   constructor(
@@ -14,7 +15,7 @@ export default class Proyecto {
     fechaAlta = new Date(),
     fechaCierre = null,
     enlaceSistemaEnFuncionamiento = null,
-    enlaceCodigoFuente = null
+    enlaceCodigoFuente = null,
   ) {
     Proyecto.validarDatos({
       titulo,
@@ -32,17 +33,17 @@ export default class Proyecto {
     this.colectivo = colectivo
     this.perfiles = []
     this.colaboraciones = []
-    this.enlaceSistemaEnFuncionamiento = enlaceSistemaEnFuncionamiento;
-    this.enlaceCodigoFuente = enlaceCodigoFuente;
-    this.hitos = [];
+    this.enlaceSistemaEnFuncionamiento = enlaceSistemaEnFuncionamiento
+    this.enlaceCodigoFuente = enlaceCodigoFuente
+    this.hitos = []
   }
   getPorcentajeConcrecionActual() {
-    if (this.hitos.length === 0) return 0;
+    if (this.hitos.length === 0) return 0
     // Asumiendo que el último hito cargado cronológicamente tiene el porcentaje actual
-    const ultimoHito = this.hitos.reduce((latest, current) => 
-      current.fecha > latest.fecha ? current : latest
-    );
-    return ultimoHito.porcentajeConcrecion;
+    const ultimoHito = this.hitos.reduce((latest, current) =>
+      current.fecha > latest.fecha ? current : latest,
+    )
+    return ultimoHito.porcentajeConcrecion
   }
 
   cerrar() {
@@ -83,20 +84,12 @@ export default class Proyecto {
     return this.perfiles.find((perfil) => perfil.id === perfilId)
   }
 
-  agregarPerfil(perfil) {
-    this.assertPuedeModificarPerfiles()
-    this.perfiles.push(perfil)
-    return this.perfiles.at(-1)
-  }
-
-  actualizarPerfil(perfil, datos) {
-    this.assertPuedeModificarPerfiles()
-    perfil.actualizar(datos)
-  }
-
-  eliminarPerfil(perfilId) {
-    this.assertPuedeModificarPerfiles()
-    this.perfiles = this.perfiles.filter((perfil) => perfil.id !== perfilId)
+  assertAdmiteHito({ fecha }) {
+    if (fecha !== undefined && this.fechaAlta >= inicioDelDiaSiguiente(fecha)) {
+      throw new DomainValidationError(
+        "La fecha del hito no puede ser anterior al alta del proyecto.",
+      )
+    }
   }
 
   contactar(perfil, personaColaboradora, contenido) {
@@ -111,6 +104,7 @@ export default class Proyecto {
       colectivo: this.colectivo,
       personaColaboradora,
       perfil,
+      mediosDeContacto: personaColaboradora.mediosDeContacto,
     })
   }
 

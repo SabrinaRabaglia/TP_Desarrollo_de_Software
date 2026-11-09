@@ -56,7 +56,6 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
       descripcion: "Desarrollo web",
       colectivo: colectivo.id,
       estado: "PUBLICADO",
-      fechaAlta: "2026-09-14T00:00:00.000Z",
       fechaCierre: null,
     }
     let proyecto = await request("POST", "/proyectos", proyectoDatos, 201)

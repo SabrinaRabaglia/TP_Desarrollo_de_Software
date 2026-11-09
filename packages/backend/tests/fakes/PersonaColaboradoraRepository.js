@@ -38,6 +38,19 @@ export default class PersonaColaboradoraRepository {
     }
   }
 
+  async eliminarMedioDeContacto(personaId, contactoId) {
+    const persona = await this.findById(personaId)
+    const indice =
+      persona?.mediosDeContacto.findIndex(
+        (medio) => String(medio._id ?? medio.id) === contactoId,
+      ) ?? -1
+    if (indice === -1) {
+      return false
+    }
+    persona.mediosDeContacto.splice(indice, 1)
+    return true
+  }
+
   async save(personaColaboradora) {
     personaColaboradora.id ??= randomUUID()
     const indice = PersonaColaboradoraRepository.personas.findIndex(

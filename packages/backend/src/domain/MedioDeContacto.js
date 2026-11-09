@@ -40,5 +40,11 @@ export default class MedioDeContacto {
         throw new DomainValidationError("El formato del teléfono es inválido")
       }
     }
+
+    if (tipo === TipoMedioContacto.TELEGRAM && !/^-?[0-9]{1,16}$/.test(valor)) {
+      throw new DomainValidationError(
+        "El valor de Telegram debe ser el chat id numérico que da el bot",
+      )
+    }
   }
 }

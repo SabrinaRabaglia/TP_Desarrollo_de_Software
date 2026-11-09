@@ -50,13 +50,11 @@ describe("ProyectoService", () => {
       colaboracionRepository,
     )
 
-    const colectivo = (
-      await colectivoService.create({
-        nombre: "Asamblea Ambiental",
-        descripcion: "Protección de humedales",
-        tipo: "Asamblea",
-      })
-    ).colectivo
+    const colectivo = await colectivoService.create({
+      nombre: "Asamblea Ambiental",
+      descripcion: "Protección de humedales",
+      tipo: "Asamblea",
+    })
 
     dtoProyectoValido = {
       titulo: "Plataforma de Colaboración",
@@ -67,10 +65,7 @@ describe("ProyectoService", () => {
   })
 
   test("rechaza una fecha de cierre anterior a la fecha de alta al crear y actualizar sin alterar los datos", async () => {
-    const cambios = {
-      fechaAlta: new Date("2026-09-11"),
-      fechaCierre: new Date("2026-01-01"),
-    }
+    const cambios = { fechaCierre: new Date("2026-01-01") }
     await expect(
       service.create({ ...dtoProyectoValido, ...cambios }),
     ).rejects.toThrow(DomainValidationError)
@@ -97,6 +92,17 @@ describe("ProyectoService", () => {
       expect(proyectoCreado.colectivo).toBe(dtoProyectoValido.colectivo)
       expect(proyectoCreado.perfiles).toEqual([])
       expect(await service.getAll()).toEqual([proyectoCreado])
+    })
+
+    test("la fecha de alta es la del momento de la creación, no la del body", async () => {
+      const antes = new Date()
+      const proyectoCreado = await service.create({
+        ...dtoProyectoValido,
+        fechaAlta: new Date("2000-01-01"),
+      })
+
+      expect(proyectoCreado.fechaAlta >= antes).toBe(true)
+      expect(proyectoCreado.fechaAlta <= new Date()).toBe(true)
     })
 
     test("rechaza un colectivo inexistente sin guardar el proyecto", async () => {
@@ -171,13 +177,11 @@ describe("ProyectoService", () => {
 
     test("permite cambiar el colectivo por otro existente", async () => {
       const creado = await service.create(dtoProyectoValido)
-      const colectivo = (
-        await colectivoService.create({
-          nombre: "Otra organización",
-          descripcion: "Proyecto comunitario",
-          tipo: "ONG",
-        })
-      ).colectivo
+      const colectivo = await colectivoService.create({
+        nombre: "Otra organización",
+        descripcion: "Proyecto comunitario",
+        tipo: "ONG",
+      })
 
       await service.update(creado.id, { colectivo: colectivo.id })
 
@@ -295,7 +299,7 @@ describe("ProyectoService", () => {
     const crearConPerfiles = async (titulo, ...descripciones) => {
       const proyecto = await service.create({ ...dtoProyectoValido, titulo })
       for (const descripcion of descripciones) {
-        proyecto.agregarPerfil(nuevoPerfil(descripcion))
+        proyecto.perfiles.push(nuevoPerfil(descripcion))
       }
       return await proyectoRepository.save(proyecto)
     }
@@ -311,13 +315,11 @@ describe("ProyectoService", () => {
         "Analista",
       )
       const perfilesAntes = copiaDePerfiles(proyecto)
-      const otroColectivo = (
-        await colectivoService.create({
-          nombre: "Otra organización",
-          descripcion: "Proyecto comunitario",
-          tipo: "ONG",
-        })
-      ).colectivo
+      const otroColectivo = await colectivoService.create({
+        nombre: "Otra organización",
+        descripcion: "Proyecto comunitario",
+        tipo: "ONG",
+      })
 
       await service.update(proyecto.id, {
         titulo: "Título nuevo",
@@ -377,7 +379,7 @@ describe("ProyectoService", () => {
   describe("getAllByHabilidades", () => {
     const crearConPerfil = async (titulo, habilidadesRequeridas) => {
       const proyecto = await service.create({ ...dtoProyectoValido, titulo })
-      proyecto.agregarPerfil(
+      proyecto.perfiles.push(
         new Perfil({
           descripcion: `Perfil de ${titulo}`,
           unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,

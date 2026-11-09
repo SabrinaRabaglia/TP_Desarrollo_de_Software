@@ -8,6 +8,8 @@ import {
 } from "@jest/globals"
 import { once } from "node:events"
 import app from "../../src/app.js"
+import { envioDeNotificaciones } from "../../src/dependencias.js"
+import NotificacionModel from "../../src/schemas/notificacionSchema.js"
 import { conectar, desconectar } from "./mongo.js"
 
 let server
@@ -37,7 +39,6 @@ const crearProyectoConPerfil = async (titulo) => {
       descripcion: `Proyecto ${titulo}`,
       colectivo: colectivo.id,
       estado: "PUBLICADO",
-      fechaAlta: "2026-10-01T00:00:00.000Z",
       fechaCierre: null,
     },
     201,
@@ -128,13 +129,49 @@ describe("notificaciones", () => {
       colectivo: colectivo.id,
       personaColaboradora: ana.id,
       perfil: perfil.id,
-      mediosExternosUtilizados: ["EMAIL", "WHATSAPP"],
+      pendienteDeEnvio: true,
+      mediosExternosUtilizados: [],
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     })
+    expect(JSON.stringify(notificacion)).not.toContain("ana@example.com")
+
+    await envioDeNotificaciones.procesarPendientes()
+
+    const [enviada] = await request(
+      "GET",
+      `/personas-colaboradoras/${ana.id}/notificaciones`,
+    )
+    expect(enviada).toEqual({
+      ...notificacion,
+      pendienteDeEnvio: false,
+      mediosExternosUtilizados: ["EMAIL", "WHATSAPP"],
+      updatedAt: expect.any(String),
+    })
+    expect(JSON.stringify(enviada)).not.toContain("ana@example.com")
     expect(
-      await request("GET", `/personas-colaboradoras/${ana.id}/notificaciones`),
-    ).toEqual([notificacion])
+      await NotificacionModel.findById(notificacion.id).then((documento) =>
+        documento.envios.map(({ medio, estado, intentos }) => ({
+          tipo: medio.tipo,
+          valor: medio.valor,
+          estado,
+          intentos,
+        })),
+      ),
+    ).toEqual([
+      {
+        tipo: "EMAIL",
+        valor: "ana@example.com",
+        estado: "ENVIADO",
+        intentos: 1,
+      },
+      {
+        tipo: "WHATSAPP",
+        valor: "+54 9 11 2345-6789",
+        estado: "ENVIADO",
+        intentos: 1,
+      },
+    ])
     expect(
       await request("GET", `/personas-colaboradoras/${anon.id}/notificaciones`),
     ).toEqual([])

@@ -1,5 +1,3 @@
-import { perfilDTO } from "../dtos/perfilDTO.js"
-
 export default class PerfilController {
   constructor(perfilService) {
     this.perfilService = perfilService
@@ -7,8 +5,9 @@ export default class PerfilController {
 
   create = async (req, res, next) => {
     try {
-      const perfil = await this.perfilService.create(req.params.id, req.body)
-      res.status(201).json(perfilDTO(perfil))
+      res
+        .status(201)
+        .json(await this.perfilService.create(req.params.id, req.body))
     } catch (error) {
       next(error)
     }
@@ -16,12 +15,15 @@ export default class PerfilController {
 
   update = async (req, res, next) => {
     try {
-      const perfil = await this.perfilService.update(
-        req.params.id,
-        req.params.perfilId,
-        req.body,
-      )
-      res.status(200).json(perfilDTO(perfil))
+      res
+        .status(200)
+        .json(
+          await this.perfilService.update(
+            req.params.id,
+            req.params.perfilId,
+            req.body,
+          ),
+        )
     } catch (error) {
       next(error)
     }
@@ -38,11 +40,11 @@ export default class PerfilController {
 
   getById = async (req, res, next) => {
     try {
-      const perfil = await this.perfilService.getById(
-        req.params.id,
-        req.params.perfilId,
-      )
-      res.status(200).json(perfilDTO(perfil))
+      res
+        .status(200)
+        .json(
+          await this.perfilService.getById(req.params.id, req.params.perfilId),
+        )
     } catch (error) {
       next(error)
     }
@@ -50,10 +52,9 @@ export default class PerfilController {
 
   getAllByProyecto = async (req, res, next) => {
     try {
-      const perfiles = await this.perfilService.getAllByProyectoId(
-        req.params.id,
-      )
-      res.status(200).json(perfiles.map(perfilDTO))
+      res
+        .status(200)
+        .json(await this.perfilService.getAllByProyectoId(req.params.id))
     } catch (error) {
       next(error)
     }
