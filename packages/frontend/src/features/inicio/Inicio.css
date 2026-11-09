@@ -9,3 +9,36 @@
   font-size: 1.125rem;
   color: var(--mui-palette-text-secondary);
 }
+
+.inicio-proyectos {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espacio);
+  padding: 0;
+  list-style: none;
+}
+
+.inicio-proyecto {
+  height: 100%;
+}
+
+.inicio-proyecto h3 {
+  margin: 0.25rem 0 0.5rem;
+}
+
+.inicio-proyecto-estado {
+  font-size: 0.875rem;
+  color: var(--mui-palette-text-secondary);
+}
+
+@media (min-width: 768px) {
+  .inicio-proyectos {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .inicio-proyectos {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
