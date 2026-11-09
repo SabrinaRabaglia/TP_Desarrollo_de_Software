@@ -1,0 +1,31 @@
+.mi-cuenta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio);
+}
+
+.mi-cuenta-datos {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.25rem;
+  margin: 0;
+}
+
+.mi-cuenta-datos dt {
+  font-weight: 600;
+}
+
+.mi-cuenta-datos dd {
+  margin: 0 0 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .mi-cuenta-datos {
+    grid-template-columns: max-content 1fr;
+    column-gap: calc(var(--espacio) * 2);
+  }
+
+  .mi-cuenta-datos dd {
+    margin: 0;
+  }
+}

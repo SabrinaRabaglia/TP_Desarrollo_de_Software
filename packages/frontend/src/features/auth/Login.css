@@ -1,0 +1,19 @@
+.login {
+  display: flex;
+  justify-content: center;
+}
+
+.login-tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio);
+  width: 100%;
+  max-width: 26rem;
+  padding: calc(var(--espacio) * 1.5);
+}
+
+.login-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio);
+}
