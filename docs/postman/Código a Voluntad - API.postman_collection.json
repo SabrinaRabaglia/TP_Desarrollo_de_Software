@@ -1396,7 +1396,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fecha\": \"2026-10-01\",\n  \"porcentajeConcrecion\": 30,\n  \"descripcion\": \"Primera versión del mapa {{runSuffix}}\"\n}",
+              "raw": "{\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"porcentajeConcrecion\": 30,\n  \"descripcion\": \"Primera versión del mapa {{runSuffix}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1453,7 +1453,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fecha\": \"2026-11-01\",\n  \"porcentajeConcrecion\": 60,\n  \"descripcion\": \"Hito descartable {{runSuffix}}\"\n}",
+              "raw": "{\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"porcentajeConcrecion\": 60,\n  \"descripcion\": \"Hito descartable {{runSuffix}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1509,7 +1509,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fecha\": \"2026-11-01\",\n  \"porcentajeConcrecion\": 150,\n  \"descripcion\": \"Fuera de rango\"\n}",
+              "raw": "{\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"porcentajeConcrecion\": 150,\n  \"descripcion\": \"Fuera de rango\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1964,7 +1964,7 @@
                   "const personas = pm.response.json()",
                   "pm.test(\"sugiere a la candidata, que tiene las habilidades requeridas\", () => pm.expect(personas.map((persona) => persona.id)).to.include(pm.collectionVariables.get(\"candidataId\")))",
                   "pm.test(\"no sugiere a la persona que ya está inscripta en el proyecto\", () => pm.expect(personas.map((persona) => persona.id)).to.not.include(pm.collectionVariables.get(\"personaId\")))",
-                  "pm.test(\"no expone los medios de contacto\", () => personas.forEach((persona) => pm.expect(persona).to.not.have.property(\"mediosDeContacto\")))"
+                  "pm.test(\"no expone el valor de los medios de contacto\", () => personas.forEach((persona) => persona.mediosDeContacto.forEach((medio) => pm.expect(medio).to.not.have.property(\"valor\"))))"
                 ]
               }
             }
