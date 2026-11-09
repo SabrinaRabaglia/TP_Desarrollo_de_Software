@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Código a Voluntad - API",
-    "description": "Importar este archivo desde Postman > Import > Files. No hace falta un environment: la colección incluye baseUrl (http://localhost:8000) y las variables para los IDs.\n\nCon el backend iniciado, ejecutar las carpetas en el orden mostrado. Las altas guardan automáticamente los IDs para las solicitudes siguientes. Los ejemplos usan nombres únicos y se pueden volver a ejecutar. Ajustar baseUrl si se usa otro puerto o servidor.\n\nIncluye healthcheck, catálogos de países y provincias, CRUD de habilidades, personas, colectivos y proyectos, perfiles, inscripción/listado de colaboraciones, búsquedas de proyectos y colaboradores, notificaciones y cierre manual. La API no requiere autenticación y guarda los datos en MongoDB. Los ids son ObjectId de Mongo. La carpeta Catálogos guarda los ids de Argentina y de Buenos Aires para usarlos en los colectivos, así que hay que ejecutarla antes de Colectivos.\n\nEl cierre se ejecuta después de inscribir a la persona. Una vez cerrado, el proyecto no admite nuevas inscripciones ni reapertura. Para repetir ese flujo hay que crear un proyecto nuevo.\n\nLa carpeta final Limpieza primero muestra los 409 al intentar borrar un colectivo con proyectos o una habilidad en uso, y después elimina el proyecto, la persona, el colectivo y la habilidad creados en la ejecución. Las colaboraciones se borran con el proyecto y la persona, y las notificaciones con la persona. Omitir Limpieza si se quieren conservar los datos de ejemplo para probar manualmente.",
+    "description": "Importar este archivo desde Postman > Import > Files. No hace falta un environment: la colección incluye baseUrl (http://localhost:8000) y las variables para los IDs.\n\nCon el backend iniciado, ejecutar las carpetas en el orden mostrado. Las altas guardan automáticamente los IDs para las solicitudes siguientes. Los ejemplos usan nombres únicos y se pueden volver a ejecutar. Ajustar baseUrl si se usa otro puerto o servidor.\n\nIncluye healthcheck, catálogos de países y provincias, CRUD de habilidades, personas, colectivos y proyectos, perfiles, hitos de avance, inscripción/listado de colaboraciones, búsquedas de proyectos y colaboradores, notificaciones y cierre manual. La API no requiere autenticación y guarda los datos en MongoDB. Los ids son ObjectId de Mongo. La carpeta Catálogos guarda los ids de Argentina y de Buenos Aires para usarlos en los colectivos, así que hay que ejecutarla antes de Colectivos.\n\nEl cierre se ejecuta después de inscribir a la persona. Una vez cerrado, el proyecto no admite nuevas inscripciones ni reapertura. Para repetir ese flujo hay que crear un proyecto nuevo.\n\nLa carpeta final Limpieza primero muestra los 409 al intentar borrar un colectivo con proyectos o una habilidad en uso, y después elimina el proyecto, la persona, el colectivo y la habilidad creados en la ejecución. Las colaboraciones se borran con el proyecto y la persona, y las notificaciones con la persona. Omitir Limpieza si se quieren conservar los datos de ejemplo para probar manualmente.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -1357,6 +1357,373 @@
       ]
     },
     {
+      "name": "Hitos",
+      "description": "Hitos de avance de un proyecto. Viven embebidos en el documento del proyecto; se crean y listan colgados de /proyectos/{id}/hitos y se editan o borran por su propio id en /hitos/{id}.",
+      "item": [
+        {
+          "name": "Crear hito",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"proyectoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Proyectos > Crear proyecto.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
+                  "pm.test(\"devuelve el porcentaje cargado\", () => pm.expect(pm.response.json().porcentajeConcrecion).to.eql(30))",
+                  "pm.collectionVariables.set(\"hitoId\", pm.response.json().id)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"porcentajeConcrecion\": 30,\n  \"descripcion\": \"Primera versión del mapa {{runSuffix}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}/hitos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoId}}",
+                "hitos"
+              ]
+            },
+            "description": "Agrega un hito al proyecto {{proyectoId}}. Guarda su id en hitoId."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear hito a eliminar",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"proyectoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Proyectos > Crear proyecto.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
+                  "pm.collectionVariables.set(\"hitoAEliminarId\", pm.response.json().id)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"porcentajeConcrecion\": 60,\n  \"descripcion\": \"Hito descartable {{runSuffix}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}/hitos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoId}}",
+                "hitos"
+              ]
+            },
+            "description": "Crea un segundo hito solo para probar el borrado. Guarda su id en hitoAEliminarId."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear hito con porcentaje inválido (400)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"proyectoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Proyectos > Crear proyecto.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", () => pm.response.to.have.status(400))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"porcentajeConcrecion\": 150,\n  \"descripcion\": \"Fuera de rango\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}/hitos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoId}}",
+                "hitos"
+              ]
+            },
+            "description": "El porcentaje de concreción tiene que estar entre 0 y 100."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar hitos del proyecto",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"proyectoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Proyectos > Crear proyecto.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"incluye los hitos creados\", () => {",
+                  "  const ids = pm.response.json().map((h) => h.id)",
+                  "  pm.expect(ids).to.include(pm.collectionVariables.get(\"hitoId\"))",
+                  "  pm.expect(ids).to.include(pm.collectionVariables.get(\"hitoAEliminarId\"))",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}/hitos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoId}}",
+                "hitos"
+              ]
+            },
+            "description": "Devuelve los hitos del proyecto {{proyectoId}}."
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar hito",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"hitoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Hitos > Crear hito.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"actualiza solo el porcentaje\", () => {",
+                  "  const hito = pm.response.json()",
+                  "  pm.expect(hito.porcentajeConcrecion).to.eql(45)",
+                  "  pm.expect(hito.descripcion).to.include(\"Primera versión del mapa\")",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"porcentajeConcrecion\": 45\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/hitos/{{hitoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "hitos",
+                "{{hitoId}}"
+              ]
+            },
+            "description": "PATCH parcial: cambia solo el porcentaje de concreción del hito {{hitoId}}."
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar hito",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"hitoAEliminarId\")) {",
+                  "  throw new Error(\"Ejecutá primero Hitos > Crear hito a eliminar.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 204\", () => pm.response.to.have.status(204))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/hitos/{{hitoAEliminarId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "hitos",
+                "{{hitoAEliminarId}}"
+              ]
+            },
+            "description": "Borra el hito descartable."
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar hito ya eliminado (404)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"hitoAEliminarId\")) {",
+                  "  throw new Error(\"Ejecutá primero Hitos > Crear hito a eliminar.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 404\", () => pm.response.to.have.status(404))",
+                  "pm.collectionVariables.unset(\"hitoAEliminarId\")"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/hitos/{{hitoAEliminarId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "hitos",
+                "{{hitoAEliminarId}}"
+              ]
+            },
+            "description": "Confirma que el hito ya no existe y limpia hitoAEliminarId."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Colaboraciones",
       "item": [
         {
@@ -1597,7 +1964,7 @@
                   "const personas = pm.response.json()",
                   "pm.test(\"sugiere a la candidata, que tiene las habilidades requeridas\", () => pm.expect(personas.map((persona) => persona.id)).to.include(pm.collectionVariables.get(\"candidataId\")))",
                   "pm.test(\"no sugiere a la persona que ya está inscripta en el proyecto\", () => pm.expect(personas.map((persona) => persona.id)).to.not.include(pm.collectionVariables.get(\"personaId\")))",
-                  "pm.test(\"no expone los medios de contacto\", () => personas.forEach((persona) => pm.expect(persona).to.not.have.property(\"mediosDeContacto\")))"
+                  "pm.test(\"no expone el valor de los medios de contacto\", () => personas.forEach((persona) => persona.mediosDeContacto.forEach((medio) => pm.expect(medio).to.not.have.property(\"valor\"))))"
                 ]
               }
             }
@@ -2221,6 +2588,14 @@
       "key": "perfilAEliminarId",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "hitoId",
+      "value": ""
+    },
+    {
+      "key": "hitoAEliminarId",
+      "value": ""
     }
   ]
 }

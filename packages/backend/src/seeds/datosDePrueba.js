@@ -82,6 +82,18 @@ export default async function sembrarDatosDePrueba() {
             habilidadesOpcionales: [habilidades["typescript"]],
           },
         ],
+        hitos: [
+          {
+            fecha: new Date("2026-09-20T00:00:00.000Z"),
+            porcentajeConcrecion: 20,
+            descripcion: "Maqueta aprobada por el colectivo",
+          },
+          {
+            fecha: new Date("2026-10-10T00:00:00.000Z"),
+            porcentajeConcrecion: 50,
+            descripcion: "Calendario de talleres publicado",
+          },
+        ],
       },
       {
         titulo: "API de donaciones",
@@ -104,6 +116,13 @@ export default async function sembrarDatosDePrueba() {
               habilidades["mongodb"],
             ],
             habilidadesOpcionales: [habilidades["docker"]],
+          },
+        ],
+        hitos: [
+          {
+            fecha: new Date("2026-10-01T00:00:00.000Z"),
+            porcentajeConcrecion: 15,
+            descripcion: "Modelo de datos de donaciones definido",
           },
         ],
       },
@@ -154,6 +173,23 @@ export default async function sembrarDatosDePrueba() {
             ],
             habilidadesRequeridas: [habilidades["diseno_ux_ui"]],
             habilidadesOpcionales: [habilidades["react"]],
+          },
+        ],
+        hitos: [
+          {
+            fecha: new Date("2026-08-15T00:00:00.000Z"),
+            porcentajeConcrecion: 30,
+            descripcion: "Entrevistas a personas voluntarias",
+          },
+          {
+            fecha: new Date("2026-09-01T00:00:00.000Z"),
+            porcentajeConcrecion: 70,
+            descripcion: "Prototipo navegable del nuevo flujo",
+          },
+          {
+            fecha: new Date("2026-09-15T00:00:00.000Z"),
+            porcentajeConcrecion: 100,
+            descripcion: "Rediseño entregado",
           },
         ],
       },
