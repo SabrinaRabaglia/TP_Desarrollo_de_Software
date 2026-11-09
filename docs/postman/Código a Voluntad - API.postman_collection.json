@@ -1610,7 +1610,10 @@
                   "  pm.expect(notificacion.colectivo).to.eql(pm.collectionVariables.get(\"colectivoId\"))",
                   "  pm.expect(notificacion.personaColaboradora).to.eql(pm.collectionVariables.get(\"personaId\"))",
                   "})",
-                  "pm.test(\"se replica por email sin exponer la dirección\", () => pm.expect(notificacion.mediosExternosUtilizados).to.eql([\"EMAIL\"]))"
+                  "pm.test(\"queda pendiente de envío por email, sin exponer la dirección\", () => {",
+                  "  pm.expect(notificacion.pendienteDeEnvio).to.eql(true)",
+                  "  pm.expect(notificacion.mediosExternosUtilizados).to.eql([])",
+                  "})"
                 ]
               }
             }
@@ -1670,7 +1673,8 @@
                 "exec": [
                   "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
                   "const notificaciones = pm.response.json()",
-                  "pm.test(\"contiene la notificación enviada\", () => pm.expect(notificaciones[0].personaColaboradora).to.eql(pm.collectionVariables.get(\"personaId\")))"
+                  "pm.test(\"contiene la notificación enviada\", () => pm.expect(notificaciones[0].personaColaboradora).to.eql(pm.collectionVariables.get(\"personaId\")))",
+                  "pm.test(\"o sigue pendiente o ya salió por email; el envío corre en segundo plano\", () => pm.expect(notificaciones[0].pendienteDeEnvio || notificaciones[0].mediosExternosUtilizados.includes(\"EMAIL\")).to.be.true)"
                 ]
               }
             }

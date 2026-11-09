@@ -83,6 +83,11 @@ TELEGRAM_BOT_TOKEN=123456:ABC-DEF
 - **`EMAIL_FROM`**: remitente de los correos. Si falta, se usa `SMTP_USER`.
 - **`TELEGRAM_BOT_TOKEN`**: token del bot. Cada persona carga como medio de contacto `TELEGRAM` el chat id numérico que obtiene al escribirle al bot, porque la Bot API solo puede iniciar conversaciones con quienes ya le hablaron.
 
+El envío es asíncrono. Al contactar a una persona, la notificación se guarda con un envío `PENDIENTE` por cada medio de contacto y la respuesta vuelve enseguida con `pendienteDeEnvio: true` y `mediosExternosUtilizados` vacío. Un proceso dentro del servidor reclama las notificaciones pendientes, las envía por cada canal y, si un canal falla, lo reintenta en la próxima pasada hasta agotar los intentos, momento en que el envío queda `FALLIDO`. A medida que salen, `mediosExternosUtilizados` lista los tipos por los que se replicó.
+
+- **`NOTIFICACIONES_INTERVALO_MS`**: cada cuánto corre la pasada de envíos y cuánto espera un envío fallido antes de reintentarse. Por defecto 30000.
+- **`NOTIFICACIONES_MAXIMO_INTENTOS`**: intentos por medio antes de darlo por fallido. Por defecto 5.
+
 En producción (Azure Container Apps) se configuran una sola vez y los deploys posteriores las conservan:
 
 ```bash
@@ -176,7 +181,7 @@ Los dos procesos son idempotentes. Insertan lo que falta por su clave natural, n
 | Cuentas en Persona | Embebido | Relación uno a pocos, sin existencia propia fuera de la persona. |
 | Medios de contacto en Persona | Embebido | Relación uno a pocos, sin existencia propia fuera de la persona. Quedan registrados pero la API no los muestra. |
 | Colaboración | Colección propia con referencias a persona y proyecto | Es una relación muchos a muchos que crece con el historial. Un índice único impide inscribir dos veces a la misma persona en el mismo proyecto. |
-| Notificación | Colección propia con referencias a colectivo, persona y perfil | Crece sin límite con el tiempo y se consulta por persona (su bandeja), con un índice sobre `personaColaboradora`. El perfil se guarda por id porque vive embebido en el proyecto. Los medios por los que se replicó se copian embebidos, como registro de a dónde se envió. Se borran junto con la persona. |
+| Notificación | Colección propia con referencias a colectivo, persona y perfil | Crece sin límite con el tiempo y se consulta por persona (su bandeja), con un índice sobre `personaColaboradora`. El perfil se guarda por id porque vive embebido en el proyecto. Guarda un envío embebido por cada medio de contacto de la persona, con su estado (`PENDIENTE`, `ENVIADO`, `FALLIDO`), intentos y último error; un proceso periódico los despacha y reintenta. Se borran junto con la persona. |
 
 ### Ids
 

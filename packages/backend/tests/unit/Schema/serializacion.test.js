@@ -38,23 +38,38 @@ describe("serialización a JSON de los documentos", () => {
     expect(persona.mediosDeContacto[0].valor).toBe("ana@example.com")
   })
 
-  test("una notificación expone solo el tipo de los medios externos utilizados", () => {
+  test("una notificación expone el flag de pendiente y los tipos ya enviados, nunca sus envíos ni valores", () => {
     const notificacion = new NotificacionModel({
       fecha,
       contenido: "Hola",
       colectivo: new mongoose.Types.ObjectId(),
       personaColaboradora: new mongoose.Types.ObjectId(),
       perfil: new mongoose.Types.ObjectId(),
-      mediosExternosUtilizados: [
-        { tipo: "EMAIL", valor: "ana@example.com" },
-        { tipo: "SMS", valor: "+54 9 11 2345-6789" },
+      envios: [
+        {
+          medio: { tipo: "EMAIL", valor: "ana@example.com" },
+          estado: "ENVIADO",
+          intentos: 1,
+          enviadoEn: fecha,
+        },
+        {
+          medio: { tipo: "SMS", valor: "+54 9 11 2345-6789" },
+          estado: "PENDIENTE",
+          ultimoError: "SMS caído",
+        },
       ],
+      procesandoDesde: fecha,
     })
 
-    const json = notificacion.toJSON()
+    const json = JSON.parse(JSON.stringify(notificacion))
 
-    expect(json.mediosExternosUtilizados).toEqual(["EMAIL", "SMS"])
+    expect(json.mediosExternosUtilizados).toEqual(["EMAIL"])
+    expect(json.pendienteDeEnvio).toBe(true)
+    expect(json).not.toHaveProperty("envios")
+    expect(json).not.toHaveProperty("procesandoDesde")
+    expect(json).not.toHaveProperty("reintentarDesde")
     expect(JSON.stringify(json)).not.toContain("ana@example.com")
+    expect(JSON.stringify(json)).not.toContain("SMS caído")
   })
 
   test("una colaboración pública muestra quién la realizó", () => {

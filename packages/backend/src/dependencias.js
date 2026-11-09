@@ -25,7 +25,7 @@ import HabilidadService from "./services/HabilidadService.js"
 import NotificacionService from "./services/NotificacionService.js"
 import HitoService from "./services/HitoService.js"
 
-import NotificadorExterno from "./services/NotificadorExterno.js"
+import EnvioDeNotificaciones from "./services/EnvioDeNotificaciones.js"
 import { crearCanales } from "./canales/canales.js"
 import PerfilService from "./services/PerfilService.js"
 import PersonaColaboradoraService from "./services/PersonaColaboradoraService.js"
@@ -82,11 +82,20 @@ const colaboracionService = new ColaboracionService(
   proyectoRepository,
   personaColaboradoraRepository,
 )
+export const envioDeNotificaciones = new EnvioDeNotificaciones(
+  notificacionRepository,
+  canales,
+  {
+    maximoDeIntentos: Number(process.env.NOTIFICACIONES_MAXIMO_INTENTOS) || 5,
+    esperaEntreIntentosMs:
+      Number(process.env.NOTIFICACIONES_INTERVALO_MS) || 30_000,
+  },
+)
 const notificacionService = new NotificacionService(
   notificacionRepository,
   perfilService,
   personaColaboradoraService,
-  new NotificadorExterno(canales),
+  envioDeNotificaciones,
 )
 const hitoService = new HitoService(proyectoService, proyectoRepository)
 

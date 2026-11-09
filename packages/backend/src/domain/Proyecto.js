@@ -104,6 +104,7 @@ export default class Proyecto {
       colectivo: this.colectivo,
       personaColaboradora,
       perfil,
+      mediosDeContacto: personaColaboradora.mediosDeContacto,
     })
   }
 

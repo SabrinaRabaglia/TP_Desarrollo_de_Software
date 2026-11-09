@@ -2409,7 +2409,8 @@
           "colectivo",
           "personaColaboradora",
           "perfil",
-          "mediosExternosUtilizados"
+          "mediosExternosUtilizados",
+          "pendienteDeEnvio"
         ],
         "properties": {
           "id": {
@@ -2448,10 +2449,14 @@
           },
           "mediosExternosUtilizados": {
             "type": "array",
-            "description": "Tipos de medio de contacto por los que se replicó la notificación con éxito: si un envío falla, ese medio no figura. Los valores (emails y teléfonos) no se exponen.",
+            "description": "Tipos de medio de contacto por los que ya se replicó la notificación. El envío es asíncrono: recién creada viene vacío y se completa a medida que un proceso periódico despacha cada medio. Un medio cuyo envío agotó los reintentos no figura. Los valores (emails y teléfonos) no se exponen.",
             "items": {
               "$ref": "#/components/schemas/TipoMedioContacto"
             }
+          },
+          "pendienteDeEnvio": {
+            "type": "boolean",
+            "description": "true mientras quede algún medio de contacto por el que todavía no se envió ni se agotaron los reintentos."
           },
           "createdAt": {
             "type": "string",
