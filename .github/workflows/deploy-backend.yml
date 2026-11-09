@@ -51,19 +51,24 @@ jobs:
       - name: Push image
         run: docker push "$BACKEND_IMAGE"
 
-      - name: Configure database secret
+      - name: Configure secrets
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
           if [ -z "$MONGODB_URI" ]; then
             echo "::error::Falta el secret MONGODB_URI del repositorio (URI de MongoDB Atlas)."
+            exit 1
+          fi
+          if [ -z "$JWT_SECRET" ]; then
+            echo "::error::Falta el secret JWT_SECRET del repositorio (secreto con el que se firman los tokens de sesión)."
             exit 1
           fi
 
           az containerapp secret set \
             --name ca-ddso-backend \
             --resource-group rg-ddso-backend \
-            --secrets "mongodb-uri=${MONGODB_URI}" \
+            --secrets "mongodb-uri=${MONGODB_URI}" "jwt-secret=${JWT_SECRET}" \
             --output none
 
       - name: Deploy backend
@@ -81,6 +86,7 @@ jobs:
             --set-env-vars \
               MONGODB_URI=secretref:mongodb-uri \
               MONGODB_DB_NAME=codigo-a-voluntad \
+              JWT_SECRET=secretref:jwt-secret \
             --min-replicas 1 \
             --max-replicas 1 \
             --output none

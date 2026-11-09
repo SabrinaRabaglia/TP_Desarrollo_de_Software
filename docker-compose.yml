@@ -17,6 +17,7 @@ services:
       SERVER_PORT: 8000
       MONGODB_URI: mongodb://root:secret@mongo:27017/?authSource=admin
       MONGODB_DB_NAME: codigo-a-voluntad
+      JWT_SECRET: ${JWT_SECRET:-secreto-de-desarrollo-para-compose}
     ports:
       - "8000:8000"
 

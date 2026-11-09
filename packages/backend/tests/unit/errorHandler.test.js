@@ -3,8 +3,11 @@ import mongoose from "mongoose"
 import {
   AlreadyExists,
   BadRequestError,
+  CredencialesInvalidas,
   EntityNotFound,
   InvalidReference,
+  NoAutenticado,
+  NoAutorizado,
 } from "../../src/errors/ApplicationErrors.js"
 import {
   DomainRuleError,
@@ -53,6 +56,9 @@ test.each([
   [new EntityNotFound("Recurso no encontrado"), 404],
   [new InvalidReference("Referencia inválida"), 404],
   [new AlreadyExists("Ya existe"), 409],
+  [new CredencialesInvalidas("Email o contraseña incorrectos"), 401],
+  [new NoAutenticado("Falta el token"), 401],
+  [new NoAutorizado("Rol no permitido"), 403],
 ])("traduce %s al status HTTP correspondiente", (error, status) => {
   const res = mockRes()
 

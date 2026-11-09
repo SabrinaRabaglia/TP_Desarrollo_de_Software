@@ -1,3 +1,4 @@
+import AuthController from "./controllers/AuthController.js"
 import CatalogoController from "./controllers/CatalogoController.js"
 import ColaboracionController from "./controllers/ColaboracionController.js"
 import ColectivoController from "./controllers/ColectivoController.js"
@@ -17,7 +18,9 @@ import PersonaColaboradoraRepository from "./repositories/PersonaColaboradoraRep
 import ProvinciaRepository from "./repositories/ProvinciaRepository.js"
 import ProyectoRepository from "./repositories/ProyectoRepository.js"
 import TipoColectivoRepository from "./repositories/TipoColectivoRepository.js"
+import UsuarioRepository from "./repositories/UsuarioRepository.js"
 
+import AuthService from "./services/AuthService.js"
 import CatalogoService from "./services/CatalogoService.js"
 import ColaboracionService from "./services/ColaboracionService.js"
 import ColectivoService from "./services/ColectivoService.js"
@@ -46,6 +49,7 @@ export const mediosSimulados = simulados
 
 const proyectoRepository = new ProyectoRepository()
 const tipoColectivoRepository = new TipoColectivoRepository()
+const usuarioRepository = new UsuarioRepository()
 
 const catalogoService = new CatalogoService(paisRepository, provinciaRepository)
 const habilidadService = new HabilidadService(
@@ -98,7 +102,13 @@ const notificacionService = new NotificacionService(
   envioDeNotificaciones,
 )
 const hitoService = new HitoService(proyectoService, proyectoRepository)
+const authService = new AuthService(
+  usuarioRepository,
+  colectivoRepository,
+  personaColaboradoraRepository,
+)
 
+export const authController = new AuthController(authService)
 export const catalogoController = new CatalogoController(catalogoService)
 export const colaboracionController = new ColaboracionController(
   colaboracionService,

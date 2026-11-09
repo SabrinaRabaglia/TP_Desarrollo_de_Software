@@ -17,6 +17,10 @@
       "description": "Salud del servicio y endpoints de prueba"
     },
     {
+      "name": "Auth",
+      "description": "Inicio de sesión con JWT. Los usuarios son colectivos o personas colaboradoras. Para probar una ruta protegida desde esta página: hacé login, copiá el `token`, apretá **Authorize** y pegalo."
+    },
+    {
       "name": "Habilidades",
       "description": "Catálogo de habilidades"
     },
@@ -90,6 +94,94 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Iniciar sesión",
+        "description": "Valida email y contraseña y devuelve un JWT junto con el usuario. El email no distingue mayúsculas. Un email inexistente y una contraseña incorrecta responden el mismo `401`.",
+        "operationId": "login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              },
+              "example": {
+                "email": "huerta@colectivo.test",
+                "contrasena": "secreto123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sesión iniciada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sesion"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "description": "Email o contraseña incorrectos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Email o contraseña incorrectos",
+                  "details": []
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Usuario actual",
+        "description": "Devuelve el usuario del token enviado en `Authorization: Bearer <token>`.",
+        "operationId": "usuarioActual",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuario de la sesión",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       }
@@ -1778,6 +1870,80 @@
           }
         }
       },
+      "RolUsuario": {
+        "type": "string",
+        "enum": ["COLECTIVO", "PERSONA_COLABORADORA"],
+        "description": "De qué colección es la entidad del usuario."
+      },
+      "Login": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["email", "contrasena"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "huerta@colectivo.test"
+          },
+          "contrasena": {
+            "type": "string",
+            "minLength": 8,
+            "example": "secreto123"
+          }
+        }
+      },
+      "Usuario": {
+        "type": "object",
+        "required": ["id", "email", "rol", "entidad"],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "rol": {
+            "$ref": "#/components/schemas/RolUsuario"
+          },
+          "entidad": {
+            "type": "object",
+            "nullable": true,
+            "description": "El colectivo o la persona colaboradora del usuario. `nombre` es el nombre del colectivo o el nombre de fantasía de la persona. `null` si la entidad fue eliminada.",
+            "required": ["id", "nombre"],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/ObjectId"
+              },
+              "nombre": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "example": {
+          "id": "6650a1b2c3d4e5f6a7b8c9d0",
+          "email": "huerta@colectivo.test",
+          "rol": "COLECTIVO",
+          "entidad": {
+            "id": "6650a1b2c3d4e5f6a7b8c9d1",
+            "nombre": "Huerta Comunitaria Sur"
+          }
+        }
+      },
+      "Sesion": {
+        "type": "object",
+        "required": ["token", "usuario"],
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT para el header `Authorization: Bearer <token>`."
+          },
+          "usuario": {
+            "$ref": "#/components/schemas/Usuario"
+          }
+        }
+      },
       "HabilidadInput": {
         "type": "object",
         "additionalProperties": false,
@@ -2592,6 +2758,20 @@
           }
         }
       },
+      "Unauthorized": {
+        "description": "Falta el token, es inválido o está vencido.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "Falta el token de acceso",
+              "details": []
+            }
+          }
+        }
+      },
       "NotFound": {
         "description": "Recurso no encontrado, referencia a una entidad inexistente (por ejemplo una habilidad, un país o un colectivo que no existe) o ruta inexistente.",
         "content": {
@@ -2647,6 +2827,14 @@
             }
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "El `token` que devuelve `POST /auth/login`. Vence según `JWT_EXPIRA_EN` (8 horas por defecto)."
       }
     }
   }

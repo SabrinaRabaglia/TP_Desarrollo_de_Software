@@ -56,12 +56,18 @@ ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 SERVER_PORT=8000
 MONGODB_URI=mongodb://root:secret@localhost:27017/?authSource=admin
 MONGODB_DB_NAME=codigo-a-voluntad
+JWT_SECRET=cambiame-por-un-secreto-largo-y-aleatorio
+JWT_EXPIRA_EN=8h
 ```
 
 - **`ALLOWED_ORIGINS`**: Define los orígenes permitidos para las solicitudes CORS. Asegurate de incluir la URL donde se ejecuta tu frontend (por defecto, `http://localhost:3000` para Create React App). Cuando se haga el despliegue en nube acá se deberá incluir la URL donde se desplegó el frontend.
 - **`SERVER_PORT`**: El puerto en el que se ejecutará el servidor backend (ej. `8000`).
 - **`MONGODB_URI`**: URI de conexión a MongoDB. El `authSource=admin` va dentro de la URI porque el usuario `root` del contenedor vive en la base `admin`.
 - **`MONGODB_DB_NAME`**: Nombre de la base. Mongo la crea sola con el primer documento.
+- **`JWT_SECRET`**: secreto con el que se firman los tokens de sesión. Sin él, fuera de producción se usa un secreto fijo de desarrollo y el servidor lo avisa al arrancar. En producción (`NODE_ENV=production`, como en la imagen de Docker) el servidor no arranca sin él.
+- **`JWT_EXPIRA_EN`**: cuánto dura un token, en el formato de [`jsonwebtoken`](https://github.com/auth0/node-jsonwebtoken#usage) (`8h`, `30m`, `7d`). Por defecto `8h`.
+
+En producción el workflow de deploy toma el secreto del secret `JWT_SECRET` del repositorio de GitHub, igual que hace con `MONGODB_URI`, y falla con un error claro si falta. Con `docker compose` se puede fijar con la variable `JWT_SECRET` del entorno; si no está, el compose usa un valor de desarrollo.
 
 #### Notificaciones por medios externos
 
@@ -165,7 +171,7 @@ La persistencia usa MongoDB con Mongoose, siguiendo la guía de la cátedra. Cad
 ### Datos iniciales (seeds)
 
 - Al arrancar, el servidor carga los catálogos: país, las 24 provincias, los tipos de colectivo y las habilidades iniciales.
-- `npm run seed:backend` carga además los datos de prueba: colectivos, proyectos (con perfiles e hitos), personas y colaboraciones.
+- `npm run seed:backend` carga además los datos de prueba: colectivos, proyectos (con perfiles e hitos), personas, colaboraciones y un usuario por cada colectivo y persona (ver [Usuarios de prueba](#usuarios-de-prueba)).
 
 Los dos procesos son idempotentes. Insertan lo que falta por su clave natural, nunca borran y no modifican lo que ya existe, así que se pueden correr cualquier cantidad de veces, también en producción.
 
@@ -197,6 +203,75 @@ En producción la base es un cluster gratuito (M0) de MongoDB Atlas. El workflow
 3. Copiar la URI de conexión (`mongodb+srv://usuario:password@cluster.../?retryWrites=true&w=majority`) y guardarla en GitHub, en **Settings → Secrets and variables → Actions**, como `MONGODB_URI`.
 
 Si falta el secret, el deploy falla con un error que lo indica, antes de tocar el Container App.
+
+## Autenticación
+
+Los usuarios del sistema son colectivos o personas colaboradoras. Cada usuario tiene un email, una contraseña, un `rol` (`COLECTIVO` o `PERSONA_COLABORADORA`) y la `entidad` a la que representa. La colección es `usuarios` y la contraseña se guarda como hash scrypt; la API nunca la devuelve.
+
+- `POST /auth/login` recibe `{ email, contrasena }` y devuelve `{ token, usuario }`. Un email inexistente y una contraseña incorrecta responden el mismo `401`.
+- `GET /auth/me` devuelve el usuario del token enviado en `Authorization: Bearer <token>`.
+
+El usuario público tiene esta forma, donde `nombre` es el nombre del colectivo o el nombre de fantasía de la persona:
+
+```json
+{
+  "id": "…",
+  "email": "huerta@colectivo.test",
+  "rol": "COLECTIVO",
+  "entidad": { "id": "…", "nombre": "Huerta Comunitaria Sur" }
+}
+```
+
+### Proteger una ruta
+
+Ninguna ruta existente está protegida. Cada feature decide cuáles lo son con los middlewares de `src/middlewares/autenticar.js`. `autenticar` exige un token válido y deja `req.usuario = { id, rol, entidad }`; sin token o con uno inválido o vencido responde `401`. `autorizar(...roles)` va después de `autenticar` y responde `403` si el rol del usuario no está en la lista.
+
+```js
+import { autenticar, autorizar } from "../middlewares/autenticar.js"
+import { RolUsuario } from "../domain/enums/RolUsuario.js"
+
+routes.post(
+  "/proyectos",
+  autenticar,
+  autorizar(RolUsuario.COLECTIVO),
+  validar(proyectoSchema),
+  proyectoController.create,
+)
+```
+
+En el controller, `req.usuario.entidad` es el id del colectivo o de la persona que hace el pedido.
+
+### Usuarios de prueba
+
+`npm run seed:backend` crea un usuario por cada colectivo y cada persona de los datos de prueba. Todos tienen la contraseña `secreto123`, así que no hay que correr este seed contra una base que use gente real.
+
+<!-- prettier-ignore -->
+| Email | Rol | Entidad | Contraseña |
+|---|---|---|---|
+| `huerta@colectivo.test` | `COLECTIVO` | Huerta Comunitaria Sur | `secreto123` |
+| `codigoabierto@colectivo.test` | `COLECTIVO` | Fundación Código Abierto | `secreto123` |
+| `litoral@colectivo.test` | `COLECTIVO` | Asamblea Ambiental del Litoral | `secreto123` |
+| `anag@persona.test` | `PERSONA_COLABORADORA` | anag | `secreto123` |
+| `lucho_dev@persona.test` | `PERSONA_COLABORADORA` | lucho_dev | `secreto123` |
+| `sol.datos@persona.test` | `PERSONA_COLABORADORA` | sol.datos | `secreto123` |
+| `anon123@persona.test` | `PERSONA_COLABORADORA` | anon123 | `secreto123` |
+
+### Obtener un token sin pasar por el front
+
+El script `token` busca el usuario por email en la base del `.env` y escribe su token por stdout:
+
+```bash
+npm run token --workspace=backend -- huerta@colectivo.test
+```
+
+Con `-s` npm no imprime su encabezado, y la salida es solo el token:
+
+```bash
+TOKEN=$(npm run -s token --workspace=backend -- huerta@colectivo.test)
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/auth/me
+```
+
+En [`/api-docs`](http://localhost:8000/api-docs), el botón **Authorize** recibe el mismo token y lo manda en las rutas protegidas.
 
 ## Documentación de la API (Swagger)
 

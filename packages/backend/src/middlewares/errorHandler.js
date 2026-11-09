@@ -3,9 +3,12 @@ import {
   AlreadyExists,
   BadRequestError,
   ConcurrentModification,
+  CredencialesInvalidas,
   EntityInUse,
   EntityNotFound,
   InvalidReference,
+  NoAutenticado,
+  NoAutorizado,
 } from "../errors/ApplicationErrors.js"
 import {
   DomainValidationError,
@@ -55,6 +58,17 @@ export default function errorHandler(error, _req, res, next) {
     error instanceof ConcurrentModification
   ) {
     return jsonError(res, 409, error.message)
+  }
+
+  if (
+    error instanceof CredencialesInvalidas ||
+    error instanceof NoAutenticado
+  ) {
+    return jsonError(res, 401, error.message)
+  }
+
+  if (error instanceof NoAutorizado) {
+    return jsonError(res, 403, error.message)
   }
 
   if (error instanceof BadRequestError) {
