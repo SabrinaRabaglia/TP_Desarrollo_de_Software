@@ -15,6 +15,12 @@ export class EntityInUse extends ApplicationError {}
 
 export class ConcurrentModification extends ApplicationError {}
 
+export class CredencialesInvalidas extends ApplicationError {}
+
+export class NoAutenticado extends ApplicationError {}
+
+export class NoAutorizado extends ApplicationError {}
+
 export class BadRequestError extends ApplicationError {
   constructor(message, details = []) {
     super(message)
