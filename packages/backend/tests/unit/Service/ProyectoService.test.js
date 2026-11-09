@@ -50,13 +50,11 @@ describe("ProyectoService", () => {
       colaboracionRepository,
     )
 
-    const colectivo = (
-      await colectivoService.create({
-        nombre: "Asamblea Ambiental",
-        descripcion: "Protección de humedales",
-        tipo: "Asamblea",
-      })
-    ).colectivo
+    const colectivo = await colectivoService.create({
+      nombre: "Asamblea Ambiental",
+      descripcion: "Protección de humedales",
+      tipo: "Asamblea",
+    })
 
     dtoProyectoValido = {
       titulo: "Plataforma de Colaboración",
@@ -171,13 +169,11 @@ describe("ProyectoService", () => {
 
     test("permite cambiar el colectivo por otro existente", async () => {
       const creado = await service.create(dtoProyectoValido)
-      const colectivo = (
-        await colectivoService.create({
-          nombre: "Otra organización",
-          descripcion: "Proyecto comunitario",
-          tipo: "ONG",
-        })
-      ).colectivo
+      const colectivo = await colectivoService.create({
+        nombre: "Otra organización",
+        descripcion: "Proyecto comunitario",
+        tipo: "ONG",
+      })
 
       await service.update(creado.id, { colectivo: colectivo.id })
 
@@ -311,13 +307,11 @@ describe("ProyectoService", () => {
         "Analista",
       )
       const perfilesAntes = copiaDePerfiles(proyecto)
-      const otroColectivo = (
-        await colectivoService.create({
-          nombre: "Otra organización",
-          descripcion: "Proyecto comunitario",
-          tipo: "ONG",
-        })
-      ).colectivo
+      const otroColectivo = await colectivoService.create({
+        nombre: "Otra organización",
+        descripcion: "Proyecto comunitario",
+        tipo: "ONG",
+      })
 
       await service.update(proyecto.id, {
         titulo: "Título nuevo",

@@ -1,4 +1,4 @@
-export default {
+const opcionesJSON = {
   virtuals: true,
   versionKey: false,
   transform: (_documento, json) => {
@@ -6,3 +6,11 @@ export default {
     return json
   },
 }
+
+export const opcionesJSONCon = (ajustar) => ({
+  ...opcionesJSON,
+  transform: (documento, json) =>
+    ajustar(opcionesJSON.transform(documento, json)),
+})
+
+export default opcionesJSON

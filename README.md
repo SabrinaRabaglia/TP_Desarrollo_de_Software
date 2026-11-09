@@ -124,7 +124,7 @@ La persistencia usa MongoDB con Mongoose, siguiendo la guía de la cátedra. Cad
 - `src/repositories/`: la única capa que conoce a Mongoose.
 - `src/config/database.js`: la conexión, que se abre en `src/server.js` antes de levantar el servidor.
 - `src/validations/` y `src/middlewares/validar.js`: los schemas de zod de cada recurso. Las rutas validan el body o la query con `validar(schema)` antes de llegar al controller; si no pasa, responde `400`.
-- `src/dtos/`: lo que expone la API. Los servicios devuelven entidades del dominio (porque otros servicios también los usan) y cada controller pasa la respuesta por su DTO.
+- La forma pública de cada entidad la define el `toJSON` de su schema, en `src/schemas/`. Los servicios devuelven documentos (porque otros servicios también los usan) y cada controller responde `res.json(documento)`. Las reglas de exposición viven ahí: un medio de contacto nunca muestra su `valor`, una notificación lista solo los tipos de los medios usados, una colaboración anónima oculta a la persona, y un colectivo trae sus proyectos por un populate virtual.
 - `src/dependencias.js`: el único lugar donde se crean los repositorios, servicios y controllers. Las rutas de `src/routes/` solo mapean cada URL a un método del controller.
 
 ### Datos iniciales (seeds)

@@ -85,13 +85,11 @@ describe("NotificacionService", () => {
       new NotificadorExterno(canales),
     )
 
-    colectivo = (
-      await colectivoService.create({
-        nombre: "Huerta Comunitaria Sur",
-        descripcion: "Huertas urbanas",
-        tipo: "Asociación barrial",
-      })
-    ).colectivo
+    colectivo = await colectivoService.create({
+      nombre: "Huerta Comunitaria Sur",
+      descripcion: "Huertas urbanas",
+      tipo: "Asociación barrial",
+    })
     proyecto = await proyectoService.create({
       titulo: "Sitio web de la huerta",
       descripcion: "Publicar el calendario de talleres",

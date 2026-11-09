@@ -1,7 +1,7 @@
 import ColectivoModel from "../schemas/colectivoSchema.js"
 import guardar from "./guardar.js"
 
-const UBICACION = ["pais", "provincia"]
+const REFERENCIAS = ["pais", "provincia", "proyectos"]
 
 export default class ColectivoRepository {
   constructor() {
@@ -9,11 +9,11 @@ export default class ColectivoRepository {
   }
 
   async findAll() {
-    return await this.model.find().populate(UBICACION)
+    return await this.model.find().populate(REFERENCIAS)
   }
 
   async findById(id) {
-    return await this.model.findById(id).populate(UBICACION)
+    return await this.model.findById(id).populate(REFERENCIAS)
   }
 
   async findByNombre(nombre) {
@@ -22,7 +22,7 @@ export default class ColectivoRepository {
 
   async save(colectivo) {
     const guardado = await guardar(this.model, colectivo)
-    return await guardado.populate(UBICACION)
+    return await guardado.populate(REFERENCIAS)
   }
 
   async deleteById(id) {

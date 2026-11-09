@@ -2039,7 +2039,9 @@
             "items": {
               "$ref": "#/components/schemas/Proyecto"
             }
-          }
+          },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
         }
       },
       "ProyectoInput": {

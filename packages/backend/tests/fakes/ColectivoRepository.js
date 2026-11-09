@@ -1,13 +1,26 @@
 import { randomUUID } from "node:crypto"
+import ProyectoRepository from "./ProyectoRepository.js"
+
+const conProyectos = (colectivo) => {
+  if (colectivo) {
+    colectivo.proyectos = ProyectoRepository.proyectos.filter(
+      (proyecto) => proyecto.colectivo === colectivo.id,
+    )
+  }
+  return colectivo
+}
+
 export default class ColectivoRepository {
   static colectivos = []
+
   async findAll() {
-    return ColectivoRepository.colectivos
+    return ColectivoRepository.colectivos.map(conProyectos)
   }
 
   async findById(id) {
-    return ColectivoRepository.colectivos.find((c) => c.id === id)
+    return conProyectos(ColectivoRepository.colectivos.find((c) => c.id === id))
   }
+
   async findByNombre(nombre) {
     return ColectivoRepository.colectivos.find((c) => c.nombre === nombre)
   }
@@ -19,11 +32,12 @@ export default class ColectivoRepository {
     )
     if (indice === -1) {
       ColectivoRepository.colectivos.push(nuevo)
-      return nuevo
+    } else {
+      ColectivoRepository.colectivos[indice] = nuevo
     }
-    ColectivoRepository.colectivos[indice] = nuevo
-    return nuevo
+    return conProyectos(nuevo)
   }
+
   async deleteById(id) {
     ColectivoRepository.colectivos = ColectivoRepository.colectivos.filter(
       (c) => c.id !== id,

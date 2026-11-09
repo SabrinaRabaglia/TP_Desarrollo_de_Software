@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 import Notificacion from "../domain/Notificacion.js"
-import opcionesJSON from "./opcionesJSON.js"
+import { opcionesJSONCon } from "./opcionesJSON.js"
 import medioDeContactoSchema from "./medioDeContactoSchema.js"
 
 const notificacionSchema = new mongoose.Schema(
@@ -21,7 +21,16 @@ const notificacionSchema = new mongoose.Schema(
     perfil: { type: mongoose.Schema.Types.ObjectId, required: true },
     mediosExternosUtilizados: [medioDeContactoSchema],
   },
-  { timestamps: true, collection: "notificaciones", toJSON: opcionesJSON },
+  {
+    timestamps: true,
+    collection: "notificaciones",
+    toJSON: opcionesJSONCon((json) => ({
+      ...json,
+      mediosExternosUtilizados: (json.mediosExternosUtilizados ?? []).map(
+        (medio) => medio.tipo,
+      ),
+    })),
+  },
 )
 
 notificacionSchema.loadClass(Notificacion)

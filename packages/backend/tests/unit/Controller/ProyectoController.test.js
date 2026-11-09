@@ -3,9 +3,7 @@ import ProyectoController from "../../../src/controllers/ProyectoController.js"
 import validar from "../../../src/middlewares/validar.js"
 import { busquedaProyectosSchema } from "../../../src/validations/proyecto.js"
 import { EstadoProyecto } from "../../../src/domain/enums/EstadoProyecto.js"
-import { proyectoDTO } from "../../../src/dtos/proyectoDTO.js"
 
-// El service devuelve el proyecto guardado; el controller lo pasa por el DTO.
 const guardado = (proyecto) => ({ ...proyecto, id: "1", perfiles: [] })
 const mockRes = () => ({
   status: jest.fn().mockReturnThis(),
@@ -48,9 +46,7 @@ describe("ProyectoController", () => {
 
       expect(proyectoServiceMock.getAll).toHaveBeenCalled()
       expect(res.status).toHaveBeenCalledWith(200)
-      expect(res.json).toHaveBeenCalledWith(
-        lista.map(guardado).map(proyectoDTO),
-      )
+      expect(res.json).toHaveBeenCalledWith(lista.map(guardado))
     })
 
     test.each([
@@ -85,9 +81,7 @@ describe("ProyectoController", () => {
         )
         expect(proyectoServiceMock.getAll).not.toHaveBeenCalled()
         expect(res.status).toHaveBeenCalledWith(200)
-        expect(res.json).toHaveBeenCalledWith(
-          lista.map(guardado).map(proyectoDTO),
-        )
+        expect(res.json).toHaveBeenCalledWith(lista.map(guardado))
       },
     )
   })
@@ -106,9 +100,7 @@ describe("ProyectoController", () => {
 
       expect(proyectoServiceMock.getById).toHaveBeenCalledWith("1")
       expect(res.status).toHaveBeenCalledWith(200)
-      expect(res.json).toHaveBeenCalledWith(
-        proyectoDTO(guardado(proyectoValido)),
-      )
+      expect(res.json).toHaveBeenCalledWith(guardado(proyectoValido))
     })
   })
 
@@ -127,9 +119,7 @@ describe("ProyectoController", () => {
 
       expect(proyectoServiceMock.create).toHaveBeenCalled()
       expect(res.status).toHaveBeenCalledWith(201)
-      expect(res.json).toHaveBeenCalledWith(
-        proyectoDTO(guardado(proyectoCreado)),
-      )
+      expect(res.json).toHaveBeenCalledWith(guardado(proyectoCreado))
     })
   })
 
@@ -151,9 +141,7 @@ describe("ProyectoController", () => {
         expect.any(Object),
       )
       expect(res.status).toHaveBeenCalledWith(200)
-      expect(res.json).toHaveBeenCalledWith(
-        proyectoDTO(guardado(proyectoGuardado)),
-      )
+      expect(res.json).toHaveBeenCalledWith(guardado(proyectoGuardado))
     })
   })
 
@@ -176,9 +164,7 @@ describe("ProyectoController", () => {
         cambiosParciales,
       )
       expect(res.status).toHaveBeenCalledWith(200)
-      expect(res.json).toHaveBeenCalledWith(
-        proyectoDTO(guardado(proyectoActualizado)),
-      )
+      expect(res.json).toHaveBeenCalledWith(guardado(proyectoActualizado))
     })
   })
 

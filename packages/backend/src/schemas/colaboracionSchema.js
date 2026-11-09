@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 import Colaboracion from "../domain/Colaboracion.js"
-import opcionesJSON from "./opcionesJSON.js"
+import { opcionesJSONCon } from "./opcionesJSON.js"
 
 const colaboracionSchema = new mongoose.Schema(
   {
@@ -17,7 +17,13 @@ const colaboracionSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true, collection: "colaboraciones", toJSON: opcionesJSON },
+  {
+    timestamps: true,
+    collection: "colaboraciones",
+    toJSON: opcionesJSONCon((json) =>
+      json.esAnonima ? { ...json, personaColaboradora: null } : json,
+    ),
+  },
 )
 
 colaboracionSchema.index(

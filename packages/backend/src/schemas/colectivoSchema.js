@@ -18,6 +18,12 @@ const colectivoSchema = new mongoose.Schema(
   { timestamps: true, collection: "colectivos", toJSON: opcionesJSON },
 )
 
+colectivoSchema.virtual("proyectos", {
+  ref: "Proyecto",
+  localField: "_id",
+  foreignField: "colectivo",
+})
+
 colectivoSchema.loadClass(Colectivo)
 
 export default mongoose.model("Colectivo", colectivoSchema)
