@@ -7,7 +7,11 @@ import {
 } from "../validations/proyecto.js"
 import { hitoSchema } from "../validations/hito.js"
 import validateId from "../middlewares/validateId.js"
-import { perfilController, proyectoController, hitoController } from "../dependencias.js"
+import {
+  perfilController,
+  proyectoController,
+  hitoController,
+} from "../dependencias.js"
 
 const routes = Router()
 
@@ -67,6 +71,5 @@ routes.post(
   hitoController.create,
 )
 routes.get("/proyectos/:id/hitos", validateId, hitoController.getByProyectoId)
-
 
 export default routes

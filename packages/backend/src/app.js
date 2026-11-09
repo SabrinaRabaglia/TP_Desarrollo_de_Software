@@ -11,7 +11,7 @@ import personaColaboradoraRoutes from "./routes/personaColaboradoraRoutes.js"
 import proyectoRoutes from "./routes/proyectoRoutes.js"
 import notificacionRoutes from "./routes/notificacionesRoutes.js"
 import errorHandler from "./middlewares/errorHandler.js"
-import hitoRoutes from "./routes/hitoRoutes.js";
+import hitoRoutes from "./routes/hitoRoutes.js"
 
 const require = createRequire(import.meta.url)
 const swaggerSpec = require("./docs/swaggerSpec.json")

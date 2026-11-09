@@ -13,7 +13,8 @@
     "test:backend": "npm test --workspace=backend",
     "seed:backend": "npm run seed --workspace=backend",
     "lint": "eslint .",
-    "format": "prettier . --write"
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
   },
   "keywords": [],
   "author": "",
