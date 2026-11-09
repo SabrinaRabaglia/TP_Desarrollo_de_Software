@@ -1,0 +1,11 @@
+.inicio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio);
+}
+
+.inicio-bajada {
+  max-width: 40rem;
+  font-size: 1.125rem;
+  color: var(--mui-palette-text-secondary);
+}
