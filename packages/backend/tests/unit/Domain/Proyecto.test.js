@@ -201,6 +201,52 @@ describe("Proyecto", () => {
     })
   })
 
+  describe("hitos", () => {
+    const proyecto = new Proyecto(
+      "Mapa",
+      "Mapa de humedales",
+      colectivo,
+      EstadoProyecto.PUBLICADO,
+      new Date("2026-10-01"),
+    )
+
+    test("admite un hito desde la fecha de alta en adelante", () => {
+      expect(() =>
+        proyecto.assertAdmiteHito({ fecha: new Date("2026-10-01") }),
+      ).not.toThrow()
+      expect(() =>
+        proyecto.assertAdmiteHito({ fecha: new Date("2026-10-20") }),
+      ).not.toThrow()
+    })
+
+    test("rechaza un hito anterior a la fecha de alta", () => {
+      expect(() =>
+        proyecto.assertAdmiteHito({ fecha: new Date("2026-09-30") }),
+      ).toThrow(DomainValidationError)
+    })
+
+    test("compara por día: admite un hito del mismo día aunque el alta tenga hora", () => {
+      const conHora = new Proyecto(
+        "Mapa",
+        "Mapa de humedales",
+        colectivo,
+        EstadoProyecto.PUBLICADO,
+        new Date("2026-10-01T15:00:00.000Z"),
+      )
+
+      expect(() =>
+        conHora.assertAdmiteHito({ fecha: new Date("2026-10-01") }),
+      ).not.toThrow()
+      expect(() =>
+        conHora.assertAdmiteHito({ fecha: new Date("2026-09-30T23:59:59Z") }),
+      ).toThrow(DomainValidationError)
+    })
+
+    test("unos cambios sin fecha no tienen nada que comprobar", () => {
+      expect(() => proyecto.assertAdmiteHito({})).not.toThrow()
+    })
+  })
+
   describe("contactar", () => {
     const perfil = new Perfil({
       descripcion: "Tester",

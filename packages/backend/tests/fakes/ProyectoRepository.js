@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto"
 import { EstadoProyecto } from "../../src/domain/enums/EstadoProyecto.js"
+import { inicioDelDiaSiguiente } from "../../src/domain/fechas.js"
 
 export default class ProyectoRepository {
   static proyectos = []
@@ -123,9 +124,13 @@ export default class ProyectoRepository {
     return true
   }
 
+  async findByHitoId(hitoId) {
+    return ProyectoRepository.conHito(hitoId)
+  }
+
   async agregarHito(proyectoId, hito) {
     const proyecto = await this.findById(proyectoId)
-    if (!proyecto) {
+    if (!proyecto || proyecto.fechaAlta >= inicioDelDiaSiguiente(hito.fecha)) {
       return null
     }
     hito.id = randomUUID()
@@ -134,10 +139,13 @@ export default class ProyectoRepository {
   }
 
   async actualizarHito(hitoId, cambios) {
-    const hito = ProyectoRepository.conHito(hitoId)?.hitos.find(
-      (h) => h.id === hitoId,
-    )
-    if (!hito) {
+    const proyecto = ProyectoRepository.conHito(hitoId)
+    const hito = proyecto?.hitos.find((h) => h.id === hitoId)
+    if (
+      !hito ||
+      (cambios.fecha !== undefined &&
+        proyecto.fechaAlta >= inicioDelDiaSiguiente(cambios.fecha))
+    ) {
       return null
     }
     return Object.assign(hito, cambios)

@@ -5,6 +5,7 @@ import {
   busquedaProyectosSchema,
   proyectoSchema,
 } from "../validations/proyecto.js"
+import { hitoSchema } from "../validations/hito.js"
 import validateId from "../middlewares/validateId.js"
 import { perfilController, proyectoController, hitoController } from "../dependencias.js"
 
@@ -59,8 +60,12 @@ routes.delete(
   perfilController.delete,
 )
 
-//rutas de hitos: 
-routes.post("/proyectos/:id/hitos", validateId, hitoController.create)
+routes.post(
+  "/proyectos/:id/hitos",
+  validateId,
+  validar(hitoSchema),
+  hitoController.create,
+)
 routes.get("/proyectos/:id/hitos", validateId, hitoController.getByProyectoId)
 
 

@@ -1,10 +1,15 @@
 import mongoose from "mongoose"
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
+import { inicioDelDiaSiguiente } from "../domain/fechas.js"
 import ProyectoModel from "../schemas/proyectoSchema.js"
 import guardar from "./guardar.js"
 
 const abierto = { estado: { $ne: EstadoProyecto.CERRADO } }
 const CAMPOS_DEL_HITO = ["fecha", "porcentajeConcrecion", "descripcion"]
+const dadoDeAltaAntesDe = (fecha) =>
+  fecha === undefined
+    ? {}
+    : { fechaAlta: { $lt: inicioDelDiaSiguiente(fecha) } }
 
 export default class ProyectoRepository {
   constructor() {
@@ -85,10 +90,14 @@ export default class ProyectoRepository {
     return matchedCount === 1
   }
 
+  async findByHitoId(hitoId) {
+    return await this.model.findOne({ "hitos._id": hitoId })
+  }
+
   async agregarHito(proyectoId, hito) {
     const _id = new mongoose.Types.ObjectId()
     const proyecto = await this.model.findOneAndUpdate(
-      { _id: proyectoId },
+      { _id: proyectoId, ...dadoDeAltaAntesDe(hito.fecha) },
       { $push: { hitos: { ...hito, _id } } },
       { new: true, runValidators: true },
     )
@@ -103,7 +112,7 @@ export default class ProyectoRepository {
       ]),
     )
     const proyecto = await this.model.findOneAndUpdate(
-      { "hitos._id": hitoId },
+      { "hitos._id": hitoId, ...dadoDeAltaAntesDe(cambios.fecha) },
       { $set },
       { new: true, runValidators: true },
     )

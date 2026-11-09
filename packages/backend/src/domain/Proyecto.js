@@ -4,6 +4,7 @@ import {
   DomainRuleError,
 } from "./errors/DomainErrors.js"
 import Notificacion from "./Notificacion.js"
+import { inicioDelDiaSiguiente } from "./fechas.js"
 
 export default class Proyecto {
   constructor(
@@ -81,6 +82,14 @@ export default class Proyecto {
 
   buscarPerfil(perfilId) {
     return this.perfiles.find((perfil) => perfil.id === perfilId)
+  }
+
+  assertAdmiteHito({ fecha }) {
+    if (fecha !== undefined && this.fechaAlta >= inicioDelDiaSiguiente(fecha)) {
+      throw new DomainValidationError(
+        "La fecha del hito no puede ser anterior al alta del proyecto.",
+      )
+    }
   }
 
   contactar(perfil, personaColaboradora, contenido) {

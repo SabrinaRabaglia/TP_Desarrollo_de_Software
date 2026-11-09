@@ -1413,6 +1413,9 @@
           },
           "404": {
             "description": "Proyecto no encontrado"
+          },
+          "422": {
+            "description": "La fecha del hito es anterior al alta del proyecto"
           }
         }
       }
@@ -1458,6 +1461,9 @@
           },
           "404": {
             "description": "Hito no encontrado"
+          },
+          "422": {
+            "description": "La fecha del hito es anterior al alta del proyecto"
           }
         }
       },
@@ -2489,10 +2495,12 @@
       "HitoInput": {
         "type": "object",
         "required": ["fecha", "porcentajeConcrecion", "descripcion"],
+        "additionalProperties": false,
         "properties": {
           "fecha": {
             "type": "string",
             "format": "date-time",
+            "description": "Fecha ISO (día o fecha y hora). No puede ser futura ni anterior al día de alta del proyecto.",
             "example": "2026-10-15T00:00:00.000Z"
           },
           "porcentajeConcrecion": {
@@ -2503,16 +2511,19 @@
           },
           "descripcion": {
             "type": "string",
+            "minLength": 1,
             "example": "Se completó la primera fase del desarrollo"
           }
         }
       },
       "HitoUpdate": {
         "type": "object",
+        "additionalProperties": false,
         "properties": {
           "fecha": {
             "type": "string",
             "format": "date-time",
+            "description": "Fecha ISO (día o fecha y hora). No puede ser futura ni anterior al día de alta del proyecto.",
             "example": "2026-11-20T00:00:00.000Z"
           },
           "porcentajeConcrecion": {
@@ -2523,6 +2534,7 @@
           },
           "descripcion": {
             "type": "string",
+            "minLength": 1,
             "example": "Actualización de la descripción del hito"
           }
         }

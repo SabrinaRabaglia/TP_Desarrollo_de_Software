@@ -8,6 +8,7 @@ import ColectivoRepository from "../../fakes/ColectivoRepository.js"
 import ColaboracionRepository from "../../fakes/ColaboracionRepository.js"
 import { EntityNotFound } from "../../../src/errors/ApplicationErrors.js"
 import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
+import { EstadoProyecto } from "../../../src/domain/enums/EstadoProyecto.js"
 
 describe("HitoService", () => {
   let service
@@ -27,7 +28,13 @@ describe("HitoService", () => {
       proyectoRepository,
     )
     proyecto = await proyectoRepository.save(
-      new Proyecto("Mapa", "Mapa de humedales", "colectivo-1"),
+      new Proyecto(
+        "Mapa",
+        "Mapa de humedales",
+        "colectivo-1",
+        EstadoProyecto.PUBLICADO,
+        new Date("2026-09-01"),
+      ),
     )
     datos = {
       fecha: new Date("2026-10-01"),
@@ -56,11 +63,30 @@ describe("HitoService", () => {
       )
     })
 
-    test("lanza DomainValidationError con un porcentaje fuera de rango, sin agregarlo", async () => {
-      await expect(
-        service.create(proyecto.id, { ...datos, porcentajeConcrecion: 150 }),
-      ).rejects.toThrow(DomainValidationError)
-      expect(await hitosDe(proyecto.id)).toEqual([])
+    test.each([
+      ["un porcentaje fuera de rango", { porcentajeConcrecion: 150 }],
+      ["una descripción vacía", { descripcion: " " }],
+      [
+        "una fecha anterior al alta del proyecto",
+        { fecha: new Date("2026-08-15") },
+      ],
+    ])(
+      "lanza DomainValidationError con %s, sin agregarlo",
+      async (_caso, cambio) => {
+        await expect(
+          service.create(proyecto.id, { ...datos, ...cambio }),
+        ).rejects.toThrow(DomainValidationError)
+        expect(await hitosDe(proyecto.id)).toEqual([])
+      },
+    )
+
+    test("admite un hito con la misma fecha que el alta del proyecto", async () => {
+      const hito = await service.create(proyecto.id, {
+        ...datos,
+        fecha: new Date("2026-09-01"),
+      })
+
+      expect(await hitosDe(proyecto.id)).toEqual([hito])
     })
   })
 
@@ -97,6 +123,26 @@ describe("HitoService", () => {
         service.update("hito-inexistente", { descripcion: "Cambio" }),
       ).rejects.toThrow(EntityNotFound)
     })
+
+    test.each([
+      [
+        "una fecha anterior al alta del proyecto",
+        { fecha: new Date("2026-08-15") },
+      ],
+      ["una descripción vacía", { descripcion: "" }],
+      ["un porcentaje fuera de rango", { porcentajeConcrecion: 101 }],
+    ])(
+      "lanza DomainValidationError con %s, sin modificarlo",
+      async (_caso, cambios) => {
+        const hito = await service.create(proyecto.id, datos)
+        const antes = { ...hito }
+
+        await expect(service.update(hito.id, cambios)).rejects.toThrow(
+          DomainValidationError,
+        )
+        expect({ ...(await hitosDe(proyecto.id))[0] }).toEqual(antes)
+      },
+    )
   })
 
   describe("delete", () => {
