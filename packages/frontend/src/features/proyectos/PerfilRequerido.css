@@ -4,8 +4,8 @@
   gap: 0.75rem;
   padding: var(--espacio);
   border: var(--borde);
-  border-radius: var(--mui-shape-borderRadius);
-  background-color: var(--mui-palette-background-paper);
+  border-radius: var(--radio);
+  background-color: var(--color-superficie);
 }
 
 .perfil-datos {
@@ -26,7 +26,7 @@
 .perfil-habilidades h4 {
   margin: 0 0 0.5rem;
   font-size: 0.875rem;
-  color: var(--mui-palette-text-secondary);
+  color: var(--color-texto-secundario);
 }
 
 .perfil-habilidades ul {
@@ -41,5 +41,5 @@
   padding: 0.125rem 0.75rem;
   border-radius: 999px;
   font-size: 0.875rem;
-  background-color: var(--mui-palette-action-selected);
+  background-color: var(--color-resaltado);
 }

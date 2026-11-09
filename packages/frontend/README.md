@@ -117,8 +117,8 @@ Las URLs nombran cosas, nunca acciones.
 - Cada componente tiene su `.css` al lado: `Navbar.jsx` y `Navbar.css`. Importalo al principio del `.jsx`.
 - Las clases van en kebab-case y empiezan con el nombre del componente: `pagina-proyecto`, `pagina-proyecto-estado`.
 - Escribí primero el estilo para celular y agregá `@media (min-width: 768px)` para pantallas más anchas. Usá Flexbox o Grid para ubicar las cosas.
-- No escribas colores sueltos. La paleta está en `theme.js` y MUI la publica como variables CSS, por ejemplo `var(--mui-palette-primary-main)` o `var(--mui-palette-text-secondary)`. Si cambiás un color en `theme.js`, cambia en los componentes de MUI y en el CSS plano a la vez.
-- `index.css` define `--ancho-maximo`, `--espacio` y `--borde` para medidas que se repiten.
+- No escribas colores ni medidas sueltas. Usá las variables de `index.css`: `--color-primario`, `--color-primario-contraste`, `--color-acento`, `--color-texto`, `--color-texto-secundario`, `--color-fondo`, `--color-superficie`, `--color-resaltado`, `--color-borde`, `--fuente`, `--radio`, `--espacio`, `--ancho-maximo` y `--borde`. Si falta una, agregala ahí.
+- Los colores de esas variables salen de `theme.js`: MUI los publica como `--mui-palette-*` y `index.css` les pone nombre. Si cambiás un color en `theme.js`, cambia en los componentes de MUI y en el CSS plano a la vez. No uses `--mui-*` directamente en los componentes.
 
 ## Marcar una ruta como privada
 

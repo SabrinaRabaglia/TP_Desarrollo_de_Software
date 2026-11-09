@@ -17,7 +17,7 @@
   border-top: var(--borde);
   font-size: 0.875rem;
   text-align: center;
-  color: var(--mui-palette-text-secondary);
+  color: var(--color-texto-secundario);
 }
 
 @media (min-width: 768px) {

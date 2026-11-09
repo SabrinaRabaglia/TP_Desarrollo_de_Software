@@ -16,12 +16,12 @@
   border-radius: 999px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--mui-palette-primary-contrastText);
-  background-color: var(--mui-palette-primary-main);
+  color: var(--color-primario-contraste);
+  background-color: var(--color-primario);
 }
 
 .pagina-proyecto-colectivo {
-  color: var(--mui-palette-text-secondary);
+  color: var(--color-texto-secundario);
 }
 
 .pagina-proyecto-perfiles {

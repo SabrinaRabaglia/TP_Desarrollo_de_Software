@@ -7,7 +7,7 @@
 .inicio-bajada {
   max-width: 40rem;
   font-size: 1.125rem;
-  color: var(--mui-palette-text-secondary);
+  color: var(--color-texto-secundario);
 }
 
 .inicio-proyectos {
@@ -28,7 +28,7 @@
 
 .inicio-proyecto-estado {
   font-size: 0.875rem;
-  color: var(--mui-palette-text-secondary);
+  color: var(--color-texto-secundario);
 }
 
 @media (min-width: 768px) {

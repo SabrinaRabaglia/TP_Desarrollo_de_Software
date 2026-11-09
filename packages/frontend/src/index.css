@@ -1,7 +1,18 @@
 :root {
-  --ancho-maximo: 72rem;
+  --color-primario: var(--mui-palette-primary-main);
+  --color-primario-contraste: var(--mui-palette-primary-contrastText);
+  --color-acento: var(--mui-palette-secondary-main);
+  --color-texto: var(--mui-palette-text-primary);
+  --color-texto-secundario: var(--mui-palette-text-secondary);
+  --color-fondo: var(--mui-palette-background-default);
+  --color-superficie: var(--mui-palette-background-paper);
+  --color-resaltado: var(--mui-palette-action-selected);
+  --color-borde: var(--mui-palette-divider);
+  --fuente: var(--mui-font-body1);
+  --radio: var(--mui-shape-borderRadius);
   --espacio: 1rem;
-  --borde: 1px solid var(--mui-palette-divider);
+  --ancho-maximo: 72rem;
+  --borde: 1px solid var(--color-borde);
 }
 
 *,
@@ -12,9 +23,9 @@
 
 body {
   margin: 0;
-  font: var(--mui-font-body1);
-  color: var(--mui-palette-text-primary);
-  background-color: var(--mui-palette-background-default);
+  font: var(--fuente);
+  color: var(--color-texto);
+  background-color: var(--color-fondo);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -27,7 +38,7 @@ ul {
 }
 
 a {
-  color: var(--mui-palette-primary-main);
+  color: var(--color-primario);
 }
 
 img {
@@ -35,6 +46,6 @@ img {
 }
 
 :focus-visible {
-  outline: 3px solid var(--mui-palette-secondary-main);
+  outline: 3px solid var(--color-acento);
   outline-offset: 2px;
 }

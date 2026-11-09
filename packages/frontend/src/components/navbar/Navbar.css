@@ -1,6 +1,6 @@
 .navbar {
-  color: var(--mui-palette-primary-contrastText);
-  background-color: var(--mui-palette-primary-main);
+  color: var(--color-primario-contraste);
+  background-color: var(--color-primario);
 }
 
 .navbar-contenido {
