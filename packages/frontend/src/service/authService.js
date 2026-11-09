@@ -9,7 +9,8 @@ const aUsuario = (usuarioBack) => ({
   id: usuarioBack.id,
   email: usuarioBack.email,
   rol: usuarioBack.rol,
-  entidad: { id: usuarioBack.entidad.id, nombre: usuarioBack.entidad.nombre },
+  entidad: usuarioBack.entidad ?? null,
+  nombre: usuarioBack.entidad?.nombre ?? usuarioBack.email,
 })
 
 export const iniciarSesion = async (email, contrasena) => {

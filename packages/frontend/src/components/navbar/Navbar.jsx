@@ -32,7 +32,7 @@ const Navbar = () => {
               <FaUserCircle aria-hidden="true" />
               Mi cuenta
             </Link>
-            <span className="navbar-usuario">{usuario.entidad.nombre}</span>
+            <span className="navbar-usuario">{usuario.nombre}</span>
             <Button
               color="inherit"
               size="small"

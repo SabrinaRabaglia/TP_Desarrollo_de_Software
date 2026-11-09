@@ -45,7 +45,7 @@ const MiCuenta = () => {
       <h1>Mi cuenta</h1>
       <dl className="mi-cuenta-datos">
         <dt>Nombre</dt>
-        <dd>{usuario.entidad.nombre}</dd>
+        <dd>{usuario.nombre}</dd>
         <dt>Email</dt>
         <dd>{usuario.email}</dd>
         <dt>Rol</dt>
