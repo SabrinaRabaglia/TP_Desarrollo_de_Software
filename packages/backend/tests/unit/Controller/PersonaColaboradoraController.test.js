@@ -180,5 +180,25 @@ describe("PersonaColaboradoraController", () => {
       expect(res.status).toHaveBeenCalledWith(200)
       expect(res.json).toHaveBeenCalledWith(personas)
     })
+
+    test("con perfiles en la query busca colaboradores para esos perfiles", async () => {
+      const personas = [{ id: "1", nombreFantasia: "candidata" }]
+      const service = mockPersonaColaboradoraService()
+      service.getAllByPerfiles = jest.fn().mockReturnValue(personas)
+      const controller = new PersonaColaboradoraController(service)
+      const req = { query: { perfiles: ["perfil-1", "perfil-2"] } }
+      const res = mockRes()
+      const next = jest.fn()
+
+      await controller.getAll(req, res, next)
+
+      expect(service.getAllByPerfiles).toHaveBeenCalledWith([
+        "perfil-1",
+        "perfil-2",
+      ])
+      expect(service.getAll).not.toHaveBeenCalled()
+      expect(res.status).toHaveBeenCalledWith(200)
+      expect(res.json).toHaveBeenCalledWith(personas)
+    })
   })
 })

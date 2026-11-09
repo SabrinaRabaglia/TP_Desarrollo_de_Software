@@ -1,9 +1,53 @@
 import { describe, expect, jest, test } from "@jest/globals"
 import validar from "../../../src/middlewares/validar.js"
 import { BadRequestError } from "../../../src/errors/ApplicationErrors.js"
-import { personaColaboradoraSchema } from "../../../src/validations/personaColaboradora.js"
+import {
+  busquedaPersonasSchema,
+  personaColaboradoraSchema,
+} from "../../../src/validations/personaColaboradora.js"
 
 const mockRes = () => ({})
+
+describe("validación de la búsqueda de personas colaboradoras", () => {
+  const PERFIL_ID = "65f1a2b3c4d5e6f708192a11"
+  const OTRO_PERFIL_ID = "65f1a2b3c4d5e6f708192a12"
+
+  const validarQuery = (query) => {
+    const req = { query }
+    const next = jest.fn()
+    validar(busquedaPersonasSchema, "query")(req, mockRes(), next)
+    return { req, next }
+  }
+
+  test("sin perfiles pasa con la query vacía", () => {
+    const { req, next } = validarQuery({})
+
+    expect(next).toHaveBeenCalledWith()
+    expect(req.query).toEqual({})
+  })
+
+  test("un solo perfil queda como lista de uno", () => {
+    const { req, next } = validarQuery({ perfiles: PERFIL_ID })
+
+    expect(next).toHaveBeenCalledWith()
+    expect(req.query.perfiles).toEqual([PERFIL_ID])
+  })
+
+  test("varios perfiles se conservan en orden", () => {
+    const { req } = validarQuery({ perfiles: [PERFIL_ID, OTRO_PERFIL_ID] })
+
+    expect(req.query.perfiles).toEqual([PERFIL_ID, OTRO_PERFIL_ID])
+  })
+
+  test.each([
+    ["un perfil que no es un id", { perfiles: "abc" }],
+    ["una lista con un id inválido", { perfiles: [PERFIL_ID, "abc"] }],
+  ])("con %s pasa BadRequestError a next", (_caso, query) => {
+    expect(validarQuery(query).next).toHaveBeenCalledWith(
+      expect.any(BadRequestError),
+    )
+  })
+})
 
 describe("validación de personas colaboradoras", () => {
   test("sin nombreFantasia, lanza BadRequestError", async () => {

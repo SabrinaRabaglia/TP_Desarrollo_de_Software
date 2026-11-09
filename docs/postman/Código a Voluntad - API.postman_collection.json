@@ -1561,19 +1561,21 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}/perfiles/{{perfilId}}/colaboradores",
+              "raw": "{{baseUrl}}/personas-colaboradoras?perfiles={{perfilId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "proyectos",
-                "{{proyectoId}}",
-                "perfiles",
-                "{{perfilId}}",
-                "colaboradores"
+                "personas-colaboradoras"
+              ],
+              "query": [
+                {
+                  "key": "perfiles",
+                  "value": "{{perfilId}}"
+                }
               ]
             },
-            "description": "Lista las personas colaboradoras que tienen todas las habilidades requeridas del perfil {{perfilId}}, primero las que tienen más habilidades opcionales del perfil. No sugiere a quienes ya están inscriptos en el proyecto: aparece la candidata y no la persona inscripta en Colaboraciones."
+            "description": "Lista las personas colaboradoras que tienen todas las habilidades requeridas del perfil {{perfilId}}, primero las que tienen más habilidades opcionales del perfil. No sugiere a quienes ya están inscriptos en el proyecto: aparece la candidata y no la persona inscripta en Colaboraciones. Para buscar por varios perfiles, de cualquier proyecto, se repite el parámetro: `?perfiles=<id1>&perfiles=<id2>`. Con un id que no tiene formato ObjectId responde 400."
           },
           "response": []
         },
@@ -1781,16 +1783,18 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}/perfiles/{{perfilId}}/colaboradores",
+              "raw": "{{baseUrl}}/personas-colaboradoras?perfiles={{perfilId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "proyectos",
-                "{{proyectoId}}",
-                "perfiles",
-                "{{perfilId}}",
-                "colaboradores"
+                "personas-colaboradoras"
+              ],
+              "query": [
+                {
+                  "key": "perfiles",
+                  "value": "{{perfilId}}"
+                }
               ]
             },
             "description": "Repite la búsqueda de colaboradores del perfil {{perfilId}} con el proyecto ya cerrado. Responde 409: un proyecto cerrado no busca colaboradores, igual que no puede contactarlos ni cambiar sus perfiles."

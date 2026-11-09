@@ -31,3 +31,10 @@ export const personaColaboradoraSchema = z
     mediosDeContacto: z.array(medioDeContactoSchema).optional(),
   })
   .strict()
+
+export const busquedaPersonasSchema = z.object({
+  perfiles: z
+    .union([objectIdSchema, z.array(objectIdSchema)])
+    .transform((perfiles) => [perfiles].flat())
+    .optional(),
+})
