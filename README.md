@@ -67,15 +67,7 @@ JWT_EXPIRA_EN=8h
 - **`JWT_SECRET`**: secreto con el que se firman los tokens de sesión. Sin él, fuera de producción se usa un secreto fijo de desarrollo y el servidor lo avisa al arrancar. En producción (`NODE_ENV=production`, como en la imagen de Docker) el servidor no arranca sin él.
 - **`JWT_EXPIRA_EN`**: cuánto dura un token, en el formato de [`jsonwebtoken`](https://github.com/auth0/node-jsonwebtoken#usage) (`8h`, `30m`, `7d`). Por defecto `8h`.
 
-En producción el secreto se configura una sola vez y los deploys posteriores lo conservan:
-
-```bash
-az containerapp secret set --name ca-ddso-backend --resource-group rg-ddso-backend --secrets jwt-secret=<secreto>
-```
-
-```bash
-az containerapp update --name ca-ddso-backend --resource-group rg-ddso-backend --set-env-vars JWT_SECRET=secretref:jwt-secret
-```
+En producción el workflow de deploy toma el secreto del secret `JWT_SECRET` del repositorio de GitHub, igual que hace con `MONGODB_URI`, y falla con un error claro si falta. Con `docker compose` se puede fijar con la variable `JWT_SECRET` del entorno; si no está, el compose usa un valor de desarrollo.
 
 #### Notificaciones por medios externos
 
