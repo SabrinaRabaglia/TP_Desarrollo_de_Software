@@ -171,6 +171,7 @@ Los dos procesos son idempotentes. Insertan lo que falta por su clave natural, n
 
 ### Modelado: embebido o referencia
 
+<!-- prettier-ignore -->
 | Relación | Decisión | Por qué |
 |---|---|---|
 | Habilidad en Perfil y Persona | Referencia | Es un catálogo compartido. Si se corrige una habilidad, el cambio se ve en todos lados. No se puede borrar una habilidad que alguien usa (`409`). |
