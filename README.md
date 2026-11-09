@@ -30,7 +30,7 @@ La idea es dar lo mínimo para levantar el servidor, y que durante el desarrollo
 
 ### Frontend (`packages/frontend`)
 
-El frontend es una aplicación de React generada con Create React App.
+El frontend es una aplicación de React generada con Create React App. Usa `react-router-dom`, `axios`, MUI y `react-icons`. Las convenciones, la estructura de carpetas y los pasos para agregar una pantalla están en [`packages/frontend/README.md`](packages/frontend/README.md).
 
 ## 🚀 Inicio Rápido
 
@@ -62,6 +62,15 @@ MONGODB_DB_NAME=codigo-a-voluntad
 - **`SERVER_PORT`**: El puerto en el que se ejecutará el servidor backend (ej. `8000`).
 - **`MONGODB_URI`**: URI de conexión a MongoDB. El `authSource=admin` va dentro de la URI porque el usuario `root` del contenedor vive en la base `admin`.
 - **`MONGODB_DB_NAME`**: Nombre de la base. Mongo la crea sola con el primer documento.
+
+Para el frontend, copiá `packages/frontend/.env.example` a `packages/frontend/.env`:
+
+```
+# packages/frontend/.env
+REACT_APP_API_URL=http://localhost:8000
+```
+
+- **`REACT_APP_API_URL`**: URL base del backend. Create React App la lee solo al arrancar, así que después de cambiarla reiniciá `npm run start:frontend`.
 
 #### Notificaciones por medios externos
 
@@ -129,6 +138,8 @@ npm run dev:backend
 ```bash
 npm run start:frontend
 ```
+
+La app queda en http://localhost:3000 y le pide los datos al backend de `REACT_APP_API_URL`.
 
 #### Ejecutar Ambos (Desarrollo)
 
@@ -206,6 +217,8 @@ Con el backend corriendo, la documentación está en [`/api-docs`](http://localh
 
 - `npm run test:backend` corre todos los tests. Los de integración necesitan MongoDB levantado (`docker compose up -d mongo`).
 - `npm run test:unit --workspace=backend` corre solo los unitarios, sin base de datos. Los services se prueban con los repositorios falsos de `tests/fakes/`.
+- `npm run test:frontend` corre los tests del frontend, sin backend ni base de datos.
+- `npm test` corre los del backend y después los del frontend.
 
 En CI, el workflow de tests levanta un MongoDB como servicio.
 
