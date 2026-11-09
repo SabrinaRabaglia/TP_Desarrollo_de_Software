@@ -869,7 +869,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"titulo\": \"Plataforma de Colaboración {{runSuffix}}\",\n  \"descripcion\": \"Plataforma para conectar colectivos sociales y personas voluntarias.\",\n  \"colectivo\": \"{{colectivoId}}\",\n  \"estado\": \"PUBLICADO\",\n  \"fechaAlta\": \"{{$isoTimestamp}}\",\n  \"fechaCierre\": null\n}",
+              "raw": "{\n  \"titulo\": \"Plataforma de Colaboración {{runSuffix}}\",\n  \"descripcion\": \"Plataforma para conectar colectivos sociales y personas voluntarias.\",\n  \"colectivo\": \"{{colectivoId}}\",\n  \"estado\": \"PUBLICADO\",\n  \"fechaCierre\": null\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -970,7 +970,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"titulo\": \"Plataforma de Colaboración Actualizada {{runSuffix}}\",\n  \"descripcion\": \"Proyecto actualizado para conectar organizaciones y voluntariado.\",\n  \"colectivo\": \"{{colectivoId}}\",\n  \"estado\": \"PUBLICADO\",\n  \"fechaAlta\": \"{{$isoTimestamp}}\",\n  \"fechaCierre\": null\n}",
+              "raw": "{\n  \"titulo\": \"Plataforma de Colaboración Actualizada {{runSuffix}}\",\n  \"descripcion\": \"Proyecto actualizado para conectar organizaciones y voluntariado.\",\n  \"colectivo\": \"{{colectivoId}}\",\n  \"estado\": \"PUBLICADO\",\n  \"fechaCierre\": null\n}",
               "options": {
                 "raw": {
                   "language": "json"

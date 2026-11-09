@@ -46,7 +46,7 @@ const request = async (method, path, body, status = 200) => {
   return response.status === 204 ? null : response.json()
 }
 
-const crearProyecto = (titulo, fechaAlta = "2026-10-01T00:00:00.000Z") =>
+const crearProyecto = (titulo) =>
   request(
     "POST",
     "/proyectos",
@@ -55,14 +55,17 @@ const crearProyecto = (titulo, fechaAlta = "2026-10-01T00:00:00.000Z") =>
       descripcion: "Proyecto con hitos",
       colectivo: colectivo.id,
       estado: "PUBLICADO",
-      fechaAlta,
       fechaCierre: null,
     },
     201,
   )
 
+const diaDe = (fecha) => fecha.toISOString().slice(0, 10)
+const hoy = diaDe(new Date())
+const ayer = diaDe(new Date(Date.now() - 24 * 60 * 60 * 1000))
+
 const datos = {
-  fecha: "2026-10-15T00:00:00.000Z",
+  fecha: `${hoy}T00:00:00.000Z`,
   porcentajeConcrecion: 40,
   descripcion: "Primera entrega",
 }
@@ -118,45 +121,37 @@ describe("hitos de un proyecto", () => {
     expect(await request("GET", hitos)).toEqual([])
   })
 
-  test("la fecha de alta se compara por día aunque tenga hora", async () => {
-    const proyecto = await crearProyecto(
-      "Alta con hora",
-      "2026-10-01T15:00:00.000Z",
-    )
-    const hitos = `/proyectos/${proyecto.id}/hitos`
+  test("el alta del proyecto la pone el servidor y no se acepta en el body", async () => {
+    const antes = Date.now()
+    const proyecto = await crearProyecto("Alta del servidor")
 
-    await request("POST", hitos, { ...datos, fecha: "2026-10-01" }, 201)
+    const alta = new Date(proyecto.fechaAlta).getTime()
+    expect(alta).toBeGreaterThanOrEqual(antes - 1000)
+    expect(alta).toBeLessThanOrEqual(Date.now())
     await request(
-      "POST",
-      hitos,
-      { ...datos, fecha: "2026-09-30T23:00:00.000Z" },
-      422,
+      "PATCH",
+      `/proyectos/${proyecto.id}`,
+      { fechaAlta: `${ayer}T00:00:00.000Z` },
+      400,
     )
-    expect(await request("GET", hitos)).toHaveLength(1)
   })
 
-  test("un hito no puede ser anterior al alta del proyecto, ni al crearlo ni al editarlo", async () => {
+  test("un hito puede ser del día del alta aunque el alta tenga hora, pero no anterior, ni al crearlo ni al editarlo", async () => {
     const proyecto = await crearProyecto("Proyecto con alta")
     const hitos = `/proyectos/${proyecto.id}/hitos`
-    const anterior = { ...datos, fecha: "2026-09-30T00:00:00.000Z" }
 
-    const respuesta = await request("POST", hitos, anterior, 422)
+    const respuesta = await request(
+      "POST",
+      hitos,
+      { ...datos, fecha: ayer },
+      422,
+    )
     expect(respuesta.message).toBe(
       "La fecha del hito no puede ser anterior al alta del proyecto.",
     )
-    const enElAlta = await request(
-      "POST",
-      hitos,
-      { ...datos, fecha: "2026-10-01T00:00:00.000Z" },
-      201,
-    )
+    const enElAlta = await request("POST", hitos, { ...datos, fecha: hoy }, 201)
 
-    await request(
-      "PATCH",
-      `/hitos/${enElAlta.id}`,
-      { fecha: "2026-09-30T00:00:00.000Z" },
-      422,
-    )
+    await request("PATCH", `/hitos/${enElAlta.id}`, { fecha: ayer }, 422)
     await request("PATCH", `/hitos/${enElAlta.id}`, { descripcion: "" }, 400)
     await request(
       "PATCH",

@@ -27,7 +27,6 @@ describe("ProyectoController", () => {
       "Desarrollo de plataforma para conectar colectivos y voluntarios.",
     colectivo: "65f1a2b3c4d5e6f708192a10",
     estado: EstadoProyecto.PUBLICADO,
-    fechaAlta: "2026-09-01T00:00:00.000Z",
     fechaCierre: null,
   }
 

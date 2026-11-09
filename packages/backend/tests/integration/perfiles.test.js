@@ -67,7 +67,6 @@ const datosProyecto = (titulo) => ({
   descripcion: "Proyecto con perfiles",
   colectivo: colectivo.id,
   estado: "PUBLICADO",
-  fechaAlta: "2026-10-01T00:00:00.000Z",
   fechaCierre: null,
 })
 

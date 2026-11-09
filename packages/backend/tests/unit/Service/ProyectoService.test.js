@@ -65,10 +65,7 @@ describe("ProyectoService", () => {
   })
 
   test("rechaza una fecha de cierre anterior a la fecha de alta al crear y actualizar sin alterar los datos", async () => {
-    const cambios = {
-      fechaAlta: new Date("2026-09-11"),
-      fechaCierre: new Date("2026-01-01"),
-    }
+    const cambios = { fechaCierre: new Date("2026-01-01") }
     await expect(
       service.create({ ...dtoProyectoValido, ...cambios }),
     ).rejects.toThrow(DomainValidationError)
@@ -95,6 +92,17 @@ describe("ProyectoService", () => {
       expect(proyectoCreado.colectivo).toBe(dtoProyectoValido.colectivo)
       expect(proyectoCreado.perfiles).toEqual([])
       expect(await service.getAll()).toEqual([proyectoCreado])
+    })
+
+    test("la fecha de alta es la del momento de la creación, no la del body", async () => {
+      const antes = new Date()
+      const proyectoCreado = await service.create({
+        ...dtoProyectoValido,
+        fechaAlta: new Date("2000-01-01"),
+      })
+
+      expect(proyectoCreado.fechaAlta >= antes).toBe(true)
+      expect(proyectoCreado.fechaAlta <= new Date()).toBe(true)
     })
 
     test("rechaza un colectivo inexistente sin guardar el proyecto", async () => {

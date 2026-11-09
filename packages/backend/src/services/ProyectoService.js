@@ -76,7 +76,7 @@ export default class ProyectoService {
       nuevo.descripcion,
       nuevo.colectivo,
       nuevo.estado,
-      nuevo.fechaAlta,
+      new Date(),
       nuevo.fechaCierre,
       nuevo.enlaceSistemaEnFuncionamiento,
       nuevo.enlaceCodigoFuente,

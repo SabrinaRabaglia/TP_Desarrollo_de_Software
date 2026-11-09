@@ -886,7 +886,6 @@
                 "descripcion": "Plataforma para conectar colectivos sociales y personas voluntarias.",
                 "colectivo": "64f1a2b3c4d5e6f7a8b9c002",
                 "estado": "PUBLICADO",
-                "fechaAlta": "2026-09-01T00:00:00.000Z",
                 "fechaCierre": null
               }
             }
@@ -976,7 +975,6 @@
                 "descripcion": "Plataforma para conectar colectivos sociales y personas voluntarias.",
                 "colectivo": "64f1a2b3c4d5e6f7a8b9c002",
                 "estado": "PUBLICADO",
-                "fechaAlta": "2026-09-01T00:00:00.000Z",
                 "fechaCierre": null
               }
             }
@@ -2094,7 +2092,6 @@
           "descripcion",
           "colectivo",
           "estado",
-          "fechaAlta",
           "fechaCierre"
         ],
         "properties": {
@@ -2116,15 +2113,11 @@
           "estado": {
             "$ref": "#/components/schemas/EstadoProyecto"
           },
-          "fechaAlta": {
-            "type": "string",
-            "format": "date-time"
-          },
           "fechaCierre": {
             "type": "string",
             "format": "date-time",
             "nullable": true,
-            "description": "Obligatoria pero admite `null`. No puede ser anterior a `fechaAlta`."
+            "description": "Obligatoria pero admite `null`. No puede ser anterior a la fecha de alta."
           },
           "enlaceSistemaEnFuncionamiento": {
             "type": "string",
@@ -2154,10 +2147,6 @@
           },
           "estado": {
             "$ref": "#/components/schemas/EstadoProyecto"
-          },
-          "fechaAlta": {
-            "type": "string",
-            "format": "date-time"
           },
           "fechaCierre": {
             "type": "string",
@@ -2210,7 +2199,8 @@
           },
           "fechaAlta": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "La asigna el servidor al crear el proyecto. No se acepta en el body."
           },
           "fechaCierre": {
             "type": "string",
