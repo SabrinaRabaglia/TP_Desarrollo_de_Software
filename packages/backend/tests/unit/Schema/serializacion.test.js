@@ -6,6 +6,7 @@ import NotificacionModel from "../../../src/schemas/notificacionSchema.js"
 import PaisModel from "../../../src/schemas/paisSchema.js"
 import PersonaColaboradoraModel from "../../../src/schemas/personaColaboradoraSchema.js"
 import ProyectoModel from "../../../src/schemas/proyectoSchema.js"
+import UsuarioModel from "../../../src/schemas/usuarioSchema.js"
 
 const idDe = (documento) => String(documento._id)
 const fecha = new Date("2026-10-01T00:00:00.000Z")
@@ -175,5 +176,24 @@ describe("serialización a JSON de los documentos", () => {
       perfiles: [],
       hitos: [],
     })
+  })
+
+  test("un usuario nunca expone el hash de su contraseña", () => {
+    const usuario = new UsuarioModel({
+      email: "huerta@colectivo.test",
+      hashContrasena: "scrypt$sal$hash",
+      rol: "COLECTIVO",
+      entidad: new mongoose.Types.ObjectId(),
+    })
+
+    const json = usuario.toJSON()
+
+    expect(json).toEqual({
+      id: idDe(usuario),
+      email: "huerta@colectivo.test",
+      rol: "COLECTIVO",
+      entidad: usuario.entidad,
+    })
+    expect(JSON.stringify(json)).not.toContain("scrypt")
   })
 })
