@@ -12,6 +12,7 @@ import {
   InvalidReference,
 } from "../../../src/errors/ApplicationErrors.js"
 import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
+import ProyectoRepository from "../../fakes/ProyectoRepository.js"
 
 describe("PersonaColaboradoraService", () => {
   let repository
@@ -22,8 +23,10 @@ describe("PersonaColaboradoraService", () => {
   let datos
 
   beforeEach(() => {
+    const proyectoRepository = new ProyectoRepository()
     repository = new PersonaColaboradoraRepository()
     repository.deleteAll() // Limpiamos la memoria estática antes de cada test
+    proyectoRepository.deleteAll()
 
     habilidad = new Habilidad("React", "react", "Desarrollo web")
     habilidad.id = "habilidad-1"
@@ -33,6 +36,7 @@ describe("PersonaColaboradoraService", () => {
     colaboracionRepository = new ColaboracionRepository()
     notificacionRepository = new NotificacionRepository()
     service = new PersonaColaboradoraService(
+      proyectoRepository,
       repository,
       habilidadService,
       colaboracionRepository,

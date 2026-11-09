@@ -171,7 +171,7 @@ describe("PersonaColaboradoraController", () => {
       const service = mockPersonaColaboradoraService()
       service.getAll.mockReturnValue(personas)
       const controller = new PersonaColaboradoraController(service)
-      const req = {}
+      const req = { query: {} }
       const res = mockRes()
       const next = jest.fn()
 

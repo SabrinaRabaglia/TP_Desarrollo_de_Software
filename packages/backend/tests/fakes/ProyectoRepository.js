@@ -32,6 +32,16 @@ export default class ProyectoRepository {
     )
   }
 
+  async findProyectoYPerfilPorId(perfilId) {
+    for (const proyecto of ProyectoRepository.proyectos) {
+      const perfil = proyecto.perfiles.find((p) => p.id === perfilId)
+      if (perfil) {
+        return { proyecto, perfil }
+      }
+    }
+    return { proyecto: null, perfil: null }
+  }
+
   async existePerfilConHabilidad(habilidadId) {
     const usa = (habilidades) =>
       habilidades.some(

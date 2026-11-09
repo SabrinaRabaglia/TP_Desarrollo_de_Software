@@ -24,6 +24,11 @@ export default class ProyectoRepository {
     return await this.model.find({ colectivo: colectivoId })
   }
 
+  async findProyectoYPerfilPorId(perfilId) {
+    const proyecto = await this.model.findOne({ "perfiles._id": perfilId })
+    return { proyecto, perfil: proyecto?.perfiles.id(perfilId) ?? null }
+  }
+
   async existePerfilConHabilidad(habilidadId) {
     return Boolean(
       await this.model.exists({
@@ -61,7 +66,7 @@ export default class ProyectoRepository {
   }
 
   async findByHitoId(hitoId) {
-  // Busca un proyecto que tenga un subdocumento hito con ese _id
-  return await this.model.findOne({ "hitos._id": hitoId });
-}
+    // Busca un proyecto que tenga un subdocumento hito con ese _id
+    return await this.model.findOne({ "hitos._id": hitoId })
+  }
 }

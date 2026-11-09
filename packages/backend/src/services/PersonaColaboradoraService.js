@@ -4,11 +4,13 @@ import Cuenta from "../domain/Cuenta.js"
 import MedioDeContacto from "../domain/MedioDeContacto.js"
 export default class PersonaColaboradoraService {
   constructor(
+    proyectoRepository,
     personaColaboradoraRepository,
     habilidadService,
     colaboracionRepository,
     notificacionRepository,
   ) {
+    this.proyectoRepository = proyectoRepository
     this.personaColaboradoraRepository = personaColaboradoraRepository
     this.habilidadService = habilidadService
     this.colaboracionRepository = colaboracionRepository
@@ -101,6 +103,51 @@ export default class PersonaColaboradoraService {
 
   getAll = async () => {
     return await this.personaColaboradoraRepository.findAll()
+  }
+
+  getAllByPerfiles = async (perfilesIds) => {
+    const personasPorId = new Map()
+
+    for (const perfilId of perfilesIds) {
+      const { proyecto, perfil } =
+        await this.proyectoRepository.findProyectoYPerfilPorId(perfilId)
+
+      if (!proyecto || !perfil) {
+        throw new EntityNotFound("Perfil no encontrado")
+      }
+
+      proyecto.assertPuedeBuscarColaboradores()
+
+      const personas = await this.getAllConHabilidades(
+        perfil.habilidadesRequeridas,
+      )
+
+      const inscriptas = new Set(
+        await this.colaboracionRepository.findPersonasInscriptasEn(proyecto.id),
+      )
+
+      for (const persona of personas) {
+        if (inscriptas.has(String(persona.id))) {
+          continue
+        }
+
+        const puntaje = perfil.cantidadDeHabilidadesOpcionalesDe(persona)
+        const personaId = String(persona.id)
+
+        const personaRegistrada = personasPorId.get(personaId)
+
+        if (!personaRegistrada || puntaje > personaRegistrada.puntaje) {
+          personasPorId.set(personaId, {
+            persona,
+            puntaje,
+          })
+        }
+      }
+    }
+
+    return [...personasPorId.values()]
+      .toSorted((una, otra) => otra.puntaje - una.puntaje)
+      .map(({ persona }) => persona)
   }
 
   getAllConHabilidades = async (habilidades) => {

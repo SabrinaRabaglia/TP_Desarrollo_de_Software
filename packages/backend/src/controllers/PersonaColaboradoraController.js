@@ -62,7 +62,10 @@ export default class PersonaColaboradoraController {
 
   getAll = async (req, res, next) => {
     try {
-      const personas = await this.personaColaboradoraService.getAll()
+      const perfiles = req.query.perfiles ? [].concat(req.query.perfiles) : null
+      const personas = perfiles
+        ? await this.personaColaboradoraService.getAllByPerfiles(perfiles)
+        : await this.personaColaboradoraService.getAll()
       res.status(200).json(personas.map(personaColaboradoraDTO))
     } catch (error) {
       next(error)

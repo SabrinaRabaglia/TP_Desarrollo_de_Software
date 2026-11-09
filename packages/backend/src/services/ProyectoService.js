@@ -35,23 +35,23 @@ export default class ProyectoService {
   }
 
   async getById(id) {
-    const proyecto = await this.proyectoRepository.findById(id);
+    const proyecto = await this.proyectoRepository.findById(id)
     if (!proyecto) {
-      throw new EntityNotFound("Proyecto no encontrado");
+      throw new EntityNotFound("Proyecto no encontrado")
     }
-    
-    return proyecto;
+
+    return proyecto
   }
 
   getAllByHabilidades = async (habilidadesIds) => {
     // La consulta trae los candidatos y el dominio decide: mismo criterio que
     // la búsqueda de colaboradores (tener todas las requeridas de un perfil).
-    const candidatos =
+    const proyectosCandidatos =
       await this.proyectoRepository.findByEstadoYAlgunaHabilidadRequerida(
         EstadoProyecto.PUBLICADO,
         habilidadesIds,
       )
-    return candidatos.filter((proyecto) =>
+    return proyectosCandidatos.filter((proyecto) =>
       proyecto.perfiles.some((perfil) =>
         perfil.estaCubiertoPor(habilidadesIds),
       ),
@@ -59,12 +59,12 @@ export default class ProyectoService {
   }
 
   findByHitoId = async (hitoId) => {
-  const proyecto = await this.proyectoRepository.findByHitoId(hitoId);
-  if (!proyecto) {
-    throw new EntityNotFound("No se encontró el proyecto para este hito"); 
+    const proyecto = await this.proyectoRepository.findByHitoId(hitoId)
+    if (!proyecto) {
+      throw new EntityNotFound("No se encontró el proyecto para este hito")
+    }
+    return proyecto
   }
-  return proyecto;
-};
 
   validarColectivo = async (colectivoId) => {
     if (!(await this.colectivoRepository.findById(colectivoId))) {
@@ -87,7 +87,7 @@ export default class ProyectoService {
       nuevo.fechaAlta,
       nuevo.fechaCierre,
       nuevo.enlaceSistemaEnFuncionamiento,
-      nuevo.enlaceCodigoFuente
+      nuevo.enlaceCodigoFuente,
     )
 
     await this.validarColectivo(proyecto.colectivo)

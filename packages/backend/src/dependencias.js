@@ -6,7 +6,7 @@ import NotificacionController from "./controllers/NotificacionController.js"
 import PerfilController from "./controllers/PerfilController.js"
 import PersonaColaboradoraController from "./controllers/PersonaColaboradoraController.js"
 import ProyectoController from "./controllers/ProyectoController.js"
-import HitoController from "./controllers/HitoController.js" 
+import HitoController from "./controllers/HitoController.js"
 
 import ColaboracionRepository from "./repositories/ColaboracionRepository.js"
 import ColectivoRepository from "./repositories/ColectivoRepository.js"
@@ -23,7 +23,7 @@ import ColaboracionService from "./services/ColaboracionService.js"
 import ColectivoService from "./services/ColectivoService.js"
 import HabilidadService from "./services/HabilidadService.js"
 import NotificacionService from "./services/NotificacionService.js"
-import HitoService from "./services/HitoService.js" 
+import HitoService from "./services/HitoService.js"
 
 import NotificadorExterno from "./services/NotificadorExterno.js"
 import PerfilService from "./services/PerfilService.js"
@@ -62,6 +62,7 @@ const proyectoService = new ProyectoService(
   colaboracionRepository,
 )
 const personaColaboradoraService = new PersonaColaboradoraService(
+  proyectoRepository,
   personaColaboradoraRepository,
   habilidadService,
   colaboracionRepository,
@@ -71,8 +72,6 @@ const perfilService = new PerfilService(
   proyectoService,
   proyectoRepository,
   habilidadService,
-  personaColaboradoraService,
-  colaboracionRepository,
 )
 const colaboracionService = new ColaboracionService(
   colaboracionRepository,
@@ -85,9 +84,7 @@ const notificacionService = new NotificacionService(
   personaColaboradoraService,
   new NotificadorExterno(),
 )
-const hitoService = new HitoService(
-  proyectoService
-)
+const hitoService = new HitoService(proyectoService)
 
 export const catalogoController = new CatalogoController(catalogoService)
 export const colaboracionController = new ColaboracionController(

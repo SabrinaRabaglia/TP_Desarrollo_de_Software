@@ -7,18 +7,10 @@ import {
 const MAXIMO_DE_INTENTOS = 3
 
 export default class PerfilService {
-  constructor(
-    proyectoService,
-    proyectoRepository,
-    habilidadService,
-    personaColaboradoraService,
-    colaboracionRepository,
-  ) {
+  constructor(proyectoService, proyectoRepository, habilidadService) {
     this.proyectoService = proyectoService
     this.proyectoRepository = proyectoRepository
     this.habilidadService = habilidadService
-    this.personaColaboradoraService = personaColaboradoraService
-    this.colaboracionRepository = colaboracionRepository
   }
 
   buscarPerfil = (proyecto, perfilId) => {
@@ -91,27 +83,6 @@ export default class PerfilService {
   getById = async (proyectoId, perfilId) => {
     const { perfil } = await this.buscarEnProyecto(proyectoId, perfilId)
     return perfil
-  }
-
-  buscarColaboradores = async (proyectoId, perfilId) => {
-    const { proyecto, perfil } = await this.buscarEnProyecto(
-      proyectoId,
-      perfilId,
-    )
-    proyecto.assertPuedeBuscarColaboradores()
-    const personas = await this.personaColaboradoraService.getAllConHabilidades(
-      perfil.habilidadesRequeridas,
-    )
-    const inscriptas = new Set(
-      await this.colaboracionRepository.findPersonasInscriptasEn(proyectoId),
-    )
-    return personas
-      .filter((persona) => !inscriptas.has(String(persona.id)))
-      .toSorted(
-        (una, otra) =>
-          perfil.cantidadDeHabilidadesOpcionalesDe(otra) -
-          perfil.cantidadDeHabilidadesOpcionalesDe(una),
-      )
   }
 
   getAllByProyectoId = async (proyectoId) => {

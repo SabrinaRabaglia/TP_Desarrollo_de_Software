@@ -157,14 +157,18 @@ describe("búsqueda de proyectos según habilidades", () => {
 })
 
 describe("búsqueda de colaboradores según un perfil", () => {
-  const colaboradores = (proyecto) =>
-    request(
-      "GET",
-      `/proyectos/${proyecto.id}/perfiles/${proyecto.perfil.id}/colaboradores`,
-    )
+  const colaboradores = (...perfiles) => {
+    const query = new URLSearchParams()
+
+    perfiles.forEach((perfil) => {
+      query.append("perfiles", perfil.id)
+    })
+
+    return request("GET", `/personas-colaboradoras?${query}`)
+  }
 
   test("devuelve las personas con todas las habilidades requeridas, sin el valor de sus medios de contacto", async () => {
-    const encontradas = await colaboradores(proyectos.web)
+    const encontradas = await colaboradores(proyectos.web.perfil)
 
     expect(encontradas).toEqual([
       expect.objectContaining({
@@ -176,7 +180,7 @@ describe("búsqueda de colaboradores según un perfil", () => {
       { id: expect.any(String), tipo: "EMAIL" },
     ])
     expect(
-      (await colaboradores(proyectos.mapa)).map((persona) => persona.id),
+      (await colaboradores(proyectos.mapa.perfil)).map((persona) => persona.id),
     ).toEqual([personas.ana.id, personas.lucho.id])
   })
 
@@ -192,26 +196,30 @@ describe("búsqueda de colaboradores según un perfil", () => {
     )
 
     expect(
-      (await colaboradores(proyectos.mapa)).map((persona) => persona.id),
+      (await colaboradores(proyectos.mapa.perfil)).map((persona) => persona.id),
     ).toEqual([personas.ana.id])
   })
 
   test("responde 409 si el proyecto está cerrado", async () => {
     await request(
       "GET",
-      `/proyectos/${proyectos.cerrado.id}/perfiles/${proyectos.cerrado.perfil.id}/colaboradores`,
+      `/personas-colaboradoras?perfiles=${proyectos.cerrado.perfil.id}`,
       undefined,
       409,
     )
   })
 
-  test("responde 404 si el perfil es de otro proyecto", async () => {
+  test("responde 404 si el perfil no existe", async () => {
     await request(
       "GET",
-      `/proyectos/${proyectos.web.id}/perfiles/${proyectos.mapa.perfil.id}/colaboradores`,
+      "/personas-colaboradoras?perfiles=64f1a2b3c4d5e6f7a8b9cfff",
       undefined,
       404,
     )
+  })
+
+  test("responde 400 si el id del perfil es inválido", async () => {
+    await request("GET", "/personas-colaboradoras?perfiles=abc", undefined, 400)
   })
 })
 
