@@ -167,7 +167,7 @@ describe("búsqueda de colaboradores según un perfil", () => {
     return request("GET", `/personas-colaboradoras?${query}`)
   }
 
-  test("devuelve las personas con todas las habilidades requeridas, sin sus medios de contacto", async () => {
+  test("devuelve las personas con todas las habilidades requeridas, sin el valor de sus medios de contacto", async () => {
     const encontradas = await colaboradores(proyectos.web.perfil)
 
     expect(encontradas).toEqual([
@@ -176,7 +176,9 @@ describe("búsqueda de colaboradores según un perfil", () => {
         habilidades: [habilidades.javascript, habilidades.react],
       }),
     ])
-    expect(encontradas[0]).not.toHaveProperty("mediosDeContacto")
+    expect(encontradas[0].mediosDeContacto).toEqual([
+      { id: expect.any(String), tipo: "EMAIL" },
+    ])
     expect(
       (await colaboradores(proyectos.mapa.perfil)).map((persona) => persona.id),
     ).toEqual([personas.ana.id, personas.lucho.id])

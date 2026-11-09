@@ -30,7 +30,15 @@ const request = async (method, path, body, status = 200) => {
 }
 
 const mediosGuardados = async (id) =>
-  (await PersonaColaboradoraModel.findById(id)).toObject().mediosDeContacto
+  (await PersonaColaboradoraModel.findById(id))
+    .toObject()
+    .mediosDeContacto.map(({ tipo, valor }) => ({ tipo, valor }))
+
+const sinValores = (persona) => {
+  expect(persona.mediosDeContacto).toEqual(
+    persona.mediosDeContacto.map(({ id, tipo }) => ({ id, tipo })),
+  )
+}
 
 describe("medios de contacto de las personas colaboradoras", () => {
   const mediosDeContacto = [
@@ -38,7 +46,7 @@ describe("medios de contacto de las personas colaboradoras", () => {
     { tipo: "WHATSAPP", valor: "+54 9 11 1234-5678" },
   ]
 
-  test("se guardan pero ninguna respuesta los devuelve", async () => {
+  test("se guardan y las respuestas solo exponen su id y tipo, nunca el valor", async () => {
     const persona = await request(
       "POST",
       "/personas-colaboradoras",
@@ -51,12 +59,13 @@ describe("medios de contacto de las personas colaboradoras", () => {
     )
 
     expect(persona.aceptaMensajeriaInterna).toBe(true)
-    expect(persona).not.toHaveProperty("mediosDeContacto")
-    expect(
-      await request("GET", `/personas-colaboradoras/${persona.id}`),
-    ).not.toHaveProperty("mediosDeContacto")
+    expect(persona.mediosDeContacto).toEqual([
+      { id: expect.any(String), tipo: "EMAIL" },
+      { id: expect.any(String), tipo: "WHATSAPP" },
+    ])
+    sinValores(await request("GET", `/personas-colaboradoras/${persona.id}`))
     for (const listada of await request("GET", "/personas-colaboradoras")) {
-      expect(listada).not.toHaveProperty("mediosDeContacto")
+      sinValores(listada)
     }
     expect(await mediosGuardados(persona.id)).toEqual(mediosDeContacto)
   })
