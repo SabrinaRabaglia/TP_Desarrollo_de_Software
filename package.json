@@ -11,6 +11,8 @@
     "start:frontend": "npm start --workspace=frontend",
     "start:dev": "concurrently \"npm run dev:backend\" \"npm run start:frontend\"",
     "test:backend": "npm test --workspace=backend",
+    "test:frontend": "npm test --workspace=frontend -- --watchAll=false",
+    "test": "npm run test:backend && npm run test:frontend",
     "seed:backend": "npm run seed --workspace=backend",
     "lint": "eslint .",
     "format": "prettier . --write",

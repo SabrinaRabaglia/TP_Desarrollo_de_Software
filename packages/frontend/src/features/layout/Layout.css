@@ -1,0 +1,27 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.layout-contenido {
+  flex: 1;
+  width: 100%;
+  max-width: var(--ancho-maximo);
+  margin: 0 auto;
+  padding: var(--espacio);
+}
+
+.layout-pie {
+  padding: var(--espacio);
+  border-top: var(--borde);
+  font-size: 0.875rem;
+  text-align: center;
+  color: var(--color-texto-secundario);
+}
+
+@media (min-width: 768px) {
+  .layout-contenido {
+    padding: calc(var(--espacio) * 2);
+  }
+}

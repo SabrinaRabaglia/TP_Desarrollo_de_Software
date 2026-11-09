@@ -30,7 +30,7 @@ La idea es dar lo mínimo para levantar el servidor, y que durante el desarrollo
 
 ### Frontend (`packages/frontend`)
 
-El frontend es una aplicación de React generada con Create React App.
+El frontend es una aplicación de React generada con Create React App. Usa `react-router-dom`, `axios`, MUI y `react-icons`. Las convenciones, la estructura de carpetas y los pasos para agregar una pantalla están en [`packages/frontend/README.md`](packages/frontend/README.md).
 
 ## 🚀 Inicio Rápido
 
@@ -68,6 +68,15 @@ JWT_EXPIRA_EN=8h
 - **`JWT_EXPIRA_EN`**: cuánto dura un token, en el formato de [`jsonwebtoken`](https://github.com/auth0/node-jsonwebtoken#usage) (`8h`, `30m`, `7d`). Por defecto `8h`.
 
 En producción el workflow de deploy toma el secreto del secret `JWT_SECRET` del repositorio de GitHub, igual que hace con `MONGODB_URI`, y falla con un error claro si falta. Con `docker compose` se puede fijar con la variable `JWT_SECRET` del entorno; si no está, el compose usa un valor de desarrollo.
+
+Para el frontend, copiá `packages/frontend/.env.example` a `packages/frontend/.env`:
+
+```
+# packages/frontend/.env
+REACT_APP_API_URL=http://localhost:8000
+```
+
+- **`REACT_APP_API_URL`**: URL base del backend. Create React App la lee solo al arrancar, así que después de cambiarla reiniciá `npm run start:frontend`.
 
 #### Notificaciones por medios externos
 
@@ -135,6 +144,8 @@ npm run dev:backend
 ```bash
 npm run start:frontend
 ```
+
+La app queda en http://localhost:3000 y le pide los datos al backend de `REACT_APP_API_URL`.
 
 #### Ejecutar Ambos (Desarrollo)
 
@@ -281,6 +292,8 @@ Con el backend corriendo, la documentación está en [`/api-docs`](http://localh
 
 - `npm run test:backend` corre todos los tests. Los de integración necesitan MongoDB levantado (`docker compose up -d mongo`).
 - `npm run test:unit --workspace=backend` corre solo los unitarios, sin base de datos. Los services se prueban con los repositorios falsos de `tests/fakes/`.
+- `npm run test:frontend` corre los tests del frontend, sin backend ni base de datos.
+- `npm test` corre los del backend y después los del frontend.
 
 En CI, el workflow de tests levanta un MongoDB como servicio.
 
