@@ -43,5 +43,10 @@
   },
   "devDependencies": {
     "eslint-config-react-app": "^7.0.1"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "^react-router/dom$": "react-router/dist/development/dom-export.js"
+    }
   }
 }
