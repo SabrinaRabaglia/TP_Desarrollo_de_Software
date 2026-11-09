@@ -84,7 +84,7 @@ const notificacionService = new NotificacionService(
   personaColaboradoraService,
   new NotificadorExterno(),
 )
-const hitoService = new HitoService(proyectoService)
+const hitoService = new HitoService(proyectoService, proyectoRepository)
 
 export const catalogoController = new CatalogoController(catalogoService)
 export const colaboracionController = new ColaboracionController(

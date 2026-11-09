@@ -49,10 +49,7 @@ class Proyecto {
     colaboraciones: Colaboracion[]
 
     cerrar():void
-    agregarPerfil(perfil: Perfil): Perfil
     buscarPerfil(perfilId: String): Perfil
-    actualizarPerfil(perfil: Perfil, datos): void
-    eliminarPerfil(perfilId: String): void
     contactar(perfil: Perfil, personaColaboradora: PersonaColaboradora, contenido: String): Notificacion
     agregarColaboracion(colaboracion: Colaboracion): void
     poseeHabilidadNecesaria(personaColaboradora: PersonaColaboradora): boolean

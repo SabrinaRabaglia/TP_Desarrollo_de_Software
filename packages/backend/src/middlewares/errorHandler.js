@@ -2,7 +2,6 @@ import mongoose from "mongoose"
 import {
   AlreadyExists,
   BadRequestError,
-  ConcurrentModification,
   EntityInUse,
   EntityNotFound,
   InvalidReference,
@@ -49,11 +48,7 @@ export default function errorHandler(error, _req, res, next) {
     return jsonError(res, 404, error.message)
   }
 
-  if (
-    error instanceof AlreadyExists ||
-    error instanceof EntityInUse ||
-    error instanceof ConcurrentModification
-  ) {
+  if (error instanceof AlreadyExists || error instanceof EntityInUse) {
     return jsonError(res, 409, error.message)
   }
 

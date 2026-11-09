@@ -13,7 +13,6 @@ import HabilidadRepository from "../../fakes/HabilidadRepository.js"
 import PersonaColaboradoraService from "../../../src/services/PersonaColaboradoraService.js"
 import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraRepository.js"
 import {
-  ConcurrentModification,
   EntityNotFound,
   InvalidReference,
 } from "../../../src/errors/ApplicationErrors.js"
@@ -380,64 +379,6 @@ describe("PerfilService", () => {
       expect(
         (await service.getById(proyecto.id, perfil.id)).cantidadHoras,
       ).toBe(5)
-    })
-  })
-
-  describe("modificaciones concurrentes del proyecto", () => {
-    // El fake comparte objetos entre lecturas, así que no puede simular dos
-    // pedidos pisándose: eso lo prueba la integración. Acá se prueba el reintento.
-    const servicioQueFallaAlGuardar = (veces) => {
-      const repositorio = new ProyectoRepository()
-      let fallas = 0
-      repositorio.save = async () => {
-        if (fallas < veces) {
-          fallas++
-          throw new ConcurrentModification("El proyecto cambió")
-        }
-      }
-      return new PerfilService(
-        proyectoService,
-        repositorio,
-        habilidadService,
-        personaColaboradoraService,
-        colaboracionRepository,
-      )
-    }
-
-    test("reintenta leyendo el proyecto de nuevo hasta poder guardar", async () => {
-      const servicio = servicioQueFallaAlGuardar(2)
-      let intentos = 0
-
-      const resultado = await servicio.modificarProyecto(proyecto.id, () => {
-        intentos++
-        return "listo"
-      })
-
-      expect(resultado).toBe("listo")
-      expect(intentos).toBe(3)
-    })
-
-    test("después de tres intentos fallidos propaga ConcurrentModification", async () => {
-      const servicio = servicioQueFallaAlGuardar(3)
-      let intentos = 0
-
-      await expect(
-        servicio.modificarProyecto(proyecto.id, () => intentos++),
-      ).rejects.toThrow(ConcurrentModification)
-      expect(intentos).toBe(3)
-    })
-
-    test("no reintenta otros errores", async () => {
-      const servicio = servicioQueFallaAlGuardar(0)
-      let intentos = 0
-
-      await expect(
-        servicio.modificarProyecto(proyecto.id, () => {
-          intentos++
-          throw new DomainRuleError("Proyecto cerrado")
-        }),
-      ).rejects.toThrow(DomainRuleError)
-      expect(intentos).toBe(1)
     })
   })
 

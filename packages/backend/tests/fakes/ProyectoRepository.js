@@ -1,6 +1,21 @@
 import { randomUUID } from "node:crypto"
+import { EstadoProyecto } from "../../src/domain/enums/EstadoProyecto.js"
+
 export default class ProyectoRepository {
   static proyectos = []
+
+  static abierto(proyectoId) {
+    const proyecto = ProyectoRepository.proyectos.find(
+      (p) => p.id === proyectoId,
+    )
+    return proyecto?.estado === EstadoProyecto.CERRADO ? undefined : proyecto
+  }
+
+  static conHito(hitoId) {
+    return ProyectoRepository.proyectos.find((proyecto) =>
+      proyecto.hitos.some((hito) => hito.id === hitoId),
+    )
+  }
 
   async findAll() {
     return ProyectoRepository.proyectos
@@ -76,6 +91,65 @@ export default class ProyectoRepository {
     ProyectoRepository.proyectos = ProyectoRepository.proyectos.filter(
       (c) => c.id !== id,
     )
+  }
+
+  async agregarPerfil(proyectoId, perfil) {
+    const proyecto = ProyectoRepository.abierto(proyectoId)
+    if (!proyecto) {
+      return null
+    }
+    perfil.id = randomUUID()
+    proyecto.perfiles.push(perfil)
+    return perfil
+  }
+
+  async actualizarPerfil(proyectoId, perfilId, perfil) {
+    const proyecto = ProyectoRepository.abierto(proyectoId)
+    const indice = proyecto?.perfiles.findIndex((p) => p.id === perfilId)
+    if (!proyecto || indice === -1) {
+      return null
+    }
+    perfil.id = perfilId
+    proyecto.perfiles[indice] = perfil
+    return perfil
+  }
+
+  async eliminarPerfil(proyectoId, perfilId) {
+    const proyecto = ProyectoRepository.abierto(proyectoId)
+    if (!proyecto?.perfiles.some((p) => p.id === perfilId)) {
+      return false
+    }
+    proyecto.perfiles = proyecto.perfiles.filter((p) => p.id !== perfilId)
+    return true
+  }
+
+  async agregarHito(proyectoId, hito) {
+    const proyecto = await this.findById(proyectoId)
+    if (!proyecto) {
+      return null
+    }
+    hito.id = randomUUID()
+    proyecto.hitos.push(hito)
+    return hito
+  }
+
+  async actualizarHito(hitoId, cambios) {
+    const hito = ProyectoRepository.conHito(hitoId)?.hitos.find(
+      (h) => h.id === hitoId,
+    )
+    if (!hito) {
+      return null
+    }
+    return Object.assign(hito, cambios)
+  }
+
+  async eliminarHito(hitoId) {
+    const proyecto = ProyectoRepository.conHito(hitoId)
+    if (!proyecto) {
+      return false
+    }
+    proyecto.hitos = proyecto.hitos.filter((hito) => hito.id !== hitoId)
+    return true
   }
   deleteAll() {
     ProyectoRepository.proyectos.length = 0

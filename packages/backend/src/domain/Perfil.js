@@ -11,11 +11,6 @@ export default class Perfil {
     this.asignar(datos)
   }
 
-  actualizar(datos) {
-    Perfil.validarDatos(datos)
-    this.asignar(datos)
-  }
-
   estaCubiertoPor(habilidades) {
     const disponibles = new Set(habilidades.map(idDe))
     return this.habilidadesRequeridas.every((habilidad) =>

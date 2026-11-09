@@ -1,76 +1,118 @@
-import { describe, expect, test, beforeEach, jest } from "@jest/globals";
-import HitoService from "../../../src/services/HitoService.js";
-import { Hito } from "../../../src/domain/Hito.js";
-import { EntityNotFound} from "../../../src/errors/ApplicationErrors.js";
-import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js";
+import { beforeEach, describe, expect, test } from "@jest/globals"
+import HitoService from "../../../src/services/HitoService.js"
+import ProyectoService from "../../../src/services/ProyectoService.js"
+import Proyecto from "../../../src/domain/Proyecto.js"
+import { Hito } from "../../../src/domain/Hito.js"
+import ProyectoRepository from "../../fakes/ProyectoRepository.js"
+import ColectivoRepository from "../../fakes/ColectivoRepository.js"
+import ColaboracionRepository from "../../fakes/ColaboracionRepository.js"
+import { EntityNotFound } from "../../../src/errors/ApplicationErrors.js"
+import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 
-describe("HitoService (Modelo Embebido)", () => {
-  let hitoService;
-  let proyectoServiceMock;
-  let proyectoMock;
+describe("HitoService", () => {
+  let service
+  let proyectoRepository
+  let proyecto
+  let datos
 
-  beforeEach(() => {
-    // Simulamos un proyecto con el array de hitos embebido
-    proyectoMock = {
-      id: "proyecto-123",
-      titulo: "Proyecto Colaborativo",
-      hitos: [],
-    };
-
-    // Mockeamos el servicio de proyectos
-    proyectoServiceMock = {
-      getById: jest.fn().mockResolvedValue(proyectoMock),
-      update: jest.fn().mockResolvedValue(proyectoMock),
-      findByHitoId: jest.fn().mockResolvedValue(proyectoMock),
-    };
-
-    hitoService = new HitoService(proyectoServiceMock);
-  });
-
-  test("crea y agrega un hito al proyecto correctamente", async () => {
-    const dto = {
-      fecha: "2026-10-01",
+  beforeEach(async () => {
+    proyectoRepository = new ProyectoRepository()
+    proyectoRepository.deleteAll()
+    service = new HitoService(
+      new ProyectoService(
+        proyectoRepository,
+        new ColectivoRepository(),
+        new ColaboracionRepository(),
+      ),
+      proyectoRepository,
+    )
+    proyecto = await proyectoRepository.save(
+      new Proyecto("Mapa", "Mapa de humedales", "colectivo-1"),
+    )
+    datos = {
+      fecha: new Date("2026-10-01"),
       porcentajeConcrecion: 50,
       descripcion: "Avance de la fase 1",
-    };
+    }
+  })
 
-    const resultado = await hitoService.create("proyecto-123", dto);
+  const hitosDe = async (proyectoId) =>
+    (await proyectoRepository.findById(proyectoId)).hitos
 
-    expect(resultado).toBeInstanceOf(Hito);
-    expect(resultado.porcentajeConcrecion).toBe(50);
-    expect(resultado.descripcion).toBe("Avance de la fase 1");
-    expect(proyectoMock.hitos).toHaveLength(1);
-    expect(proyectoServiceMock.update).toHaveBeenCalledWith("proyecto-123", { hitos: proyectoMock.hitos });
-  });
+  describe("create", () => {
+    test("agrega el hito al proyecto y lo devuelve con id", async () => {
+      const hito = await service.create(proyecto.id, datos)
 
-  test("rechaza un hito con porcentaje de concreción inválido (> 100)", async () => {
-    const dto = {
-      fecha: "2026-10-01",
-      porcentajeConcrecion: 150, // Inválido
-      descripcion: "Error",
-    };
+      expect(hito).toBeInstanceOf(Hito)
+      expect(hito.id).toEqual(expect.any(String))
+      expect(hito.porcentajeConcrecion).toBe(50)
+      expect(hito.descripcion).toBe("Avance de la fase 1")
+      expect(await hitosDe(proyecto.id)).toEqual([hito])
+    })
 
-    await expect(
-      hitoService.create("proyecto-123", dto)
-    ).rejects.toThrow(DomainValidationError);
+    test("lanza EntityNotFound si el proyecto no existe", async () => {
+      await expect(service.create("id-inexistente", datos)).rejects.toThrow(
+        EntityNotFound,
+      )
+    })
 
-    expect(proyectoMock.hitos).toHaveLength(0);
-  });
+    test("lanza DomainValidationError con un porcentaje fuera de rango, sin agregarlo", async () => {
+      await expect(
+        service.create(proyecto.id, { ...datos, porcentajeConcrecion: 150 }),
+      ).rejects.toThrow(DomainValidationError)
+      expect(await hitosDe(proyecto.id)).toEqual([])
+    })
+  })
 
-  test("devuelve la lista de hitos de un proyecto existente", async () => {
-    proyectoMock.hitos = [new Hito(new Date(), 25, "Hito previo")];
+  describe("getByProyectoId", () => {
+    test("devuelve los hitos del proyecto", async () => {
+      const hito = await service.create(proyecto.id, datos)
 
-    const hitos = await hitoService.getByProyectoId("proyecto-123");
+      expect(await service.getByProyectoId(proyecto.id)).toEqual([hito])
+    })
 
-    expect(hitos).toHaveLength(1);
-    expect(hitos[0].porcentajeConcrecion).toBe(25);
-  });
+    test("lanza EntityNotFound si el proyecto no existe", async () => {
+      await expect(service.getByProyectoId("id-inexistente")).rejects.toThrow(
+        EntityNotFound,
+      )
+    })
+  })
 
-  test("lanza EntityNotFound si intenta actualizar un hito que no pertenece a ningún proyecto", async () => {
-    proyectoServiceMock.findByHitoId.mockResolvedValue(null);
+  describe("update", () => {
+    test("cambia solo los campos enviados y devuelve el hito", async () => {
+      const hito = await service.create(proyecto.id, datos)
 
-    await expect(
-      hitoService.update("hito-falso", { descripcion: "Cambio" })
-    ).rejects.toThrow(EntityNotFound);
-  });
-});
+      const actualizado = await service.update(hito.id, {
+        porcentajeConcrecion: 75,
+      })
+
+      expect(actualizado.id).toBe(hito.id)
+      expect(actualizado.porcentajeConcrecion).toBe(75)
+      expect(actualizado.descripcion).toBe(datos.descripcion)
+      expect(await hitosDe(proyecto.id)).toEqual([actualizado])
+    })
+
+    test("lanza EntityNotFound si el hito no existe", async () => {
+      await expect(
+        service.update("hito-inexistente", { descripcion: "Cambio" }),
+      ).rejects.toThrow(EntityNotFound)
+    })
+  })
+
+  describe("delete", () => {
+    test("elimina el hito y conserva los demás", async () => {
+      const hito = await service.create(proyecto.id, datos)
+      const otro = await service.create(proyecto.id, datos)
+
+      await service.delete(hito.id)
+
+      expect(await hitosDe(proyecto.id)).toEqual([otro])
+    })
+
+    test("lanza EntityNotFound si el hito no existe", async () => {
+      await expect(service.delete("hito-inexistente")).rejects.toThrow(
+        EntityNotFound,
+      )
+    })
+  })
+})

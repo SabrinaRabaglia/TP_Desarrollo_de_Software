@@ -172,50 +172,32 @@ describe("Proyecto", () => {
 
     const crearProyectoConPerfil = () => {
       const proyecto = new Proyecto("Mapa", "Mapa de humedales", colectivo)
-      const perfil = proyecto.agregarPerfil(crearPerfil("Tester"))
+      const perfil = crearPerfil("Tester")
       perfil.id = "perfil-1"
+      proyecto.perfiles.push(perfil)
       return { proyecto, perfil }
     }
 
-    test("agregar un perfil lo suma al proyecto y lo devuelve", () => {
+    test("busca un perfil por id", () => {
       const { proyecto, perfil } = crearProyectoConPerfil()
 
-      expect(proyecto.perfiles).toEqual([perfil])
       expect(proyecto.buscarPerfil("perfil-1")).toBe(perfil)
       expect(proyecto.buscarPerfil("otro")).toBeUndefined()
     })
 
-    test("actualizar un perfil delega en el perfil", () => {
-      const { proyecto, perfil } = crearProyectoConPerfil()
-
-      proyecto.actualizarPerfil(perfil, { ...crearPerfil("Analista") })
-
-      expect(perfil.descripcion).toBe("Analista")
-    })
-
-    test("eliminar un perfil conserva los demás", () => {
+    test("un proyecto publicado admite modificar sus perfiles", () => {
       const { proyecto } = crearProyectoConPerfil()
-      const otro = proyecto.agregarPerfil(crearPerfil("Analista"))
-      otro.id = "perfil-2"
 
-      proyecto.eliminarPerfil("perfil-1")
-
-      expect(proyecto.perfiles).toEqual([otro])
+      expect(() => proyecto.assertPuedeModificarPerfiles()).not.toThrow()
     })
 
-    test("un proyecto cerrado no admite agregar, actualizar ni eliminar perfiles", () => {
-      const { proyecto, perfil } = crearProyectoConPerfil()
+    test("un proyecto cerrado no admite modificar sus perfiles", () => {
+      const { proyecto } = crearProyectoConPerfil()
       proyecto.cerrar()
 
-      expect(() => proyecto.agregarPerfil(crearPerfil("Analista"))).toThrow(
+      expect(() => proyecto.assertPuedeModificarPerfiles()).toThrow(
         DomainRuleError,
       )
-      expect(() =>
-        proyecto.actualizarPerfil(perfil, { ...crearPerfil("Analista") }),
-      ).toThrow(DomainRuleError)
-      expect(() => proyecto.eliminarPerfil("perfil-1")).toThrow(DomainRuleError)
-      expect(proyecto.perfiles).toEqual([perfil])
-      expect(perfil.descripcion).toBe("Tester")
     })
   })
 

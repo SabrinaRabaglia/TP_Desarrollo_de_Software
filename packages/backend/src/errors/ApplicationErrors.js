@@ -13,8 +13,6 @@ export class AlreadyExists extends ApplicationError {}
 
 export class EntityInUse extends ApplicationError {}
 
-export class ConcurrentModification extends ApplicationError {}
-
 export class BadRequestError extends ApplicationError {
   constructor(message, details = []) {
     super(message)

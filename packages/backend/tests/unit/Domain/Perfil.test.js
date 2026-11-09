@@ -56,30 +56,6 @@ describe("Perfil", () => {
     )
   })
 
-  test("actualizar reemplaza los datos", () => {
-    const perfil = new Perfil(datos)
-    const nuevos = {
-      ...datos,
-      nombre: undefined,
-      descripcion: "Analista de datos",
-      cantidadHoras: 15,
-      modalidadesColaboracion: [ModalidadColaboracion.CON_INCENTIVO_ECONOMICO],
-    }
-
-    perfil.actualizar(nuevos)
-
-    expect({ ...perfil }).toEqual({ ...nuevos, nombre: null })
-  })
-
-  test("actualizar con datos inválidos no modifica el perfil", () => {
-    const perfil = new Perfil(datos)
-
-    expect(() =>
-      perfil.actualizar({ ...datos, habilidadesRequeridas: [] }),
-    ).toThrow(DomainValidationError)
-    expect({ ...perfil }).toEqual(datos)
-  })
-
   test("cuenta cuántas de sus habilidades opcionales tiene una persona", () => {
     const perfil = new Perfil({
       ...datos,

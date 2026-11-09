@@ -295,7 +295,7 @@ describe("ProyectoService", () => {
     const crearConPerfiles = async (titulo, ...descripciones) => {
       const proyecto = await service.create({ ...dtoProyectoValido, titulo })
       for (const descripcion of descripciones) {
-        proyecto.agregarPerfil(nuevoPerfil(descripcion))
+        proyecto.perfiles.push(nuevoPerfil(descripcion))
       }
       return await proyectoRepository.save(proyecto)
     }
@@ -377,7 +377,7 @@ describe("ProyectoService", () => {
   describe("getAllByHabilidades", () => {
     const crearConPerfil = async (titulo, habilidadesRequeridas) => {
       const proyecto = await service.create({ ...dtoProyectoValido, titulo })
-      proyecto.agregarPerfil(
+      proyecto.perfiles.push(
         new Perfil({
           descripcion: `Perfil de ${titulo}`,
           unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
