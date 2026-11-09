@@ -522,6 +522,32 @@
         }
       }
     },
+    "/personas-colaboradoras/{id}/medios-de-contacto/{contactoId}": {
+      "delete": {
+        "tags": ["Personas colaboradoras"],
+        "summary": "Eliminar un medio de contacto",
+        "description": "Quita un medio de contacto de la persona por su id. Los ids de los medios vienen en `mediosDeContacto` de la persona. La operación es atómica: dos borrados simultáneos de medios distintos aplican los dos.",
+        "operationId": "eliminarMedioDeContacto",
+        "parameters": [
+          { "$ref": "#/components/parameters/IdPath" },
+          { "$ref": "#/components/parameters/ContactoIdPath" }
+        ],
+        "responses": {
+          "204": {
+            "description": "Eliminado correctamente. No devuelve contenido."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "description": "La persona o el medio de contacto no existen."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
     "/personas-colaboradoras/{id}/notificaciones": {
       "get": {
         "tags": ["Notificaciones"],
@@ -1635,6 +1661,15 @@
         "in": "path",
         "required": true,
         "description": "Id del recurso (ObjectId de 24 caracteres hexadecimales). Si el formato es inválido responde 400.",
+        "schema": {
+          "$ref": "#/components/schemas/ObjectId"
+        }
+      },
+      "ContactoIdPath": {
+        "name": "contactoId",
+        "in": "path",
+        "required": true,
+        "description": "Id del medio de contacto dentro de la persona.",
         "schema": {
           "$ref": "#/components/schemas/ObjectId"
         }

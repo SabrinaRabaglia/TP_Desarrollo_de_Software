@@ -89,16 +89,15 @@ export default class PersonaColaboradoraService {
   }
 
   deleteMedioDeContacto = async (id, contactoId) => {
-    const personaColaboradora = await this.getById(id)
-    const indice = personaColaboradora.mediosDeContacto.findIndex(
-      (medio) => String(medio._id ?? medio.id) === contactoId,
-    )
-    if (indice === -1) {
+    const eliminado =
+      await this.personaColaboradoraRepository.eliminarMedioDeContacto(
+        id,
+        contactoId,
+      )
+    if (!eliminado) {
+      await this.getById(id)
       throw new EntityNotFound("Medio de contacto no encontrado")
     }
-
-    personaColaboradora.mediosDeContacto.splice(indice, 1)
-    return await this.personaColaboradoraRepository.save(personaColaboradora)
   }
 
   getAll = async () => {

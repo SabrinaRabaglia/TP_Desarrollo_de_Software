@@ -370,7 +370,9 @@
                   "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
                   "const respuesta = pm.response.json()",
                   "pm.test(\"la respuesta contiene un id\", () => pm.expect(respuesta.id).to.be.a(\"string\"))",
-                  "pm.collectionVariables.set(\"personaId\", respuesta.id)"
+                  "pm.collectionVariables.set(\"personaId\", respuesta.id)",
+                  "pm.test(\"los medios de contacto vienen con id y tipo, sin valor\", () => pm.expect(respuesta.mediosDeContacto.map((medio) => medio.tipo)).to.eql([\"EMAIL\", \"WHATSAPP\"]))",
+                  "pm.collectionVariables.set(\"contactoId\", respuesta.mediosDeContacto.find((medio) => medio.tipo === \"WHATSAPP\").id)"
                 ]
               }
             }
@@ -385,7 +387,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombreFantasia\": \"Colaborador {{runSuffix}}\",\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Gómez\",\n  \"pronombres\": [\n    \"ella\"\n  ],\n  \"presentacion\": \"Desarrolladora frontend interesada en proyectos sociales.\",\n  \"cuentas\": [\n    {\n      \"nombreUsuario\": \"ana_gomez_{{runSuffix}}\",\n      \"tipo\": \"GITHUB\"\n    }\n  ],\n  \"habilidades\": [\n    \"{{habilidadId}}\"\n  ],\n  \"aceptaMensajeriaInterna\": true,\n  \"mediosDeContacto\": [\n    {\n      \"tipo\": \"EMAIL\",\n      \"valor\": \"ana_{{runSuffix}}@example.com\"\n    }\n  ]\n}",
+              "raw": "{\n  \"nombreFantasia\": \"Colaborador {{runSuffix}}\",\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Gómez\",\n  \"pronombres\": [\n    \"ella\"\n  ],\n  \"presentacion\": \"Desarrolladora frontend interesada en proyectos sociales.\",\n  \"cuentas\": [\n    {\n      \"nombreUsuario\": \"ana_gomez_{{runSuffix}}\",\n      \"tipo\": \"GITHUB\"\n    }\n  ],\n  \"habilidades\": [\n    \"{{habilidadId}}\"\n  ],\n  \"aceptaMensajeriaInterna\": true,\n  \"mediosDeContacto\": [\n    {\n      \"tipo\": \"EMAIL\",\n      \"valor\": \"ana_{{runSuffix}}@example.com\"\n    },\n    {\n      \"tipo\": \"WHATSAPP\",\n      \"valor\": \"+54 9 11 2345-6789\"\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -501,6 +503,49 @@
               ]
             },
             "description": "Reemplaza todos los campos editables de la persona."
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar medio de contacto",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"personaId\") || !pm.collectionVariables.get(\"contactoId\")) {",
+                  "  throw new Error(\"Ejecutá primero Personas colaboradoras > Crear persona colaboradora.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 204\", () => pm.response.to.have.status(204))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/personas-colaboradoras/{{personaId}}/medios-de-contacto/{{contactoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "personas-colaboradoras",
+                "{{personaId}}",
+                "medios-de-contacto",
+                "{{contactoId}}"
+              ]
+            },
+            "description": "Quita el WhatsApp cargado al crear la persona; el email queda y es el que usan las notificaciones más adelante. Un medio que no existe responde 404 y un id con formato inválido 400."
           },
           "response": []
         }
