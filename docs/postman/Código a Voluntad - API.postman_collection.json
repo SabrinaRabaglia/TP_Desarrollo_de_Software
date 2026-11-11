@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Código a Voluntad - API",
-    "description": "Importar este archivo desde Postman > Import > Files. No hace falta un environment: la colección incluye baseUrl (http://localhost:8000) y las variables para los IDs.\n\nCon el backend iniciado, ejecutar las carpetas en el orden mostrado. Las altas guardan automáticamente los IDs para las solicitudes siguientes. Los ejemplos usan nombres únicos y se pueden volver a ejecutar. Ajustar baseUrl si se usa otro puerto o servidor.\n\nIncluye healthcheck, catálogos de países y provincias, CRUD de habilidades, personas, colectivos y proyectos, perfiles, hitos de avance, inscripción/listado de colaboraciones, búsquedas de proyectos y colaboradores, notificaciones y cierre manual. La API no requiere autenticación y guarda los datos en MongoDB. Los ids son ObjectId de Mongo. La carpeta Catálogos guarda los ids de Argentina y de Buenos Aires para usarlos en los colectivos, así que hay que ejecutarla antes de Colectivos.\n\nEl cierre se ejecuta después de inscribir a la persona. Una vez cerrado, el proyecto no admite nuevas inscripciones ni reapertura. Para repetir ese flujo hay que crear un proyecto nuevo.\n\nLa carpeta final Limpieza primero muestra los 409 al intentar borrar un colectivo con proyectos o una habilidad en uso, y después elimina el proyecto, la persona, el colectivo y la habilidad creados en la ejecución. Las colaboraciones se borran con el proyecto y la persona, y las notificaciones con la persona. Omitir Limpieza si se quieren conservar los datos de ejemplo para probar manualmente.",
+    "description": "Importar este archivo desde Postman > Import > Files. No hace falta un environment: la colección incluye baseUrl (http://localhost:8000) y las variables para los IDs.\n\nCon el backend iniciado, ejecutar las carpetas en el orden mostrado. Las altas guardan automáticamente los IDs para las solicitudes siguientes. Los ejemplos usan nombres únicos y se pueden volver a ejecutar. Ajustar baseUrl si se usa otro puerto o servidor.\n\nIncluye healthcheck, catálogos de países y provincias, CRUD de habilidades, personas, colectivos y proyectos, perfiles, hitos de avance, inscripción/listado de colaboraciones, búsquedas de proyectos y colaboradores, notificaciones y cierre manual. Casi toda la API es pública. Editar o borrar a una persona colaboradora exige el token de esa misma persona, así que las personas se crean con el registro, que también crea su cuenta, y la colección inicia sesión con ellas y guarda el token. Los datos se guardan en MongoDB. Los ids son ObjectId de Mongo. La carpeta Catálogos guarda los ids de Argentina y de Buenos Aires para usarlos en los colectivos, así que hay que ejecutarla antes de Colectivos.\n\nEl cierre se ejecuta después de inscribir a la persona. Una vez cerrado, el proyecto no admite nuevas inscripciones ni reapertura. Para repetir ese flujo hay que crear un proyecto nuevo.\n\nLa carpeta final Limpieza primero muestra los 409 al intentar borrar un colectivo con proyectos o una habilidad en uso, y después elimina el proyecto, la persona, el colectivo y la habilidad creados en la ejecución. Las colaboraciones se borran con el proyecto y la persona, y las notificaciones y la cuenta con la persona. Omitir Limpieza si se quieren conservar los datos de ejemplo para probar manualmente.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -368,11 +368,10 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
-                  "const respuesta = pm.response.json()",
-                  "pm.test(\"la respuesta contiene un id\", () => pm.expect(respuesta.id).to.be.a(\"string\"))",
-                  "pm.collectionVariables.set(\"personaId\", respuesta.id)",
-                  "pm.test(\"los medios de contacto vienen con id y tipo, sin valor\", () => pm.expect(respuesta.mediosDeContacto.map((medio) => medio.tipo)).to.eql([\"EMAIL\", \"WHATSAPP\"]))",
-                  "pm.collectionVariables.set(\"contactoId\", respuesta.mediosDeContacto.find((medio) => medio.tipo === \"WHATSAPP\").id)"
+                  "const usuario = pm.response.json()",
+                  "pm.test(\"crea el usuario de la persona\", () => pm.expect(usuario.entidad.id).to.be.a(\"string\"))",
+                  "pm.collectionVariables.set(\"personaId\", usuario.entidad.id)",
+                  "pm.collectionVariables.set(\"personaEmail\", usuario.email)"
                 ]
               }
             }
@@ -387,7 +386,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombreFantasia\": \"Colaborador {{runSuffix}}\",\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Gómez\",\n  \"pronombres\": [\n    \"ella\"\n  ],\n  \"presentacion\": \"Desarrolladora frontend interesada en proyectos sociales.\",\n  \"cuentas\": [\n    {\n      \"nombreUsuario\": \"ana_gomez_{{runSuffix}}\",\n      \"tipo\": \"GITHUB\"\n    }\n  ],\n  \"habilidades\": [\n    \"{{habilidadId}}\"\n  ],\n  \"aceptaMensajeriaInterna\": true,\n  \"mediosDeContacto\": [\n    {\n      \"tipo\": \"EMAIL\",\n      \"valor\": \"ana_{{runSuffix}}@example.com\"\n    },\n    {\n      \"tipo\": \"WHATSAPP\",\n      \"valor\": \"+54 9 11 2345-6789\"\n    }\n  ]\n}",
+              "raw": "{\n  \"email\": \"ana_{{runSuffix}}@persona.test\",\n  \"contrasena\": \"secreto123\",\n  \"persona\": {\n    \"nombreFantasia\": \"Colaborador {{runSuffix}}\",\n    \"nombre\": \"Ana\",\n    \"apellido\": \"Gómez\",\n    \"pronombres\": [\n      \"ella\"\n    ],\n    \"presentacion\": \"Desarrolladora frontend interesada en proyectos sociales.\",\n    \"cuentas\": [\n      {\n        \"nombreUsuario\": \"ana_gomez_{{runSuffix}}\",\n        \"tipo\": \"GITHUB\"\n      }\n    ],\n    \"habilidades\": [\n      \"{{habilidadId}}\"\n    ],\n    \"aceptaMensajeriaInterna\": true,\n    \"mediosDeContacto\": [\n      {\n        \"tipo\": \"EMAIL\",\n        \"valor\": \"ana_{{runSuffix}}@example.com\"\n      },\n      {\n        \"tipo\": \"WHATSAPP\",\n        \"valor\": \"+54 9 11 2345-6789\"\n      }\n    ]\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -395,15 +394,75 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/personas-colaboradoras",
+              "raw": "{{baseUrl}}/auth/registro/persona-colaboradora",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "personas-colaboradoras"
+                "auth",
+                "registro",
+                "persona-colaboradora"
               ]
             },
-            "description": "Crea una persona que acepta mensajería interna, con un email de contacto. Resuelve la habilidad referenciada y guarda el ID en `personaId`."
+            "description": "Registra una persona que acepta mensajería interna, con un email y un WhatsApp de contacto, y su cuenta para iniciar sesión. Resuelve la habilidad referenciada y guarda el id de la persona en `personaId` y el email de la cuenta en `personaEmail`."
+          },
+          "response": []
+        },
+        {
+          "name": "Iniciar sesión como la persona",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"personaEmail\")) {",
+                  "  throw new Error(\"Ejecutá primero Personas colaboradoras > Crear persona colaboradora.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "const respuesta = pm.response.json()",
+                  "pm.test(\"inicia sesión como la persona creada\", () => pm.expect(respuesta.usuario.entidad.id).to.eql(pm.collectionVariables.get(\"personaId\")))",
+                  "pm.collectionVariables.set(\"tokenPersona\", respuesta.token)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{personaEmail}}\",\n  \"contrasena\": \"secreto123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Inicia sesión con la cuenta creada en Personas colaboradoras > Crear persona colaboradora y guarda el token en `tokenPersona`. Editar o borrar a una persona exige su propio token."
           },
           "response": []
         },
@@ -426,7 +485,10 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))"
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "const respuesta = pm.response.json()",
+                  "pm.test(\"los medios de contacto vienen con id y tipo, sin valor\", () => pm.expect(respuesta.mediosDeContacto.map((medio) => medio.tipo)).to.eql([\"EMAIL\", \"WHATSAPP\"]))",
+                  "pm.collectionVariables.set(\"contactoId\", respuesta.mediosDeContacto.find((medio) => medio.tipo === \"WHATSAPP\").id)"
                 ]
               }
             }
@@ -444,7 +506,7 @@
                 "{{personaId}}"
               ]
             },
-            "description": "Obtiene la persona creada en el request anterior."
+            "description": "Obtiene la persona registrada en el request anterior y guarda el id de su WhatsApp en `contactoId`."
           },
           "response": []
         },
@@ -481,6 +543,10 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPersona}}"
               }
             ],
             "body": {
@@ -532,7 +598,12 @@
           ],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPersona}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/personas-colaboradoras/{{personaId}}/medios-de-contacto/{{contactoId}}",
               "host": [
@@ -1843,7 +1914,9 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
-                  "pm.collectionVariables.set(\"candidataId\", pm.response.json().id)"
+                  "const usuario = pm.response.json()",
+                  "pm.collectionVariables.set(\"candidataId\", usuario.entidad.id)",
+                  "pm.collectionVariables.set(\"candidataEmail\", usuario.email)"
                 ]
               }
             }
@@ -1858,7 +1931,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombreFantasia\": \"Candidata {{runSuffix}}\",\n  \"nombre\": \"Lucía\",\n  \"apellido\": \"Pérez\",\n  \"pronombres\": [\n    \"ella\"\n  ],\n  \"presentacion\": \"Tiene la habilidad del perfil pero todavía no está inscripta en el proyecto.\",\n  \"cuentas\": [\n    {\n      \"nombreUsuario\": \"lucia_perez_{{runSuffix}}\",\n      \"tipo\": \"GITHUB\"\n    }\n  ],\n  \"habilidades\": [\n    \"{{habilidadId}}\"\n  ],\n  \"aceptaMensajeriaInterna\": true,\n  \"mediosDeContacto\": [\n    {\n      \"tipo\": \"EMAIL\",\n      \"valor\": \"lucia_{{runSuffix}}@example.com\"\n    }\n  ]\n}",
+              "raw": "{\n  \"email\": \"lucia_{{runSuffix}}@persona.test\",\n  \"contrasena\": \"secreto123\",\n  \"persona\": {\n    \"nombreFantasia\": \"Candidata {{runSuffix}}\",\n    \"nombre\": \"Lucía\",\n    \"apellido\": \"Pérez\",\n    \"pronombres\": [\n      \"ella\"\n    ],\n    \"presentacion\": \"Tiene la habilidad del perfil pero todavía no está inscripta en el proyecto.\",\n    \"cuentas\": [\n      {\n        \"nombreUsuario\": \"lucia_perez_{{runSuffix}}\",\n        \"tipo\": \"GITHUB\"\n      }\n    ],\n    \"habilidades\": [\n      \"{{habilidadId}}\"\n    ],\n    \"aceptaMensajeriaInterna\": true,\n    \"mediosDeContacto\": [\n      {\n        \"tipo\": \"EMAIL\",\n        \"valor\": \"lucia_{{runSuffix}}@example.com\"\n      }\n    ]\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1866,15 +1939,75 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/personas-colaboradoras",
+              "raw": "{{baseUrl}}/auth/registro/persona-colaboradora",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "personas-colaboradoras"
+                "auth",
+                "registro",
+                "persona-colaboradora"
               ]
             },
-            "description": "Crea una segunda persona con la habilidad del perfil que todavía no está inscripta en el proyecto, para que la búsqueda de colaboradores tenga a quién sugerir. Guarda su id en candidataId."
+            "description": "Registra una segunda persona con la habilidad del perfil que todavía no está inscripta en el proyecto, para que la búsqueda de colaboradores tenga a quién sugerir. Guarda su id en `candidataId` y el email de su cuenta en `candidataEmail`."
+          },
+          "response": []
+        },
+        {
+          "name": "Iniciar sesión como la candidata",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"candidataEmail\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Crear persona candidata.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "const respuesta = pm.response.json()",
+                  "pm.test(\"inicia sesión como la persona creada\", () => pm.expect(respuesta.usuario.entidad.id).to.eql(pm.collectionVariables.get(\"candidataId\")))",
+                  "pm.collectionVariables.set(\"tokenCandidata\", respuesta.token)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{candidataEmail}}\",\n  \"contrasena\": \"secreto123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Inicia sesión con la cuenta creada en Búsquedas y notificaciones > Crear persona candidata y guarda el token en `tokenCandidata`. Editar o borrar a una persona exige su propio token."
           },
           "response": []
         },
@@ -2376,7 +2509,12 @@
           ],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPersona}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/personas-colaboradoras/{{personaId}}",
               "host": [
@@ -2418,7 +2556,12 @@
           ],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCandidata}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/personas-colaboradoras/{{candidataId}}",
               "host": [
@@ -2565,7 +2708,27 @@
       "type": "string"
     },
     {
+      "key": "personaEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenPersona",
+      "value": "",
+      "type": "string"
+    },
+    {
       "key": "candidataId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "candidataEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenCandidata",
       "value": "",
       "type": "string"
     },
