@@ -10,12 +10,14 @@ export default class PersonaColaboradoraService {
     habilidadService,
     colaboracionRepository,
     notificacionRepository,
+    usuarioRepository,
   ) {
     this.proyectoRepository = proyectoRepository
     this.personaColaboradoraRepository = personaColaboradoraRepository
     this.habilidadService = habilidadService
     this.colaboracionRepository = colaboracionRepository
     this.notificacionRepository = notificacionRepository
+    this.usuarioRepository = usuarioRepository
   }
 
   crearCuentas = (cuentas) => {
@@ -86,6 +88,7 @@ export default class PersonaColaboradoraService {
     await this.getById(id)
     await this.colaboracionRepository.deleteByPersona(id)
     await this.notificacionRepository.deleteByPersonaColaboradora(id)
+    await this.usuarioRepository.deleteByEntidad(id)
     await this.personaColaboradoraRepository.deleteById(id)
   }
 

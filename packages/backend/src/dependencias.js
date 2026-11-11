@@ -75,6 +75,7 @@ const personaColaboradoraService = new PersonaColaboradoraService(
   habilidadService,
   colaboracionRepository,
   notificacionRepository,
+  usuarioRepository,
 )
 const perfilService = new PerfilService(
   proyectoService,

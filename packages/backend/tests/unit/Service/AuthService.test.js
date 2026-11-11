@@ -32,6 +32,7 @@ const crearService = (usuarioRepository = new UsuarioRepository()) =>
       new HabilidadService(new HabilidadRepository()),
       new ColaboracionRepository(),
       new NotificacionRepository(),
+      usuarioRepository,
     ),
   )
 
