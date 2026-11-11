@@ -8,6 +8,7 @@ import PerfilController from "./controllers/PerfilController.js"
 import PersonaColaboradoraController from "./controllers/PersonaColaboradoraController.js"
 import ProyectoController from "./controllers/ProyectoController.js"
 import HitoController from "./controllers/HitoController.js"
+import PostulacionController from "./controllers/PostulacionController.js"
 
 import ColaboracionRepository from "./repositories/ColaboracionRepository.js"
 import ColectivoRepository from "./repositories/ColectivoRepository.js"
@@ -19,6 +20,7 @@ import ProvinciaRepository from "./repositories/ProvinciaRepository.js"
 import ProyectoRepository from "./repositories/ProyectoRepository.js"
 import TipoColectivoRepository from "./repositories/TipoColectivoRepository.js"
 import UsuarioRepository from "./repositories/UsuarioRepository.js"
+import PostulacionRepository from "./repositories/PostulacionRepository.js"
 
 import AuthService from "./services/AuthService.js"
 import CatalogoService from "./services/CatalogoService.js"
@@ -27,13 +29,13 @@ import ColectivoService from "./services/ColectivoService.js"
 import HabilidadService from "./services/HabilidadService.js"
 import NotificacionService from "./services/NotificacionService.js"
 import HitoService from "./services/HitoService.js"
+import PostulacionService from "./services/PostulacionService.js"
 
 import EnvioDeNotificaciones from "./services/EnvioDeNotificaciones.js"
 import { crearCanales } from "./canales/canales.js"
 import PerfilService from "./services/PerfilService.js"
 import PersonaColaboradoraService from "./services/PersonaColaboradoraService.js"
 import ProyectoService from "./services/ProyectoService.js"
-
 // Único lugar donde se arman las dependencias (repositorio → servicio →
 // controller). Las rutas solo conocen a los controllers.
 
@@ -44,6 +46,7 @@ const notificacionRepository = new NotificacionRepository()
 const paisRepository = new PaisRepository()
 const personaColaboradoraRepository = new PersonaColaboradoraRepository()
 const provinciaRepository = new ProvinciaRepository()
+const postulacionRepository = new PostulacionRepository()
 const { canales, simulados } = crearCanales(process.env)
 export const mediosSimulados = simulados
 
@@ -101,6 +104,11 @@ const notificacionService = new NotificacionService(
   personaColaboradoraService,
   envioDeNotificaciones,
 )
+const postulacionService = new PostulacionService(
+  postulacionRepository,
+  proyectoRepository,
+  personaColaboradoraRepository
+)
 const hitoService = new HitoService(proyectoService, proyectoRepository)
 const authService = new AuthService(
   usuarioRepository,
@@ -124,3 +132,4 @@ export const personaColaboradoraController = new PersonaColaboradoraController(
 )
 export const proyectoController = new ProyectoController(proyectoService)
 export const hitoController = new HitoController(hitoService)
+export const postulacionController = new PostulacionController(postulacionService)
