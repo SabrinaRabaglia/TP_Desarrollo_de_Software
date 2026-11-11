@@ -106,6 +106,7 @@ const authService = new AuthService(
   usuarioRepository,
   colectivoRepository,
   personaColaboradoraRepository,
+  personaColaboradoraService,
 )
 
 export const authController = new AuthController(authService)
