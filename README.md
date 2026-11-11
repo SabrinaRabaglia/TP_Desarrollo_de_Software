@@ -242,7 +242,7 @@ El usuario público tiene esta forma, donde `nombre` es el nombre del colectivo 
 
 ### Proteger una ruta
 
-Las rutas son públicas salvo las que se protegen a propósito, como la de [datos de contacto](#datos-de-contacto). Cada feature decide cuáles lo son con los middlewares de `src/middlewares/autenticar.js`. `autenticar` exige un token válido y deja `req.usuario = { id, rol, entidad }`; sin token o con uno inválido o vencido responde `401`. `autorizar(...roles)` va después de `autenticar` y responde `403` si el rol del usuario no está en la lista.
+Las rutas son públicas salvo las que se protegen a propósito, como la de [datos de contacto](#datos-de-contacto) y las que editan o borran a una persona colaboradora. Cada feature decide cuáles lo son con los middlewares de `src/middlewares/autenticar.js`. `autenticar` exige un token válido y deja `req.usuario = { id, rol, entidad }`; sin token o con uno inválido o vencido responde `401`. `autorizar(...roles)` va después de `autenticar` y responde `403` si el rol del usuario no está en la lista.
 
 ```js
 import { autenticar, autorizar } from "../middlewares/autenticar.js"
@@ -258,6 +258,21 @@ routes.post(
 ```
 
 En el controller, `req.usuario.entidad` es el id del colectivo o de la persona que hace el pedido.
+
+`autorizarEntidad(rol, parametro = "id")` también va después de `autenticar`, y deja pasar solo a la entidad dueña del recurso: el usuario tiene que tener ese rol y su `entidad` tiene que ser el id que llega en `req.params[parametro]`. Si no, responde `403`. Así solo la propia persona puede editar o borrar su perfil y sus medios de contacto:
+
+```js
+routes.put(
+  "/personas-colaboradoras/:id",
+  autenticar,
+  validateId,
+  autorizarEntidad(RolUsuario.PERSONA_COLABORADORA),
+  validar(personaColaboradoraSchema),
+  personaColaboradoraController.update,
+)
+```
+
+Para un colectivo sería `autorizarEntidad(RolUsuario.COLECTIVO)` en `/colectivos/:id`. Al borrar una persona colaboradora también se borra su usuario, así que después no puede iniciar sesión.
 
 ### Datos de contacto
 
