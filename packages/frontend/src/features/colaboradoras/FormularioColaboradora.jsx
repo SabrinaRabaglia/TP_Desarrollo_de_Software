@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   Alert,
   Button,
@@ -35,6 +35,13 @@ const FormularioColaboradora = ({
   children,
 }) => {
   const [datos, setDatos] = useState(datosIniciales)
+  const alerta = useRef(null)
+
+  useEffect(() => {
+    if (error) {
+      alerta.current.focus()
+    }
+  }, [error])
 
   const setValorDe = (campo) => (e) => {
     setDatos({ ...datos, [campo]: e.target.value })
@@ -152,7 +159,11 @@ const FormularioColaboradora = ({
         }
       />
 
-      {error && <Alert severity="error">{error}</Alert>}
+      {error && (
+        <Alert ref={alerta} tabIndex={-1} severity="error">
+          {error}
+        </Alert>
+      )}
 
       <Button
         type="submit"

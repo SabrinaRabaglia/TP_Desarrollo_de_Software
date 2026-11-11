@@ -101,9 +101,28 @@ describe("RegistroColaboradora", () => {
     expect(
       await screen.findByText("Ya existe un usuario con ese email"),
     ).toBeInTheDocument()
+    expect(screen.getByRole("alert")).toHaveFocus()
     expect(screen.getByRole("button", { name: "Crear cuenta" })).toBeEnabled()
     expect(screen.getByLabelText(/^nombre de fantasía/i)).toHaveValue(
       "lucia.dev",
     )
+  })
+
+  test("al quitar un medio de contacto el foco queda en el botón de agregar", async () => {
+    renderizarRegistro()
+    await screen.findByRole("checkbox", { name: "React" })
+    const agregar = screen.getByRole("button", {
+      name: "Agregar medio de contacto",
+    })
+
+    userEvent.click(agregar)
+    userEvent.click(
+      screen.getByRole("button", { name: "Quitar medio de contacto 1" }),
+    )
+
+    expect(
+      screen.queryByLabelText(/^dato de contacto/i),
+    ).not.toBeInTheDocument()
+    expect(agregar).toHaveFocus()
   })
 })

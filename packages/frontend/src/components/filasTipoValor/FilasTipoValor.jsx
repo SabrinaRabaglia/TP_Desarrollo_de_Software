@@ -1,3 +1,4 @@
+import { useRef } from "react"
 import { Button, IconButton, MenuItem, TextField } from "@mui/material"
 import { FaPlus, FaTrashAlt } from "react-icons/fa"
 import "./FilasTipoValor.css"
@@ -11,6 +12,8 @@ const FilasTipoValor = ({
   etiquetaValor,
   nombreFila,
 }) => {
+  const botonAgregar = useRef(null)
+
   const cambiarFila = (indice, campo) => (e) => {
     alCambiar(
       filas.map((fila, i) =>
@@ -21,6 +24,7 @@ const FilasTipoValor = ({
 
   const quitarFila = (indice) => {
     alCambiar(filas.filter((_fila, i) => i !== indice))
+    botonAgregar.current.focus()
   }
 
   const agregarFila = () => {
@@ -65,6 +69,7 @@ const FilasTipoValor = ({
       ))}
 
       <Button
+        ref={botonAgregar}
         variant="outlined"
         startIcon={<FaPlus aria-hidden="true" />}
         onClick={agregarFila}
