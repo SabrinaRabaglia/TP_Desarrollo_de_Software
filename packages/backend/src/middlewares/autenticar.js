@@ -23,3 +23,15 @@ export function autorizar(...roles) {
     next()
   }
 }
+
+export function autorizarEntidad(rol, parametro = "id") {
+  return (req, _res, next) => {
+    const esLaMisma =
+      req.usuario.rol === rol && req.usuario.entidad === req.params[parametro]
+    next(
+      esLaMisma
+        ? undefined
+        : new NoAutorizado("No tenés permiso para esta acción"),
+    )
+  }
+}

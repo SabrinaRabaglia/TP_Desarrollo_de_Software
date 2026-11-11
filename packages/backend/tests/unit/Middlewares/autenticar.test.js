@@ -1,5 +1,9 @@
 import { describe, expect, jest, test } from "@jest/globals"
-import { autenticar, autorizar } from "../../../src/middlewares/autenticar.js"
+import {
+  autenticar,
+  autorizar,
+  autorizarEntidad,
+} from "../../../src/middlewares/autenticar.js"
 import { firmar } from "../../../src/auth/tokens.js"
 import { RolUsuario } from "../../../src/domain/enums/RolUsuario.js"
 import {
@@ -63,5 +67,55 @@ describe("autorizar", () => {
     autorizar(RolUsuario.PERSONA_COLABORADORA)({ usuario }, {}, next)
 
     expect(next).toHaveBeenCalledWith(expect.any(NoAutorizado))
+  })
+})
+
+describe("autorizarEntidad", () => {
+  const persona = {
+    id: "65f1a2b3c4d5e6f708192a11",
+    rol: RolUsuario.PERSONA_COLABORADORA,
+    entidad: "65f1a2b3c4d5e6f708192a02",
+  }
+
+  const autorizarPersonaSobre = (usuarioDelToken, id) => {
+    const next = jest.fn()
+    autorizarEntidad(RolUsuario.PERSONA_COLABORADORA)(
+      { usuario: usuarioDelToken, params: { id } },
+      {},
+      next,
+    )
+    return next
+  }
+
+  test("deja pasar a la entidad del token sobre su propio id", () => {
+    expect(
+      autorizarPersonaSobre(persona, persona.entidad),
+    ).toHaveBeenCalledWith(undefined)
+  })
+
+  test("con el id de otra entidad pasa NoAutorizado", () => {
+    expect(
+      autorizarPersonaSobre(persona, "65f1a2b3c4d5e6f708192a03"),
+    ).toHaveBeenCalledWith(expect.any(NoAutorizado))
+  })
+
+  test("con el mismo id pero otro rol pasa NoAutorizado", () => {
+    const colectivo = { ...persona, rol: RolUsuario.COLECTIVO }
+
+    expect(
+      autorizarPersonaSobre(colectivo, persona.entidad),
+    ).toHaveBeenCalledWith(expect.any(NoAutorizado))
+  })
+
+  test("lee el id del parámetro indicado", () => {
+    const next = jest.fn()
+
+    autorizarEntidad(RolUsuario.PERSONA_COLABORADORA, "personaId")(
+      { usuario: persona, params: { id: "otro", personaId: persona.entidad } },
+      {},
+      next,
+    )
+
+    expect(next).toHaveBeenCalledWith(undefined)
   })
 })
