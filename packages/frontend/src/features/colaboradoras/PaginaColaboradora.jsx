@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import Cargando from "../../components/cargando/Cargando"
 import ListaDeHabilidades from "../../components/listaDeHabilidades/ListaDeHabilidades"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
+import { useAuth } from "../../context/AuthContext"
 import { mensajeDeError } from "../../service/api"
 import {
   obtenerColaboradora,
@@ -13,6 +14,9 @@ import "./PaginaColaboradora.css"
 
 const PaginaColaboradora = () => {
   const { id } = useParams()
+  const { usuario } = useAuth()
+  const esSuPerfil =
+    usuario?.rol === "PERSONA_COLABORADORA" && usuario.entidad?.id === id
 
   const [colaboradora, setColaboradora] = useState(null)
   const [cargando, setCargando] = useState(true)
@@ -64,6 +68,11 @@ const PaginaColaboradora = () => {
         {colaboradora.pronombres.length > 0 && (
           <p className="pagina-colaboradora-pronombres">
             Pronombres: {colaboradora.pronombres.join(", ")}
+          </p>
+        )}
+        {esSuPerfil && (
+          <p>
+            <Link to="/mi-perfil">Editar mi perfil</Link>
           </p>
         )}
       </header>

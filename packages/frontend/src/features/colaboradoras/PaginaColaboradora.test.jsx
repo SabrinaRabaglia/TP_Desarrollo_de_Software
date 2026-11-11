@@ -19,20 +19,17 @@ const colaboradora = {
   cuentas: [{ tipo: "GITHUB", usuario: "anagomez" }],
 }
 
-const iniciarSesionComoColectivo = () => {
-  localStorage.setItem(
-    "sesion",
-    JSON.stringify({
-      token: "token",
-      usuario: {
-        id: "u1",
-        email: "huerta@colectivo.test",
-        rol: "COLECTIVO",
-        entidad: { id: "c1", nombre: "Huerta Comunitaria Sur" },
-      },
-    }),
-  )
+const iniciarSesionCon = (usuario) => {
+  localStorage.setItem("sesion", JSON.stringify({ token: "token", usuario }))
 }
+
+const iniciarSesionComoColectivo = () =>
+  iniciarSesionCon({
+    id: "u1",
+    email: "huerta@colectivo.test",
+    rol: "COLECTIVO",
+    entidad: { id: "c1", nombre: "Huerta Comunitaria Sur" },
+  })
 
 const renderizarEn = (ruta) =>
   render(
@@ -84,6 +81,25 @@ describe("PaginaColaboradora", () => {
     expect(screen.getByText("+54 9 11 2345-6789")).toBeInTheDocument()
     expect(obtenerColaboradora).toHaveBeenCalledWith("p1")
     expect(obtenerMediosDeContacto).toHaveBeenCalledWith("p1")
+    expect(
+      screen.queryByRole("link", { name: "Editar mi perfil" }),
+    ).not.toBeInTheDocument()
+  })
+
+  test("a la propia persona le ofrece editar su perfil", async () => {
+    iniciarSesionCon({
+      id: "u2",
+      email: "anag@persona.test",
+      rol: "PERSONA_COLABORADORA",
+      entidad: { id: "p1", nombre: "anag" },
+    })
+    obtenerMediosDeContacto.mockResolvedValue([])
+
+    renderizarEn("/colaboradoras/p1")
+
+    expect(
+      await screen.findByRole("link", { name: "Editar mi perfil" }),
+    ).toHaveAttribute("href", "/mi-perfil")
   })
 
   test("sin acceso muestra el mensaje del backend y conserva el perfil público", async () => {

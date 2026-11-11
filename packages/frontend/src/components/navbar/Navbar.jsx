@@ -5,6 +5,7 @@ import {
   FaSignInAlt,
   FaSignOutAlt,
   FaUserCircle,
+  FaUserEdit,
   FaUserPlus,
 } from "react-icons/fa"
 import { useAuth } from "../../context/AuthContext"
@@ -33,6 +34,12 @@ const Navbar = () => {
               <FaUserCircle aria-hidden="true" />
               Mi cuenta
             </Link>
+            {usuario.rol === "PERSONA_COLABORADORA" && (
+              <Link to="/mi-perfil" className="navbar-link">
+                <FaUserEdit aria-hidden="true" />
+                Mi perfil
+              </Link>
+            )}
             <span className="navbar-usuario">{usuario.nombre}</span>
             <Button
               color="inherit"

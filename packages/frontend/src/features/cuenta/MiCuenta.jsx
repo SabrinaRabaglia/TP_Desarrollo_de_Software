@@ -53,10 +53,11 @@ const MiCuenta = () => {
         <dd>{ROLES[usuario.rol]}</dd>
       </dl>
       {usuario.rol === "PERSONA_COLABORADORA" && usuario.entidad && (
-        <p>
+        <p className="mi-cuenta-enlaces">
           <Link to={`/colaboradoras/${usuario.entidad.id}`}>
             Ver mi perfil público
           </Link>
+          <Link to="/mi-perfil">Editar mi perfil</Link>
         </p>
       )}
     </section>
