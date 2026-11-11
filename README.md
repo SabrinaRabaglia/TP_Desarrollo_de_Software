@@ -186,6 +186,12 @@ La persistencia usa MongoDB con Mongoose, siguiendo la guía de la cátedra. Cad
 
 Los dos procesos son idempotentes. Insertan lo que falta por su clave natural, nunca borran y no modifican lo que ya existe, así que se pueden correr cualquier cantidad de veces, también en producción.
 
+### Migraciones
+
+Como los seeds no modifican lo que ya existe, un cambio de schema no llega solo a los documentos viejos. Cuando hace falta, la reparación va en `src/migraciones/` y el servidor la corre al arrancar, después de los catálogos. Tienen que ser idempotentes: si no hay nada que reparar, no hacen nada.
+
+Hoy hay una. Hasta el 8/11/2026 los medios de contacto se guardaban sin `_id`, y a las personas creadas antes de esa fecha Mongoose les inventaba uno distinto en cada lectura, así que no se les podía borrar un medio. `asignarIdsAMediosDeContacto` les asigna un id definitivo y el servidor avisa por consola cuántos reparó.
+
 ### Modelado: embebido o referencia
 
 <!-- prettier-ignore -->
