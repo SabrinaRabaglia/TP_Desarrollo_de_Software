@@ -152,6 +152,104 @@
         }
       }
     },
+    "/auth/registro/persona-colaboradora": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Registrar una persona colaboradora",
+        "description": "Crea la persona colaboradora y su usuario de login con rol `PERSONA_COLABORADORA`. No devuelve token: para iniciar sesión hay que llamar a `POST /auth/login`. Si el email ya está usado responde `409` sin crear la persona. Cada id de `habilidades` debe existir; si alguno no existe responde `404`.",
+        "operationId": "registrarPersonaColaboradora",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistroPersonaColaboradora"
+              },
+              "example": {
+                "email": "lucia@persona.test",
+                "contrasena": "secreto123",
+                "persona": {
+                  "nombreFantasia": "lucia.dev",
+                  "pronombres": ["ella"],
+                  "cuentas": [
+                    {
+                      "nombreUsuario": "lucia-dev",
+                      "tipo": "GITHUB"
+                    }
+                  ],
+                  "habilidades": ["64f1a2b3c4d5e6f7a8b9c001"],
+                  "aceptaMensajeriaInterna": true,
+                  "mediosDeContacto": [
+                    {
+                      "tipo": "EMAIL",
+                      "valor": "lucia@example.com"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Persona colaboradora y usuario creados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                },
+                "example": {
+                  "id": "6650a1b2c3d4e5f6a7b8c9d2",
+                  "email": "lucia@persona.test",
+                  "rol": "PERSONA_COLABORADORA",
+                  "entidad": {
+                    "id": "6650a1b2c3d4e5f6a7b8c9d3",
+                    "nombre": "lucia.dev"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Ya existe un usuario con ese email",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Ya existe un usuario con ese email",
+                  "details": []
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de la persona que violan una validación de dominio, por ejemplo un teléfono de WhatsApp mal formado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "El formato del teléfono es inválido",
+                  "details": []
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
     "/auth/me": {
       "get": {
         "tags": ["Auth"],
@@ -1889,6 +1987,26 @@
             "type": "string",
             "minLength": 8,
             "example": "secreto123"
+          }
+        }
+      },
+      "RegistroPersonaColaboradora": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["email", "contrasena", "persona"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "lucia@persona.test"
+          },
+          "contrasena": {
+            "type": "string",
+            "minLength": 8,
+            "example": "secreto123"
+          },
+          "persona": {
+            "$ref": "#/components/schemas/PersonaColaboradoraInput"
           }
         }
       },
