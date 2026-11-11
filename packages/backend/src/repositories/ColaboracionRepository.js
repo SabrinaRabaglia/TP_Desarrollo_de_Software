@@ -29,6 +29,15 @@ export default class ColaboracionRepository {
     return ids.map(String)
   }
 
+  async existeDePersonaEnProyectos(personaId, proyectoIds) {
+    return Boolean(
+      await this.model.exists({
+        personaColaboradora: personaId,
+        proyecto: { $in: proyectoIds },
+      }),
+    )
+  }
+
   async deleteByProyecto(proyectoId) {
     await this.model.deleteMany({ proyecto: proyectoId })
   }

@@ -1,4 +1,5 @@
-import { EntityNotFound } from "../errors/ApplicationErrors.js"
+import { EntityNotFound, NoAutorizado } from "../errors/ApplicationErrors.js"
+import { RolUsuario } from "../domain/enums/RolUsuario.js"
 import PersonaColaboradora from "../domain/PersonaColaboradora.js"
 import Cuenta from "../domain/Cuenta.js"
 import MedioDeContacto from "../domain/MedioDeContacto.js"
@@ -162,5 +163,32 @@ export default class PersonaColaboradoraService {
       throw new EntityNotFound("Persona colaboradora no encontrada")
     }
     return personaColaboradora
+  }
+
+  puedeVerContactoDe = async (personaId, usuario) => {
+    if (usuario.rol === RolUsuario.PERSONA_COLABORADORA) {
+      return usuario.entidad === personaId
+    }
+    const proyectos = await this.proyectoRepository.findByColectivoId(
+      usuario.entidad,
+    )
+    return await this.colaboracionRepository.existeDePersonaEnProyectos(
+      personaId,
+      proyectos.map((proyecto) => proyecto.id),
+    )
+  }
+
+  mediosDeContactoPara = async (personaId, usuario) => {
+    const persona = await this.getById(personaId)
+    if (!(await this.puedeVerContactoDe(personaId, usuario))) {
+      throw new NoAutorizado(
+        "No tenés acceso a los datos de contacto de esta persona",
+      )
+    }
+    return persona.mediosDeContacto.map(({ id, tipo, valor }) => ({
+      id,
+      tipo,
+      valor,
+    }))
   }
 }
