@@ -12,6 +12,7 @@
   --radio: var(--mui-shape-borderRadius);
   --espacio: 1rem;
   --ancho-maximo: 72rem;
+  --ancho-formulario: 48rem;
   --borde: 1px solid var(--color-borde);
 }
 
