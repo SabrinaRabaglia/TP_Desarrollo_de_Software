@@ -1,0 +1,33 @@
+.formulario-colaboradora {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--espacio) * 1.5);
+}
+
+.formulario-colaboradora-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio);
+}
+
+.formulario-colaboradora-nombre {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espacio);
+}
+
+.formulario-colaboradora-habilidades {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.formulario-colaboradora-enviar {
+  align-self: flex-start;
+}
+
+@media (min-width: 768px) {
+  .formulario-colaboradora-nombre,
+  .formulario-colaboradora-habilidades {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

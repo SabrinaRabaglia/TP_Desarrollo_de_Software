@@ -4,26 +4,32 @@ import HabilidadService from "../../../src/services/HabilidadService.js"
 import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraRepository.js"
 import ColaboracionRepository from "../../fakes/ColaboracionRepository.js"
 import NotificacionRepository from "../../fakes/NotificacionRepository.js"
+import UsuarioRepository from "../../fakes/UsuarioRepository.js"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import Cuenta from "../../../src/domain/Cuenta.js"
 import Habilidad from "../../../src/domain/Habilidad.js"
+import Usuario from "../../../src/domain/Usuario.js"
+import { RolUsuario } from "../../../src/domain/enums/RolUsuario.js"
 import {
   EntityNotFound,
   InvalidReference,
+  NoAutorizado,
 } from "../../../src/errors/ApplicationErrors.js"
 import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 import ProyectoRepository from "../../fakes/ProyectoRepository.js"
 
 describe("PersonaColaboradoraService", () => {
   let repository
+  let proyectoRepository
   let service
   let colaboracionRepository
   let notificacionRepository
+  let usuarioRepository
   let habilidad
   let datos
 
   beforeEach(() => {
-    const proyectoRepository = new ProyectoRepository()
+    proyectoRepository = new ProyectoRepository()
     repository = new PersonaColaboradoraRepository()
     repository.deleteAll() // Limpiamos la memoria estática antes de cada test
     proyectoRepository.deleteAll()
@@ -35,12 +41,15 @@ describe("PersonaColaboradoraService", () => {
     })
     colaboracionRepository = new ColaboracionRepository()
     notificacionRepository = new NotificacionRepository()
+    usuarioRepository = new UsuarioRepository()
+    usuarioRepository.deleteAll()
     service = new PersonaColaboradoraService(
       proyectoRepository,
       repository,
       habilidadService,
       colaboracionRepository,
       notificacionRepository,
+      usuarioRepository,
     )
     datos = {
       nombreFantasia: "anon123",
@@ -194,6 +203,24 @@ describe("PersonaColaboradoraService", () => {
     ).toEqual([deOtra])
   })
 
+  test("eliminar una persona elimina su usuario y conserva el de otras", async () => {
+    const persona = await service.create(datos)
+    const otra = await service.create({ ...datos, nombreFantasia: "lucho" })
+    const usuarioDe = (email, entidad) =>
+      new Usuario(email, "hash", RolUsuario.PERSONA_COLABORADORA, entidad)
+    await usuarioRepository.save(usuarioDe("ana@persona.test", persona.id))
+    await usuarioRepository.save(usuarioDe("lucho@persona.test", otra.id))
+
+    await service.delete(persona.id)
+
+    expect(
+      await usuarioRepository.findByEmail("ana@persona.test"),
+    ).toBeUndefined()
+    expect(
+      (await usuarioRepository.findByEmail("lucho@persona.test")).entidad,
+    ).toBe(otra.id)
+  })
+
   test("elimina solo el medio de contacto indicado y conserva los demás", async () => {
     const persona = await service.create({
       ...datos,
@@ -223,5 +250,103 @@ describe("PersonaColaboradoraService", () => {
     expect((await repository.findById(persona.id)).mediosDeContacto).toEqual(
       datos.mediosDeContacto,
     )
+  })
+
+  describe("datos de contacto", () => {
+    const colectivo = (id) => ({
+      id: "usuario-colectivo",
+      rol: "COLECTIVO",
+      entidad: id,
+    })
+    const personaUsuaria = (id) => ({
+      id: "usuario-persona",
+      rol: "PERSONA_COLABORADORA",
+      entidad: id,
+    })
+    const colaboraEn = async (persona, colectivoId, esAnonima = false) => {
+      const proyecto = await proyectoRepository.save({
+        colectivo: colectivoId,
+        perfiles: [],
+      })
+      await colaboracionRepository.save({
+        personaColaboradora: { id: persona.id },
+        proyecto: { id: proyecto.id },
+        esAnonima,
+      })
+    }
+
+    test("la propia persona ve sus medios de contacto con el valor", async () => {
+      const persona = await service.create(datos)
+
+      expect(
+        await service.mediosDeContactoPara(
+          persona.id,
+          personaUsuaria(persona.id),
+        ),
+      ).toEqual([{ tipo: "EMAIL", valor: "ana@example.com" }])
+    })
+
+    test("otra persona colaboradora no puede verlos", async () => {
+      const persona = await service.create(datos)
+      const otra = await service.create({ nombreFantasia: "otra" })
+
+      await expect(
+        service.mediosDeContactoPara(persona.id, personaUsuaria(otra.id)),
+      ).rejects.toThrow(NoAutorizado)
+    })
+
+    test("un colectivo los ve si la persona colabora en uno de sus proyectos", async () => {
+      const persona = await service.create(datos)
+      await colaboraEn(persona, "colectivo-1")
+
+      expect(
+        await service.mediosDeContactoPara(
+          persona.id,
+          colectivo("colectivo-1"),
+        ),
+      ).toEqual([{ tipo: "EMAIL", valor: "ana@example.com" }])
+    })
+
+    test("un colectivo no los ve si la persona solo colabora con otro colectivo", async () => {
+      const persona = await service.create(datos)
+      await proyectoRepository.save({ colectivo: "colectivo-1", perfiles: [] })
+      await colaboraEn(persona, "colectivo-2")
+
+      await expect(
+        service.mediosDeContactoPara(persona.id, colectivo("colectivo-1")),
+      ).rejects.toThrow(NoAutorizado)
+    })
+
+    test("una colaboración anónima también le da acceso al colectivo", async () => {
+      const persona = await service.create(datos)
+      await colaboraEn(persona, "colectivo-1", true)
+
+      expect(
+        await service.mediosDeContactoPara(
+          persona.id,
+          colectivo("colectivo-1"),
+        ),
+      ).toEqual([{ tipo: "EMAIL", valor: "ana@example.com" }])
+    })
+
+    test("una persona inexistente responde que no existe antes que negar el acceso", async () => {
+      await expect(
+        service.mediosDeContactoPara(
+          "persona-inexistente",
+          colectivo("colectivo-1"),
+        ),
+      ).rejects.toThrow(EntityNotFound)
+    })
+
+    test("una persona sin medios de contacto devuelve una lista vacía", async () => {
+      const persona = await service.create({ nombreFantasia: "sin-contacto" })
+
+      expect(
+        await service.mediosDeContactoPara(
+          persona.id,
+          personaUsuaria(persona.id),
+        ),
+      ).toEqual([])
+    })
   })
 })

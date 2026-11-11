@@ -24,6 +24,12 @@ export default class UsuarioRepository {
     return usuario
   }
 
+  async deleteByEntidad(entidadId) {
+    UsuarioRepository.usuarios = UsuarioRepository.usuarios.filter(
+      (u) => String(u.entidad) !== String(entidadId),
+    )
+  }
+
   deleteAll() {
     UsuarioRepository.usuarios.length = 0
   }

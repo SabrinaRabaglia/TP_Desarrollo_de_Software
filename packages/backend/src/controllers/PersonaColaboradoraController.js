@@ -56,6 +56,21 @@ export default class PersonaColaboradoraController {
     }
   }
 
+  getMediosDeContacto = async (req, res, next) => {
+    try {
+      res
+        .status(200)
+        .json(
+          await this.personaColaboradoraService.mediosDeContactoPara(
+            req.params.id,
+            req.usuario,
+          ),
+        )
+    } catch (error) {
+      next(error)
+    }
+  }
+
   getAll = async (req, res, next) => {
     try {
       const { perfiles } = req.query

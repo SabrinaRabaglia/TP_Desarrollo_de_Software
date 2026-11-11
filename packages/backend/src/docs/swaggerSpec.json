@@ -152,6 +152,104 @@
         }
       }
     },
+    "/auth/registro/persona-colaboradora": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Registrar una persona colaboradora",
+        "description": "Crea la persona colaboradora y su usuario de login con rol `PERSONA_COLABORADORA`. No devuelve token: para iniciar sesión hay que llamar a `POST /auth/login`. Si el email ya está usado responde `409` sin crear la persona. Cada id de `habilidades` debe existir; si alguno no existe responde `404`.",
+        "operationId": "registrarPersonaColaboradora",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistroPersonaColaboradora"
+              },
+              "example": {
+                "email": "lucia@persona.test",
+                "contrasena": "secreto123",
+                "persona": {
+                  "nombreFantasia": "lucia.dev",
+                  "pronombres": ["ella"],
+                  "cuentas": [
+                    {
+                      "nombreUsuario": "lucia-dev",
+                      "tipo": "GITHUB"
+                    }
+                  ],
+                  "habilidades": ["64f1a2b3c4d5e6f7a8b9c001"],
+                  "aceptaMensajeriaInterna": true,
+                  "mediosDeContacto": [
+                    {
+                      "tipo": "EMAIL",
+                      "valor": "lucia@example.com"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Persona colaboradora y usuario creados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                },
+                "example": {
+                  "id": "6650a1b2c3d4e5f6a7b8c9d2",
+                  "email": "lucia@persona.test",
+                  "rol": "PERSONA_COLABORADORA",
+                  "entidad": {
+                    "id": "6650a1b2c3d4e5f6a7b8c9d3",
+                    "nombre": "lucia.dev"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Ya existe un usuario con ese email",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Ya existe un usuario con ese email",
+                  "details": []
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de la persona que violan una validación de dominio, por ejemplo un teléfono de WhatsApp mal formado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "El formato del teléfono es inválido",
+                  "details": []
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
     "/auth/me": {
       "get": {
         "tags": ["Auth"],
@@ -521,8 +619,9 @@
       "put": {
         "tags": ["Personas colaboradoras"],
         "summary": "Actualizar persona colaboradora",
-        "description": "Reemplaza los datos de la persona. Los campos opcionales omitidos quedan en `null` (o lista vacía), salvo `mediosDeContacto`, que se conserva si se omite.",
+        "description": "Reemplaza los datos de la persona. Los campos opcionales omitidos quedan en `null` (o lista vacía), salvo `mediosDeContacto`, que se conserva si se omite. Si viene, reemplaza la lista: un medio que trae su `id` lo conserva y uno sin `id` recibe uno nuevo. Solo puede editarla la propia persona; cualquier otro usuario recibe `403`.",
         "operationId": "actualizarPersonaColaboradora",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "$ref": "#/components/parameters/IdPath"
@@ -577,6 +676,12 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -591,8 +696,9 @@
       "delete": {
         "tags": ["Personas colaboradoras"],
         "summary": "Eliminar persona colaboradora",
-        "description": "Elimina una persona colaboradora por id, junto con sus colaboraciones y las notificaciones que recibió.",
+        "description": "Elimina una persona colaboradora por id, junto con sus colaboraciones, las notificaciones que recibió y su usuario, que ya no puede iniciar sesión. Solo puede borrarla la propia persona; cualquier otro usuario recibe `403`.",
         "operationId": "eliminarPersonaColaboradora",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "$ref": "#/components/parameters/IdPath"
@@ -604,6 +710,56 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/personas-colaboradoras/{id}/medios-de-contacto": {
+      "get": {
+        "tags": ["Personas colaboradoras"],
+        "summary": "Datos de contacto de una persona",
+        "description": "Devuelve los medios de contacto de la persona con su valor. Pueden verlos la propia persona y los colectivos con un proyecto en el que la persona colabora, aunque la colaboración sea anónima. Cualquier otro usuario recibe `403`.",
+        "operationId": "obtenerMediosDeContacto",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Medios de contacto de la persona. Lista vacía si no cargó ninguno.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MedioDeContacto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -618,8 +774,9 @@
       "delete": {
         "tags": ["Personas colaboradoras"],
         "summary": "Eliminar un medio de contacto",
-        "description": "Quita un medio de contacto de la persona por su id. Los ids de los medios vienen en `mediosDeContacto` de la persona. La operación es atómica: dos borrados simultáneos de medios distintos aplican los dos.",
+        "description": "Quita un medio de contacto de la persona por su id. Los ids de los medios vienen en `mediosDeContacto` de la persona. La operación es atómica: dos borrados simultáneos de medios distintos aplican los dos. Solo puede borrarlo la propia persona; cualquier otro usuario recibe `403`.",
         "operationId": "eliminarMedioDeContacto",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           { "$ref": "#/components/parameters/IdPath" },
           { "$ref": "#/components/parameters/ContactoIdPath" }
@@ -630,6 +787,12 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           },
           "404": {
             "description": "La persona o el medio de contacto no existen."
@@ -1892,6 +2055,26 @@
           }
         }
       },
+      "RegistroPersonaColaboradora": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["email", "contrasena", "persona"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "lucia@persona.test"
+          },
+          "contrasena": {
+            "type": "string",
+            "minLength": 8,
+            "example": "secreto123"
+          },
+          "persona": {
+            "$ref": "#/components/schemas/PersonaColaboradoraInput"
+          }
+        }
+      },
       "Usuario": {
         "type": "object",
         "required": ["id", "email", "rol", "entidad"],
@@ -2021,8 +2204,27 @@
         "type": "object",
         "additionalProperties": false,
         "required": ["tipo", "valor"],
-        "description": "Un email válido, o un teléfono de 8 a 15 dígitos con + opcional para WhatsApp y SMS. Se ignoran espacios, guiones, puntos y paréntesis.",
+        "description": "Un email válido, o un teléfono de 8 a 15 dígitos con + opcional para WhatsApp y SMS. Se ignoran espacios, guiones, puntos y paréntesis. Al editar, un medio ya guardado puede traer su `id` para conservarlo.",
         "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "tipo": {
+            "$ref": "#/components/schemas/TipoMedioContacto"
+          },
+          "valor": {
+            "type": "string",
+            "example": "ana@example.com"
+          }
+        }
+      },
+      "MedioDeContacto": {
+        "type": "object",
+        "required": ["id", "tipo", "valor"],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
           "tipo": {
             "$ref": "#/components/schemas/TipoMedioContacto"
           },
@@ -2077,7 +2279,7 @@
           "mediosDeContacto": {
             "type": "array",
             "writeOnly": true,
-            "description": "Se guardan internamente y no se devuelven en ninguna respuesta. En un PUT, si se omite se conservan los medios guardados y una lista vacía los borra.",
+            "description": "Las respuestas de la persona no devuelven su valor: se consulta en `GET /personas-colaboradoras/{id}/medios-de-contacto`, que exige acceso. En un PUT, si se omite se conservan los medios guardados y una lista vacía los borra.",
             "items": {
               "$ref": "#/components/schemas/MedioDeContactoInput"
             }
@@ -2767,6 +2969,20 @@
             },
             "example": {
               "message": "Falta el token de acceso",
+              "details": []
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "El usuario del token no tiene permiso para este recurso.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "No tenés acceso a los datos de contacto de esta persona",
               "details": []
             }
           }

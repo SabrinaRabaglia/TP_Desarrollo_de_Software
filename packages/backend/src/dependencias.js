@@ -78,6 +78,7 @@ const personaColaboradoraService = new PersonaColaboradoraService(
   habilidadService,
   colaboracionRepository,
   notificacionRepository,
+  usuarioRepository,
 )
 const perfilService = new PerfilService(
   proyectoService,
@@ -114,6 +115,7 @@ const authService = new AuthService(
   usuarioRepository,
   colectivoRepository,
   personaColaboradoraRepository,
+  personaColaboradoraService,
 )
 
 export const authController = new AuthController(authService)

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
 import Cargando from "../../components/cargando/Cargando"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
 import { obtenerUsuarioActual, ROLES } from "../../service/authService"
@@ -51,6 +52,14 @@ const MiCuenta = () => {
         <dt>Rol</dt>
         <dd>{ROLES[usuario.rol]}</dd>
       </dl>
+      {usuario.rol === "PERSONA_COLABORADORA" && usuario.entidad && (
+        <p className="mi-cuenta-enlaces">
+          <Link to={`/colaboradoras/${usuario.entidad.id}`}>
+            Ver mi perfil público
+          </Link>
+          <Link to="/mi-perfil">Editar mi perfil</Link>
+        </p>
+      )}
     </section>
   )
 }

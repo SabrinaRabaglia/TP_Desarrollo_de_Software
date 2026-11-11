@@ -14,6 +14,10 @@ export default class UsuarioRepository {
     return await this.model.findById(id)
   }
 
+  async deleteByEntidad(entidadId) {
+    await this.model.deleteMany({ entidad: entidadId })
+  }
+
   async save(usuario) {
     return await guardar(this.model, usuario)
   }
