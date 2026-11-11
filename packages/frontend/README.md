@@ -33,10 +33,12 @@ src/
 └── context/          AuthContext.jsx con AuthProvider y useAuth
 ```
 
-- `components/` tiene lo que usan varias pantallas: `Navbar`, `Cargando`, `MensajeDeError`, `ConfirmarAccion` y `FilasTipoValor`. Usá `ConfirmarAccion` antes de cualquier acción permanente, como desanotarse de un proyecto.
+- `components/` tiene lo que usan varias pantallas: `Navbar`, `Cargando`, `MensajeDeError`, `ConfirmarAccion`, `FilasTipoValor` y `ListaDeHabilidades`. Usá `ConfirmarAccion` antes de cualquier acción permanente, como desanotarse de un proyecto.
+- `ListaDeHabilidades` muestra los títulos de una lista de habilidades como etiquetas. La usan los perfiles de un proyecto y el perfil de una colaboradora.
 - `FilasTipoValor` edita una lista de pares tipo y valor, como las cuentas de código o los medios de contacto. Recibe las `filas` y avisa cada cambio con `alCambiar(nuevasFilas)`.
 - `features/` tiene las pantallas. Un componente que solo usa una pantalla vive en la carpeta de esa pantalla, como `features/proyectos/PerfilRequerido.jsx`.
 - `features/colaboradoras/FormularioColaboradora.jsx` tiene los datos de una persona colaboradora y no sabe si está creando o editando. Recibe `datosIniciales` y devuelve los datos con `alGuardar(datos)`. Lo que va arriba del formulario, como el email y la contraseña del registro, se pasa como `children`.
+- `features/colaboradoras/PaginaColaboradora.jsx` es el perfil público de una persona colaboradora, en `/colaboradoras/:id`. Abajo muestra `DatosDeContacto`, la sección que pide los medios de contacto a una ruta protegida del backend. Sin sesión invita a ingresar y vuelve a la página después del login. Con sesión muestra lo que responde el backend: los medios, o el mensaje del `403` en un aviso informativo si la sesión no tiene acceso. Quién tiene acceso lo decide el backend, nunca el frontend. Desde `/mi-cuenta`, una persona colaboradora llega a su propio perfil.
 - `service/` es lo único que habla con el backend. Los componentes nunca importan `axios`.
 
 `features/proyectos/PaginaProyecto.jsx` es la pantalla de ejemplo. Copiala cuando hagas una pantalla que carga datos.
