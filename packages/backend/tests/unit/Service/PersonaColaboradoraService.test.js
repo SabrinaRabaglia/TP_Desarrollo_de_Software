@@ -4,9 +4,12 @@ import HabilidadService from "../../../src/services/HabilidadService.js"
 import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraRepository.js"
 import ColaboracionRepository from "../../fakes/ColaboracionRepository.js"
 import NotificacionRepository from "../../fakes/NotificacionRepository.js"
+import UsuarioRepository from "../../fakes/UsuarioRepository.js"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import Cuenta from "../../../src/domain/Cuenta.js"
 import Habilidad from "../../../src/domain/Habilidad.js"
+import Usuario from "../../../src/domain/Usuario.js"
+import { RolUsuario } from "../../../src/domain/enums/RolUsuario.js"
 import {
   EntityNotFound,
   InvalidReference,
@@ -21,6 +24,7 @@ describe("PersonaColaboradoraService", () => {
   let service
   let colaboracionRepository
   let notificacionRepository
+  let usuarioRepository
   let habilidad
   let datos
 
@@ -37,12 +41,15 @@ describe("PersonaColaboradoraService", () => {
     })
     colaboracionRepository = new ColaboracionRepository()
     notificacionRepository = new NotificacionRepository()
+    usuarioRepository = new UsuarioRepository()
+    usuarioRepository.deleteAll()
     service = new PersonaColaboradoraService(
       proyectoRepository,
       repository,
       habilidadService,
       colaboracionRepository,
       notificacionRepository,
+      usuarioRepository,
     )
     datos = {
       nombreFantasia: "anon123",
@@ -194,6 +201,24 @@ describe("PersonaColaboradoraService", () => {
     expect(
       await notificacionRepository.findByPersonaColaboradora("otra-persona"),
     ).toEqual([deOtra])
+  })
+
+  test("eliminar una persona elimina su usuario y conserva el de otras", async () => {
+    const persona = await service.create(datos)
+    const otra = await service.create({ ...datos, nombreFantasia: "lucho" })
+    const usuarioDe = (email, entidad) =>
+      new Usuario(email, "hash", RolUsuario.PERSONA_COLABORADORA, entidad)
+    await usuarioRepository.save(usuarioDe("ana@persona.test", persona.id))
+    await usuarioRepository.save(usuarioDe("lucho@persona.test", otra.id))
+
+    await service.delete(persona.id)
+
+    expect(
+      await usuarioRepository.findByEmail("ana@persona.test"),
+    ).toBeUndefined()
+    expect(
+      (await usuarioRepository.findByEmail("lucho@persona.test")).entidad,
+    ).toBe(otra.id)
   })
 
   test("elimina solo el medio de contacto indicado y conserva los demás", async () => {

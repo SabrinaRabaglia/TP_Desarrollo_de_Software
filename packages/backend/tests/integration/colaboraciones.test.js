@@ -12,10 +12,10 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
   const server = app.listen(0, "127.0.0.1")
   await once(server, "listening")
   const base = `http://127.0.0.1:${server.address().port}`
-  const request = async (method, path, body, status = 200) => {
+  const request = async (method, path, body, status = 200, headers = {}) => {
     const response = await fetch(base + path, {
       method,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...headers },
       body: body === undefined ? undefined : JSON.stringify(body),
     })
     expect(response.status).toBe(status)
@@ -45,12 +45,18 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
       nombreFantasia: "Ana HTTP",
       habilidades: [habilidad.id],
     }
-    const persona = await request(
+    const credenciales = { email: "ana@persona.test", contrasena: "secreto123" }
+    const usuarioDePersona = await request(
       "POST",
-      "/personas-colaboradoras",
-      personaDatos,
+      "/auth/registro/persona-colaboradora",
+      { ...credenciales, persona: personaDatos },
       201,
     )
+    const persona = await request(
+      "GET",
+      `/personas-colaboradoras/${usuarioDePersona.entidad.id}`,
+    )
+    const { token } = await request("POST", "/auth/login", credenciales)
     const proyectoDatos = {
       titulo: "Proyecto HTTP",
       descripcion: "Desarrollo web",
@@ -141,12 +147,23 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
     })
     expect(detalleColectivo.proyectos).toEqual([proyecto])
 
-    for (const [ruta, id, datos] of [
+    for (const [ruta, id, datos, headers] of [
       ["proyectos", proyecto.id, proyectoDatos],
-      ["personas-colaboradoras", persona.id, personaDatos],
+      [
+        "personas-colaboradoras",
+        persona.id,
+        personaDatos,
+        { Authorization: `Bearer ${token}` },
+      ],
       ["colectivos", colectivo.id, colectivoDatos],
     ]) {
-      const actualizado = await request("PUT", `/${ruta}/${id}`, datos)
+      const actualizado = await request(
+        "PUT",
+        `/${ruta}/${id}`,
+        datos,
+        200,
+        headers,
+      )
       expect(actualizado.id).toBe(id)
     }
     await request("PATCH", `/colectivos/${colectivo.id}`, {

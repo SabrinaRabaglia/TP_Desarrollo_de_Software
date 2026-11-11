@@ -40,7 +40,11 @@ const RegistroColaboradora = () => {
   }, [intento])
 
   if (usuario) {
-    return <Navigate to="/mi-cuenta" replace />
+    const destino =
+      usuario.rol === "PERSONA_COLABORADORA"
+        ? `/colaboradoras/${usuario.entidad.id}`
+        : "/mi-cuenta"
+    return <Navigate to={destino} replace />
   }
 
   const registrarse = async (persona) => {

@@ -1,0 +1,23 @@
+.mi-perfil {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--espacio) * 1.5);
+  width: 100%;
+  max-width: var(--ancho-formulario);
+  margin: 0 auto;
+}
+
+.mi-perfil-encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .mi-perfil-encabezado {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+}

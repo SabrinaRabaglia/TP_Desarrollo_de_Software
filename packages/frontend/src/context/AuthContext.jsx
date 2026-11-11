@@ -4,7 +4,7 @@ import {
   leerSesionGuardada,
   registrarAlPerderSesion,
 } from "../service/api"
-import { iniciarSesion } from "../service/authService"
+import { iniciarSesion, obtenerUsuarioActual } from "../service/authService"
 
 const AuthContext = createContext(null)
 
@@ -31,8 +31,15 @@ export const AuthProvider = ({ children }) => {
     cambiarSesion(null)
   }
 
+  const refrescarUsuario = async () => {
+    const usuario = await obtenerUsuarioActual()
+    cambiarSesion({ ...sesion, usuario })
+  }
+
   return (
-    <AuthContext.Provider value={{ usuario: sesion?.usuario, login, logout }}>
+    <AuthContext.Provider
+      value={{ usuario: sesion?.usuario, login, logout, refrescarUsuario }}
+    >
       {children}
     </AuthContext.Provider>
   )

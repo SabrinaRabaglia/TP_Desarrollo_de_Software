@@ -53,6 +53,21 @@ const aMedioDeContacto = (medioBack) => ({
   valor: medioBack.valor,
 })
 
+const aPersonaDelFormulario = (personaBack, mediosBack) => ({
+  nombreFantasia: personaBack.nombreFantasia,
+  nombre: personaBack.nombre ?? "",
+  apellido: personaBack.apellido ?? "",
+  pronombres: (personaBack.pronombres ?? []).join(", "),
+  presentacion: personaBack.presentacion ?? "",
+  habilidades: personaBack.habilidades.map((habilidad) => habilidad.id),
+  cuentas: personaBack.cuentas.map((cuenta) => ({
+    tipo: cuenta.tipo,
+    valor: cuenta.nombreUsuario,
+  })),
+  mediosDeContacto: mediosBack.map(aMedioDeContacto),
+  aceptaMensajeriaInterna: personaBack.aceptaMensajeriaInterna,
+})
+
 export const obtenerColaboradora = async (id) => {
   const response = await api.get(`/personas-colaboradoras/${id}`)
   return aColaboradora(response.data)
@@ -72,4 +87,16 @@ export const registrarColaboradora = async ({ email, contrasena, persona }) => {
     persona: aPersonaBack(persona),
   })
   return response.data
+}
+
+export const obtenerPerfilPropio = async (id) => {
+  const [persona, medios] = await Promise.all([
+    api.get(`/personas-colaboradoras/${id}`),
+    api.get(`/personas-colaboradoras/${id}/medios-de-contacto`),
+  ])
+  return aPersonaDelFormulario(persona.data, medios.data)
+}
+
+export const actualizarColaboradora = async (id, persona) => {
+  await api.put(`/personas-colaboradoras/${id}`, aPersonaBack(persona))
 }

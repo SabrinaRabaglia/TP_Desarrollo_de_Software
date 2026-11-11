@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: calc(var(--espacio) * 1.5);
   width: 100%;
-  max-width: 48rem;
+  max-width: var(--ancho-formulario);
   margin: 0 auto;
 }
 

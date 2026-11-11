@@ -619,8 +619,9 @@
       "put": {
         "tags": ["Personas colaboradoras"],
         "summary": "Actualizar persona colaboradora",
-        "description": "Reemplaza los datos de la persona. Los campos opcionales omitidos quedan en `null` (o lista vacía), salvo `mediosDeContacto`, que se conserva si se omite.",
+        "description": "Reemplaza los datos de la persona. Los campos opcionales omitidos quedan en `null` (o lista vacía), salvo `mediosDeContacto`, que se conserva si se omite. Si viene, reemplaza la lista: un medio que trae su `id` lo conserva y uno sin `id` recibe uno nuevo. Solo puede editarla la propia persona; cualquier otro usuario recibe `403`.",
         "operationId": "actualizarPersonaColaboradora",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "$ref": "#/components/parameters/IdPath"
@@ -675,6 +676,12 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -689,8 +696,9 @@
       "delete": {
         "tags": ["Personas colaboradoras"],
         "summary": "Eliminar persona colaboradora",
-        "description": "Elimina una persona colaboradora por id, junto con sus colaboraciones y las notificaciones que recibió.",
+        "description": "Elimina una persona colaboradora por id, junto con sus colaboraciones, las notificaciones que recibió y su usuario, que ya no puede iniciar sesión. Solo puede borrarla la propia persona; cualquier otro usuario recibe `403`.",
         "operationId": "eliminarPersonaColaboradora",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "$ref": "#/components/parameters/IdPath"
@@ -702,6 +710,12 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -760,8 +774,9 @@
       "delete": {
         "tags": ["Personas colaboradoras"],
         "summary": "Eliminar un medio de contacto",
-        "description": "Quita un medio de contacto de la persona por su id. Los ids de los medios vienen en `mediosDeContacto` de la persona. La operación es atómica: dos borrados simultáneos de medios distintos aplican los dos.",
+        "description": "Quita un medio de contacto de la persona por su id. Los ids de los medios vienen en `mediosDeContacto` de la persona. La operación es atómica: dos borrados simultáneos de medios distintos aplican los dos. Solo puede borrarlo la propia persona; cualquier otro usuario recibe `403`.",
         "operationId": "eliminarMedioDeContacto",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           { "$ref": "#/components/parameters/IdPath" },
           { "$ref": "#/components/parameters/ContactoIdPath" }
@@ -772,6 +787,12 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           },
           "404": {
             "description": "La persona o el medio de contacto no existen."
@@ -2183,8 +2204,11 @@
         "type": "object",
         "additionalProperties": false,
         "required": ["tipo", "valor"],
-        "description": "Un email válido, o un teléfono de 8 a 15 dígitos con + opcional para WhatsApp y SMS. Se ignoran espacios, guiones, puntos y paréntesis.",
+        "description": "Un email válido, o un teléfono de 8 a 15 dígitos con + opcional para WhatsApp y SMS. Se ignoran espacios, guiones, puntos y paréntesis. Al editar, un medio ya guardado puede traer su `id` para conservarlo.",
         "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
           "tipo": {
             "$ref": "#/components/schemas/TipoMedioContacto"
           },

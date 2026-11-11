@@ -2,6 +2,10 @@ import { afterAll, beforeAll, describe, expect, test } from "@jest/globals"
 import { once } from "node:events"
 import mongoose from "mongoose"
 import app from "../../src/app.js"
+import AuthService from "../../src/services/AuthService.js"
+import ColectivoRepository from "../../src/repositories/ColectivoRepository.js"
+import PersonaColaboradoraRepository from "../../src/repositories/PersonaColaboradoraRepository.js"
+import UsuarioRepository from "../../src/repositories/UsuarioRepository.js"
 import asignarIdsAMediosDeContacto from "../../src/migraciones/asignarIdsAMediosDeContacto.js"
 import PersonaColaboradoraModel from "../../src/schemas/personaColaboradoraSchema.js"
 import { conectar, desconectar } from "./mongo.js"
@@ -21,10 +25,33 @@ afterAll(async () => {
   await desconectar()
 })
 
-const request = async (method, path, status = 200) => {
-  const response = await fetch(base + path, { method })
+const request = async (method, path, status = 200, token) => {
+  const response = await fetch(base + path, {
+    method,
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
   expect(response.status).toBe(status)
   return response.status === 204 ? null : response.json()
+}
+
+const iniciarSesionComo = async (personaId) => {
+  const email = `persona-${personaId}@persona.test`
+  await new AuthService(
+    new UsuarioRepository(),
+    new ColectivoRepository(),
+    new PersonaColaboradoraRepository(),
+  ).registrar({
+    email,
+    contrasena: "secreto123",
+    rol: "PERSONA_COLABORADORA",
+    entidad: personaId,
+  })
+  const response = await fetch(`${base}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, contrasena: "secreto123" }),
+  })
+  return (await response.json()).token
 }
 
 // Hasta el 8/11/2026 los medios de contacto se guardaban sin _id. Así quedó
@@ -69,6 +96,7 @@ describe("ids de los medios de contacto guardados sin _id", () => {
       "DELETE",
       `/personas-colaboradoras/${personaId}/medios-de-contacto/${ids[0]}`,
       204,
+      await iniciarSesionComo(personaId),
     )
     expect(await idsDeMedios(personaId)).toEqual([ids[1]])
   })

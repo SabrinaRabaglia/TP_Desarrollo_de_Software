@@ -31,17 +31,18 @@ const FormularioColaboradora = ({
   textoBoton,
   enviando,
   error,
+  exito,
   alGuardar,
   children,
 }) => {
   const [datos, setDatos] = useState(datosIniciales)
-  const alerta = useRef(null)
+  const aviso = useRef(null)
 
   useEffect(() => {
-    if (error) {
-      alerta.current.focus()
+    if (error || exito) {
+      aviso.current.focus()
     }
-  }, [error])
+  }, [error, exito])
 
   const setValorDe = (campo) => (e) => {
     setDatos({ ...datos, [campo]: e.target.value })
@@ -159,9 +160,9 @@ const FormularioColaboradora = ({
         }
       />
 
-      {error && (
-        <Alert ref={alerta} tabIndex={-1} severity="error">
-          {error}
+      {(error || exito) && (
+        <Alert ref={aviso} tabIndex={-1} severity={error ? "error" : "success"}>
+          {error ?? exito}
         </Alert>
       )}
 
