@@ -32,6 +32,39 @@ const aPersonaBack = (persona) => ({
   aceptaMensajeriaInterna: persona.aceptaMensajeriaInterna,
 })
 
+const aColaboradora = (personaBack) => ({
+  id: personaBack.id,
+  nombreFantasia: personaBack.nombreFantasia,
+  nombreCompleto:
+    [personaBack.nombre, personaBack.apellido].filter(Boolean).join(" ") ||
+    null,
+  pronombres: personaBack.pronombres ?? [],
+  presentacion: personaBack.presentacion ?? null,
+  habilidades: personaBack.habilidades.map((habilidad) => habilidad.titulo),
+  cuentas: personaBack.cuentas.map((cuenta) => ({
+    tipo: cuenta.tipo,
+    usuario: cuenta.nombreUsuario,
+  })),
+})
+
+const aMedioDeContacto = (medioBack) => ({
+  id: medioBack.id,
+  tipo: medioBack.tipo,
+  valor: medioBack.valor,
+})
+
+export const obtenerColaboradora = async (id) => {
+  const response = await api.get(`/personas-colaboradoras/${id}`)
+  return aColaboradora(response.data)
+}
+
+export const obtenerMediosDeContacto = async (id) => {
+  const response = await api.get(
+    `/personas-colaboradoras/${id}/medios-de-contacto`,
+  )
+  return response.data.map(aMedioDeContacto)
+}
+
 export const registrarColaboradora = async ({ email, contrasena, persona }) => {
   const response = await api.post("/auth/registro/persona-colaboradora", {
     email,
