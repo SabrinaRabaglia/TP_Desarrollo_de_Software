@@ -20,7 +20,10 @@ const renderizarRegistro = () =>
             path="/colaboradoras/nueva"
             element={<RegistroColaboradora />}
           />
-          <Route path="/mi-cuenta" element={<h1>Mi cuenta</h1>} />
+          <Route
+            path="/colaboradoras/p1"
+            element={<h1>Perfil público de lucia.dev</h1>}
+          />
           <Route path="/" element={<h1>Inicio</h1>} />
         </Routes>
       </MemoryRouter>
@@ -54,7 +57,7 @@ afterEach(() => {
 })
 
 describe("RegistroColaboradora", () => {
-  test("registra a la persona, inicia sesión y la lleva a su cuenta", async () => {
+  test("registra a la persona, inicia sesión y la lleva a su perfil público", async () => {
     registrarColaboradora.mockResolvedValue({})
     iniciarSesion.mockResolvedValue({
       token: "token",
@@ -72,7 +75,9 @@ describe("RegistroColaboradora", () => {
     completarYEnviar()
 
     expect(
-      await screen.findByRole("heading", { name: "Mi cuenta" }),
+      await screen.findByRole("heading", {
+        name: "Perfil público de lucia.dev",
+      }),
     ).toBeInTheDocument()
     expect(registrarColaboradora).toHaveBeenCalledWith({
       email: "lucia@persona.test",
