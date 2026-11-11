@@ -712,6 +712,50 @@
         }
       }
     },
+    "/personas-colaboradoras/{id}/medios-de-contacto": {
+      "get": {
+        "tags": ["Personas colaboradoras"],
+        "summary": "Datos de contacto de una persona",
+        "description": "Devuelve los medios de contacto de la persona con su valor. Pueden verlos la propia persona y los colectivos con un proyecto en el que la persona colabora, aunque la colaboración sea anónima. Cualquier otro usuario recibe `403`.",
+        "operationId": "obtenerMediosDeContacto",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Medios de contacto de la persona. Lista vacía si no cargó ninguno.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MedioDeContacto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
     "/personas-colaboradoras/{id}/medios-de-contacto/{contactoId}": {
       "delete": {
         "tags": ["Personas colaboradoras"],
@@ -2150,6 +2194,22 @@
           }
         }
       },
+      "MedioDeContacto": {
+        "type": "object",
+        "required": ["id", "tipo", "valor"],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "tipo": {
+            "$ref": "#/components/schemas/TipoMedioContacto"
+          },
+          "valor": {
+            "type": "string",
+            "example": "ana@example.com"
+          }
+        }
+      },
       "PersonaColaboradoraInput": {
         "type": "object",
         "additionalProperties": false,
@@ -2195,7 +2255,7 @@
           "mediosDeContacto": {
             "type": "array",
             "writeOnly": true,
-            "description": "Se guardan internamente y no se devuelven en ninguna respuesta. En un PUT, si se omite se conservan los medios guardados y una lista vacía los borra.",
+            "description": "Las respuestas de la persona no devuelven su valor: se consulta en `GET /personas-colaboradoras/{id}/medios-de-contacto`, que exige acceso. En un PUT, si se omite se conservan los medios guardados y una lista vacía los borra.",
             "items": {
               "$ref": "#/components/schemas/MedioDeContactoInput"
             }
@@ -2885,6 +2945,20 @@
             },
             "example": {
               "message": "Falta el token de acceso",
+              "details": []
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "El usuario del token no tiene permiso para este recurso.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "No tenés acceso a los datos de contacto de esta persona",
               "details": []
             }
           }

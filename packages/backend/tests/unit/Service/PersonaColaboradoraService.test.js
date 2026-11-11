@@ -10,12 +10,14 @@ import Habilidad from "../../../src/domain/Habilidad.js"
 import {
   EntityNotFound,
   InvalidReference,
+  NoAutorizado,
 } from "../../../src/errors/ApplicationErrors.js"
 import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 import ProyectoRepository from "../../fakes/ProyectoRepository.js"
 
 describe("PersonaColaboradoraService", () => {
   let repository
+  let proyectoRepository
   let service
   let colaboracionRepository
   let notificacionRepository
@@ -23,7 +25,7 @@ describe("PersonaColaboradoraService", () => {
   let datos
 
   beforeEach(() => {
-    const proyectoRepository = new ProyectoRepository()
+    proyectoRepository = new ProyectoRepository()
     repository = new PersonaColaboradoraRepository()
     repository.deleteAll() // Limpiamos la memoria estática antes de cada test
     proyectoRepository.deleteAll()
@@ -223,5 +225,103 @@ describe("PersonaColaboradoraService", () => {
     expect((await repository.findById(persona.id)).mediosDeContacto).toEqual(
       datos.mediosDeContacto,
     )
+  })
+
+  describe("datos de contacto", () => {
+    const colectivo = (id) => ({
+      id: "usuario-colectivo",
+      rol: "COLECTIVO",
+      entidad: id,
+    })
+    const personaUsuaria = (id) => ({
+      id: "usuario-persona",
+      rol: "PERSONA_COLABORADORA",
+      entidad: id,
+    })
+    const colaboraEn = async (persona, colectivoId, esAnonima = false) => {
+      const proyecto = await proyectoRepository.save({
+        colectivo: colectivoId,
+        perfiles: [],
+      })
+      await colaboracionRepository.save({
+        personaColaboradora: { id: persona.id },
+        proyecto: { id: proyecto.id },
+        esAnonima,
+      })
+    }
+
+    test("la propia persona ve sus medios de contacto con el valor", async () => {
+      const persona = await service.create(datos)
+
+      expect(
+        await service.mediosDeContactoPara(
+          persona.id,
+          personaUsuaria(persona.id),
+        ),
+      ).toEqual([{ tipo: "EMAIL", valor: "ana@example.com" }])
+    })
+
+    test("otra persona colaboradora no puede verlos", async () => {
+      const persona = await service.create(datos)
+      const otra = await service.create({ nombreFantasia: "otra" })
+
+      await expect(
+        service.mediosDeContactoPara(persona.id, personaUsuaria(otra.id)),
+      ).rejects.toThrow(NoAutorizado)
+    })
+
+    test("un colectivo los ve si la persona colabora en uno de sus proyectos", async () => {
+      const persona = await service.create(datos)
+      await colaboraEn(persona, "colectivo-1")
+
+      expect(
+        await service.mediosDeContactoPara(
+          persona.id,
+          colectivo("colectivo-1"),
+        ),
+      ).toEqual([{ tipo: "EMAIL", valor: "ana@example.com" }])
+    })
+
+    test("un colectivo no los ve si la persona solo colabora con otro colectivo", async () => {
+      const persona = await service.create(datos)
+      await proyectoRepository.save({ colectivo: "colectivo-1", perfiles: [] })
+      await colaboraEn(persona, "colectivo-2")
+
+      await expect(
+        service.mediosDeContactoPara(persona.id, colectivo("colectivo-1")),
+      ).rejects.toThrow(NoAutorizado)
+    })
+
+    test("una colaboración anónima también le da acceso al colectivo", async () => {
+      const persona = await service.create(datos)
+      await colaboraEn(persona, "colectivo-1", true)
+
+      expect(
+        await service.mediosDeContactoPara(
+          persona.id,
+          colectivo("colectivo-1"),
+        ),
+      ).toEqual([{ tipo: "EMAIL", valor: "ana@example.com" }])
+    })
+
+    test("una persona inexistente responde que no existe antes que negar el acceso", async () => {
+      await expect(
+        service.mediosDeContactoPara(
+          "persona-inexistente",
+          colectivo("colectivo-1"),
+        ),
+      ).rejects.toThrow(EntityNotFound)
+    })
+
+    test("una persona sin medios de contacto devuelve una lista vacía", async () => {
+      const persona = await service.create({ nombreFantasia: "sin-contacto" })
+
+      expect(
+        await service.mediosDeContactoPara(
+          persona.id,
+          personaUsuaria(persona.id),
+        ),
+      ).toEqual([])
+    })
   })
 })

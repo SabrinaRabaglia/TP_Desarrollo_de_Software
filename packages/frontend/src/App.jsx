@@ -8,6 +8,7 @@ import Login from "./features/auth/Login"
 import RutaPrivada from "./features/auth/RutaPrivada"
 import MiCuenta from "./features/cuenta/MiCuenta"
 import RegistroColaboradora from "./features/colaboradoras/RegistroColaboradora"
+import PaginaColaboradora from "./features/colaboradoras/PaginaColaboradora"
 import PaginaProyecto from "./features/proyectos/PaginaProyecto"
 import NoEncontrado from "./features/noEncontrado/NoEncontrado"
 
@@ -23,6 +24,7 @@ const App = () => {
               path="/colaboradoras/nueva"
               element={<RegistroColaboradora />}
             />
+            <Route path="/colaboradoras/:id" element={<PaginaColaboradora />} />
             <Route path="/proyectos/:id" element={<PaginaProyecto />} />
             <Route element={<RutaPrivada />}>
               <Route path="/mi-cuenta" element={<MiCuenta />} />

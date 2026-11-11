@@ -176,7 +176,7 @@ La persistencia usa MongoDB con Mongoose, siguiendo la guía de la cátedra. Cad
 - `src/repositories/`: la única capa que conoce a Mongoose.
 - `src/config/database.js`: la conexión, que se abre en `src/server.js` antes de levantar el servidor.
 - `src/validations/` y `src/middlewares/validar.js`: los schemas de zod de cada recurso. Las rutas validan el body o la query con `validar(schema)` antes de llegar al controller; si no pasa, responde `400`.
-- La forma pública de cada entidad la define el `toJSON` de su schema, en `src/schemas/`. Los servicios devuelven documentos (porque otros servicios también los usan) y cada controller responde `res.json(documento)`. Las reglas de exposición viven ahí: un medio de contacto nunca muestra su `valor`, una notificación lista solo los tipos de los medios usados, una colaboración anónima oculta a la persona, y un colectivo trae sus proyectos por un populate virtual.
+- La forma pública de cada entidad la define el `toJSON` de su schema, en `src/schemas/`. Los servicios devuelven documentos (porque otros servicios también los usan) y cada controller responde `res.json(documento)`. Las reglas de exposición viven ahí: un medio de contacto no muestra su `valor` (solo lo devuelve la ruta de [datos de contacto](#datos-de-contacto)), una notificación lista solo los tipos de los medios usados, una colaboración anónima oculta a la persona, y un colectivo trae sus proyectos por un populate virtual.
 - `src/dependencias.js`: el único lugar donde se crean los repositorios, servicios y controllers. Las rutas de `src/routes/` solo mapean cada URL a un método del controller.
 
 ### Datos iniciales (seeds)
@@ -185,6 +185,12 @@ La persistencia usa MongoDB con Mongoose, siguiendo la guía de la cátedra. Cad
 - `npm run seed:backend` carga además los datos de prueba: colectivos, proyectos (con perfiles e hitos), personas, colaboraciones y un usuario por cada colectivo y persona (ver [Usuarios de prueba](#usuarios-de-prueba)).
 
 Los dos procesos son idempotentes. Insertan lo que falta por su clave natural, nunca borran y no modifican lo que ya existe, así que se pueden correr cualquier cantidad de veces, también en producción.
+
+### Migraciones
+
+Como los seeds no modifican lo que ya existe, un cambio de schema no llega solo a los documentos viejos. Cuando hace falta, la reparación va en `src/migraciones/` y el servidor la corre al arrancar, después de los catálogos. Tienen que ser idempotentes: si no hay nada que reparar, no hacen nada.
+
+Hoy hay una. Hasta el 8/11/2026 los medios de contacto se guardaban sin `_id`, y a las personas creadas antes de esa fecha Mongoose les inventaba uno distinto en cada lectura, así que no se les podía borrar un medio. `asignarIdsAMediosDeContacto` les asigna un id definitivo y el servidor avisa por consola cuántos reparó.
 
 ### Modelado: embebido o referencia
 
@@ -197,7 +203,7 @@ Los dos procesos son idempotentes. Insertan lo que falta por su clave natural, n
 | Proyecto en Colectivo | Referencia en el proyecto (`proyecto.colectivo`) | Un colectivo puede tener muchos proyectos. La lista se arma con una consulta y no se guarda en el colectivo. No se puede borrar un colectivo con proyectos (`409`). |
 | Perfil en Proyecto | Embebido (`proyecto.perfiles`) | Es parte del proyecto: no existe fuera de él, se consulta junto con él y son pocos por proyecto. Cada perfil tiene su propio `_id`, que usan las rutas `/proyectos/:id/perfiles/:perfilId`. Al borrar el proyecto se borran sus perfiles. |
 | Cuentas en Persona | Embebido | Relación uno a pocos, sin existencia propia fuera de la persona. |
-| Medios de contacto en Persona | Embebido | Relación uno a pocos, sin existencia propia fuera de la persona. Quedan registrados pero la API no los muestra. |
+| Medios de contacto en Persona | Embebido | Relación uno a pocos, sin existencia propia fuera de la persona. El valor solo lo ven quienes tienen acceso (ver [Datos de contacto](#datos-de-contacto)). |
 | Colaboración | Colección propia con referencias a persona y proyecto | Es una relación muchos a muchos que crece con el historial. Un índice único impide inscribir dos veces a la misma persona en el mismo proyecto. |
 | Notificación | Colección propia con referencias a colectivo, persona y perfil | Crece sin límite con el tiempo y se consulta por persona (su bandeja), con un índice sobre `personaColaboradora`. El perfil se guarda por id porque vive embebido en el proyecto. Guarda un envío embebido por cada medio de contacto de la persona, con su estado (`PENDIENTE`, `ENVIADO`, `FALLIDO`), intentos y último error; un proceso periódico los despacha y reintenta. Se borran junto con la persona. |
 
@@ -236,7 +242,7 @@ El usuario público tiene esta forma, donde `nombre` es el nombre del colectivo 
 
 ### Proteger una ruta
 
-Ninguna ruta existente está protegida. Cada feature decide cuáles lo son con los middlewares de `src/middlewares/autenticar.js`. `autenticar` exige un token válido y deja `req.usuario = { id, rol, entidad }`; sin token o con uno inválido o vencido responde `401`. `autorizar(...roles)` va después de `autenticar` y responde `403` si el rol del usuario no está en la lista.
+Las rutas son públicas salvo las que se protegen a propósito, como la de [datos de contacto](#datos-de-contacto). Cada feature decide cuáles lo son con los middlewares de `src/middlewares/autenticar.js`. `autenticar` exige un token válido y deja `req.usuario = { id, rol, entidad }`; sin token o con uno inválido o vencido responde `401`. `autorizar(...roles)` va después de `autenticar` y responde `403` si el rol del usuario no está en la lista.
 
 ```js
 import { autenticar, autorizar } from "../middlewares/autenticar.js"
@@ -252,6 +258,10 @@ routes.post(
 ```
 
 En el controller, `req.usuario.entidad` es el id del colectivo o de la persona que hace el pedido.
+
+### Datos de contacto
+
+El perfil de una persona es público, pero el valor de sus medios de contacto no. `GET /personas-colaboradoras/:id/medios-de-contacto` exige token y devuelve `[{ id, tipo, valor }]` solo a la propia persona y a los colectivos con algún proyecto en el que la persona colabora, aunque la colaboración sea anónima: el anonimato es hacia el público, no hacia el colectivo. Cualquier otro usuario recibe `403`, y una persona inexistente, `404`. La regla vive en `PersonaColaboradoraService.puedeVerContactoDe`.
 
 ### Usuarios de prueba
 

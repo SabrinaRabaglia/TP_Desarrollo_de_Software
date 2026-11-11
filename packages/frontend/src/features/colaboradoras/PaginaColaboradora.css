@@ -1,0 +1,39 @@
+.pagina-colaboradora {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--espacio) * 1.5);
+}
+
+.pagina-colaboradora h1 {
+  overflow-wrap: anywhere;
+}
+
+.pagina-colaboradora-encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pagina-colaboradora-nombre,
+.pagina-colaboradora-pronombres {
+  color: var(--color-texto-secundario);
+}
+
+.pagina-colaboradora-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio);
+}
+
+.pagina-colaboradora-cuentas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0;
+  list-style: none;
+  overflow-wrap: anywhere;
+}
+
+.pagina-colaboradora-cuenta-tipo {
+  font-weight: 600;
+}

@@ -1,6 +1,7 @@
+import ListaDeHabilidades from "../../components/listaDeHabilidades/ListaDeHabilidades"
 import "./PerfilRequerido.css"
 
-const ListaDeHabilidades = ({ titulo, habilidades }) => {
+const GrupoDeHabilidades = ({ titulo, habilidades }) => {
   if (habilidades.length === 0) {
     return null
   }
@@ -8,13 +9,7 @@ const ListaDeHabilidades = ({ titulo, habilidades }) => {
   return (
     <div className="perfil-habilidades">
       <h4>{titulo}</h4>
-      <ul>
-        {habilidades.map((habilidad) => (
-          <li key={habilidad} className="perfil-habilidad">
-            {habilidad}
-          </li>
-        ))}
-      </ul>
+      <ListaDeHabilidades habilidades={habilidades} />
     </div>
   )
 }
@@ -30,11 +25,11 @@ const PerfilRequerido = ({ perfil }) => {
         <dt>Modalidades</dt>
         <dd>{perfil.modalidades.join(", ")}</dd>
       </dl>
-      <ListaDeHabilidades
+      <GrupoDeHabilidades
         titulo="Habilidades requeridas"
         habilidades={perfil.habilidadesRequeridas}
       />
-      <ListaDeHabilidades
+      <GrupoDeHabilidades
         titulo="Habilidades opcionales"
         habilidades={perfil.habilidadesOpcionales}
       />

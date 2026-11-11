@@ -5,6 +5,7 @@ import {
   personaColaboradoraSchema,
 } from "../validations/personaColaboradora.js"
 import validateId, { validateIdParam } from "../middlewares/validateId.js"
+import { autenticar } from "../middlewares/autenticar.js"
 import { personaColaboradoraController } from "../dependencias.js"
 
 const routes = Router()
@@ -34,6 +35,12 @@ routes.delete(
   "/personas-colaboradoras/:id",
   validateId,
   personaColaboradoraController.delete,
+)
+routes.get(
+  "/personas-colaboradoras/:id/medios-de-contacto",
+  autenticar,
+  validateId,
+  personaColaboradoraController.getMediosDeContacto,
 )
 routes.delete(
   "/personas-colaboradoras/:id/medios-de-contacto/:contactoId",

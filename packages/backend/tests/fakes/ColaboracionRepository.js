@@ -20,6 +20,14 @@ export default class ColaboracionRepository {
       .map((c) => c.personaColaboradora.id)
   }
 
+  async existeDePersonaEnProyectos(personaId, proyectoIds) {
+    return this.colaboraciones.some(
+      (c) =>
+        c.personaColaboradora.id === personaId &&
+        proyectoIds.includes(c.proyecto.id),
+    )
+  }
+
   async deleteByProyecto(proyectoId) {
     this.colaboraciones = this.colaboraciones.filter(
       (c) => c.proyecto.id !== proyectoId,
