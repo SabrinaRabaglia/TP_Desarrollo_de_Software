@@ -45,6 +45,19 @@ img {
   max-width: 100%;
 }
 
+fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: var(--espacio);
+  border: var(--borde);
+  border-radius: var(--radio);
+}
+
+legend {
+  padding: 0 0.5rem;
+  font-weight: 600;
+}
+
 :focus-visible {
   outline: 3px solid var(--color-acento);
   outline-offset: 2px;
