@@ -14,8 +14,10 @@ export default class AuthService {
     usuarioRepository,
     colectivoRepository,
     personaColaboradoraRepository,
+    personaColaboradoraService,
   ) {
     this.usuarioRepository = usuarioRepository
+    this.personaColaboradoraService = personaColaboradoraService
     this.entidades = {
       [RolUsuario.COLECTIVO]: {
         repositorio: colectivoRepository,
@@ -43,15 +45,39 @@ export default class AuthService {
     entidad: await this.buscarEntidad(usuario.rol, String(usuario.entidad)),
   })
 
+  validarEmailDisponible = async (email) => {
+    if (
+      await this.usuarioRepository.findByEmail(Usuario.normalizarEmail(email))
+    ) {
+      throw new AlreadyExists("Ya existe un usuario con ese email")
+    }
+  }
+
   registrar = async ({ email, contrasena, rol, entidad }) => {
     const usuario = new Usuario(email, await hashear(contrasena), rol, entidad)
     if (!(await this.buscarEntidad(usuario.rol, usuario.entidad))) {
       throw new InvalidReference(this.entidades[usuario.rol].noEncontrada)
     }
-    if (await this.usuarioRepository.findByEmail(usuario.email)) {
-      throw new AlreadyExists("Ya existe un usuario con ese email")
-    }
+    await this.validarEmailDisponible(usuario.email)
     return await this.usuarioPublico(await this.usuarioRepository.save(usuario))
+  }
+
+  registrarPersonaColaboradora = async ({ email, contrasena, persona }) => {
+    await this.validarEmailDisponible(email)
+    const creada = await this.personaColaboradoraService.create(persona)
+    try {
+      return await this.registrar({
+        email,
+        contrasena,
+        rol: RolUsuario.PERSONA_COLABORADORA,
+        entidad: creada.id,
+      })
+    } catch (error) {
+      // Mongo corre sin réplica, así que no hay transacciones: si el usuario
+      // no se guarda, borramos la persona para no dejarla huérfana.
+      await this.personaColaboradoraService.delete(creada.id)
+      throw error
+    }
   }
 
   login = async (email, contrasena) => {

@@ -118,3 +118,91 @@ describe("autenticación", () => {
     })
   })
 })
+
+describe("registro de una persona colaboradora", () => {
+  const registrar = (body) =>
+    enviar("POST", "/auth/registro/persona-colaboradora", body)
+
+  const cantidadDePersonas = async () =>
+    (await (await enviar("GET", "/personas-colaboradoras")).json()).length
+
+  const registroDeLucia = async () => {
+    const [react] = await (await enviar("GET", "/habilidades")).json()
+    return {
+      email: "lucia@persona.test",
+      contrasena: "secreto123",
+      persona: {
+        nombreFantasia: "lucia.dev",
+        habilidades: [react.id],
+        cuentas: [{ nombreUsuario: "lucia-dev", tipo: "GITHUB" }],
+        mediosDeContacto: [{ tipo: "EMAIL", valor: "lucia@example.com" }],
+      },
+    }
+  }
+
+  test("crea la persona y su usuario, que después puede iniciar sesión", async () => {
+    const respuesta = await registrar(await registroDeLucia())
+
+    expect(respuesta.status).toBe(201)
+    const usuario = await respuesta.json()
+    expect(usuario).toEqual({
+      id: expect.any(String),
+      email: "lucia@persona.test",
+      rol: "PERSONA_COLABORADORA",
+      entidad: { id: expect.any(String), nombre: "lucia.dev" },
+    })
+
+    const sesion = await login("lucia@persona.test", "secreto123")
+    expect(sesion.status).toBe(200)
+    const { token } = await sesion.json()
+    expect(await (await me(`Bearer ${token}`)).json()).toEqual(usuario)
+
+    const persona = await (
+      await enviar("GET", `/personas-colaboradoras/${usuario.entidad.id}`)
+    ).json()
+    expect(persona.nombreFantasia).toBe("lucia.dev")
+  })
+
+  test("con un email ya usado responde 409 sin crear otra persona", async () => {
+    const antes = await cantidadDePersonas()
+
+    const respuesta = await registrar({
+      ...(await registroDeLucia()),
+      email: "huerta@colectivo.test",
+    })
+
+    expect(respuesta.status).toBe(409)
+    expect(await cantidadDePersonas()).toBe(antes)
+  })
+
+  test("un body inválido responde 400", async () => {
+    const { persona } = await registroDeLucia()
+
+    const respuesta = await registrar({
+      email: "sin-contrasena@persona.test",
+      persona,
+    })
+
+    expect(respuesta.status).toBe(400)
+  })
+
+  test("un teléfono de WhatsApp inválido responde 422 sin dejar persona ni usuario", async () => {
+    const antes = await cantidadDePersonas()
+    const registro = await registroDeLucia()
+
+    const respuesta = await registrar({
+      ...registro,
+      email: "whatsapp@persona.test",
+      persona: {
+        ...registro.persona,
+        mediosDeContacto: [{ tipo: "WHATSAPP", valor: "abc" }],
+      },
+    })
+
+    expect(respuesta.status).toBe(422)
+    expect(await cantidadDePersonas()).toBe(antes)
+    expect((await login("whatsapp@persona.test", "secreto123")).status).toBe(
+      401,
+    )
+  })
+})

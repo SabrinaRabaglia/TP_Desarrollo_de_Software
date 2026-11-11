@@ -220,6 +220,7 @@ Si falta el secret, el deploy falla con un error que lo indica, antes de tocar e
 Los usuarios del sistema son colectivos o personas colaboradoras. Cada usuario tiene un email, una contraseña, un `rol` (`COLECTIVO` o `PERSONA_COLABORADORA`) y la `entidad` a la que representa. La colección es `usuarios` y la contraseña se guarda como hash scrypt; la API nunca la devuelve.
 
 - `POST /auth/login` recibe `{ email, contrasena }` y devuelve `{ token, usuario }`. Un email inexistente y una contraseña incorrecta responden el mismo `401`.
+- `POST /auth/registro/persona-colaboradora` recibe `{ email, contrasena, persona }`, donde `persona` tiene la misma forma que el body de `POST /personas-colaboradoras`. Crea la persona y su usuario y responde `201` con el usuario público, sin token. Si el email ya está usado responde `409` y no crea la persona.
 - `GET /auth/me` devuelve el usuario del token enviado en `Authorization: Bearer <token>`.
 
 El usuario público tiene esta forma, donde `nombre` es el nombre del colectivo o el nombre de fantasía de la persona:

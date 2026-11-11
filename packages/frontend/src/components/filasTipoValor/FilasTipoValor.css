@@ -1,0 +1,35 @@
+.filas-tipo-valor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio);
+}
+
+.filas-tipo-valor-ayuda {
+  font-size: 0.875rem;
+  color: var(--color-texto-secundario);
+}
+
+.filas-tipo-valor-fila {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filas-tipo-valor-tipo {
+  grid-column: 1 / -1;
+}
+
+.filas-tipo-valor-agregar {
+  align-self: flex-start;
+}
+
+@media (min-width: 768px) {
+  .filas-tipo-valor-fila {
+    grid-template-columns: 10rem 1fr auto;
+  }
+
+  .filas-tipo-valor-tipo {
+    grid-column: auto;
+  }
+}

@@ -9,7 +9,7 @@ Aplicación React hecha con Create React App. Usa `react-router-dom` para las ru
 3. Levantá el backend (ver el README raíz).
 4. Desde la raíz, corré `npm run start:frontend`. La app queda en http://localhost:3000.
 
-Para ingresar, usá alguno de los usuarios de prueba. Están en la tabla de usuarios de prueba del README raíz.
+Para ingresar, usá alguno de los usuarios de prueba. Están en la tabla de usuarios de prueba del README raíz. También podés crear una cuenta de persona colaboradora en http://localhost:3000/colaboradoras/nueva.
 
 ## Variables de entorno
 
@@ -33,8 +33,10 @@ src/
 └── context/          AuthContext.jsx con AuthProvider y useAuth
 ```
 
-- `components/` tiene lo que usan varias pantallas: `Navbar`, `Cargando`, `MensajeDeError` y `ConfirmarAccion`. Usá `ConfirmarAccion` antes de cualquier acción permanente, como desanotarse de un proyecto.
+- `components/` tiene lo que usan varias pantallas: `Navbar`, `Cargando`, `MensajeDeError`, `ConfirmarAccion` y `FilasTipoValor`. Usá `ConfirmarAccion` antes de cualquier acción permanente, como desanotarse de un proyecto.
+- `FilasTipoValor` edita una lista de pares tipo y valor, como las cuentas de código o los medios de contacto. Recibe las `filas` y avisa cada cambio con `alCambiar(nuevasFilas)`.
 - `features/` tiene las pantallas. Un componente que solo usa una pantalla vive en la carpeta de esa pantalla, como `features/proyectos/PerfilRequerido.jsx`.
+- `features/colaboradoras/FormularioColaboradora.jsx` tiene los datos de una persona colaboradora y no sabe si está creando o editando. Recibe `datosIniciales` y devuelve los datos con `alGuardar(datos)`. Lo que va arriba del formulario, como el email y la contraseña del registro, se pasa como `children`.
 - `service/` es lo único que habla con el backend. Los componentes nunca importan `axios`.
 
 `features/proyectos/PaginaProyecto.jsx` es la pantalla de ejemplo. Copiala cuando hagas una pantalla que carga datos.

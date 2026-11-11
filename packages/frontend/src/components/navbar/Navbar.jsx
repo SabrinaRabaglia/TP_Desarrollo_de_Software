@@ -5,6 +5,7 @@ import {
   FaSignInAlt,
   FaSignOutAlt,
   FaUserCircle,
+  FaUserPlus,
 } from "react-icons/fa"
 import { useAuth } from "../../context/AuthContext"
 import "./Navbar.css"
@@ -47,6 +48,10 @@ const Navbar = () => {
             <Link to="/login" className="navbar-link">
               <FaSignInAlt aria-hidden="true" />
               Ingresar
+            </Link>
+            <Link to="/colaboradoras/nueva" className="navbar-link">
+              <FaUserPlus aria-hidden="true" />
+              Registrarme
             </Link>
           </div>
         )}

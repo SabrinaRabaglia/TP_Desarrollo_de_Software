@@ -1,4 +1,5 @@
 import api from "./api"
+import { obtenerHabilidades } from "./habilidadesService"
 
 export const ESTADOS_DE_PROYECTO = {
   PUBLICADO: "Publicado",
@@ -43,8 +44,8 @@ const aProyecto = (proyectoBack, colectivo, titulosDeHabilidades) => ({
 })
 
 const obtenerTitulosDeHabilidades = async () => {
-  const response = await api.get("/habilidades")
-  return Object.fromEntries(response.data.map((h) => [h.id, h.titulo]))
+  const habilidades = await obtenerHabilidades()
+  return Object.fromEntries(habilidades.map((h) => [h.id, h.titulo]))
 }
 
 const obtenerNombresDeColectivos = async () => {

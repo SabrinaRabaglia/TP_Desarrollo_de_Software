@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Navigate, useLocation } from "react-router-dom"
+import { Link, Navigate, useLocation } from "react-router-dom"
 import { Alert, Button, Card, TextField } from "@mui/material"
 import { useAuth } from "../../context/AuthContext"
 import { mensajeDeError } from "../../service/api"
@@ -60,6 +60,11 @@ const Login = () => {
             {enviando ? "Ingresando..." : "Ingresar"}
           </Button>
         </form>
+
+        <p className="login-registro">
+          ¿No tenés cuenta?{" "}
+          <Link to="/colaboradoras/nueva">Registrate como colaboradora</Link>
+        </p>
       </Card>
     </div>
   )
