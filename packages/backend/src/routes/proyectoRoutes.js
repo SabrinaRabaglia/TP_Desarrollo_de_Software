@@ -5,13 +5,17 @@ import {
   busquedaProyectosSchema,
   proyectoSchema,
 } from "../validations/proyecto.js"
+import { postulacionSchema } from "../validations/postulacion.js"
 import { hitoSchema } from "../validations/hito.js"
 import validateId from "../middlewares/validateId.js"
 import {
   perfilController,
   proyectoController,
   hitoController,
+  postulacionController,
 } from "../dependencias.js"
+import { autenticar, autorizar } from "../middlewares/autenticar.js"
+import { RolUsuario } from "../domain/enums/RolUsuario.js"
 
 const routes = Router()
 
@@ -62,6 +66,21 @@ routes.delete(
   "/proyectos/:id/perfiles/:perfilId",
   validateId,
   perfilController.delete,
+)
+
+routes.get("proyectos/:id/perfiles/:perfilId/postulaciones",
+  autenticar,
+  validateId,
+  autorizar(RolUsuario.COLECTIVO),
+  postulacionController.getAllByPerfil
+)
+
+routes.post(
+  "/proyectos/:id/perfiles/:perfilId/postulaciones",
+  autenticar,
+  autorizar(RolUsuario.PERSONA_COLABORADORA),
+  validar(postulacionSchema),
+  postulacionController.create,
 )
 
 routes.post(

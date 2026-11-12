@@ -1,28 +1,31 @@
 import { Router } from "express"
-import validar from "../middlewares/validar.js"
 import validateId from "../middlewares/validateId.js"
-import { postulacionSchema } from "../validations/postulacion.js"
 import { postulacionController } from "../dependencias.js"
+import { autenticar, autorizar } from "../middlewares/autenticar.js"
+import { RolUsuario } from "../domain/enums/RolUsuario.js"
 
 const routes = Router()
 
-routes.post(
+routes.get(
   "/postulaciones",
-  validar(postulacionSchema),
-  postulacionController.create,
+  autenticar,
+  autorizar(RolUsuario.PERSONA_COLABORADORA),
+  postulacionController.getAllByColaborador,
 )
 
-routes.get("/postulaciones", postulacionController.getAll)
-
-routes.get("/postulaciones/:id", validateId, postulacionController.getById)
+//routes.get("/postulaciones/:id", validateId, postulacionController.getById)
 
 routes.patch("/postulaciones/:id/aceptar",
+  autenticar,
   validateId,
+  autorizar(RolUsuario.COLECTIVO),
   postulacionController.aceptar
 )
 
 routes.patch("/postulaciones/:id/rechazar",
+  autenticar,
   validateId,
+  autorizar(RolUsuario.COLECTIVO),
   postulacionController.rechazar
 )
 export default routes

@@ -15,6 +15,14 @@ export default class PostulacionRepository {
     return await this.model.find().populate(REFERENCIAS)
   }
 
+  async findAllByColaborador(colaboradorId) {
+    return await this.model.find({personaColaboradora : colaboradorId})
+  }
+
+  async findAllByPerfil(perfilId) {
+    return await this.model.find({perfil : perfilId})
+  }
+
   async findById(id) {
     return await this.model.findById(id)
   }

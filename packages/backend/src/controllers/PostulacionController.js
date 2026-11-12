@@ -5,18 +5,34 @@ export default class PostulacionController {
 
   create = async (req, res, next) => {
     try {
-      res.status(201).json(await this.postulacionService.create(req.body))
+      const datosPostulacion = {
+      personaColaboradoraId: req.usuario.entidad,
+      perfilId: req.params.perfilId,
+      esAnonima: req.body.esAnonima,
+    }
+
+    const postulacion =
+      await this.postulacionService.create(datosPostulacion)
+      res.status(201).json(postulacion)
     } catch (error) {
       next(error)
     }
   }
 
-  getAll = async (_req, res, next) => {
+  getAllByColaborador = async (req, res, next) => {
     try {
-      res.status(200).json(await this.postulacionService.getAll())
+      res.status(200).json(await this.postulacionService.getAllByColaborador(req.usuario.entidad))
     } catch (error) {
       next(error)
     }
+  }
+
+  getAllByPerfil = async (req, res, next) => {
+   try {
+      res.status(200).json(await this.postulacionService.getAllByPerfil(req.params.perfilId,req.usuario.entidad))
+    } catch (error) {
+      next(error)
+    } 
   }
 
   getById = async (req, res, next) => {
