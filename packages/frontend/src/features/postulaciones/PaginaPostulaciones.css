@@ -1,0 +1,41 @@
+.postulaciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio);
+}
+
+.postulaciones-bajada {
+  max-width: 40rem;
+  font-size: 1.125rem;
+  color: var(--color-texto-secundario);
+}
+
+.mis-postulaciones {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espacio);
+  padding: 0;
+  list-style: none;
+}
+
+.postulacion {
+  height: 100%;
+}
+
+.postulacion-estado {
+  font-size: 0.875rem;
+  color: var(--color-texto-secundario);
+}
+
+@media (min-width: 768px) {
+  .mis-postulaciones {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .mis-postulaciones {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+

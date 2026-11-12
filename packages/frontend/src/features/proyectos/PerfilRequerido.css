@@ -28,3 +28,20 @@
   font-size: 0.875rem;
   color: var(--color-texto-secundario);
 }
+
+.perfil button {
+  margin-top: 16px;
+  padding: 10px 20px;
+  width: fit-content;
+  margin: 16px auto 0;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.perfil button:hover {
+  background-color: #1d4ed8;
+}
