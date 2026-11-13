@@ -37,6 +37,18 @@ describe("validación de perfiles", () => {
     expect(validarBody(sinNombre).next).toHaveBeenCalledWith()
   })
 
+  test.each([undefined, null, 3])(
+    "acepta un límite de colaboraciones opcional válido: %s",
+    (limiteColaboraciones) => {
+      const body = { ...perfilValido }
+      if (limiteColaboraciones !== undefined) {
+        body.limiteColaboraciones = limiteColaboraciones
+      }
+
+      expect(validarBody(body).next).toHaveBeenCalledWith()
+    },
+  )
+
   test.each([
     ["sin descripción", { descripcion: undefined }],
     ["sin habilidades requeridas", { habilidadesRequeridas: undefined }],
@@ -60,6 +72,8 @@ describe("validación de perfiles", () => {
       { modalidadesColaboracion: ["VOLUNTARIADO"] },
     ],
     ["con un campo que no existe", { campoInexistente: true }],
+    ["con un límite fraccionario", { limiteColaboraciones: 1.5 }],
+    ["con un límite no positivo", { limiteColaboraciones: 0 }],
   ])("rechaza con BadRequestError un body %s", (_caso, cambio) => {
     const { next } = validarBody({ ...perfilValido, ...cambio })
 

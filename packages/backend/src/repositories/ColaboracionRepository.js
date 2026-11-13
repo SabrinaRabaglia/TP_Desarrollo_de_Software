@@ -22,6 +22,10 @@ export default class ColaboracionRepository {
     })
   }
 
+  async countByProyectoAndPerfil(proyectoId, perfilId) {
+    return await this.model.countDocuments({ proyecto: proyectoId, perfilId })
+  }
+
   async findPersonasInscriptasEn(proyectoId) {
     const ids = await this.model.distinct("personaColaboradora", {
       proyecto: proyectoId,

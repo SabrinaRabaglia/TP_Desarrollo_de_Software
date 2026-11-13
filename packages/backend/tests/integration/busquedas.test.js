@@ -29,6 +29,7 @@ const crearProyectoConPerfil = async (titulo, colectivo, requeridas) => {
       colectivo: colectivo.id,
       estado: "PUBLICADO",
       fechaCierre: null,
+      busquedaAbierta: true,
     },
     201,
   )
@@ -223,6 +224,77 @@ describe("búsqueda de colaboradores según un perfil", () => {
 })
 
 describe("inscripción según la consigna", () => {
+  test("persiste el estado y la fecha límite de la búsqueda al crear y editar", async () => {
+    const fechaLimite = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    const proyecto = await request(
+      "POST",
+      "/proyectos",
+      {
+        titulo: "Proyecto con límite de búsqueda",
+        descripcion: "Proyecto para probar la búsqueda abierta",
+        colectivo: proyectos.web.colectivo,
+        estado: "PUBLICADO",
+        fechaCierre: null,
+        busquedaAbierta: true,
+        busquedaAbiertaHasta: fechaLimite,
+      },
+      201,
+    )
+    expect(proyecto.busquedaAbierta).toBe(true)
+    expect(proyecto.busquedaAbiertaHasta).toBe(fechaLimite)
+
+    const actualizado = await request(
+      "PATCH",
+      `/proyectos/${proyecto.id}`,
+      { busquedaAbierta: false, busquedaAbiertaHasta: null },
+    )
+    expect(actualizado.busquedaAbierta).toBe(false)
+    expect(actualizado.busquedaAbiertaHasta).toBeNull()
+
+    const persistido = await request("GET", `/proyectos/${proyecto.id}`)
+    expect(persistido.busquedaAbierta).toBe(false)
+    expect(persistido.busquedaAbiertaHasta).toBeNull()
+  })
+
+  test("rechaza la inscripción cuando la búsqueda está cerrada", async () => {
+    const colectivo = await request(
+      "POST",
+      "/colectivos",
+      {
+        nombre: "Colectivo postulaciones cerradas",
+        descripcion: "Desarrollo comunitario",
+        tipo: "ONG",
+      },
+      201,
+    )
+    const baseProyecto = {
+      descripcion: "Proyecto sin postulaciones abiertas",
+      colectivo: colectivo.id,
+      estado: "PUBLICADO",
+      fechaCierre: null,
+    }
+    const cerrado = await request(
+      "POST",
+      "/proyectos",
+      {
+        ...baseProyecto,
+        titulo: "Búsqueda cerrada",
+        busquedaAbierta: false,
+      },
+      201,
+    )
+
+    await request(
+      "POST",
+      "/colaboraciones",
+      {
+        personaColaboradoraId: personas.ana.id,
+        proyectoId: cerrado.id,
+      },
+      409,
+    )
+  })
+
   test("alcanza con tener al menos una de las habilidades requeridas, aunque la búsqueda no la sugiera", async () => {
     await request(
       "POST",

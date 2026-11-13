@@ -285,6 +285,7 @@ describe("Proyecto", () => {
 
     test("un proyecto cerrado no puede buscar colaboradores", () => {
       const proyecto = new Proyecto("Mapa", "Mapa de humedales", colectivo)
+      proyecto.busquedaAbierta = true
       expect(() => proyecto.assertPuedeBuscarColaboradores()).not.toThrow()
 
       proyecto.cerrar()
@@ -300,6 +301,34 @@ describe("Proyecto", () => {
 
       expect(() =>
         proyecto.contactar(perfil, crearPersona(true), "Hola"),
+      ).toThrow(DomainRuleError)
+    })
+
+    test("la búsqueda de colaboradores requiere estar abierta", () => {
+      const proyecto = new Proyecto("Mapa", "Mapa de humedales", colectivo)
+
+      expect(() => proyecto.assertPuedeBuscarColaboradores()).toThrow(
+        DomainRuleError,
+      )
+
+      proyecto.busquedaAbierta = true
+      expect(() => proyecto.assertPuedeBuscarColaboradores()).not.toThrow()
+    })
+
+    test("la fecha límite mantiene abierta la búsqueda durante todo ese día", () => {
+      const proyecto = new Proyecto("Mapa", "Mapa de humedales", colectivo)
+      proyecto.busquedaAbierta = true
+      proyecto.busquedaAbiertaHasta = new Date("2026-09-11")
+
+      expect(() =>
+        proyecto.assertPuedeBuscarColaboradores(
+          new Date("2026-09-11T23:59:59.999Z"),
+        ),
+      ).not.toThrow()
+      expect(() =>
+        proyecto.assertPuedeBuscarColaboradores(
+          new Date("2026-09-12T00:00:00.000Z"),
+        ),
       ).toThrow(DomainRuleError)
     })
   })

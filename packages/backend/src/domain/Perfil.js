@@ -24,7 +24,10 @@ export default class Perfil {
       suyas.has(idDe(habilidad)),
     ).length
   }
-
+  admiteMasColaboraciones(cantidadColaboracionesActuales) {
+    if (this.limiteColaboraciones == null) return true
+    return cantidadColaboracionesActuales < this.limiteColaboraciones
+  }
   asignar({
     nombre = null,
     descripcion,
@@ -33,6 +36,7 @@ export default class Perfil {
     modalidadesColaboracion,
     habilidadesRequeridas,
     habilidadesOpcionales,
+    limiteColaboraciones = null,
   }) {
     this.nombre = nombre
     this.descripcion = descripcion
@@ -41,6 +45,8 @@ export default class Perfil {
     this.modalidadesColaboracion = modalidadesColaboracion
     this.habilidadesRequeridas = habilidadesRequeridas
     this.habilidadesOpcionales = habilidadesOpcionales
+    this.limiteColaboraciones =
+      limiteColaboraciones != null ? Number(limiteColaboraciones) : null
   }
 
   static validarDatos({
@@ -50,6 +56,7 @@ export default class Perfil {
     modalidadesColaboracion,
     habilidadesRequeridas,
     habilidadesOpcionales,
+    limiteColaboraciones,
   }) {
     if (!descripcion) {
       throw new DomainValidationError(
@@ -82,6 +89,15 @@ export default class Perfil {
     if (!esListaNoVacia(habilidadesOpcionales)) {
       throw new DomainValidationError(
         "El perfil debe tener al menos una habilidad opcional.",
+      )
+    }
+    if (
+      limiteColaboraciones != null &&
+      (!Number.isInteger(Number(limiteColaboraciones)) ||
+        Number(limiteColaboraciones) <= 0)
+    ) {
+      throw new DomainValidationError(
+        "El límite de colaboraciones debe ser un entero positivo.",
       )
     }
   }

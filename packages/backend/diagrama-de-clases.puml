@@ -45,6 +45,10 @@ class Proyecto {
     estado: EstadoProyecto
     fechaAlta: Date
     fechaCierre: Date
+    busquedaAbierta: Boolean
+    busquedaAbiertaHasta: Date
+    enlaceSistemaEnFuncionamiento: String
+    enlaceCodigoFuente: String
     colectivo: Colectivo
     perfiles: Perfil[]
     colaboraciones: Colaboracion[]

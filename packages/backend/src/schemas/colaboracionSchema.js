@@ -16,6 +16,10 @@ const colaboracionSchema = new mongoose.Schema(
       ref: "Proyecto",
       required: true,
     },
+    perfilId: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+    },
   },
   {
     timestamps: true,

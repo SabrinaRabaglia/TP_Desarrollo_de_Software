@@ -34,9 +34,20 @@ describe("ColaboracionService", () => {
     persona.agregarHabilidad(habilidad)
     personaRepository.save(persona)
     proyecto = new Proyecto("Plataforma", "Desarrollo web", "colectivo-1")
+    proyecto.busquedaAbierta = true
     proyecto.id = "proyecto-1"
     proyecto.perfiles = [
-      { habilidadesRequeridas: ["otra-habilidad", habilidad.id] },
+      {
+        id: "perfil-1",
+        habilidadesRequeridas: ["otra-habilidad", habilidad.id],
+        limiteColaboraciones: null,
+        admiteMasColaboraciones(cantidad) {
+          return (
+            this.limiteColaboraciones === null ||
+            cantidad < this.limiteColaboraciones
+          )
+        },
+      },
     ]
     proyectoRepository.save(proyecto)
     datos = {
@@ -51,8 +62,27 @@ describe("ColaboracionService", () => {
 
     expect(colaboracion.personaColaboradora).toBe(persona)
     expect(colaboracion.proyecto).toBe(proyecto)
+    expect(colaboracion.perfilId).toBe("perfil-1")
     await expect(service.create(datos)).rejects.toThrow(AlreadyExists)
     expect(await service.getAll()).toEqual([colaboracion])
+  })
+
+  test("rechaza nuevas colaboraciones cuando se alcanza el cupo del perfil", async () => {
+    proyecto.perfiles[0].limiteColaboraciones = 1
+    await service.create(datos)
+
+    const otraPersona = new PersonaColaboradora("Bruno")
+    otraPersona.id = "persona-2"
+    otraPersona.agregarHabilidad(persona.habilidades[0])
+    await personaRepository.save(otraPersona)
+
+    await expect(
+      service.create({
+        ...datos,
+        personaColaboradoraId: otraPersona.id,
+      }),
+    ).rejects.toThrow("Se alcanzó el límite de colaboraciones para el perfil.")
+    expect(await service.getAll()).toHaveLength(1)
   })
 
   test.each([
@@ -70,6 +100,20 @@ describe("ColaboracionService", () => {
       "proyecto cerrado",
       async () => {
         proyecto.estado = "CERRADO"
+      },
+      DomainRuleError,
+    ],
+    [
+      "búsqueda cerrada",
+      async () => {
+        proyecto.busquedaAbierta = false
+      },
+      DomainRuleError,
+    ],
+    [
+      "fecha límite vencida",
+      async () => {
+        proyecto.busquedaAbiertaHasta = new Date("2020-01-01")
       },
       DomainRuleError,
     ],

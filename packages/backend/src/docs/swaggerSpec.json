@@ -978,7 +978,9 @@
                 "descripcion": "Plataforma para conectar colectivos sociales y personas voluntarias.",
                 "colectivo": "64f1a2b3c4d5e6f7a8b9c002",
                 "estado": "PUBLICADO",
-                "fechaCierre": null
+                "fechaCierre": null,
+                "busquedaAbierta": true,
+                "busquedaAbiertaHasta": "2027-12-31T23:59:59.000Z"
               }
             }
           }
@@ -1067,7 +1069,9 @@
                 "descripcion": "Plataforma para conectar colectivos sociales y personas voluntarias.",
                 "colectivo": "64f1a2b3c4d5e6f7a8b9c002",
                 "estado": "PUBLICADO",
-                "fechaCierre": null
+                "fechaCierre": null,
+                "busquedaAbierta": true,
+                "busquedaAbiertaHasta": "2027-12-31T23:59:59.000Z"
               }
             }
           }
@@ -1632,7 +1636,7 @@
       "post": {
         "tags": ["Colaboraciones"],
         "summary": "Inscribir una persona en un proyecto",
-        "description": "Crea una colaboración. Responde 404 si el proyecto o la persona no existen; 409 si el proyecto está cerrado, si la persona no tiene al menos una habilidad requerida por el proyecto o si ya colabora en él.",
+        "description": "Crea una colaboración solo si la búsqueda del proyecto está abierta y no venció su fecha límite. Responde 404 si el proyecto o la persona no existen; 409 si el proyecto está cerrado, la búsqueda está cerrada o vencida, la persona no tiene al menos una habilidad requerida por el proyecto o ya colabora en él.",
         "operationId": "crearColaboracion",
         "requestBody": {
           "required": true,
@@ -2294,6 +2298,16 @@
             "type": "string",
             "format": "uri",
             "nullable": true
+          },
+          "busquedaAbierta": {
+            "type": "boolean",
+            "description": "Opcional. Si se omite, la búsqueda queda cerrada."
+          },
+          "busquedaAbiertaHasta": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Opcional. La búsqueda permanece abierta durante todo este día."
           }
         }
       },
@@ -2328,6 +2342,14 @@
             "type": "string",
             "format": "uri",
             "nullable": true
+          },
+          "busquedaAbierta": {
+            "type": "boolean"
+          },
+          "busquedaAbiertaHasta": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         }
       },
@@ -2340,7 +2362,9 @@
           "colectivo",
           "estado",
           "fechaAlta",
-          "fechaCierre"
+          "fechaCierre",
+          "busquedaAbierta",
+          "busquedaAbiertaHasta"
         ],
         "properties": {
           "id": {
@@ -2372,6 +2396,16 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "busquedaAbierta": {
+            "type": "boolean",
+            "description": "Indica si el proyecto acepta nuevas postulaciones."
+          },
+          "busquedaAbiertaHasta": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Fecha límite inclusiva de la búsqueda."
           },
           "enlaceSistemaEnFuncionamiento": {
             "type": "string",
@@ -2472,7 +2506,8 @@
           "cantidadHoras",
           "modalidadesColaboracion",
           "habilidadesRequeridas",
-          "habilidadesOpcionales"
+          "habilidadesOpcionales",
+          "limiteColaboraciones"
         ],
         "properties": {
           "id": {
@@ -2516,6 +2551,12 @@
             "items": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          "limiteColaboraciones": {
+            "type": "integer",
+            "minimum": 1,
+            "nullable": true,
+            "description": "Cantidad máxima de colaboraciones aceptadas para este perfil; `null` significa sin límite."
           }
         }
       },
@@ -2569,6 +2610,12 @@
             "items": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          "limiteColaboraciones": {
+            "type": "integer",
+            "minimum": 1,
+            "nullable": true,
+            "description": "Cantidad máxima de colaboraciones aceptadas para este perfil; `null` significa sin límite."
           }
         }
       },

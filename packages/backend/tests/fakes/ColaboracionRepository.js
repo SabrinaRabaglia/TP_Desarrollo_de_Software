@@ -14,6 +14,12 @@ export default class ColaboracionRepository {
     )
   }
 
+  async countByProyectoAndPerfil(proyectoId, perfilId) {
+    return this.colaboraciones.filter(
+      (c) => c.proyecto.id === proyectoId && c.perfilId === perfilId,
+    ).length
+  }
+
   async findPersonasInscriptasEn(proyectoId) {
     return this.colaboraciones
       .filter((c) => c.proyecto.id === proyectoId)

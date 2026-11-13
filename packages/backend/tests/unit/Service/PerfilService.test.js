@@ -81,11 +81,13 @@ describe("PerfilService", () => {
       titulo: "Plataforma de Colaboración",
       descripcion: "Plataforma para conectar colectivos sociales",
       colectivo: colectivo.id,
+      busquedaAbierta: true,
     })
     otroProyecto = await proyectoService.create({
       titulo: "Otro proyecto",
       descripcion: "Otro proyecto cualquiera",
       colectivo: colectivo.id,
+      busquedaAbierta: true,
     })
 
     habilidad1 = await habilidadService.create({

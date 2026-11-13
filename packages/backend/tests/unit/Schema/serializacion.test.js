@@ -132,6 +132,7 @@ describe("serialización a JSON de los documentos", () => {
       modalidadesColaboracion: ["GRATUITA"],
       habilidadesRequeridas: [],
       habilidadesOpcionales: [],
+      limiteColaboraciones: null,
     })
     expect(json.hitos[0]).toEqual({
       id: idDe(proyecto.hitos[0]),

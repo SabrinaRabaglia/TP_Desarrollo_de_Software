@@ -54,7 +54,7 @@ Crea un archivo `.env` en el directorio `packages/backend`. Puedes usar el archi
 # packages/backend/.env
 ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 SERVER_PORT=8000
-MONGODB_URI=mongodb://root:secret@localhost:27017/?authSource=admin
+MONGODB_URI=mongodb://localhost:27017
 MONGODB_DB_NAME=codigo-a-voluntad
 JWT_SECRET=cambiame-por-un-secreto-largo-y-aleatorio
 JWT_EXPIRA_EN=8h
@@ -62,7 +62,7 @@ JWT_EXPIRA_EN=8h
 
 - **`ALLOWED_ORIGINS`**: Define los orígenes permitidos para las solicitudes CORS. Asegurate de incluir la URL donde se ejecuta tu frontend (por defecto, `http://localhost:3000` para Create React App). Cuando se haga el despliegue en nube acá se deberá incluir la URL donde se desplegó el frontend.
 - **`SERVER_PORT`**: El puerto en el que se ejecutará el servidor backend (ej. `8000`).
-- **`MONGODB_URI`**: URI de conexión a MongoDB. El `authSource=admin` va dentro de la URI porque el usuario `root` del contenedor vive en la base `admin`.
+- **`MONGODB_URI`**: URI de conexión a MongoDB. Para desarrollo local, MongoDB corre sin autenticación en `localhost:27017`; no uses esta configuración en producción.
 - **`MONGODB_DB_NAME`**: Nombre de la base. Mongo la crea sola con el primer documento.
 - **`JWT_SECRET`**: secreto con el que se firman los tokens de sesión. Sin él, fuera de producción se usa un secreto fijo de desarrollo y el servidor lo avisa al arrancar. En producción (`NODE_ENV=production`, como en la imagen de Docker) el servidor no arranca sin él.
 - **`JWT_EXPIRA_EN`**: cuánto dura un token, en el formato de [`jsonwebtoken`](https://github.com/auth0/node-jsonwebtoken#usage) (`8h`, `30m`, `7d`). Por defecto `8h`.
@@ -115,7 +115,7 @@ az containerapp update --name ca-ddso-backend --resource-group rg-ddso-backend -
 
 ### 3\. Levantar MongoDB
 
-El backend necesita MongoDB para arrancar. Con Docker:
+El backend necesita MongoDB para arrancar. Para desarrollo local, Docker Compose levanta MongoDB sin autenticación y publica el puerto solo en `localhost`:
 
 ```bash
 docker compose up -d mongo

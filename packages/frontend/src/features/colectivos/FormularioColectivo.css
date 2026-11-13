@@ -1,0 +1,49 @@
+.formulario-colectivo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio);
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.formulario-colectivo-encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formulario-colectivo-encabezado p {
+  color: var(--color-texto-secundario);
+}
+
+.formulario-colectivo-tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio);
+  padding: calc(var(--espacio) * 1.5);
+}
+
+.formulario-colectivo-campos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio);
+}
+
+.formulario-colectivo-ubicacion {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espacio);
+}
+
+.formulario-colectivo-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+@media (min-width: 600px) {
+  .formulario-colectivo-ubicacion {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

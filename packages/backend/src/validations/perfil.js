@@ -12,5 +12,6 @@ export const perfilSchema = z
     modalidadesColaboracion: z.array(z.enum(ModalidadColaboracion)),
     habilidadesRequeridas: z.array(objectIdSchema),
     habilidadesOpcionales: z.array(objectIdSchema),
+    limiteColaboraciones: z.number().int().positive().nullable().optional(),
   })
   .strict()

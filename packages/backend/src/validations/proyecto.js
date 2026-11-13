@@ -11,6 +11,8 @@ export const proyectoSchema = z
     fechaCierre: z.coerce.date().nullable(),
     enlaceSistemaEnFuncionamiento: z.string().url().optional(),
     enlaceCodigoFuente: z.string().url().optional(),
+    busquedaAbierta: z.boolean().optional(),
+    busquedaAbiertaHasta: z.coerce.date().nullable().optional(),
   })
   .strict()
 

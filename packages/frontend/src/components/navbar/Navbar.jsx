@@ -26,30 +26,33 @@ const Navbar = () => {
           Código a Voluntad
         </Link>
 
-        {usuario ? (
-          <div className="navbar-acciones">
-            <Link to="/mi-cuenta" className="navbar-link">
-              <FaUserCircle aria-hidden="true" />
-              Mi cuenta
-            </Link>
-            <span className="navbar-usuario">{usuario.nombre}</span>
-            <Button
-              color="inherit"
-              size="small"
-              startIcon={<FaSignOutAlt aria-hidden="true" />}
-              onClick={cerrarSesion}
-            >
-              Cerrar sesión
-            </Button>
-          </div>
-        ) : (
-          <div className="navbar-acciones">
+        <div className="navbar-acciones">
+          <Link to="/colectivos/nuevo" className="navbar-link">
+            Registrar organización
+          </Link>
+          {usuario ? (
+            <>
+              <Link to="/mi-cuenta" className="navbar-link">
+                <FaUserCircle aria-hidden="true" />
+                Mi cuenta
+              </Link>
+              <span className="navbar-usuario">{usuario.nombre}</span>
+              <Button
+                color="inherit"
+                size="small"
+                startIcon={<FaSignOutAlt aria-hidden="true" />}
+                onClick={cerrarSesion}
+              >
+                Cerrar sesión
+              </Button>
+            </>
+          ) : (
             <Link to="/login" className="navbar-link">
               <FaSignInAlt aria-hidden="true" />
               Ingresar
             </Link>
-          </div>
-        )}
+          )}
+        </div>
       </nav>
     </header>
   )

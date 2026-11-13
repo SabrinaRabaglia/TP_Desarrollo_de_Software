@@ -14,6 +14,8 @@ const datosDelProyecto = ({
   estado,
   fechaAlta,
   fechaCierre,
+  busquedaAbierta,
+  busquedaAbiertaHasta,
 }) => ({
   titulo,
   descripcion,
@@ -21,6 +23,8 @@ const datosDelProyecto = ({
   estado,
   fechaAlta,
   fechaCierre,
+  busquedaAbierta,
+  busquedaAbiertaHasta,
 })
 
 export default class ProyectoService {
@@ -80,6 +84,8 @@ export default class ProyectoService {
       nuevo.fechaCierre,
       nuevo.enlaceSistemaEnFuncionamiento,
       nuevo.enlaceCodigoFuente,
+      nuevo.busquedaAbierta,
+      nuevo.busquedaAbiertaHasta ? new Date(nuevo.busquedaAbiertaHasta) : null
     )
 
     await this.validarColectivo(proyecto.colectivo)

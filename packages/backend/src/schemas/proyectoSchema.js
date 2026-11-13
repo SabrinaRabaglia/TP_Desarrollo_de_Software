@@ -25,6 +25,8 @@ const proyectoSchema = new mongoose.Schema(
     hitos: [hitoSchema],
     enlaceSistemaEnFuncionamiento: { type: String, default: null },
     enlaceCodigoFuente: { type: String, default: null },
+    busquedaAbierta: { type: Boolean, default: false },
+    busquedaAbiertaHasta: { type: Date, default: null },
   },
   { timestamps: true, collection: "proyectos", toJSON: opcionesJSON },
 )

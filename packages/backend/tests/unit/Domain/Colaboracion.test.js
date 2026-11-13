@@ -22,6 +22,7 @@ const personaConHabilidad = () => {
 
 const proyectoAbierto = (habilidadesRequeridas = ["hab-1"]) => {
   const proyecto = new Proyecto("Plataforma", "Desarrollo web", "colectivo-1")
+  proyecto.busquedaAbierta = true
   proyecto.perfiles = [{ habilidadesRequeridas }]
   return proyecto
 }

@@ -44,6 +44,7 @@ beforeAll(async () => {
     modalidadesColaboracion: ["GRATUITA"],
     habilidadesRequeridas: [habilidades.cypress.id],
     habilidadesOpcionales: [habilidades.soapUi.id],
+    limiteColaboraciones: 2,
   }
 })
 

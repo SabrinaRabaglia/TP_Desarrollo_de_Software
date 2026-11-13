@@ -18,6 +18,7 @@ describe("Perfil", () => {
       modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
       habilidadesRequeridas: ["cypress"],
       habilidadesOpcionales: ["soap_ui"],
+      limiteColaboraciones: 3,
     }
   })
 

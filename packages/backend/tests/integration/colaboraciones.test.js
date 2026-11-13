@@ -57,9 +57,10 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
       colectivo: colectivo.id,
       estado: "PUBLICADO",
       fechaCierre: null,
+      busquedaAbierta: true,
     }
     let proyecto = await request("POST", "/proyectos", proyectoDatos, 201)
-    await request(
+    const perfil = await request(
       "POST",
       `/proyectos/${proyecto.id}/perfiles`,
       {
@@ -69,6 +70,7 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
         modalidadesColaboracion: ["GRATUITA"],
         habilidadesRequeridas: [habilidad.id],
         habilidadesOpcionales: [habilidad.id],
+        limiteColaboraciones: 2,
       },
       201,
     )
@@ -88,6 +90,7 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
       esAnonima: false,
+      perfilId: perfil.id,
       personaColaboradora: {
         id: persona.id,
         nombreFantasia: persona.nombreFantasia,
@@ -117,6 +120,7 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
       esAnonima: true,
+      perfilId: perfil.id,
       personaColaboradora: null,
     })
     const guardada = await ColaboracionModel.findById(anonima.id)
@@ -125,6 +129,23 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
       colaboracion,
       anonima,
     ])
+    const terceraPersona = await request(
+      "POST",
+      "/personas-colaboradoras",
+      { ...personaDatos, nombreFantasia: "Tercera persona" },
+      201,
+    )
+    await request(
+      "POST",
+      "/colaboraciones",
+      {
+        proyectoId: proyecto.id,
+        personaColaboradoraId: terceraPersona.id,
+        perfilId: perfil.id,
+      },
+      409,
+    )
+    expect(await request("GET", "/colaboraciones")).toHaveLength(2)
     for (const ruta of [
       `/proyectos/${proyecto.id}`,
       `/personas-colaboradoras/${persona.id}`,

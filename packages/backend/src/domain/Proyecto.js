@@ -16,6 +16,8 @@ export default class Proyecto {
     fechaCierre = null,
     enlaceSistemaEnFuncionamiento = null,
     enlaceCodigoFuente = null,
+    busquedaAbierta = false,
+    busquedaAbiertaHasta = null
   ) {
     Proyecto.validarDatos({
       titulo,
@@ -24,6 +26,8 @@ export default class Proyecto {
       estado,
       fechaAlta,
       fechaCierre,
+      busquedaAbierta,
+      busquedaAbiertaHasta,
     })
     this.titulo = titulo
     this.descripcion = descripcion
@@ -36,6 +40,8 @@ export default class Proyecto {
     this.enlaceSistemaEnFuncionamiento = enlaceSistemaEnFuncionamiento
     this.enlaceCodigoFuente = enlaceCodigoFuente
     this.hitos = []
+    this.busquedaAbierta = busquedaAbierta; // opcional
+    this.busquedaAbiertaHasta = busquedaAbiertaHasta; //opcional
   }
   getPorcentajeConcrecionActual() {
     if (this.hitos.length === 0) return 0
@@ -72,10 +78,19 @@ export default class Proyecto {
     }
   }
 
-  assertPuedeBuscarColaboradores() {
+  assertPuedeBuscarColaboradores(ahora = new Date()) {
     if (this.proyectoCerrado()) {
       throw new DomainRuleError(
         "Un proyecto cerrado no busca personas colaboradoras.",
+      )
+    }
+    if (
+      !this.busquedaAbierta ||
+      (this.busquedaAbiertaHasta &&
+        inicioDelDiaSiguiente(this.busquedaAbiertaHasta) <= ahora)
+    ) {
+      throw new DomainRuleError(
+        "La búsqueda de colaboraciones está cerrada.",
       )
     }
   }
@@ -133,6 +148,7 @@ export default class Proyecto {
     estado,
     fechaAlta,
     fechaCierre,
+    busquedaAbiertaHasta,
   }) {
     if (!titulo || !descripcion || !colectivo) {
       throw new DomainValidationError(
@@ -145,6 +161,11 @@ export default class Proyecto {
     if (fechaCierre && fechaCierre < fechaAlta) {
       throw new DomainValidationError(
         "La fecha de cierre no puede ser anterior a la fecha de alta.",
+      )
+    }
+    if (busquedaAbiertaHasta && fechaAlta && busquedaAbiertaHasta < fechaAlta) {
+      throw new DomainValidationError(
+        "La fecha límite de búsqueda no puede ser anterior a la fecha de alta.",
       )
     }
   }

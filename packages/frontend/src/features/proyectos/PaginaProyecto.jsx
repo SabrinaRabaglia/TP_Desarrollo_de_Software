@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import Cargando from "../../components/cargando/Cargando"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
 import {
@@ -59,7 +59,10 @@ const PaginaProyecto = () => {
         </span>
         <h1>{proyecto.titulo}</h1>
         <p className="pagina-proyecto-colectivo">
-          Lo propone {proyecto.colectivo.nombre}
+          Lo propone{" "}
+          <Link to={`/colectivos/${proyecto.colectivo.id}`}>
+            {proyecto.colectivo.nombre}
+          </Link>
         </p>
       </header>
 
