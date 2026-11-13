@@ -9,6 +9,10 @@ import {
 import { once } from "node:events"
 import app from "../../src/app.js"
 import { envioDeNotificaciones } from "../../src/dependencias.js"
+import AuthService from "../../src/services/AuthService.js"
+import ColectivoRepository from "../../src/repositories/ColectivoRepository.js"
+import PersonaColaboradoraRepository from "../../src/repositories/PersonaColaboradoraRepository.js"
+import UsuarioRepository from "../../src/repositories/UsuarioRepository.js"
 import NotificacionModel from "../../src/schemas/notificacionSchema.js"
 import { conectar, desconectar } from "./mongo.js"
 
@@ -19,15 +23,33 @@ let proyecto
 let perfil
 let ana
 let anon
+const tokens = {}
 
-const request = async (method, path, body, status = 200) => {
+const request = async (method, path, body, status = 200, token) => {
   const response = await fetch(base + path, {
     method,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: body === undefined ? undefined : JSON.stringify(body),
   })
   expect(response.status).toBe(status)
   return response.status === 204 ? null : response.json()
+}
+
+// Le crea un usuario a una entidad que ya existe y devuelve su token.
+const iniciarSesionDe = async (email, rol, entidad) => {
+  await new AuthService(
+    new UsuarioRepository(),
+    new ColectivoRepository(),
+    new PersonaColaboradoraRepository(),
+  ).registrar({ email, contrasena: "secreto123", rol, entidad })
+  const { token } = await request("POST", "/auth/login", {
+    email,
+    contrasena: "secreto123",
+  })
+  return token
 }
 
 const crearProyectoConPerfil = async (titulo) => {
@@ -72,6 +94,9 @@ const crearProyectoConPerfil = async (titulo) => {
 const notificaciones = (proyectoId, perfilId) =>
   `/proyectos/${proyectoId}/perfiles/${perfilId}/notificaciones`
 
+const bandeja = (personaId) =>
+  `/personas-colaboradoras/${personaId}/notificaciones`
+
 beforeAll(async () => {
   jest.spyOn(console, "log").mockImplementation(() => {})
   await conectar("notificaciones")
@@ -105,6 +130,22 @@ beforeAll(async () => {
     { nombreFantasia: "anon" },
     201,
   )
+
+  tokens.colectivo = await iniciarSesionDe(
+    "huerta@colectivo.test",
+    "COLECTIVO",
+    colectivo.id,
+  )
+  tokens.ana = await iniciarSesionDe(
+    "ana@persona.test",
+    "PERSONA_COLABORADORA",
+    ana.id,
+  )
+  tokens.anon = await iniciarSesionDe(
+    "anon@persona.test",
+    "PERSONA_COLABORADORA",
+    anon.id,
+  )
 })
 
 afterAll(async () => {
@@ -120,6 +161,7 @@ describe("notificaciones", () => {
       notificaciones(proyecto.id, perfil.id),
       { personaColaboradora: ana.id, contenido: "Tu perfil encaja" },
       201,
+      tokens.colectivo,
     )
 
     expect(notificacion).toEqual({
@@ -140,7 +182,10 @@ describe("notificaciones", () => {
 
     const [enviada] = await request(
       "GET",
-      `/personas-colaboradoras/${ana.id}/notificaciones`,
+      bandeja(ana.id),
+      undefined,
+      200,
+      tokens.ana,
     )
     expect(enviada).toEqual({
       ...notificacion,
@@ -173,7 +218,7 @@ describe("notificaciones", () => {
       },
     ])
     expect(
-      await request("GET", `/personas-colaboradoras/${anon.id}/notificaciones`),
+      await request("GET", bandeja(anon.id), undefined, 200, tokens.anon),
     ).toEqual([])
     expect(
       await request("GET", `/personas-colaboradoras/${ana.id}`),
@@ -189,6 +234,7 @@ describe("notificaciones", () => {
       notificaciones(proyecto.id, perfil.id),
       { personaColaboradora: anon.id, contenido: "Hola" },
       409,
+      tokens.colectivo,
     )
   })
 
@@ -205,30 +251,28 @@ describe("notificaciones", () => {
         colectivo: colectivo.id,
       },
       400,
+      tokens.colectivo,
     )
     await request(
       "POST",
       ruta,
       { personaColaboradora: ana.id, contenido: " " },
       422,
+      tokens.colectivo,
     )
     await request(
       "POST",
       ruta,
       { personaColaboradora: "64f1a2b3c4d5e6f7a8b9c0ff", contenido: "Hola" },
       404,
+      tokens.colectivo,
     )
     await request(
       "POST",
       notificaciones(proyecto.id, otro.perfil.id),
       { personaColaboradora: ana.id, contenido: "Hola" },
       404,
-    )
-    await request(
-      "GET",
-      "/personas-colaboradoras/64f1a2b3c4d5e6f7a8b9c0ff/notificaciones",
-      undefined,
-      404,
+      tokens.colectivo,
     )
   })
 
@@ -243,6 +287,32 @@ describe("notificaciones", () => {
       notificaciones(cerrado.proyecto.id, cerrado.perfil.id),
       { personaColaboradora: ana.id, contenido: "Hola" },
       409,
+      tokens.colectivo,
     )
+  })
+
+  test("sin token no se puede contactar ni leer una bandeja", async () => {
+    await request(
+      "POST",
+      notificaciones(proyecto.id, perfil.id),
+      { personaColaboradora: ana.id, contenido: "Hola" },
+      401,
+    )
+    await request("GET", bandeja(ana.id), undefined, 401)
+  })
+
+  test("una persona colaboradora no puede contactar a otra", async () => {
+    await request(
+      "POST",
+      notificaciones(proyecto.id, perfil.id),
+      { personaColaboradora: ana.id, contenido: "Hola" },
+      403,
+      tokens.anon,
+    )
+  })
+
+  test("solo la propia persona puede leer su bandeja", async () => {
+    await request("GET", bandeja(ana.id), undefined, 403, tokens.anon)
+    await request("GET", bandeja(ana.id), undefined, 403, tokens.colectivo)
   })
 })
