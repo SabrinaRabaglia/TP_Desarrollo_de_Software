@@ -311,6 +311,28 @@ describe("notificaciones", () => {
     )
   })
 
+  test("un colectivo no puede contactar desde el proyecto de otro", async () => {
+    const otroColectivo = await request(
+      "POST",
+      "/colectivos",
+      { nombre: "Otro", descripcion: "Otro colectivo", tipo: "ONG" },
+      201,
+    )
+    const tokenDelOtro = await iniciarSesionDe(
+      "otro@colectivo.test",
+      "COLECTIVO",
+      otroColectivo.id,
+    )
+
+    await request(
+      "POST",
+      notificaciones(proyecto.id, perfil.id),
+      { personaColaboradora: ana.id, contenido: "Hola" },
+      403,
+      tokenDelOtro,
+    )
+  })
+
   test("solo la propia persona puede leer su bandeja", async () => {
     await request("GET", bandeja(ana.id), undefined, 403, tokens.anon)
     await request("GET", bandeja(ana.id), undefined, 403, tokens.colectivo)

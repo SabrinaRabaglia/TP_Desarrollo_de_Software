@@ -9,6 +9,7 @@ export default class NotificacionController {
         .status(201)
         .json(
           await this.notificacionService.create(
+            req.usuario.entidad,
             req.params.id,
             req.params.perfilId,
             req.body,

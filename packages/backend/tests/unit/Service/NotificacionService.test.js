@@ -17,6 +17,7 @@ import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraReposi
 import {
   EntityNotFound,
   InvalidReference,
+  NoAutorizado,
 } from "../../../src/errors/ApplicationErrors.js"
 import {
   DomainRuleError,
@@ -114,7 +115,10 @@ describe("NotificacionService", () => {
   })
 
   const contactar = (personaColaboradora, contenido = "Hola") =>
-    service.create(proyecto.id, perfil.id, { personaColaboradora, contenido })
+    service.create(colectivo.id, proyecto.id, perfil.id, {
+      personaColaboradora,
+      contenido,
+    })
 
   describe("create", () => {
     test("guarda la notificación con un envío pendiente por cada medio de contacto y despierta al proceso de envío", async () => {
@@ -189,11 +193,22 @@ describe("NotificacionService", () => {
 
     test("lanza EntityNotFound si el perfil no es del proyecto", async () => {
       await expect(
-        service.create(proyecto.id, "perfil-inexistente", {
+        service.create(colectivo.id, proyecto.id, "perfil-inexistente", {
           personaColaboradora: ana.id,
           contenido: "Hola",
         }),
       ).rejects.toThrow(EntityNotFound)
+    })
+
+    test("lanza NoAutorizado si el proyecto es de otro colectivo, sin enviar ni guardar nada", async () => {
+      await expect(
+        service.create("otro-colectivo", proyecto.id, perfil.id, {
+          personaColaboradora: ana.id,
+          contenido: "Hola",
+        }),
+      ).rejects.toThrow(NoAutorizado)
+      expect(envios.despertar).not.toHaveBeenCalled()
+      expect(notificacionRepository.notificaciones).toEqual([])
     })
   })
 

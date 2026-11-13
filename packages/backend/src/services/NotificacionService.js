@@ -1,6 +1,7 @@
 import {
   EntityNotFound,
   InvalidReference,
+  NoAutorizado,
 } from "../errors/ApplicationErrors.js"
 
 export default class NotificacionService {
@@ -29,11 +30,21 @@ export default class NotificacionService {
     }
   }
 
-  create = async (proyectoId, perfilId, { personaColaboradora, contenido }) => {
+  create = async (
+    colectivoId,
+    proyectoId,
+    perfilId,
+    { personaColaboradora, contenido },
+  ) => {
     const { proyecto, perfil } = await this.perfilService.buscarEnProyecto(
       proyectoId,
       perfilId,
     )
+    if (String(proyecto.colectivo) !== colectivoId) {
+      throw new NoAutorizado(
+        "Solo el colectivo del proyecto puede contactar personas",
+      )
+    }
     const destinataria = await this.buscarDestinataria(personaColaboradora)
     const notificacion = await this.notificacionRepository.save(
       proyecto.contactar(perfil, destinataria, contenido),
