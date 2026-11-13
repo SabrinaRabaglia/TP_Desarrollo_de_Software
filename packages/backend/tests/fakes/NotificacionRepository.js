@@ -51,6 +51,8 @@ export default class NotificacionRepository {
 
   async save(notificacion) {
     notificacion.id ??= randomUUID()
+    // Como en Mongo: del perfil se guarda solo el id.
+    notificacion.perfil = notificacion.perfil?.id ?? notificacion.perfil
     if (!this.notificaciones.includes(notificacion)) {
       this.notificaciones.push(notificacion)
     }

@@ -31,6 +31,7 @@ describe("NotificacionService", () => {
   let notificacionRepository
   let envios
   let proyectoService
+  let perfilService
   let personaColaboradoraService
   let colectivo
   let proyecto
@@ -67,7 +68,7 @@ describe("NotificacionService", () => {
       habilidadService,
       colaboracionRepository,
     )
-    const perfilService = new PerfilService(
+    perfilService = new PerfilService(
       proyectoService,
       proyectoRepository,
       habilidadService,
@@ -79,6 +80,8 @@ describe("NotificacionService", () => {
       perfilService,
       personaColaboradoraService,
       envios,
+      proyectoRepository,
+      colectivoRepository,
     )
 
     colectivo = await colectivoService.create({
@@ -127,7 +130,7 @@ describe("NotificacionService", () => {
       expect(notificacion.contenido).toBe("Hola")
       expect(notificacion.colectivo).toBe(colectivo.id)
       expect(notificacion.personaColaboradora).toBe(ana)
-      expect(notificacion.perfil).toBe(perfil)
+      expect(notificacion.perfil).toBe(perfil.id)
       expect(notificacion.pendienteDeEnvio).toBe(true)
       expect(notificacion.mediosExternosUtilizados).toEqual([])
       expect(notificacion.envios.map((envio) => envio.medio)).toEqual([
@@ -213,6 +216,37 @@ describe("NotificacionService", () => {
   })
 
   describe("getAllByPersonaColaboradora", () => {
+    test("devuelve cada notificación con el nombre del colectivo, el proyecto y el perfil", async () => {
+      await contactar(ana.id, "Primera")
+
+      expect(await service.getAllByPersonaColaboradora(ana.id)).toEqual([
+        {
+          id: expect.any(String),
+          fecha: expect.any(Date),
+          contenido: "Primera",
+          colectivo: { id: colectivo.id, nombre: "Huerta Comunitaria Sur" },
+          proyecto: { id: proyecto.id, titulo: "Sitio web de la huerta" },
+          perfil: { id: perfil.id, nombre: perfil.nombre },
+          pendienteDeEnvio: true,
+          mediosExternosUtilizados: [],
+        },
+      ])
+    })
+
+    test("si el perfil ya no existe, lo devuelve en null sin fallar", async () => {
+      await contactar(ana.id)
+      await perfilService.delete(proyecto.id, perfil.id)
+
+      const [mensaje] = await service.getAllByPersonaColaboradora(ana.id)
+
+      expect(mensaje.perfil).toBeNull()
+      expect(mensaje.proyecto).toBeNull()
+      expect(mensaje.colectivo).toEqual({
+        id: colectivo.id,
+        nombre: "Huerta Comunitaria Sur",
+      })
+    })
+
     test("devuelve las notificaciones de la persona, de la más nueva a la más vieja", async () => {
       const sol = await personaColaboradoraService.create({
         nombreFantasia: "sol.datos",
@@ -220,12 +254,14 @@ describe("NotificacionService", () => {
       })
       const primera = await contactar(ana.id, "Primera")
       primera.fecha = new Date("2026-01-01T00:00:00.000Z")
-      const segunda = await contactar(ana.id, "Segunda")
+      await contactar(ana.id, "Segunda")
       await contactar(sol.id)
 
-      expect(await service.getAllByPersonaColaboradora(ana.id)).toEqual([
-        segunda,
-        primera,
+      const mensajes = await service.getAllByPersonaColaboradora(ana.id)
+
+      expect(mensajes.map((mensaje) => mensaje.contenido)).toEqual([
+        "Segunda",
+        "Primera",
       ])
     })
 

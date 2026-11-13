@@ -188,10 +188,14 @@ describe("notificaciones", () => {
       tokens.ana,
     )
     expect(enviada).toEqual({
-      ...notificacion,
+      id: notificacion.id,
+      fecha: notificacion.fecha,
+      contenido: "Tu perfil encaja",
+      colectivo: { id: colectivo.id, nombre: "Huerta" },
+      proyecto: { id: proyecto.id, titulo: "Web" },
+      perfil: { id: perfil.id, nombre: null },
       pendienteDeEnvio: false,
       mediosExternosUtilizados: ["EMAIL", "WHATSAPP"],
-      updatedAt: expect.any(String),
     })
     expect(JSON.stringify(enviada)).not.toContain("ana@example.com")
     expect(
@@ -309,6 +313,38 @@ describe("notificaciones", () => {
       403,
       tokens.anon,
     )
+  })
+
+  test("si se borra el perfil, el mensaje se sigue listando sin perfil ni proyecto", async () => {
+    const borrado = await crearProyectoConPerfil("Borrado")
+    await request(
+      "POST",
+      notificaciones(borrado.proyecto.id, borrado.perfil.id),
+      { personaColaboradora: ana.id, contenido: "Perfil que se borra" },
+      201,
+      tokens.colectivo,
+    )
+    await request(
+      "DELETE",
+      `/proyectos/${borrado.proyecto.id}/perfiles/${borrado.perfil.id}`,
+      undefined,
+      204,
+    )
+
+    const mensajes = await request(
+      "GET",
+      bandeja(ana.id),
+      undefined,
+      200,
+      tokens.ana,
+    )
+    const mensaje = mensajes.find(
+      ({ contenido }) => contenido === "Perfil que se borra",
+    )
+
+    expect(mensaje.perfil).toBeNull()
+    expect(mensaje.proyecto).toBeNull()
+    expect(mensaje.colectivo).toEqual({ id: colectivo.id, nombre: "Huerta" })
   })
 
   test("un colectivo no puede contactar desde el proyecto de otro", async () => {

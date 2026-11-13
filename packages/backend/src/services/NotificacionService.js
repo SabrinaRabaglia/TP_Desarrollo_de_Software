@@ -10,11 +10,15 @@ export default class NotificacionService {
     perfilService,
     personaColaboradoraService,
     envioDeNotificaciones,
+    proyectoRepository,
+    colectivoRepository,
   ) {
     this.notificacionRepository = notificacionRepository
     this.perfilService = perfilService
     this.personaColaboradoraService = personaColaboradoraService
     this.envioDeNotificaciones = envioDeNotificaciones
+    this.proyectoRepository = proyectoRepository
+    this.colectivoRepository = colectivoRepository
   }
 
   buscarDestinataria = async (personaColaboradoraId) => {
@@ -53,10 +57,33 @@ export default class NotificacionService {
     return notificacion
   }
 
+  // La notificación guarda solo ids; para mostrarla se completan los nombres.
+  // Si el colectivo, el proyecto o el perfil ya no existen, quedan en null.
+  conNombres = async (notificacion) => {
+    const [colectivo, { proyecto, perfil }] = await Promise.all([
+      this.colectivoRepository.findById(notificacion.colectivo),
+      this.proyectoRepository.findProyectoYPerfilPorId(notificacion.perfil),
+    ])
+    return {
+      id: notificacion.id,
+      fecha: notificacion.fecha,
+      contenido: notificacion.contenido,
+      colectivo: colectivo
+        ? { id: colectivo.id, nombre: colectivo.nombre }
+        : null,
+      proyecto: proyecto ? { id: proyecto.id, titulo: proyecto.titulo } : null,
+      perfil: perfil ? { id: perfil.id, nombre: perfil.nombre } : null,
+      pendienteDeEnvio: notificacion.pendienteDeEnvio,
+      mediosExternosUtilizados: notificacion.mediosExternosUtilizados,
+    }
+  }
+
   getAllByPersonaColaboradora = async (personaColaboradoraId) => {
     await this.personaColaboradoraService.getById(personaColaboradoraId)
-    return await this.notificacionRepository.findByPersonaColaboradora(
-      personaColaboradoraId,
-    )
+    const notificaciones =
+      await this.notificacionRepository.findByPersonaColaboradora(
+        personaColaboradoraId,
+      )
+    return await Promise.all(notificaciones.map(this.conNombres))
   }
 }

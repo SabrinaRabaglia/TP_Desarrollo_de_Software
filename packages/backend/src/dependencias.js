@@ -101,6 +101,8 @@ const notificacionService = new NotificacionService(
   perfilService,
   personaColaboradoraService,
   envioDeNotificaciones,
+  proyectoRepository,
+  colectivoRepository,
 )
 const hitoService = new HitoService(proyectoService, proyectoRepository)
 const authService = new AuthService(
