@@ -16,9 +16,9 @@ export default class ProyectoRepository {
     this.model = ProyectoModel
   }
 
-  async findAll() {
-    return await this.model.find()
-  }
+  //async findAll() {
+  //  return await this.model.find()
+  //}
 
   async findById(id) {
     return await this.model.findById(id)
@@ -126,4 +126,17 @@ export default class ProyectoRepository {
     )
     return matchedCount === 1
   }
+
+  async findAll(query, skip, limit) {
+    const [proyectos, total] = await Promise.all([
+      this.model.find(query)
+        .populate('perfiles.habilidadesRequeridas')
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      this.model.countDocuments(query)
+    ]);
+    return { proyectos, total };
+  }
 }
+

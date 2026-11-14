@@ -6,9 +6,9 @@ export default class PersonaColaboradoraRepository {
     this.model = PersonaColaboradoraModel
   }
 
-  async findAll() {
-    return await this.model.find().populate("habilidades")
-  }
+  //async findAll() {
+  //  return await this.model.find().populate("habilidades")
+  //}
 
   async findById(id) {
     return await this.model.findById(id).populate("habilidades")
@@ -39,5 +39,17 @@ export default class PersonaColaboradoraRepository {
   async save(personaColaboradora) {
     const guardada = await guardar(this.model, personaColaboradora)
     return await guardada.populate("habilidades")
+  }
+
+  async findAll(query, skip, limit) {
+    const [colaboradoras, total] = await Promise.all([
+      this.model.find(query)
+        .populate('habilidades')
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      this.model.countDocuments(query)
+    ]);
+    return { colaboradoras, total };
   }
 }

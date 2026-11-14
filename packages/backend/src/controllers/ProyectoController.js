@@ -3,17 +3,27 @@ export default class ProyectoController {
     this.proyectoService = proyectoService
   }
 
-  getAll = async (req, res, next) => {
+  getAll = async (req, res, next) => { 
     try {
-      const { habilidades } = req.query
-      const proyectos = habilidades
-        ? await this.proyectoService.getAllByHabilidades(habilidades)
-        : await this.proyectoService.getAll()
-      res.status(200).json(proyectos)
+      const { habilidades, q, busquedaAbierta } = req.query;
+
+      
+      if (habilidades && !q && busquedaAbierta === undefined) {
+        const resultados = await this.proyectoService.getAllByHabilidades(habilidades);
+        return res.status(200).json({
+          metadata: { page: 1, limit: resultados.length || 0, total: resultados.length || 0 },
+          data: resultados
+        });
+      }
+
+      const respuesta = await this.proyectoService.getAll(req.query);
+      return res.status(200).json(respuesta);
+
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
+  
 
   getById = async (req, res, next) => {
     try {

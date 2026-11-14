@@ -104,9 +104,9 @@ export default class PersonaColaboradoraService {
     }
   }
 
-  getAll = async () => {
-    return await this.personaColaboradoraRepository.findAll()
-  }
+  //getAll = async () => {
+  //  return await this.personaColaboradoraRepository.findAll()
+  //}
 
   getAllByPerfiles = async (perfilesIds) => {
     const personasPorId = new Map()
@@ -193,5 +193,31 @@ export default class PersonaColaboradoraService {
       tipo,
       valor,
     }))
+  }
+
+async getAll(queryParams) {
+    const { page, limit, ...criterios } = queryParams;
+    const query = {};
+
+    if (criterios.q) {
+      query.$or = [
+        { nombre: { $regex: criterios.q, $options: 'i' } },
+        { apellido: { $regex: criterios.q, $options: 'i' } },
+        { nombreFantasia: { $regex: criterios.q, $options: 'i' } }
+      ];
+    }
+
+    if (criterios.habilidades && criterios.habilidades.length > 0) {
+      query.habilidades = { $in: criterios.habilidades };
+    }
+
+    const skip = (page - 1) * limit;
+
+    const { colaboradoras, total } = await this.personaColaboradoraRepository.findAll(query, skip, limit);
+
+    return {
+      metadata: { page, limit, total },
+      data: colaboradoras
+    };
   }
 }
