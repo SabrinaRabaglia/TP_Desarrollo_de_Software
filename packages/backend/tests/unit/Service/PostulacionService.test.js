@@ -82,7 +82,7 @@ describe("PostulacionService", () => {
     const postulacion = await service.create(datos)
 
     expect(postulacion.personaColaboradora).toBe(persona)
-    expect(postulacion.perfil).toBe(perfil)
+    expect(postulacion.perfil).toBe(perfil.id)
     await expect(service.create(datos)).rejects.toThrow(AlreadyExists)
     expect(await postulacionRepository.findAll()).toEqual([postulacion])
   })

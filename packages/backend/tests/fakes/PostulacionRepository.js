@@ -98,6 +98,8 @@ export default class PostulacionRepository {
     if (!postulacion.id && !postulacion._id) {
       postulacion.id = `postulacion-${this.postulaciones.length + 1}`
     }
+    // Como en Mongo: del perfil se guarda solo el id.
+    postulacion.perfil = postulacion.perfil?.id ?? postulacion.perfil
     const index = this.postulaciones.findIndex(
       (p) => String(p.id ?? p._id) === String(postulacion.id ?? postulacion._id),
     )
