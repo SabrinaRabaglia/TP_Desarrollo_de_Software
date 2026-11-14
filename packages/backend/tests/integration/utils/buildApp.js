@@ -13,7 +13,7 @@ import ProyectoRepository from "../../fakes/ProyectoRepository.js"
 import ColectivoRepository from "../../fakes/ColectivoRepository.js"
 import HabilidadRepository from "../../fakes/HabilidadRepository.js"
 import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraRepository.js"
-import ColaboracionRepository from "../../fakes/ColaboracionRepository.js"
+import PostulacionRepository from "../../fakes/PostulacionRepository.js"
 import UsuarioRepository from "../../fakes/UsuarioRepository.js"
 import TipoColectivoRepository from "../../fakes/TipoColectivoRepository.js"
 import ProvinciaRepository from "../../fakes/ProvinciaRepository.js"
@@ -27,7 +27,7 @@ export default async function buildApp() {
   const colectivoRepository = new ColectivoRepository()
   const habilidadRepository = new HabilidadRepository()
   const personaColaboradoraRepository = new PersonaColaboradoraRepository()
-  const colaboracionRepository = new ColaboracionRepository()
+  const postulacionRepository = new PostulacionRepository()
 
   const habilidadService = new HabilidadService(
     habilidadRepository,
@@ -44,13 +44,12 @@ export default async function buildApp() {
   const proyectoService = new ProyectoService(
     proyectoRepository,
     colectivoRepository,
-    colaboracionRepository,
   )
   const personaColaboradoraService = new PersonaColaboradoraService(
     proyectoRepository,
     personaColaboradoraRepository,
     habilidadService,
-    colaboracionRepository,
+    postulacionRepository,
     notificacionRepository,
     new UsuarioRepository(),
   )

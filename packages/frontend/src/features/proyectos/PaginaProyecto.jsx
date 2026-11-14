@@ -83,6 +83,7 @@ const PaginaProyecto = () => {
               <PerfilRequerido
                 key={perfil.id}
                 perfil={perfil}
+                proyectoId={proyecto.id}
                 enlaceACandidatas={
                   puedeBuscarCandidatas
                     ? `/proyectos/${proyecto.id}/perfiles/${perfil.id}/candidatas`
