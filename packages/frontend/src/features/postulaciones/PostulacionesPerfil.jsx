@@ -1,7 +1,7 @@
 import "./PostulacionesPerfil.css"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { Card, CardContent } from "@mui/material"
+import { Button, Card, CardContent } from "@mui/material"
 import Cargando from "../../components/cargando/Cargando"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
 import { mensajeDeError } from "../../service/api"
@@ -142,9 +142,9 @@ const PostulacionesPerfil  = () => {
                 </div>
                 {postulacion.estado === "PENDIENTE" &&(
                 <div className="acciones-postulacion">
-                <button
-                  className="btn btn-aceptar"
-                  type="button"
+                <Button
+                  variant="contained"
+                  size="small"
                   onClick={() => {
                     setPostulacionSeleccionada(postulacion.id)
                     setAccion("ACEPTAR")
@@ -155,11 +155,12 @@ const PostulacionesPerfil  = () => {
                   disabled={enviando}
                 >
                   Aceptar
-                </button>
+                </Button>
 
-                <button
-                  className="btn btn-rechazar"
-                  type="button"
+                <Button
+                  variant="outlined"
+                  color="error"
+                  size="small"
                   onClick={() => {
                     setPostulacionSeleccionada(postulacion.id)
                     setAccion("RECHAZAR")
@@ -170,7 +171,7 @@ const PostulacionesPerfil  = () => {
                   disabled={enviando}
                 >
                   Rechazar
-                </button>
+                </Button>
                 </div>)}
               </CardContent>
             </Card>

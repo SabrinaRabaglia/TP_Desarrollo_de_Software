@@ -8,6 +8,9 @@
   --color-superficie: var(--mui-palette-background-paper);
   --color-resaltado: var(--mui-palette-action-selected);
   --color-borde: var(--mui-palette-divider);
+  --color-exito: var(--mui-palette-success-main);
+  --color-advertencia: var(--mui-palette-warning-main);
+  --color-error: var(--mui-palette-error-main);
   --fuente: var(--mui-font-body1);
   --radio: var(--mui-shape-borderRadius);
   --espacio: 1rem;

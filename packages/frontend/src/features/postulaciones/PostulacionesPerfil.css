@@ -1,167 +1,19 @@
-.postulacion button {
-  margin-top: 16px;
-  padding: 10px 20px;
-  width: fit-content;
-  margin: 16px auto 0;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
+/* Las tarjetas y las etiquetas de estado están en PaginaPostulaciones.css.
+   Acá va solo lo propio de la revisión de postulaciones de un perfil. */
+
+.presentacion-colaborador,
+.datos-contacto {
+  color: var(--color-texto-secundario);
+}
+
+.datos-contacto span {
+  font-weight: 600;
 }
 
 .acciones-postulacion {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.btn-aceptar {
-  background-color: #1d30db;
-  color: white;
-}
-
-.btn-aceptar:hover {
-  background-color: #0f036f;
-}
-
-.btn-rechazar {
-  background-color: #dc2626;
-  color: white;
-}
-
-.btn-rechazar:hover {
-  background-color: #b91c1c;
-}
-
-.postulacion {
-  border-radius: 12px !important;
-  border: 1px solid #e2e8f0 !important;
-  border-left: 5px solid #3b82f6 !important; /* Franja lateral de color para darle estilo */
-  background-color: #ffffff !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-  margin-bottom: 16px;
-}
-
-.postulacion:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
-}
-
-/* Contenedor interno */
-.postulacion-carta {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* Fila superior: Título a la izquierda, Estado a la derecha */
-.postulacion-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-}
-
-/* Título del proyecto destacado */
-.titulo-proyecto {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #1e293b;
-}
-
-/* Etiqueta del estado */
-.estado-postulacion {
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  background-color: #f1f5f9;
-  color: #475569;
-  white-space: nowrap;
-}
-
-/* Colores opcionales según el valor de postulacion.estado */
-.estado-pendiente {
-  background-color: #fef3c7;
-  color: #b45309;
-}
-
-.estado-aceptada {
-  background-color: #dcfce7;
-  color: #15803d;
-}
-
-.estado-rechazada {
-  background-color: #fee2e2;
-  color: #b91c1c;
-}
-
-.estado-baja {
-  background-color: #f1f5f9;
-  color: #475569;
-  border: 1px solid #cbd5e1;
-}
-
-.presentacion-colaborador {
-  font-size: 0.95rem;
-  color: #475569;
-}
-
-.presentacion-colaborador span {
-  font-weight: 600;
-  color: #64748b;
-}
-
-.postulacion-detalles {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
-}
-
-.fecha-postulacion {
-  font-size: 0.85rem;
-  color: #64748b;
-}
-
-.fecha-postulacion span {
-  font-weight: 600;
-}
-
-.postulacion-badges {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-}
-
-.badge-anonimo {
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background-color: #f3e8ff;
-  color: #6b21a8;
-  border: 1px solid #e9d5ff;
-  white-space: nowrap;
-}
-
-.datos-contacto {
-  font-size: 0.95rem;
-  color: #475569;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: var(--espacio);
 }
