@@ -14,6 +14,7 @@ import PaginaProyecto from "./features/proyectos/PaginaProyecto"
 import NoEncontrado from "./features/noEncontrado/NoEncontrado"
 import PaginaPostulaciones from "./features/postulaciones/PaginaPostulaciones.jsx"
 import PostulacionesPerfil from "./features/postulaciones/PostulacionesPerfil.jsx"
+import ColaboradoresPerfil from "./features/colaboradoras/ColaboradoresPerfil.jsx"
 
 const App = () => {
   return (
@@ -33,7 +34,8 @@ const App = () => {
               <Route path ="/postulaciones" element = {<PaginaPostulaciones/>} />
             </Route>
             <Route element={<RutaPrivada rol ="COLECTIVO" />}>
-              <Route path ="/proyectos/:proyectoId/perfiles/:perfilId/postulaciones" element = {<PostulacionesPerfil/>} />
+              <Route path ="/proyectos/:proyectoId/perfiles/:perfilId/postulaciones" 
+                element = {<PostulacionesPerfil/>} />
             </Route>
             <Route element={<RutaPrivada />}>
               <Route path="/mi-cuenta" element={<MiCuenta />} />
@@ -41,6 +43,8 @@ const App = () => {
             <Route element={<RutaPrivada rol="PERSONA_COLABORADORA" />}>
               <Route path="/mi-perfil" element={<MiPerfil />} />
             </Route>
+            <Route path= "/proyectos/:proyectoId/perfiles/:perfilId/colaboradores" 
+              element={<ColaboradoresPerfil/>}/>
             <Route path="*" element={<NoEncontrado />} />
           </Route>
         </Routes>

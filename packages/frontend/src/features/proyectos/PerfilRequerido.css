@@ -29,19 +29,48 @@
   color: var(--color-texto-secundario);
 }
 
-.perfil button {
-  margin-top: 16px;
+.btn-rol {
   padding: 10px 20px;
   width: fit-content;
-  margin: 16px auto 0;
-  background-color: #2563eb;
-  color: white;
+  background-color: #1e55eb;
+  color: rgb(247, 247, 247);
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
 }
 
-.perfil button:hover {
+.btn-rol:hover:not(:disabled) {
   background-color: #1d4ed8;
+}
+
+/* Estilo automático cuando disabled={true} */
+.btn-rol:disabled {
+  background-color: #cbd5e1; /* Gris claro */
+  color: #64748b;            /* Texto gris apagado */
+  cursor: not-allowed;       /* Cambia el cursor a "prohibido" */
+  opacity: 0.8;
+}
+
+.btn-rol:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-comun {
+  padding: 10px 20px;
+  width: fit-content;
+  background-color: #1e55eb;
+  color: rgb(247, 247, 247);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.contenedor-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  width: 100%;
+  margin-top: 16px; /* El margen superior ahora lo maneja el contenedor */
 }
