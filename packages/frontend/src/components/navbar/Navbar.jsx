@@ -7,6 +7,7 @@ import {
   FaUserCircle,
   FaUserEdit,
   FaUserPlus,
+  FaClipboardList,
 } from "react-icons/fa"
 import { useAuth } from "../../context/AuthContext"
 import "./Navbar.css"
@@ -30,6 +31,12 @@ const Navbar = () => {
 
         {usuario ? (
           <div className="navbar-acciones">
+            {usuario.rol === "PERSONA_COLABORADORA" && (
+              <Link to="/postulaciones" className="navbar-link">
+                <FaClipboardList aria-hidden="true" />
+                Mis postulaciones
+              </Link>
+            )}
             <Link to="/mi-cuenta" className="navbar-link">
               <FaUserCircle aria-hidden="true" />
               Mi cuenta

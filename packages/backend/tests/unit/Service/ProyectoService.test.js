@@ -6,7 +6,6 @@ import ColectivoRepository from "../../fakes/ColectivoRepository.js"
 import TipoColectivoRepository from "../../fakes/TipoColectivoRepository.js"
 import ProvinciaRepository from "../../fakes/ProvinciaRepository.js"
 import PaisRepository from "../../fakes/PaisRepository.js"
-import ColaboracionRepository from "../../fakes/ColaboracionRepository.js"
 import {
   AlreadyExists,
   EntityNotFound,
@@ -25,7 +24,6 @@ describe("ProyectoService", () => {
   let service
   let colectivoService
   let proyectoRepository
-  let colaboracionRepository
   let dtoProyectoValido
 
   beforeEach(async () => {
@@ -43,11 +41,9 @@ describe("ProyectoService", () => {
       new ProvinciaRepository(),
       new PaisRepository(),
     )
-    colaboracionRepository = new ColaboracionRepository()
     service = new ProyectoService(
       proyectoRepository,
       colectivoRepository,
-      colaboracionRepository,
     )
 
     const colectivo = await colectivoService.create({
@@ -203,25 +199,6 @@ describe("ProyectoService", () => {
       await service.delete(creado.id)
 
       expect(await service.getAll()).toHaveLength(0)
-    })
-
-    test("elimina las colaboraciones del proyecto y conserva las de otros", async () => {
-      const creado = await service.create(dtoProyectoValido)
-      const persona = { id: "persona-1" }
-      await colaboracionRepository.save({
-        personaColaboradora: persona,
-        proyecto: { id: creado.id },
-      })
-      await colaboracionRepository.save({
-        personaColaboradora: persona,
-        proyecto: { id: "otro-proyecto" },
-      })
-
-      await service.delete(creado.id)
-
-      expect(await colaboracionRepository.findAll()).toEqual([
-        { personaColaboradora: persona, proyecto: { id: "otro-proyecto" } },
-      ])
     })
 
     test("lanza EntityNotFound al intentar eliminar un proyecto inexistente", async () => {

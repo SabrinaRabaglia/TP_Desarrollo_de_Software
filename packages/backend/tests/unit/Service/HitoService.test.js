@@ -5,7 +5,6 @@ import Proyecto from "../../../src/domain/Proyecto.js"
 import { Hito } from "../../../src/domain/Hito.js"
 import ProyectoRepository from "../../fakes/ProyectoRepository.js"
 import ColectivoRepository from "../../fakes/ColectivoRepository.js"
-import ColaboracionRepository from "../../fakes/ColaboracionRepository.js"
 import { EntityNotFound } from "../../../src/errors/ApplicationErrors.js"
 import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 import { EstadoProyecto } from "../../../src/domain/enums/EstadoProyecto.js"
@@ -23,7 +22,6 @@ describe("HitoService", () => {
       new ProyectoService(
         proyectoRepository,
         new ColectivoRepository(),
-        new ColaboracionRepository(),
       ),
       proyectoRepository,
     )

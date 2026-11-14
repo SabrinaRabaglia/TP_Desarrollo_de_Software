@@ -1,0 +1,68 @@
+.colaboradores {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio);
+}
+
+.colaboradores-bajada {
+  max-width: 40rem;
+  font-size: 1.125rem;
+  color: var(--color-texto-secundario);
+}
+
+.todos-los-colaboradores {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espacio);
+  margin: 0 auto;
+  padding: 20px 0px;
+  list-style: none;
+}
+
+.colaborador {
+  border-radius: 12px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-top: 5px solid #3b82f6 !important; /* Franja lateral de color para darle estilo */
+  background-color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  margin-bottom: 16px;
+}
+
+.colaborador:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Contenedor interno */
+.colaborador-carta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+
+.colaborador-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+
+.nombre-colaborador {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.cuentas-colaborador {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-texto-secundario);
+}
+
+.cuentas-titulo{
+    font-size: 1,15rem ;
+    font-weight: 700;
+}

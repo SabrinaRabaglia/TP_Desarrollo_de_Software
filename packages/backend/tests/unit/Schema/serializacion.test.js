@@ -1,6 +1,6 @@
 import { describe, expect, test } from "@jest/globals"
 import mongoose from "mongoose"
-import ColaboracionModel from "../../../src/schemas/colaboracionSchema.js"
+import PostulacionModel from "../../../src/schemas/postulacionSchema.js"
 import ColectivoModel from "../../../src/schemas/colectivoSchema.js"
 import NotificacionModel from "../../../src/schemas/notificacionSchema.js"
 import PaisModel from "../../../src/schemas/paisSchema.js"
@@ -75,31 +75,31 @@ describe("serialización a JSON de los documentos", () => {
 
   test("una colaboración pública muestra quién la realizó", () => {
     const personaColaboradora = new mongoose.Types.ObjectId()
-    const colaboracion = new ColaboracionModel({
+    const postulacion = new PostulacionModel({
       fechaInscripcion: fecha,
       esAnonima: false,
       personaColaboradora,
-      proyecto: new mongoose.Types.ObjectId(),
+      perfil: new mongoose.Types.ObjectId(),
     })
 
-    expect(colaboracion.toJSON().personaColaboradora).toEqual(
+    expect(postulacion.toJSON().personaColaboradora).toEqual(
       personaColaboradora,
     )
   })
 
   test("una colaboración anónima figura igual pero sin indicar quién la realizó", () => {
-    const colaboracion = new ColaboracionModel({
-      fechaInscripcion: fecha,
+    const colaboracion = new PostulacionModel({
+      fechaPostulacion: fecha,
       esAnonima: true,
       personaColaboradora: new mongoose.Types.ObjectId(),
-      proyecto: new mongoose.Types.ObjectId(),
+      perfil: new mongoose.Types.ObjectId(),
     })
 
     const json = colaboracion.toJSON()
 
     expect(json.esAnonima).toBe(true)
     expect(json.personaColaboradora).toBeNull()
-    expect(json.proyecto).toBeDefined()
+    expect(json.perfil).toBeDefined()
   })
 
   test("un proyecto expone sus perfiles e hitos sin claves internas", () => {
@@ -132,6 +132,8 @@ describe("serialización a JSON de los documentos", () => {
       modalidadesColaboracion: ["GRATUITA"],
       habilidadesRequeridas: [],
       habilidadesOpcionales: [],
+      limiteColaboraciones: null,
+      postulacionesAceptadas: [],
     })
     expect(json.hitos[0]).toEqual({
       id: idDe(proyecto.hitos[0]),

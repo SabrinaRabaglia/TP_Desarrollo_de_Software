@@ -5,12 +5,12 @@ import swaggerUi from "swagger-ui-express"
 import routes from "./routes/routes.js"
 import authRoutes from "./routes/authRoutes.js"
 import catalogoRoutes from "./routes/catalogoRoutes.js"
-import colaboracionRoutes from "./routes/colaboracionRoutes.js"
 import colectivoRoutes from "./routes/colectivoRoutes.js"
 import habilidadRoutes from "./routes/habilidadRoutes.js"
 import personaColaboradoraRoutes from "./routes/personaColaboradoraRoutes.js"
 import proyectoRoutes from "./routes/proyectoRoutes.js"
 import notificacionRoutes from "./routes/notificacionesRoutes.js"
+import postulacionRoutes from "./routes/postulacionRoutes.js"
 import errorHandler from "./middlewares/errorHandler.js"
 import hitoRoutes from "./routes/hitoRoutes.js"
 
@@ -32,13 +32,13 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use(routes)
 app.use(authRoutes)
 app.use(catalogoRoutes)
-app.use(colaboracionRoutes)
 app.use(colectivoRoutes)
 app.use(habilidadRoutes)
 app.use(personaColaboradoraRoutes)
 app.use(proyectoRoutes)
 app.use(notificacionRoutes)
 app.use(hitoRoutes)
+app.use(postulacionRoutes)
 
 app.get("/hello", (req, res) => {
   res.json({ message: "hello world" })
