@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test } from "@jest/globals"
 import PersonaColaboradoraService from "../../../src/services/PersonaColaboradoraService.js"
 import HabilidadService from "../../../src/services/HabilidadService.js"
 import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraRepository.js"
-import ColaboracionRepository from "../../fakes/ColaboracionRepository.js"
+import PostulacionRepository from "../../fakes/PostulacionRepository.js"
 import NotificacionRepository from "../../fakes/NotificacionRepository.js"
 import UsuarioRepository from "../../fakes/UsuarioRepository.js"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
@@ -22,7 +22,7 @@ describe("PersonaColaboradoraService", () => {
   let repository
   let proyectoRepository
   let service
-  let colaboracionRepository
+  let postulacionRepository
   let notificacionRepository
   let usuarioRepository
   let habilidad
@@ -39,7 +39,7 @@ describe("PersonaColaboradoraService", () => {
     const habilidadService = new HabilidadService({
       findById: async (id) => (id === habilidad.id ? habilidad : undefined),
     })
-    colaboracionRepository = new ColaboracionRepository()
+    postulacionRepository = new PostulacionRepository()
     notificacionRepository = new NotificacionRepository()
     usuarioRepository = new UsuarioRepository()
     usuarioRepository.deleteAll()
@@ -47,7 +47,7 @@ describe("PersonaColaboradoraService", () => {
       proyectoRepository,
       repository,
       habilidadService,
-      colaboracionRepository,
+      postulacionRepository,
       notificacionRepository,
       usuarioRepository,
     )
@@ -165,11 +165,11 @@ describe("PersonaColaboradoraService", () => {
   test("eliminar una persona elimina sus colaboraciones y conserva las de otras", async () => {
     const persona = await service.create(datos)
     const proyecto = { id: "proyecto-1" }
-    await colaboracionRepository.save({
+    await postulacionRepository.save({
       personaColaboradora: { id: persona.id },
       proyecto,
     })
-    await colaboracionRepository.save({
+    await postulacionRepository.save({
       personaColaboradora: { id: "otra-persona" },
       proyecto,
     })
@@ -177,8 +177,11 @@ describe("PersonaColaboradoraService", () => {
     await service.delete(persona.id)
 
     await expect(service.getById(persona.id)).rejects.toThrow(EntityNotFound)
-    expect(await colaboracionRepository.findAll()).toEqual([
-      { personaColaboradora: { id: "otra-persona" }, proyecto },
+    expect(await postulacionRepository.findAll()).toEqual([
+      expect.objectContaining({
+        personaColaboradora: { id: "otra-persona" },
+        proyecto,
+      }),
     ])
   })
 
@@ -268,7 +271,7 @@ describe("PersonaColaboradoraService", () => {
         colectivo: colectivoId,
         perfiles: [],
       })
-      await colaboracionRepository.save({
+      await postulacionRepository.save({
         personaColaboradora: { id: persona.id },
         proyecto: { id: proyecto.id },
         esAnonima,

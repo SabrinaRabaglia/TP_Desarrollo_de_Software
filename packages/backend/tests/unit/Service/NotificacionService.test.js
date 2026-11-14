@@ -11,7 +11,7 @@ import ColectivoRepository from "../../fakes/ColectivoRepository.js"
 import TipoColectivoRepository from "../../fakes/TipoColectivoRepository.js"
 import ProvinciaRepository from "../../fakes/ProvinciaRepository.js"
 import PaisRepository from "../../fakes/PaisRepository.js"
-import ColaboracionRepository from "../../fakes/ColaboracionRepository.js"
+import PostulacionRepository from "../../fakes/PostulacionRepository.js"
 import HabilidadRepository from "../../fakes/HabilidadRepository.js"
 import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraRepository.js"
 import {
@@ -46,7 +46,7 @@ describe("NotificacionService", () => {
     habilidadRepository.deleteAll()
     personaColaboradoraRepository.deleteAll()
 
-    const colaboracionRepository = new ColaboracionRepository()
+    const postulacionRepository = new PostulacionRepository()
     const habilidadService = new HabilidadService(habilidadRepository)
     const colectivoService = new ColectivoService(
       colectivoRepository,
@@ -58,13 +58,12 @@ describe("NotificacionService", () => {
     proyectoService = new ProyectoService(
       proyectoRepository,
       colectivoRepository,
-      colaboracionRepository,
     )
     personaColaboradoraService = new PersonaColaboradoraService(
       proyectoRepository,
       personaColaboradoraRepository,
       habilidadService,
-      colaboracionRepository,
+      postulacionRepository,
     )
     const perfilService = new PerfilService(
       proyectoService,

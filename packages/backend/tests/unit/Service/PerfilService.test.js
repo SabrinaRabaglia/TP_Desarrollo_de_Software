@@ -7,7 +7,7 @@ import ColectivoRepository from "../../fakes/ColectivoRepository.js"
 import TipoColectivoRepository from "../../fakes/TipoColectivoRepository.js"
 import ProvinciaRepository from "../../fakes/ProvinciaRepository.js"
 import PaisRepository from "../../fakes/PaisRepository.js"
-import ColaboracionRepository from "../../fakes/ColaboracionRepository.js"
+import PostulacionRepository from "../../fakes/PostulacionRepository.js"
 import HabilidadService from "../../../src/services/HabilidadService.js"
 import HabilidadRepository from "../../fakes/HabilidadRepository.js"
 import PersonaColaboradoraService from "../../../src/services/PersonaColaboradoraService.js"
@@ -32,7 +32,7 @@ describe("PerfilService", () => {
   let habilidad2
   let datos
   let personaColaboradoraService
-  let colaboracionRepository
+  let postulacionRepository
   let habilidadService
 
   beforeEach(async () => {
@@ -40,7 +40,7 @@ describe("PerfilService", () => {
     const colectivoRepository = new ColectivoRepository()
     const habilidadRepository = new HabilidadRepository()
     const personaColaboradoraRepository = new PersonaColaboradoraRepository()
-    colaboracionRepository = new ColaboracionRepository()
+    postulacionRepository = new PostulacionRepository()
 
     personaColaboradoraRepository.deleteAll()
     proyectoRepository.deleteAll()
@@ -58,13 +58,12 @@ describe("PerfilService", () => {
     proyectoService = new ProyectoService(
       proyectoRepository,
       colectivoRepository,
-      new ColaboracionRepository(),
     )
     personaColaboradoraService = new PersonaColaboradoraService(
       proyectoRepository,
       personaColaboradoraRepository,
       habilidadService,
-      colaboracionRepository,
+      postulacionRepository,
     )
     service = new PerfilService(
       proyectoService,
@@ -260,11 +259,11 @@ describe("PerfilService", () => {
       const enOtroProyecto = await crearPersona("en otro proyecto", [
         habilidad1.id,
       ])
-      await colaboracionRepository.save({
+      await postulacionRepository.save({
         personaColaboradora: { id: inscripta.id },
         proyecto: { id: proyecto.id },
       })
-      await colaboracionRepository.save({
+      await postulacionRepository.save({
         personaColaboradora: { id: enOtroProyecto.id },
         proyecto: { id: otroProyecto.id },
       })

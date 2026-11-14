@@ -42,9 +42,11 @@ export default class PostulacionService {
     const postulaciones = await this.postulacionRepository.findAllByColaborador(colaboradorId)
     return await Promise.all(
     postulaciones.map(async (postulacion) => {
+      const perfilId =
+        postulacion.perfil?.id ?? postulacion.perfil?._id ?? postulacion.perfil
       const { proyecto, perfil } =
         await this.proyectoRepository.findProyectoYPerfilPorId(
-          postulacion.perfil,
+          perfilId,
         )
 
       return {
@@ -105,7 +107,11 @@ export default class PostulacionService {
               presentacion: persona.presentacion,
               habilidades: persona.habilidades,
               cuentas: persona.cuentas,
-              mediosDeContacto: persona.mediosDeContacto,
+              mediosDeContacto: persona.mediosDeContacto.map((m) => ({
+                id: m.id,
+                tipo: m.tipo,
+                valor: m.valor,
+              })),
             }
           : null,
       }
@@ -127,8 +133,10 @@ export default class PostulacionService {
     if (!postulacion) {
       throw new InvalidReference("Postulacion no encontrada")
     }
+    const perfilId =
+      postulacion.perfil?.id ?? postulacion.perfil?._id ?? postulacion.perfil
     const { proyecto, perfil } =
-        await this.proyectoRepository.findProyectoYPerfilPorId(postulacion.perfil)
+        await this.proyectoRepository.findProyectoYPerfilPorId(perfilId)
     if (!proyecto || !perfil) {
         throw new InvalidReference("Perfil no encontrado")
     }

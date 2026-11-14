@@ -1,4 +1,5 @@
 import PostulacionModel from "../schemas/postulacionSchema.js"
+import ProyectoModel from "../schemas/proyectoSchema.js"
 import guardar from "./guardar.js"
 
 const REFERENCIAS = [
@@ -34,12 +35,28 @@ export default class PostulacionRepository {
     })
   }
 
-  /*async findPersonasInscriptasEn(proyectoId) {
+  async findPersonasInscriptasEn(proyectoId) {
+    const proyecto = await ProyectoModel.findById(proyectoId)
+    if (!proyecto) return []
+    const perfilesIds = proyecto.perfiles.map((p) => p._id)
     const ids = await this.model.distinct("personaColaboradora", {
-      proyecto: proyectoId,
+      perfil: { $in: perfilesIds },
     })
     return ids.map(String)
-  }*/
+  }
+
+  async existeDePersonaEnProyectos(personaId, proyectoIds) {
+    const proyectos = await ProyectoModel.find({ _id: { $in: proyectoIds } })
+    const perfilesIds = proyectos.flatMap((p) =>
+      p.perfiles.map((perf) => perf._id),
+    )
+    return Boolean(
+      await this.model.exists({
+        personaColaboradora: personaId,
+        perfil: { $in: perfilesIds },
+      }),
+    )
+  }
 
   async deleteByPerfil(perfilId) {
     await this.model.deleteMany({ perfil: perfilId })

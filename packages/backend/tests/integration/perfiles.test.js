@@ -79,7 +79,12 @@ describe("perfiles de un proyecto", () => {
     const perfiles = `/proyectos/${proyecto.id}/perfiles`
 
     const perfil = await request("POST", perfiles, datos, 201)
-    expect(perfil).toEqual({ id: expect.any(String), ...datos })
+    expect(perfil).toEqual({
+      id: expect.any(String),
+      ...datos,
+      limiteColaboraciones: null,
+      postulacionesAceptadas: [],
+    })
     expect(await request("GET", perfiles)).toEqual([perfil])
     expect(await request("GET", `${perfiles}/${perfil.id}`)).toEqual(perfil)
     expect(
@@ -93,7 +98,12 @@ describe("perfiles de un proyecto", () => {
       modalidadesColaboracion: ["CON_INCENTIVO_ECONOMICO"],
     }
     const editado = await request("PUT", `${perfiles}/${perfil.id}`, cambios)
-    expect(editado).toEqual({ id: perfil.id, ...cambios })
+    expect(editado).toEqual({
+      id: perfil.id,
+      ...cambios,
+      limiteColaboraciones: null,
+      postulacionesAceptadas: [],
+    })
     expect(await request("GET", perfiles)).toEqual([editado])
 
     await request("DELETE", `${perfiles}/${perfil.id}`, undefined, 204)
@@ -243,7 +253,13 @@ describe("cambios simultáneos sobre los perfiles de un proyecto", () => {
 
       expect(respuestas.map((r) => r.status)).toEqual([204, 200])
       expect(await request("GET", perfiles)).toEqual([
-        { ...datos, id: segundo.id, descripcion: "Editado" },
+        {
+          ...datos,
+          id: segundo.id,
+          descripcion: "Editado",
+          limiteColaboraciones: null,
+          postulacionesAceptadas: [],
+        },
       ])
     }
   })

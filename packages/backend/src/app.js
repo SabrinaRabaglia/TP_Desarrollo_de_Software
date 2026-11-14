@@ -5,7 +5,6 @@ import swaggerUi from "swagger-ui-express"
 import routes from "./routes/routes.js"
 import authRoutes from "./routes/authRoutes.js"
 import catalogoRoutes from "./routes/catalogoRoutes.js"
-import colaboracionRoutes from "./routes/colaboracionRoutes.js"
 import colectivoRoutes from "./routes/colectivoRoutes.js"
 import habilidadRoutes from "./routes/habilidadRoutes.js"
 import personaColaboradoraRoutes from "./routes/personaColaboradoraRoutes.js"
@@ -33,7 +32,6 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use(routes)
 app.use(authRoutes)
 app.use(catalogoRoutes)
-app.use(colaboracionRoutes)
 app.use(colectivoRoutes)
 app.use(habilidadRoutes)
 app.use(personaColaboradoraRoutes)

@@ -13,7 +13,7 @@ import {
   EntityNotFound,
   InvalidReference,
 } from "../../../src/errors/ApplicationErrors.js"
-import ColaboracionRepository from "../../fakes/ColaboracionRepository.js"
+import PostulacionRepository from "../../fakes/PostulacionRepository.js"
 import ColectivoRepository from "../../fakes/ColectivoRepository.js"
 import HabilidadRepository from "../../fakes/HabilidadRepository.js"
 import NotificacionRepository from "../../fakes/NotificacionRepository.js"
@@ -30,7 +30,7 @@ const crearService = (usuarioRepository = new UsuarioRepository()) =>
       new ProyectoRepository(),
       new PersonaColaboradoraRepository(),
       new HabilidadService(new HabilidadRepository()),
-      new ColaboracionRepository(),
+      new PostulacionRepository(),
       new NotificacionRepository(),
       usuarioRepository,
     ),

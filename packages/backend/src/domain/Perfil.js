@@ -54,7 +54,7 @@ export default class Perfil {
     modalidadesColaboracion,
     habilidadesRequeridas,
     habilidadesOpcionales,
-    postulacionesAceptadas = {},
+    postulacionesAceptadas = [],
     limiteColaboraciones = null,
   }) {
     this.nombre = nombre
