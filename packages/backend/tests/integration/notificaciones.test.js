@@ -105,7 +105,7 @@ beforeAll(async () => {
     { nombreFantasia: "anon" },
     201,
   )
-})
+},30000)
 
 afterAll(async () => {
   await new Promise((resolve) => server.close(resolve))

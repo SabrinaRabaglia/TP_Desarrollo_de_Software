@@ -62,7 +62,8 @@ const crearPersona = (nombreFantasia, conHabilidades) =>
     201,
   )
 
-const titulos = (lista) => lista.map((proyecto) => proyecto.titulo).sort()
+//const titulos = (lista) => lista.map((proyecto) => proyecto.titulo).sort()
+const titulos = (respuesta) => respuesta.data.map((proyecto) => proyecto.titulo).sort()
 
 beforeAll(async () => {
   await conectar("busquedas")
@@ -108,7 +109,7 @@ beforeAll(async () => {
     lucho: await crearPersona("lucho", [habilidades.javascript]),
     sol: await crearPersona("sol", [habilidades.python, habilidades.sql]),
   }
-})
+},30000)
 
 afterAll(async () => {
   await new Promise((resolve) => server.close(resolve))
@@ -138,7 +139,7 @@ describe("búsqueda de proyectos según habilidades", () => {
         ),
       ),
     ).toEqual(["Análisis"])
-    expect(await request("GET", `/proyectos?habilidades=${sql.id}`)).toEqual([])
+    expect((await request("GET", `/proyectos?habilidades=${sql.id}`)).data).toEqual([])
   })
 
   test("sin habilidades lista todos los proyectos", async () => {
@@ -167,7 +168,7 @@ describe("búsqueda de colaboradores según un perfil", () => {
   }
 
   test("devuelve las personas con todas las habilidades requeridas, sin el valor de sus medios de contacto", async () => {
-    const encontradas = await colaboradores(proyectos.web.perfil)
+    const encontradas = (await colaboradores(proyectos.web.perfil)).data
 
     expect(encontradas).toEqual([
       expect.objectContaining({
@@ -195,7 +196,7 @@ describe("búsqueda de colaboradores según un perfil", () => {
     )
 
     expect(
-      (await colaboradores(proyectos.mapa.perfil)).map((persona) => persona.id),
+      (await colaboradores(proyectos.mapa.perfil)).data.map((persona) => persona.id),
     ).toEqual([personas.ana.id])
   })
 

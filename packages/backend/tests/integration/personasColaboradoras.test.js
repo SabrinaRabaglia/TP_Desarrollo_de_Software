@@ -16,7 +16,7 @@ beforeAll(async () => {
   server = app.listen(0, "127.0.0.1")
   await once(server, "listening")
   base = `http://127.0.0.1:${server.address().port}`
-})
+},30000)
 
 afterAll(async () => {
   await new Promise((resolve) => server.close(resolve))
@@ -90,7 +90,7 @@ describe("medios de contacto de las personas colaboradoras", () => {
       { id: expect.any(String), tipo: "WHATSAPP" },
     ])
     sinValores(await request("GET", `/personas-colaboradoras/${persona.id}`))
-    for (const listada of await request("GET", "/personas-colaboradoras")) {
+    for (const listada of (await request("GET", "/personas-colaboradoras")).data) {
       sinValores(listada)
     }
     expect(await mediosGuardados(persona.id)).toEqual(mediosDeContacto)

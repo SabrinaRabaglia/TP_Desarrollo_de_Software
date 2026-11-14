@@ -104,10 +104,6 @@ export default class PersonaColaboradoraService {
     }
   }
 
-  //getAll = async () => {
-  //  return await this.personaColaboradoraRepository.findAll()
-  //}
-
   getAllByPerfiles = async (perfilesIds) => {
     const personasPorId = new Map()
 
@@ -195,8 +191,8 @@ export default class PersonaColaboradoraService {
     }))
   }
 
-  async getAll(queryParams) {
-    const { page, limit, ...criterios } = queryParams
+  async getAll(queryParams={}) {
+    const { page=1, limit=10, ...criterios } = queryParams
     const query = {}
 
     if (criterios.q) {

@@ -23,7 +23,7 @@ describe("validación de la búsqueda de personas colaboradoras", () => {
     const { req, next } = validarQuery({})
 
     expect(next).toHaveBeenCalledWith()
-    expect(req.query).toEqual({})
+    expect(req.query).toEqual({page: 1, limit: 10})
   })
 
   test("un solo perfil queda como lista de uno", () => {

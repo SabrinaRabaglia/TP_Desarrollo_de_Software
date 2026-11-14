@@ -80,7 +80,10 @@ describe("ProyectoController", () => {
         )
         expect(proyectoServiceMock.getAll).not.toHaveBeenCalled()
         expect(res.status).toHaveBeenCalledWith(200)
-        expect(res.json).toHaveBeenCalledWith(lista.map(guardado))
+        expect(res.json).toHaveBeenCalledWith({
+  metadata: expect.any(Object),
+  data: lista.map(guardado)
+})
       },
     )
   })

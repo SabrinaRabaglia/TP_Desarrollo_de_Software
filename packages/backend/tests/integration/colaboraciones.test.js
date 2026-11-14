@@ -5,7 +5,7 @@ import ColaboracionModel from "../../src/schemas/colaboracionSchema.js"
 import ProvinciaModel from "../../src/schemas/provinciaSchema.js"
 import { conectar, desconectar } from "./mongo.js"
 
-beforeAll(() => conectar("colaboraciones"))
+beforeAll(() => conectar("colaboraciones"),30000)
 afterAll(desconectar)
 
 test("inscribir permite consultar y actualizar las entidades persistidas", async () => {

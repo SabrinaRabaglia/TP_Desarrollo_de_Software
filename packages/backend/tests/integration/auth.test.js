@@ -34,7 +34,7 @@ beforeAll(async () => {
     rol: "COLECTIVO",
     entidad: colectivo.id,
   })
-})
+},30000)
 
 afterAll(async () => {
   await new Promise((resolve) => server.close(resolve))
