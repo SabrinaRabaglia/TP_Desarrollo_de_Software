@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto"
+import nuevoId from "./nuevoId.js"
 
 export default class NotificacionRepository {
   constructor() {
@@ -56,7 +56,7 @@ export default class NotificacionRepository {
   }
 
   async save(notificacion) {
-    notificacion.id ??= randomUUID()
+    notificacion.id ??= nuevoId()
     // Como en Mongo: del perfil se guarda solo el id.
     notificacion.perfil = notificacion.perfil?.id ?? notificacion.perfil
     if (!this.notificaciones.includes(notificacion)) {
