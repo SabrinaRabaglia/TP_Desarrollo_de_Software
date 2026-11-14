@@ -74,13 +74,22 @@ const Colectivo = () => {
             <p className="pagina-colectivo-ubicacion">{ubicacion}</p>
           )}
         </div>
-        <Button
-          component={Link}
-          to={`/colectivos/${colectivo.id}/editar`}
-          variant="outlined"
-        >
-          Editar organización
-        </Button>
+        <div>
+          <Button
+            component={Link}
+            to={`/proyectos/nuevo?colectivo=${colectivo.id}`}
+            variant="contained"
+          >
+            Crear proyecto
+          </Button>
+          <Button
+            component={Link}
+            to={`/colectivos/${colectivo.id}/editar`}
+            variant="outlined"
+          >
+            Editar organización
+          </Button>
+        </div>
       </header>
       <p className="pagina-colectivo-descripcion">{colectivo.descripcion}</p>
 

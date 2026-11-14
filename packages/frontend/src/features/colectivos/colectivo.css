@@ -17,6 +17,12 @@
   gap: 0.5rem;
 }
 
+.pagina-colectivo-encabezado > div:last-child {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .pagina-colectivo-tipo,
 .pagina-colectivo-ubicacion {
   color: var(--color-texto-secundario);

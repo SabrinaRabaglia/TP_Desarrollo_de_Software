@@ -1,0 +1,74 @@
+.formulario-proyecto {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--espacio) * 1.5);
+  max-width: var(--ancho-maximo);
+  margin: 0 auto;
+}
+
+.formulario-proyecto-encabezado h1,
+.formulario-proyecto-perfiles h2,
+.formulario-proyecto-perfil h3 {
+  margin: 0;
+}
+
+.formulario-proyecto-encabezado p,
+.formulario-proyecto-perfiles header p {
+  margin: 0.5rem 0 0;
+  color: var(--color-texto-secundario);
+}
+
+.formulario-proyecto-tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio);
+  padding: var(--espacio);
+}
+
+.formulario-proyecto-campos,
+.formulario-proyecto-perfiles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio);
+}
+
+.formulario-proyecto-perfiles > header,
+.formulario-proyecto-perfil > header,
+.formulario-proyecto-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.formulario-proyecto-perfiles > header {
+  align-items: flex-start;
+}
+
+.formulario-proyecto-perfil {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio);
+  padding: var(--espacio);
+}
+
+.formulario-proyecto-compromiso {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espacio);
+}
+
+.formulario-proyecto-acciones {
+  justify-content: flex-end;
+}
+
+@media (min-width: 768px) {
+  .formulario-proyecto-tarjeta {
+    padding: calc(var(--espacio) * 1.5);
+  }
+
+  .formulario-proyecto-compromiso {
+    grid-template-columns: 1fr 1fr;
+  }
+}

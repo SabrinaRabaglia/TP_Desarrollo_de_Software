@@ -5,13 +5,13 @@ export const ESTADOS_DE_PROYECTO = {
   CERRADO: "Cerrado",
 }
 
-const UNIDADES_DE_COMPROMISO = {
+export const UNIDADES_DE_COMPROMISO = {
   HORAS_TOTALES: "horas en total",
   HORAS_SEMANALES: "horas por semana",
   HORAS_MENSUALES: "horas por mes",
 }
 
-const MODALIDADES = {
+export const MODALIDADES_DE_COLABORACION = {
   GRATUITA: "Gratuita",
   CON_INCENTIVO_ECONOMICO: "Con incentivo económico",
   CON_POSIBILIDAD_CONTRATACION: "Con posibilidad de contratación",
@@ -22,7 +22,9 @@ const aPerfil = (perfilBack, titulosDeHabilidades) => ({
   nombre: perfilBack.nombre ?? "Perfil sin nombre",
   descripcion: perfilBack.descripcion,
   compromiso: `${perfilBack.cantidadHoras} ${UNIDADES_DE_COMPROMISO[perfilBack.unidadCompromiso]}`,
-  modalidades: perfilBack.modalidadesColaboracion.map((m) => MODALIDADES[m]),
+  modalidades: perfilBack.modalidadesColaboracion.map(
+    (m) => MODALIDADES_DE_COLABORACION[m],
+  ),
   habilidadesRequeridas: perfilBack.habilidadesRequeridas.map(
     (id) => titulosDeHabilidades[id],
   ),
@@ -84,4 +86,73 @@ export const obtenerProyecto = async (id) => {
     { id: colectivo.data.id, nombre: colectivo.data.nombre },
     titulosDeHabilidades,
   )
+}
+
+const idDeReferencia = (referencia) =>
+  referencia && typeof referencia === "object"
+    ? (referencia.id ?? referencia._id)
+    : referencia
+
+export const obtenerProyectoParaEditar = async (id) => {
+  const response = await api.get(`/proyectos/${id}`)
+  const proyecto = response.data
+
+  return {
+    ...proyecto,
+    colectivo: idDeReferencia(proyecto.colectivo),
+    perfiles: (proyecto.perfiles ?? []).map((perfil) => ({
+      id: perfil.id ?? perfil._id,
+      nombre: perfil.nombre ?? "",
+      descripcion: perfil.descripcion,
+      unidadCompromiso: perfil.unidadCompromiso,
+      cantidadHoras: perfil.cantidadHoras,
+      modalidadesColaboracion: perfil.modalidadesColaboracion ?? [],
+      habilidadesRequeridas: (perfil.habilidadesRequeridas ?? []).map(
+        idDeReferencia,
+      ),
+      habilidadesOpcionales: (perfil.habilidadesOpcionales ?? []).map(
+        idDeReferencia,
+      ),
+      limiteColaboraciones: perfil.limiteColaboraciones ?? null,
+    })),
+  }
+}
+
+export const obtenerHabilidades = async () => {
+  const response = await api.get("/habilidades")
+  return response.data.map(({ id, titulo }) => ({ id, titulo }))
+}
+
+export const crearProyecto = async (nuevoProyecto) => {
+  const response = await api.post("/proyectos", nuevoProyecto)
+  return response.data
+}
+
+export const actualizarProyecto = async (id, proyectoActualizado) => {
+  const response = await api.put(`/proyectos/${id}`, proyectoActualizado)
+  return response.data
+}
+
+export const eliminarProyecto = async (id) => {
+  await api.delete(`/proyectos/${id}`)
+}
+
+export const crearPerfil = async (proyectoId, nuevoPerfil) => {
+  const response = await api.post(
+    `/proyectos/${proyectoId}/perfiles`,
+    nuevoPerfil,
+  )
+  return response.data
+}
+
+export const actualizarPerfil = async (proyectoId, perfilId, perfil) => {
+  const response = await api.put(
+    `/proyectos/${proyectoId}/perfiles/${perfilId}`,
+    perfil,
+  )
+  return response.data
+}
+
+export const eliminarPerfil = async (proyectoId, perfilId) => {
+  await api.delete(`/proyectos/${proyectoId}/perfiles/${perfilId}`)
 }

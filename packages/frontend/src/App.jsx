@@ -9,6 +9,7 @@ import RutaPrivada from "./features/auth/RutaPrivada"
 import MiCuenta from "./features/cuenta/MiCuenta"
 import Colectivo from "./features/colectivos/colectivo"
 import FormularioColectivo from "./features/colectivos/FormularioColectivo"
+import FormularioProyecto from "./features/proyectos/FormularioProyecto"
 import PaginaProyecto from "./features/proyectos/PaginaProyecto"
 import NoEncontrado from "./features/noEncontrado/NoEncontrado"
 
@@ -26,6 +27,11 @@ const App = () => {
               element={<FormularioColectivo />}
             />
             <Route path="/colectivos/:id" element={<Colectivo />} />
+            <Route path="/proyectos/nuevo" element={<FormularioProyecto />} />
+            <Route
+              path="/proyectos/:id/editar"
+              element={<FormularioProyecto />}
+            />
             <Route path="/proyectos/:id" element={<PaginaProyecto />} />
             <Route element={<RutaPrivada />}>
               <Route path="/mi-cuenta" element={<MiCuenta />} />

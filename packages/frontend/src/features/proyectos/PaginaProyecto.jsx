@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { Button } from "@mui/material"
 import { Link, useParams } from "react-router-dom"
 import Cargando from "../../components/cargando/Cargando"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
@@ -57,6 +58,15 @@ const PaginaProyecto = () => {
         <span className="pagina-proyecto-estado">
           {ESTADOS_DE_PROYECTO[proyecto.estado]}
         </span>
+        {proyecto.estado !== "CERRADO" && (
+          <Button
+            component={Link}
+            to={`/proyectos/${proyecto.id}/editar`}
+            variant="outlined"
+          >
+            Editar proyecto
+          </Button>
+        )}
         <h1>{proyecto.titulo}</h1>
         <p className="pagina-proyecto-colectivo">
           Lo propone{" "}

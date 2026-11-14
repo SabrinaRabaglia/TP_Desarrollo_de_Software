@@ -137,6 +137,19 @@ Para leer la sesión desde cualquier componente, usá `useAuth()`. Devuelve `{ u
 
 `service/api.js` agrega el token a cada pedido. Si el backend responde 401, la sesión se cierra sola y las rutas privadas mandan a `/login`.
 
+## Crear y editar proyectos
+
+- La portada lista los proyectos y enlaza a su detalle (`/proyectos/:id`).
+- Desde el detalle de una organización se puede iniciar un proyecto en
+  `/proyectos/nuevo?colectivo=<id>`. El detalle del proyecto enlaza a
+  `/proyectos/:id/editar`.
+- `features/proyectos/FormularioProyecto.jsx` usa `proyectosService.js` para
+  crear o actualizar el proyecto y, por separado, crear, actualizar o quitar
+  sus perfiles. Los perfiles incluyen horas, modalidades, habilidades y
+  `limiteColaboraciones`; `null` representa cupo ilimitado.
+- El backend exige al menos una habilidad requerida y una opcional por perfil.
+  Los proyectos cerrados no permiten modificar sus perfiles.
+
 ## Escribir un test
 
 Los tests van al lado del componente, con el nombre `<Componente>.test.jsx`. Para correrlos desde la raíz, usá `npm run test:frontend`.
