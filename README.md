@@ -278,6 +278,24 @@ Para un colectivo sería `autorizarEntidad(RolUsuario.COLECTIVO)` en `/colectivo
 
 El perfil de una persona es público, pero el valor de sus medios de contacto no. `GET /personas-colaboradoras/:id/medios-de-contacto` exige token y devuelve `[{ id, tipo, valor }]` solo a la propia persona y a los colectivos con algún proyecto en el que la persona colabora, aunque la colaboración sea anónima: el anonimato es hacia el público, no hacia el colectivo. Cualquier otro usuario recibe `403`, y una persona inexistente, `404`. La regla vive en `PersonaColaboradoraService.puedeVerContactoDe`.
 
+### Mensajería interna
+
+Un mensaje interno es una notificación que un colectivo le envía a una persona colaboradora por uno de los perfiles de sus proyectos. Va en un solo sentido, del colectivo a la persona, y además se replica por los medios de contacto de la persona (ver [Notificaciones por medios externos](#notificaciones-por-medios-externos)). Todas las rutas exigen token.
+
+<!-- prettier-ignore -->
+| Endpoint | Quién puede usarlo | Qué hace |
+|---|---|---|
+| `POST /proyectos/:id/perfiles/:perfilId/notificaciones` | El colectivo dueño del proyecto | Envía el mensaje. El body es `{ personaColaboradora, contenido }`, con hasta 4096 caracteres. Responde `201` con la notificación con ids. |
+| `GET /personas-colaboradoras/:id/notificaciones` | La propia persona | Su bandeja, del más nuevo al más viejo. |
+| `GET /colectivos/:id/notificaciones` | El propio colectivo | Los mensajes que envió, del más nuevo al más viejo. |
+
+- Cualquier otro usuario recibe `403`, y un pedido sin token, `401`. Una persona colaboradora no puede enviar mensajes.
+- Enviar responde `409` si la persona no acepta mensajería interna (`aceptaMensajeriaInterna`) o si el proyecto está cerrado, y `404` si el proyecto, el perfil o la persona no existen.
+- Los listados devuelven nombres en lugar de ids: `colectivo: { id, nombre }`, `proyecto: { id, titulo }` y `perfil: { id, nombre }`. Si el proyecto o el perfil se borraron, ese dato viene en `null` y el mensaje se lista igual. Los enviados traen además `personaColaboradora: { id, nombreFantasia }`, sin sus medios de contacto.
+- Para elegir a quién escribirle, `GET /personas-colaboradoras?perfiles=<perfilId>` devuelve las personas que encajan con el perfil, con su `aceptaMensajeriaInterna`.
+
+En el frontend, el colectivo llega a las candidatas desde "Ver candidatas" en cada perfil de su proyecto, y cualquier sesión ve sus mensajes en `/mensajes` (ver [`packages/frontend/README.md`](packages/frontend/README.md)).
+
 ### Usuarios de prueba
 
 `npm run seed:backend` crea un usuario por cada colectivo y cada persona de los datos de prueba. Todos tienen la contraseña `secreto123`, así que no hay que correr este seed contra una base que use gente real.
