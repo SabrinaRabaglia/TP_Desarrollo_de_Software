@@ -12,6 +12,7 @@ import PaginaColaboradora from "./features/colaboradoras/PaginaColaboradora"
 import MiPerfil from "./features/colaboradoras/MiPerfil"
 import PaginaProyecto from "./features/proyectos/PaginaProyecto"
 import PaginaMensajes from "./features/mensajes/PaginaMensajes"
+import PaginaCandidatas from "./features/contacto/PaginaCandidatas"
 import NoEncontrado from "./features/noEncontrado/NoEncontrado"
 
 const App = () => {
@@ -34,6 +35,12 @@ const App = () => {
             </Route>
             <Route element={<RutaPrivada rol="PERSONA_COLABORADORA" />}>
               <Route path="/mi-perfil" element={<MiPerfil />} />
+            </Route>
+            <Route element={<RutaPrivada rol="COLECTIVO" />}>
+              <Route
+                path="/proyectos/:id/perfiles/:perfilId/candidatas"
+                element={<PaginaCandidatas />}
+              />
             </Route>
             <Route path="*" element={<NoEncontrado />} />
           </Route>

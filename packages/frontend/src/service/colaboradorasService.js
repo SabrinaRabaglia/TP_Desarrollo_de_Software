@@ -73,6 +73,18 @@ export const obtenerColaboradora = async (id) => {
   return aColaboradora(response.data)
 }
 
+// Personas que encajan con el perfil, de la que más encaja a la que menos
+// (el orden lo decide el back).
+export const buscarCandidatas = async (perfilId) => {
+  const response = await api.get("/personas-colaboradoras", {
+    params: { perfiles: perfilId },
+  })
+  return response.data.map((personaBack) => ({
+    ...aColaboradora(personaBack),
+    aceptaMensajeriaInterna: personaBack.aceptaMensajeriaInterna,
+  }))
+}
+
 export const obtenerMediosDeContacto = async (id) => {
   const response = await api.get(
     `/personas-colaboradoras/${id}/medios-de-contacto`,
