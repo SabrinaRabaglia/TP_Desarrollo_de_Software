@@ -118,39 +118,40 @@ export default class ProyectoService {
     await this.proyectoRepository.deleteById(id)
   }
 
-
-async getAll(queryParams) { 
-    const { page, limit, ...criterios } = queryParams;
-    const query = {};
+  async getAll(queryParams) {
+    const { page, limit, ...criterios } = queryParams
+    const query = {}
 
     if (criterios.q) {
       query.$or = [
-        { titulo: { $regex: criterios.q, $options: 'i' } },
-        { descripcion: { $regex: criterios.q, $options: 'i' } }
-      ];
+        { titulo: { $regex: criterios.q, $options: "i" } },
+        { descripcion: { $regex: criterios.q, $options: "i" } },
+      ]
     }
 
     if (criterios.habilidades && criterios.habilidades.length > 0) {
-      query['perfiles.habilidadesRequeridas'] = { $in: criterios.habilidades };
+      query["perfiles.habilidadesRequeridas"] = { $in: criterios.habilidades }
     }
 
     if (criterios.busquedaAbierta !== undefined) {
-      query.busquedaAbierta = criterios.busquedaAbierta;
+      query.busquedaAbierta = criterios.busquedaAbierta
       if (criterios.busquedaAbierta === true) {
         query.$or = [
           { busquedaAbiertaHasta: { $exists: false } },
-          { busquedaAbiertaHasta: { $gte: new Date() } }
-        ];
+          { busquedaAbiertaHasta: { $gte: new Date() } },
+        ]
       }
     }
 
-    const skip = (page - 1) * limit;
-    const { proyectos, total } = await this.proyectoRepository.findAll(query, skip, limit);
+    const skip = (page - 1) * limit
+    const { proyectos, total } = await this.proyectoRepository.findAll(
+      query,
+      skip,
+      limit,
+    )
     return {
       metadata: { page, limit, total },
-      data: proyectos
-    };
+      data: proyectos,
+    }
   }
-
-  
 }

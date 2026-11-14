@@ -43,13 +43,14 @@ export default class PersonaColaboradoraRepository {
 
   async findAll(query, skip, limit) {
     const [colaboradoras, total] = await Promise.all([
-      this.model.find(query)
-        .populate('habilidades')
+      this.model
+        .find(query)
+        .populate("habilidades")
         .skip(skip)
         .limit(limit)
         .lean(),
-      this.model.countDocuments(query)
-    ]);
-    return { colaboradoras, total };
+      this.model.countDocuments(query),
+    ])
+    return { colaboradoras, total }
   }
 }

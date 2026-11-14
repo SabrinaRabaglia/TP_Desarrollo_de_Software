@@ -19,7 +19,7 @@ routes.post(
 routes.get(
   "/personas-colaboradoras",
   validar(busquedaPersonasSchema, "query"),
-  personaColaboradoraController.getAll, 
+  personaColaboradoraController.getAll,
 )
 
 routes.get(

@@ -129,14 +129,14 @@ export default class ProyectoRepository {
 
   async findAll(query, skip, limit) {
     const [proyectos, total] = await Promise.all([
-      this.model.find(query)
-        .populate('perfiles.habilidadesRequeridas')
+      this.model
+        .find(query)
+        .populate("perfiles.habilidadesRequeridas")
         .skip(skip)
         .limit(limit)
         .lean(),
-      this.model.countDocuments(query)
-    ]);
-    return { proyectos, total };
+      this.model.countDocuments(query),
+    ])
+    return { proyectos, total }
   }
 }
-

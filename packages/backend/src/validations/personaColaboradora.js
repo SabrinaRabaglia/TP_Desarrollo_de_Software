@@ -3,7 +3,6 @@ import { TipoCuenta } from "../domain/enums/TipoCuenta.js"
 import { TipoMedioContacto } from "../domain/enums/TipoMedioContacto.js"
 import { objectIdSchema } from "./objectId.js"
 
-
 const cuentaSchema = z
   .object({
     nombreUsuario: z.string(),
@@ -39,7 +38,7 @@ export const busquedaPersonasSchema = z.object({
     .transform((perfiles) => [perfiles].flat())
     .optional(),
 
-    // para buscar directamente por habilidades sueltas
+  // para buscar directamente por habilidades sueltas
   habilidades: z
     .union([objectIdSchema, z.array(objectIdSchema)])
     .transform((habilidades) => [habilidades].flat())
