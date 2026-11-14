@@ -1,6 +1,5 @@
 import AuthController from "./controllers/AuthController.js"
 import CatalogoController from "./controllers/CatalogoController.js"
-import ColaboracionController from "./controllers/ColaboracionController.js"
 import ColectivoController from "./controllers/ColectivoController.js"
 import HabilidadController from "./controllers/HabilidadController.js"
 import NotificacionController from "./controllers/NotificacionController.js"
@@ -10,7 +9,6 @@ import ProyectoController from "./controllers/ProyectoController.js"
 import HitoController from "./controllers/HitoController.js"
 import PostulacionController from "./controllers/PostulacionController.js"
 
-import ColaboracionRepository from "./repositories/ColaboracionRepository.js"
 import ColectivoRepository from "./repositories/ColectivoRepository.js"
 import HabilidadRepository from "./repositories/HabilidadRepository.js"
 import NotificacionRepository from "./repositories/NotificacionRepository.js"
@@ -24,7 +22,6 @@ import PostulacionRepository from "./repositories/PostulacionRepository.js"
 
 import AuthService from "./services/AuthService.js"
 import CatalogoService from "./services/CatalogoService.js"
-import ColaboracionService from "./services/ColaboracionService.js"
 import ColectivoService from "./services/ColectivoService.js"
 import HabilidadService from "./services/HabilidadService.js"
 import NotificacionService from "./services/NotificacionService.js"
@@ -39,7 +36,7 @@ import ProyectoService from "./services/ProyectoService.js"
 // Único lugar donde se arman las dependencias (repositorio → servicio →
 // controller). Las rutas solo conocen a los controllers.
 
-const colaboracionRepository = new ColaboracionRepository()
+
 const colectivoRepository = new ColectivoRepository()
 const habilidadRepository = new HabilidadRepository()
 const notificacionRepository = new NotificacionRepository()
@@ -70,13 +67,12 @@ const colectivoService = new ColectivoService(
 const proyectoService = new ProyectoService(
   proyectoRepository,
   colectivoRepository,
-  colaboracionRepository,
 )
 const personaColaboradoraService = new PersonaColaboradoraService(
   proyectoRepository,
   personaColaboradoraRepository,
   habilidadService,
-  colaboracionRepository,
+  postulacionRepository,
   notificacionRepository,
   usuarioRepository,
 )
@@ -85,11 +81,7 @@ const perfilService = new PerfilService(
   proyectoRepository,
   habilidadService,
 )
-const colaboracionService = new ColaboracionService(
-  colaboracionRepository,
-  proyectoRepository,
-  personaColaboradoraRepository,
-)
+
 export const envioDeNotificaciones = new EnvioDeNotificaciones(
   notificacionRepository,
   canales,
@@ -121,9 +113,7 @@ const authService = new AuthService(
 
 export const authController = new AuthController(authService)
 export const catalogoController = new CatalogoController(catalogoService)
-export const colaboracionController = new ColaboracionController(
-  colaboracionService,
-)
+
 export const colectivoController = new ColectivoController(colectivoService)
 export const habilidadController = new HabilidadController(habilidadService)
 export const notificacionController = new NotificacionController(
