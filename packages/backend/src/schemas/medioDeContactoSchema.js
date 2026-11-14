@@ -14,7 +14,6 @@ const medioDeContactoSchema = new mongoose.Schema(
   },
   {
     toJSON: opcionesJSONCon((json) => {
-      delete json.valor
       return json
     }),
   },

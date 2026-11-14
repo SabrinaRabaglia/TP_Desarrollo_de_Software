@@ -1,4 +1,4 @@
-import { EntityNotFound, NoAutorizado } from "../errors/ApplicationErrors.js"
+import { EntityNotFound, NoAutorizado, InvalidReference } from "../errors/ApplicationErrors.js"
 import { RolUsuario } from "../domain/enums/RolUsuario.js"
 import PersonaColaboradora from "../domain/PersonaColaboradora.js"
 import Cuenta from "../domain/Cuenta.js"
@@ -8,14 +8,14 @@ export default class PersonaColaboradoraService {
     proyectoRepository,
     personaColaboradoraRepository,
     habilidadService,
-    colaboracionRepository,
+    postulacionRepository,
     notificacionRepository,
     usuarioRepository,
   ) {
     this.proyectoRepository = proyectoRepository
     this.personaColaboradoraRepository = personaColaboradoraRepository
     this.habilidadService = habilidadService
-    this.colaboracionRepository = colaboracionRepository
+    this.postulacionRepository = postulacionRepository
     this.notificacionRepository = notificacionRepository
     this.usuarioRepository = usuarioRepository
   }
@@ -86,7 +86,7 @@ export default class PersonaColaboradoraService {
   }
   delete = async (id) => {
     await this.getById(id)
-    await this.colaboracionRepository.deleteByPersona(id)
+    await this.postulacionRepository.deleteByPersona(id)
     await this.notificacionRepository.deleteByPersonaColaboradora(id)
     await this.usuarioRepository.deleteByEntidad(id)
     await this.personaColaboradoraRepository.deleteById(id)
@@ -126,7 +126,7 @@ export default class PersonaColaboradoraService {
       )
 
       const inscriptas = new Set(
-        await this.colaboracionRepository.findPersonasInscriptasEn(proyecto.id),
+        await this.postulacionRepository.findPersonasInscriptasEn(proyecto.id),
       )
 
       for (const persona of personas) {
@@ -168,6 +168,51 @@ export default class PersonaColaboradoraService {
     return personaColaboradora
   }
 
+  getAllByPostulacionAceptada = async (perfilId) => {
+  const { proyecto, perfil } =
+    await this.proyectoRepository.findProyectoYPerfilPorId(perfilId)
+
+  if (!proyecto || !perfil) {
+    throw new InvalidReference("Perfil no encontrado")
+  }
+  const postulaciones = await Promise.all(
+    perfil.postulacionesAceptadas.map((id) =>
+      this.postulacionRepository.findById(id),
+    ),
+  )
+  const colaboradores = await Promise.all(
+    postulaciones
+      .filter((postulacion) => postulacion !== null)
+      .map(async (postulacion) => {
+        // Si es anónima, no recuperamos ni exponemos sus datos personales.
+        if (postulacion.esAnonima) {
+          return {
+            esAnonima: true,
+          }
+        }
+
+        const persona = await this.personaColaboradoraRepository.findById(
+          postulacion.personaColaboradora,
+        )
+
+        if (!persona) return null
+
+        return {
+          id: persona.id,
+          esAnonima: false,
+          nombre: persona.nombre,
+          apellido: persona.apellido,
+          nombreFantasia: persona.nombreFantasia,
+          pronombres: persona.pronombres,
+          presentacion: persona.presentacion,
+          habilidades: persona.habilidades,
+          cuentas: persona.cuentas,
+        }
+      }),
+  )
+  return colaboradores
+}
+
   puedeVerContactoDe = async (personaId, usuario) => {
     if (usuario.rol === RolUsuario.PERSONA_COLABORADORA) {
       return usuario.entidad === personaId
@@ -175,7 +220,7 @@ export default class PersonaColaboradoraService {
     const proyectos = await this.proyectoRepository.findByColectivoId(
       usuario.entidad,
     )
-    return await this.colaboracionRepository.existeDePersonaEnProyectos(
+    return await this.postulacionRepository.existeDePersonaEnProyectos(
       personaId,
       proyectos.map((proyecto) => proyecto.id),
     )

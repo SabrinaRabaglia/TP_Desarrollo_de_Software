@@ -25,6 +25,27 @@ export default class Perfil {
     ).length
   }
 
+  assertPuedeAceptarPostulaciones() {
+  if (
+    this.limiteColaboraciones !== null &&
+    this.postulacionesAceptadas.length >= this.limiteColaboraciones
+  ) {
+    throw new DomainValidationError(
+      "Se alcanzó el límite de colaboradores para este perfil"
+    )
+  }
+}
+
+  agregarPostulacion(postulacionId) {
+    const yaExiste = this.postulacionesAceptadas.some(
+    (id) => id.toString() === postulacionId.toString()
+  )
+
+    if (!yaExiste) {
+      this.postulacionesAceptadas.push(postulacionId)
+    }
+  }
+
   asignar({
     nombre = null,
     descripcion,
@@ -33,6 +54,8 @@ export default class Perfil {
     modalidadesColaboracion,
     habilidadesRequeridas,
     habilidadesOpcionales,
+    postulacionesAceptadas = {},
+    limiteColaboraciones = null,
   }) {
     this.nombre = nombre
     this.descripcion = descripcion
@@ -41,6 +64,9 @@ export default class Perfil {
     this.modalidadesColaboracion = modalidadesColaboracion
     this.habilidadesRequeridas = habilidadesRequeridas
     this.habilidadesOpcionales = habilidadesOpcionales
+    this.postulacionesAceptadas = postulacionesAceptadas
+    this.limiteColaboraciones =
+      limiteColaboraciones != null ? Number(limiteColaboraciones) : null
   }
 
   static validarDatos({
@@ -50,6 +76,7 @@ export default class Perfil {
     modalidadesColaboracion,
     habilidadesRequeridas,
     habilidadesOpcionales,
+    limiteColaboraciones,
   }) {
     if (!descripcion) {
       throw new DomainValidationError(
@@ -82,6 +109,15 @@ export default class Perfil {
     if (!esListaNoVacia(habilidadesOpcionales)) {
       throw new DomainValidationError(
         "El perfil debe tener al menos una habilidad opcional.",
+      )
+    }
+    if (
+      limiteColaboraciones != null &&
+      (!Number.isInteger(Number(limiteColaboraciones)) ||
+        Number(limiteColaboraciones) <= 0)
+    ) {
+      throw new DomainValidationError(
+        "El límite de colaboraciones debe ser un entero positivo.",
       )
     }
   }

@@ -13,6 +13,7 @@ import {
   proyectoController,
   hitoController,
   postulacionController,
+  personaColaboradoraController,
 } from "../dependencias.js"
 import { autenticar, autorizar } from "../middlewares/autenticar.js"
 import { RolUsuario } from "../domain/enums/RolUsuario.js"
@@ -68,11 +69,16 @@ routes.delete(
   perfilController.delete,
 )
 
-routes.get("proyectos/:id/perfiles/:perfilId/postulaciones",
+routes.get("/proyectos/:id/perfiles/:perfilId/postulaciones",
   autenticar,
   validateId,
   autorizar(RolUsuario.COLECTIVO),
   postulacionController.getAllByPerfil
+)
+
+routes.get("/proyectos/:id/perfiles/:perfilId/colaboradores",
+  validateId,
+  personaColaboradoraController.getAllByPostulacionAceptada
 )
 
 routes.post(

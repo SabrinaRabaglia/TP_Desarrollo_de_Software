@@ -45,7 +45,7 @@ export default class PostulacionController {
 
   aceptar = async (req, res, next) => {
     try {
-      res.status(200).json(await this.postulacionService.aceptar(req.params.id, req.body))
+      res.status(200).json(await this.postulacionService.aceptar(req.params.id))
     } catch (error) {
       next(error)
     }
