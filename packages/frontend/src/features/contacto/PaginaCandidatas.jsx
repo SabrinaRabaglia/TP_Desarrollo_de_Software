@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react"
 import { Link, useParams } from "react-router-dom"
+import { Alert } from "@mui/material"
 import Cargando from "../../components/cargando/Cargando"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
 import { mensajeDeError } from "../../service/api"
 import { buscarCandidatas } from "../../service/colaboradorasService"
 import { obtenerProyecto } from "../../service/proyectosService"
 import Candidata from "./Candidata"
+import FormularioDeContacto from "./FormularioDeContacto"
 import "./PaginaCandidatas.css"
 
 const PaginaCandidatas = () => {
@@ -16,6 +18,13 @@ const PaginaCandidatas = () => {
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
   const [intento, setIntento] = useState(0)
+  const [contactada, setContactada] = useState(null)
+  const [aviso, setAviso] = useState(null)
+
+  const avisarEnvio = (candidata) => {
+    setContactada(null)
+    setAviso(`Le enviaste el mensaje a ${candidata.nombreFantasia}.`)
+  }
 
   useEffect(() => {
     const cargar = async () => {
@@ -73,6 +82,12 @@ const PaginaCandidatas = () => {
         </p>
       </header>
 
+      {aviso && (
+        <Alert severity="success" onClose={() => setAviso(null)}>
+          {aviso}
+        </Alert>
+      )}
+
       {candidatas.length === 0 ? (
         <p className="pagina-candidatas-vacia">
           Todavía no hay personas con todas las habilidades que pide este
@@ -82,10 +97,26 @@ const PaginaCandidatas = () => {
         <ul className="pagina-candidatas-lista">
           {candidatas.map((candidata) => (
             <li key={candidata.id}>
-              <Candidata candidata={candidata} />
+              <Candidata
+                candidata={candidata}
+                alContactar={(elegida) => {
+                  setAviso(null)
+                  setContactada(elegida)
+                }}
+              />
             </li>
           ))}
         </ul>
+      )}
+
+      {contactada && (
+        <FormularioDeContacto
+          candidata={contactada}
+          proyectoId={proyecto.id}
+          perfilId={perfil.id}
+          alCerrar={() => setContactada(null)}
+          alEnviar={avisarEnvio}
+        />
       )}
     </section>
   )

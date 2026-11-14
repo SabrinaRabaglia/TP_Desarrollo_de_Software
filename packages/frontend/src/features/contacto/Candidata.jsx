@@ -28,7 +28,7 @@ const Candidata = ({ candidata, alContactar }) => {
           aria-describedby={
             candidata.aceptaMensajeriaInterna ? undefined : idDeLaAclaracion
           }
-          onClick={() => alContactar?.(candidata)}
+          onClick={() => alContactar(candidata)}
         >
           Contactar
         </Button>
