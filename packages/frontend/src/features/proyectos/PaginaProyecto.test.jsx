@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter, Route, Routes } from "react-router-dom"
+import { AuthProvider } from "../../context/AuthContext"
 import { obtenerProyecto } from "../../service/proyectosService"
 import PaginaProyecto from "./PaginaProyecto"
 
@@ -27,11 +28,13 @@ const proyecto = {
 
 const renderizarEn = (ruta) =>
   render(
-    <MemoryRouter initialEntries={[ruta]}>
-      <Routes>
-        <Route path="/proyectos/:id" element={<PaginaProyecto />} />
-      </Routes>
-    </MemoryRouter>,
+    <AuthProvider>
+      <MemoryRouter initialEntries={[ruta]}>
+        <Routes>
+          <Route path="/proyectos/:id" element={<PaginaProyecto />} />
+        </Routes>
+      </MemoryRouter>
+    </AuthProvider>,
   )
 
 describe("PaginaProyecto", () => {

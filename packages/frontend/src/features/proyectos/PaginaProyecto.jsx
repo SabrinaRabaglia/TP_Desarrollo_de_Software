@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import Cargando from "../../components/cargando/Cargando"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
+import { useAuth } from "../../context/AuthContext"
 import {
   ESTADOS_DE_PROYECTO,
   obtenerProyecto,
@@ -12,6 +13,7 @@ import "./PaginaProyecto.css"
 
 const PaginaProyecto = () => {
   const { id } = useParams()
+  const { usuario } = useAuth()
 
   const [proyecto, setProyecto] = useState(null)
   const [cargando, setCargando] = useState(true)
@@ -51,6 +53,12 @@ const PaginaProyecto = () => {
     )
   }
 
+  // Solo el colectivo dueño busca personas, y un proyecto cerrado ya no busca.
+  const puedeBuscarCandidatas =
+    usuario?.rol === "COLECTIVO" &&
+    usuario.entidad?.id === proyecto.colectivo.id &&
+    proyecto.estado !== "CERRADO"
+
   return (
     <article className="pagina-proyecto">
       <header className="pagina-proyecto-encabezado">
@@ -72,7 +80,15 @@ const PaginaProyecto = () => {
         ) : (
           <div className="pagina-proyecto-grilla">
             {proyecto.perfiles.map((perfil) => (
-              <PerfilRequerido key={perfil.id} perfil={perfil} />
+              <PerfilRequerido
+                key={perfil.id}
+                perfil={perfil}
+                enlaceACandidatas={
+                  puedeBuscarCandidatas
+                    ? `/proyectos/${proyecto.id}/perfiles/${perfil.id}/candidatas`
+                    : undefined
+                }
+              />
             ))}
           </div>
         )}

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import ListaDeHabilidades from "../../components/listaDeHabilidades/ListaDeHabilidades"
 import "./PerfilRequerido.css"
 
@@ -14,7 +15,8 @@ const GrupoDeHabilidades = ({ titulo, habilidades }) => {
   )
 }
 
-const PerfilRequerido = ({ perfil }) => {
+// enlaceACandidatas solo llega si el usuario es el colectivo dueño del proyecto.
+const PerfilRequerido = ({ perfil, enlaceACandidatas }) => {
   return (
     <article className="perfil">
       <h3>{perfil.nombre}</h3>
@@ -33,6 +35,7 @@ const PerfilRequerido = ({ perfil }) => {
         titulo="Habilidades opcionales"
         habilidades={perfil.habilidadesOpcionales}
       />
+      {enlaceACandidatas && <Link to={enlaceACandidatas}>Ver candidatas</Link>}
     </article>
   )
 }
