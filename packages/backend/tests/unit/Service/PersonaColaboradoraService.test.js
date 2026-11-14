@@ -266,7 +266,12 @@ describe("PersonaColaboradoraService", () => {
       rol: "PERSONA_COLABORADORA",
       entidad: id,
     })
-    const colaboraEn = async (persona, colectivoId, esAnonima = false) => {
+    // Colaborar es tener una postulación aceptada.
+    const postulaEn = async (
+      persona,
+      colectivoId,
+      { esAnonima = false, estado = "ACEPTADA" } = {},
+    ) => {
       const proyecto = await proyectoRepository.save({
         colectivo: colectivoId,
         perfiles: [],
@@ -275,8 +280,11 @@ describe("PersonaColaboradoraService", () => {
         personaColaboradora: { id: persona.id },
         proyecto: { id: proyecto.id },
         esAnonima,
+        estado,
       })
     }
+    const colaboraEn = (persona, colectivoId, esAnonima = false) =>
+      postulaEn(persona, colectivoId, { esAnonima })
 
     test("la propia persona ve sus medios de contacto con el valor", async () => {
       const persona = await service.create(datos)
@@ -319,6 +327,18 @@ describe("PersonaColaboradoraService", () => {
         service.mediosDeContactoPara(persona.id, colectivo("colectivo-1")),
       ).rejects.toThrow(NoAutorizado)
     })
+
+    test.each(["PENDIENTE", "RECHAZADA"])(
+      "una postulación %s no le da acceso al colectivo",
+      async (estado) => {
+        const persona = await service.create(datos)
+        await postulaEn(persona, "colectivo-1", { estado })
+
+        await expect(
+          service.mediosDeContactoPara(persona.id, colectivo("colectivo-1")),
+        ).rejects.toThrow(NoAutorizado)
+      },
+    )
 
     test("una colaboración anónima también le da acceso al colectivo", async () => {
       const persona = await service.create(datos)

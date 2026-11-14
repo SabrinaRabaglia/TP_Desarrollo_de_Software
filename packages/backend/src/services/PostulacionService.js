@@ -1,4 +1,5 @@
 import Postulacion from "../domain/Postulacion.js"
+import { EstadoPostulacion } from "../domain/enums/EstadoPostulacion.js"
 import { AlreadyExists, InvalidReference, NoAutorizado } from "../errors/ApplicationErrors.js"
 
 export default class PostulacionService {
@@ -107,11 +108,16 @@ export default class PostulacionService {
               presentacion: persona.presentacion,
               habilidades: persona.habilidades,
               cuentas: persona.cuentas,
-              mediosDeContacto: persona.mediosDeContacto.map((m) => ({
-                id: m.id,
-                tipo: m.tipo,
-                valor: m.valor,
-              })),
+              // Como en los datos de contacto: el colectivo los ve recién
+              // cuando la persona colabora, es decir, con la postulación aceptada.
+              mediosDeContacto:
+                postulacion.estado === EstadoPostulacion.ACEPTADA
+                  ? persona.mediosDeContacto.map((m) => ({
+                      id: m.id,
+                      tipo: m.tipo,
+                      valor: m.valor,
+                    }))
+                  : [],
             }
           : null,
       }
@@ -128,7 +134,8 @@ export default class PostulacionService {
     return postulacion
   }
 
-  aceptar = async (id) => {
+  // Solo el colectivo dueño del proyecto revisa las postulaciones de sus perfiles.
+  postulacionARevisar = async (id, colectivoId) => {
     const postulacion = await this.postulacionRepository.findById(id)
     if (!postulacion) {
       throw new InvalidReference("Postulacion no encontrada")
@@ -140,6 +147,17 @@ export default class PostulacionService {
     if (!proyecto || !perfil) {
         throw new InvalidReference("Perfil no encontrado")
     }
+    if (String(proyecto.colectivo) !== String(colectivoId)) {
+      throw new NoAutorizado("El proyecto no pertenece al colectivo autenticado")
+    }
+    return { postulacion, proyecto, perfil }
+  }
+
+  aceptar = async (id, colectivoId) => {
+    const { postulacion, proyecto, perfil } = await this.postulacionARevisar(
+      id,
+      colectivoId,
+    )
     perfil.assertPuedeAceptarPostulaciones()
     postulacion.aceptar()
     perfil.agregarPostulacion(id)
@@ -147,11 +165,8 @@ export default class PostulacionService {
     return await this.postulacionRepository.save(postulacion)
   }
 
-  rechazar = async (id) => {
-    const postulacion = await this.postulacionRepository.findById(id)
-    if (!postulacion) {
-      throw new InvalidReference("Postulacion no encontrada")
-    }
+  rechazar = async (id, colectivoId) => {
+    const { postulacion } = await this.postulacionARevisar(id, colectivoId)
     postulacion.rechazar()
     return await this.postulacionRepository.save(postulacion)
   }

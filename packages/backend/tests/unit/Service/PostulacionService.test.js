@@ -13,6 +13,7 @@ import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColabo
 import {
   AlreadyExists,
   InvalidReference,
+  NoAutorizado,
 } from "../../../src/errors/ApplicationErrors.js"
 import { DomainRuleError } from "../../../src/domain/errors/DomainErrors.js"
 
@@ -125,7 +126,7 @@ describe("PostulacionService", () => {
 
   test("aceptar una postulación actualiza su estado y la agrega al perfil", async () => {
     const postulacion = await service.create(datos)
-    const aceptada = await service.aceptar(postulacion.id)
+    const aceptada = await service.aceptar(postulacion.id, "colectivo-1")
 
     expect(aceptada.estado).toBe("ACEPTADA")
     expect(perfil.postulacionesAceptadas).toContain(postulacion.id)
@@ -133,8 +134,21 @@ describe("PostulacionService", () => {
 
   test("rechazar una postulación actualiza su estado a rechazada", async () => {
     const postulacion = await service.create(datos)
-    const rechazada = await service.rechazar(postulacion.id)
+    const rechazada = await service.rechazar(postulacion.id, "colectivo-1")
 
     expect(rechazada.estado).toBe("RECHAZADA")
   })
+
+  test.each(["aceptar", "rechazar"])(
+    "otro colectivo no puede %s la postulación",
+    async (accion) => {
+      const postulacion = await service.create(datos)
+
+      await expect(
+        service[accion](postulacion.id, "otro-colectivo"),
+      ).rejects.toThrow(NoAutorizado)
+      expect(postulacion.estado).toBe("PENDIENTE")
+      expect(perfil.postulacionesAceptadas).toEqual([])
+    },
+  )
 })

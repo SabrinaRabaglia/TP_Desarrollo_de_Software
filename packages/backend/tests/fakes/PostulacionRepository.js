@@ -1,4 +1,5 @@
 import ProyectoRepository from "./ProyectoRepository.js"
+import { EstadoPostulacion } from "../../src/domain/enums/EstadoPostulacion.js"
 
 export default class PostulacionRepository {
   constructor() {
@@ -68,6 +69,7 @@ export default class PostulacionRepository {
     )
     return this.postulaciones.some(
       (p) =>
+        p.estado === EstadoPostulacion.ACEPTADA &&
         String(p.personaColaboradora?.id ?? p.personaColaboradora?._id ?? p.personaColaboradora) ===
           String(personaId) &&
         (ids.includes(String(p.proyecto?.id ?? p.proyecto?._id ?? p.proyecto)) ||
