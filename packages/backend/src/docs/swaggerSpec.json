@@ -46,7 +46,7 @@
     },
     {
       "name": "Notificaciones",
-      "description": "Mensajes internos que un colectivo envía a personas colaboradoras por un perfil, replicados por sus medios de contacto"
+      "description": "Mensajes internos que un colectivo envía a personas colaboradoras por un perfil, replicados por sus medios de contacto. Van en un solo sentido: del colectivo a la persona. Todos exigen token. El alta devuelve la notificación con ids; los listados (bandeja de la persona y enviados del colectivo) devuelven nombres."
     },
     {
       "name": "Catálogos",
@@ -807,8 +807,9 @@
       "get": {
         "tags": ["Notificaciones"],
         "summary": "Bandeja de una persona colaboradora",
-        "description": "Devuelve los mensajes internos que recibió la persona, del más nuevo al más viejo. Responde 404 si la persona no existe.",
+        "description": "Devuelve los mensajes internos que recibió la persona, del más nuevo al más viejo, con el nombre del colectivo, el título del proyecto y el nombre del perfil. Si el proyecto o el perfil ya no existen, ese dato viene en `null`. Solo puede leerla la propia persona; cualquier otro usuario recibe `403`. Responde 404 si la persona no existe.",
         "operationId": "listarNotificacionesDePersona",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "$ref": "#/components/parameters/IdPath"
@@ -822,14 +823,41 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Notificacion"
+                    "$ref": "#/components/schemas/NotificacionConNombres"
                   }
-                }
+                },
+                "example": [
+                  {
+                    "id": "6650a1b2c3d4e5f6a7b8c9e1",
+                    "fecha": "2026-11-13T21:30:00.000Z",
+                    "contenido": "Hola! Tu perfil encaja con nuestro proyecto, ¿te interesa sumarte?",
+                    "colectivo": {
+                      "id": "64f1a2b3c4d5e6f7a8b9c010",
+                      "nombre": "Huerta Comunitaria Sur"
+                    },
+                    "proyecto": {
+                      "id": "64f1a2b3c4d5e6f7a8b9c020",
+                      "titulo": "Sitio web de la huerta"
+                    },
+                    "perfil": {
+                      "id": "64f1a2b3c4d5e6f7a8b9c021",
+                      "nombre": "Frontend"
+                    },
+                    "pendienteDeEnvio": false,
+                    "mediosExternosUtilizados": ["EMAIL"]
+                  }
+                ]
               }
             }
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -1076,6 +1104,72 @@
           },
           "409": {
             "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/colectivos/{id}/notificaciones": {
+      "get": {
+        "tags": ["Notificaciones"],
+        "summary": "Mensajes enviados por un colectivo",
+        "description": "Devuelve los mensajes internos que envió el colectivo, del más nuevo al más viejo, con el nombre de fantasía de la destinataria, el título del proyecto y el nombre del perfil. Si el proyecto o el perfil ya no existen, ese dato viene en `null`. Los medios de contacto de la persona no se exponen. Solo puede leerlos el propio colectivo; cualquier otro usuario recibe `403`.",
+        "operationId": "listarNotificacionesDeColectivo",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notificaciones enviadas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotificacionEnviada"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "6650a1b2c3d4e5f6a7b8c9e1",
+                    "fecha": "2026-11-13T21:30:00.000Z",
+                    "contenido": "Hola! Tu perfil encaja con nuestro proyecto, ¿te interesa sumarte?",
+                    "colectivo": {
+                      "id": "64f1a2b3c4d5e6f7a8b9c010",
+                      "nombre": "Huerta Comunitaria Sur"
+                    },
+                    "proyecto": {
+                      "id": "64f1a2b3c4d5e6f7a8b9c020",
+                      "titulo": "Sitio web de la huerta"
+                    },
+                    "perfil": {
+                      "id": "64f1a2b3c4d5e6f7a8b9c021",
+                      "nombre": "Frontend"
+                    },
+                    "pendienteDeEnvio": false,
+                    "mediosExternosUtilizados": ["EMAIL"],
+                    "personaColaboradora": {
+                      "id": "64f1a2b3c4d5e6f7a8b9c003",
+                      "nombreFantasia": "lucia.dev"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
@@ -1565,8 +1659,9 @@
       "post": {
         "tags": ["Notificaciones"],
         "summary": "Contactar a una persona por un perfil",
-        "description": "El colectivo dueño del proyecto le envía un mensaje interno a una persona colaboradora por uno de sus perfiles, y el mensaje se replica por todos los medios de contacto de la persona. Si algún medio externo falla, el mensaje interno se guarda igual y se replica por los demás. Responde 409 si la persona no acepta mensajería interna o si el proyecto está cerrado, y 404 si el proyecto, el perfil o la persona no existen.",
+        "description": "El colectivo dueño del proyecto le envía un mensaje interno a una persona colaboradora por uno de sus perfiles, y el mensaje se replica por todos los medios de contacto de la persona. Si algún medio externo falla, el mensaje interno se guarda igual y se replica por los demás. Exige el token de un colectivo: responde 403 si el usuario es una persona colaboradora o si el proyecto es de otro colectivo. Responde 409 si la persona no acepta mensajería interna o si el proyecto está cerrado, y 404 si el proyecto, el perfil o la persona no existen.",
         "operationId": "contactarPersonaPorPerfil",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "$ref": "#/components/parameters/IdPath"
@@ -1591,7 +1686,7 @@
         },
         "responses": {
           "201": {
-            "description": "Notificación enviada",
+            "description": "Notificación enviada. Viene con los ids del colectivo, la persona y el perfil; para verla con nombres se usan los listados.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1602,6 +1697,12 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -2795,6 +2896,7 @@
       },
       "Notificacion": {
         "type": "object",
+        "description": "Notificación tal como la devuelve el alta: con ids. Los listados devuelven `NotificacionConNombres` o `NotificacionEnviada`.",
         "required": [
           "id",
           "fecha",
@@ -2860,6 +2962,109 @@
             "format": "date-time"
           }
         }
+      },
+      "NotificacionConNombres": {
+        "type": "object",
+        "description": "Notificación como la devuelve la bandeja de la persona: con nombres en lugar de ids. Si el colectivo, el proyecto o el perfil ya no existen, ese dato viene en `null`.",
+        "required": [
+          "id",
+          "fecha",
+          "contenido",
+          "colectivo",
+          "proyecto",
+          "perfil",
+          "pendienteDeEnvio",
+          "mediosExternosUtilizados"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "contenido": {
+            "type": "string"
+          },
+          "colectivo": {
+            "type": "object",
+            "nullable": true,
+            "description": "Colectivo que envió la notificación.",
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/ObjectId"
+              },
+              "nombre": {
+                "type": "string"
+              }
+            }
+          },
+          "proyecto": {
+            "type": "object",
+            "nullable": true,
+            "description": "Proyecto del perfil por el que se contactó a la persona.",
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/ObjectId"
+              },
+              "titulo": {
+                "type": "string"
+              }
+            }
+          },
+          "perfil": {
+            "type": "object",
+            "nullable": true,
+            "description": "Perfil por el que se contactó a la persona. Su `nombre` es opcional y puede venir en `null`.",
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/ObjectId"
+              },
+              "nombre": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          },
+          "pendienteDeEnvio": {
+            "type": "boolean",
+            "description": "true mientras quede algún medio de contacto por el que todavía no se envió ni se agotaron los reintentos."
+          },
+          "mediosExternosUtilizados": {
+            "type": "array",
+            "description": "Tipos de medio de contacto por los que ya se replicó la notificación. Los valores (emails y teléfonos) no se exponen.",
+            "items": {
+              "$ref": "#/components/schemas/TipoMedioContacto"
+            }
+          }
+        }
+      },
+      "NotificacionEnviada": {
+        "description": "Notificación como la ve el colectivo que la envió: la misma forma que `NotificacionConNombres`, más el nombre de fantasía de la destinataria. No incluye sus medios de contacto.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NotificacionConNombres"
+          },
+          {
+            "type": "object",
+            "required": ["personaColaboradora"],
+            "properties": {
+              "personaColaboradora": {
+                "type": "object",
+                "description": "Persona colaboradora destinataria.",
+                "properties": {
+                  "id": {
+                    "$ref": "#/components/schemas/ObjectId"
+                  },
+                  "nombreFantasia": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ]
       },
       "Hito": {
         "type": "object",
