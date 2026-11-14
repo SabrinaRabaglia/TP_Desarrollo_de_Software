@@ -15,6 +15,12 @@ export default class NotificacionRepository {
       .toSorted((a, b) => b.fecha - a.fecha)
   }
 
+  async findByColectivo(colectivoId) {
+    return this.notificaciones
+      .filter((notificacion) => notificacion.colectivo === colectivoId)
+      .toSorted((a, b) => b.fecha - a.fecha)
+  }
+
   async deleteByPersonaColaboradora(personaColaboradoraId) {
     this.notificaciones = this.notificaciones.filter(
       (notificacion) =>

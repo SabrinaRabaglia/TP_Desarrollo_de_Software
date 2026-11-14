@@ -30,5 +30,12 @@ routes.get(
   autorizarEntidad(RolUsuario.PERSONA_COLABORADORA),
   notificacionController.getAllByPersonaColaboradora,
 )
+routes.get(
+  "/colectivos/:id/notificaciones",
+  autenticar,
+  validateId,
+  autorizarEntidad(RolUsuario.COLECTIVO),
+  notificacionController.getAllByColectivo,
+)
 
 export default routes

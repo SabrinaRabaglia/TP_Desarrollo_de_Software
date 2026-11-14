@@ -86,4 +86,20 @@ export default class NotificacionService {
       )
     return await Promise.all(notificaciones.map(this.conNombres))
   }
+
+  // Al borrar una persona se borran sus mensajes, así que la destinataria siempre existe.
+  // Solo se devuelve su nombre: los medios de contacto no salen de la notificación.
+  getAllByColectivo = async (colectivoId) => {
+    const notificaciones =
+      await this.notificacionRepository.findByColectivo(colectivoId)
+    return await Promise.all(
+      notificaciones.map(async (notificacion) => ({
+        ...(await this.conNombres(notificacion)),
+        personaColaboradora: {
+          id: notificacion.personaColaboradora.id,
+          nombreFantasia: notificacion.personaColaboradora.nombreFantasia,
+        },
+      })),
+    )
+  }
 }

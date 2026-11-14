@@ -271,4 +271,55 @@ describe("NotificacionService", () => {
       ).rejects.toThrow(EntityNotFound)
     })
   })
+
+  describe("getAllByColectivo", () => {
+    test("devuelve cada notificación enviada con el nombre de la destinataria, sin sus medios de contacto", async () => {
+      await contactar(ana.id, "Primera")
+
+      const mensajes = await service.getAllByColectivo(colectivo.id)
+
+      expect(mensajes).toEqual([
+        {
+          id: expect.any(String),
+          fecha: expect.any(Date),
+          contenido: "Primera",
+          colectivo: { id: colectivo.id, nombre: "Huerta Comunitaria Sur" },
+          personaColaboradora: { id: ana.id, nombreFantasia: "anag" },
+          proyecto: { id: proyecto.id, titulo: "Sitio web de la huerta" },
+          perfil: { id: perfil.id, nombre: perfil.nombre },
+          pendienteDeEnvio: true,
+          mediosExternosUtilizados: [],
+        },
+      ])
+      expect(JSON.stringify(mensajes)).not.toContain("ana@example.com")
+    })
+
+    test("devuelve solo las del colectivo, de la más nueva a la más vieja", async () => {
+      const primera = await contactar(ana.id, "Primera")
+      primera.fecha = new Date("2026-01-01T00:00:00.000Z")
+      await contactar(ana.id, "Segunda")
+
+      const mensajes = await service.getAllByColectivo(colectivo.id)
+
+      expect(mensajes.map((mensaje) => mensaje.contenido)).toEqual([
+        "Segunda",
+        "Primera",
+      ])
+      expect(await service.getAllByColectivo("otro-colectivo")).toEqual([])
+    })
+
+    test("si el perfil ya no existe, lo devuelve en null sin fallar", async () => {
+      await contactar(ana.id)
+      await perfilService.delete(proyecto.id, perfil.id)
+
+      const [mensaje] = await service.getAllByColectivo(colectivo.id)
+
+      expect(mensaje.perfil).toBeNull()
+      expect(mensaje.proyecto).toBeNull()
+      expect(mensaje.personaColaboradora).toEqual({
+        id: ana.id,
+        nombreFantasia: "anag",
+      })
+    })
+  })
 })

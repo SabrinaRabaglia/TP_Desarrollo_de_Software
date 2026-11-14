@@ -13,6 +13,13 @@ export default class NotificacionRepository {
       .sort({ fecha: -1 })
   }
 
+  async findByColectivo(colectivoId) {
+    return await this.model
+      .find({ colectivo: colectivoId })
+      .sort({ fecha: -1 })
+      .populate("personaColaboradora", "nombreFantasia")
+  }
+
   async deleteByPersonaColaboradora(personaColaboradoraId) {
     await this.model.deleteMany({ personaColaboradora: personaColaboradoraId })
   }

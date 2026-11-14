@@ -97,6 +97,8 @@ const notificaciones = (proyectoId, perfilId) =>
 const bandeja = (personaId) =>
   `/personas-colaboradoras/${personaId}/notificaciones`
 
+const enviados = (colectivoId) => `/colectivos/${colectivoId}/notificaciones`
+
 beforeAll(async () => {
   jest.spyOn(console, "log").mockImplementation(() => {})
   await conectar("notificaciones")
@@ -372,5 +374,65 @@ describe("notificaciones", () => {
   test("solo la propia persona puede leer su bandeja", async () => {
     await request("GET", bandeja(ana.id), undefined, 403, tokens.anon)
     await request("GET", bandeja(ana.id), undefined, 403, tokens.colectivo)
+  })
+
+  test("el colectivo lista sus mensajes enviados con el nombre de la destinataria, sin sus datos de contacto", async () => {
+    const enviada = await request(
+      "POST",
+      notificaciones(proyecto.id, perfil.id),
+      { personaColaboradora: ana.id, contenido: "Mensaje enviado" },
+      201,
+      tokens.colectivo,
+    )
+    await envioDeNotificaciones.procesarPendientes()
+
+    const mensajes = await request(
+      "GET",
+      enviados(colectivo.id),
+      undefined,
+      200,
+      tokens.colectivo,
+    )
+
+    expect(mensajes[0]).toEqual({
+      id: enviada.id,
+      fecha: enviada.fecha,
+      contenido: "Mensaje enviado",
+      colectivo: { id: colectivo.id, nombre: "Huerta" },
+      personaColaboradora: { id: ana.id, nombreFantasia: "anag" },
+      proyecto: { id: proyecto.id, titulo: "Web" },
+      perfil: { id: perfil.id, nombre: null },
+      pendienteDeEnvio: false,
+      mediosExternosUtilizados: ["EMAIL", "WHATSAPP"],
+    })
+    expect(JSON.stringify(mensajes)).not.toContain("ana@example.com")
+    expect(JSON.stringify(mensajes)).not.toContain("mediosDeContacto")
+  })
+
+  test("solo el propio colectivo puede listar sus enviados", async () => {
+    const otroColectivo = await request(
+      "POST",
+      "/colectivos",
+      { nombre: "Ajeno", descripcion: "Colectivo ajeno", tipo: "ONG" },
+      201,
+    )
+    const tokenDelOtro = await iniciarSesionDe(
+      "ajeno@colectivo.test",
+      "COLECTIVO",
+      otroColectivo.id,
+    )
+
+    await request("GET", enviados(colectivo.id), undefined, 401)
+    await request("GET", enviados(colectivo.id), undefined, 403, tokenDelOtro)
+    await request("GET", enviados(colectivo.id), undefined, 403, tokens.ana)
+    expect(
+      await request(
+        "GET",
+        enviados(otroColectivo.id),
+        undefined,
+        200,
+        tokenDelOtro,
+      ),
+    ).toEqual([])
   })
 })

@@ -33,4 +33,14 @@ export default class NotificacionController {
       next(error)
     }
   }
+
+  getAllByColectivo = async (req, res, next) => {
+    try {
+      res
+        .status(200)
+        .json(await this.notificacionService.getAllByColectivo(req.params.id))
+    } catch (error) {
+      next(error)
+    }
+  }
 }
