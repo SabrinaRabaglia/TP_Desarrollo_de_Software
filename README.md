@@ -231,6 +231,19 @@ En producción la base es un cluster gratuito (M0) de MongoDB Atlas. El workflow
 
 Si falta el secret, el deploy falla con un error que lo indica, antes de tocar el Container App.
 
+## Frontend en producción
+
+El frontend se publica en una Azure Static Web App. Con cada push a `main`, el workflow `deploy-frontend.yml` compila `packages/frontend` y sube la carpeta `build`. La URL del backend no se configura a mano: el workflow le pregunta a Azure el dominio del Container App y la pasa al build como `REACT_APP_API_URL`.
+
+Para configurarlo por primera vez:
+
+1. Crear la Static Web App en el portal de Azure, con plan Free y origen de despliegue **Other**.
+2. Copiar su token desde **Manage deployment token** y guardarlo como secret `AZURE_STATIC_WEB_APPS_API_TOKEN` del repositorio.
+
+Si falta el secret, el deploy falla con un error que lo indica.
+
+Las rutas las resuelve React Router en el navegador. `packages/frontend/public/staticwebapp.config.json` le dice a Azure que devuelva `index.html` para cualquier ruta que no sea un archivo, así un enlace directo a `/mensajes` o recargar la página no dan 404.
+
 ## Autenticación
 
 Los usuarios del sistema son colectivos o personas colaboradoras. Cada usuario tiene un email, una contraseña, un `rol` (`COLECTIVO` o `PERSONA_COLABORADORA`) y la `entidad` a la que representa. La colección es `usuarios` y la contraseña se guarda como hash scrypt; la API nunca la devuelve.
