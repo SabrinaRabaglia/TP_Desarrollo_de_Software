@@ -87,18 +87,27 @@ export const obtenerColaboradora = async (id) => {
   return aColaboradora(response.data)
 }
 
-// Personas que encajan con el perfil, de la que más encaja a la que menos
-// (el orden lo decide el back).
+// Personas con al menos una habilidad requerida del perfil. El orden lo decide
+// el back: primero las de coincidencia total y, a igual nivel, las que cubren
+// más habilidades opcionales.
 export const buscarCandidatas = async (perfilId) => {
   const response = await api.get("/personas-colaboradoras", {
     params: { perfiles: perfilId },
   })
   // Con `perfiles`, el backend devuelve todas las candidatas en una sola
   // página: { metadata, data }.
-  return response.data.data.map((personaBack) => ({
-    ...aColaboradora(personaBack),
-    aceptaMensajeriaInterna: personaBack.aceptaMensajeriaInterna,
-  }))
+  return response.data.data.map((personaBack) => {
+    const coincidentes = new Set(personaBack.habilidadesCoincidentes)
+    return {
+      ...aColaboradora(personaBack),
+      aceptaMensajeriaInterna: personaBack.aceptaMensajeriaInterna,
+      coincidencia: personaBack.coincidencia,
+      habilidadesCoincidentes: personaBack.habilidades
+        .filter((habilidad) => coincidentes.has(habilidad.id))
+        .map((habilidad) => habilidad.titulo),
+      opcionalesCubiertas: personaBack.habilidadesOpcionalesCubiertas,
+    }
+  })
 }
 
 export const obtenerColaboradoresPerfil = async (proyectoId, perfilId) => {

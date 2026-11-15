@@ -15,6 +15,18 @@
   color: var(--color-texto-secundario);
 }
 
+.pagina-candidatas-seleccion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem var(--espacio-4);
+}
+
+.pagina-candidatas-seleccion p {
+  color: var(--color-texto-secundario);
+}
+
 .pagina-candidatas-lista {
   display: grid;
   grid-template-columns: 1fr;
