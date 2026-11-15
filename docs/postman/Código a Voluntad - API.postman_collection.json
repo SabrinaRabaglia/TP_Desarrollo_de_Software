@@ -1977,6 +1977,66 @@
           "response": []
         },
         {
+          "name": "Postularse como la persona al perfil del proyecto",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"tokenPersona\")) {",
+                  "  throw new Error(\"Ejecutá primero Personas colaboradoras > Iniciar sesión como la persona.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"perfilId\")) {",
+                  "  throw new Error(\"Ejecutá primero Perfiles > Crear perfil.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Con una postulación en el proyecto, la persona ya no se sugiere para sus perfiles.",
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
+                  "pm.test(\"queda pendiente\", () => pm.expect(pm.response.json().estado).to.eql(\"PENDIENTE\"))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPersona}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"esAnonima\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoId}}/perfiles/{{perfilId}}/postulaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoId}}",
+                "perfiles",
+                "{{perfilId}}",
+                "postulaciones"
+              ]
+            }
+          }
+        },
+        {
           "name": "Buscar colaboradores para el perfil",
           "event": [
             {
