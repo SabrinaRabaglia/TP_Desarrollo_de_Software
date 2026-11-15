@@ -1,4 +1,4 @@
-import { Button, Card, CardContent } from "@mui/material"
+import { Button, Card, CardContent, FormControl, InputLabel, MenuItem, Select } from "@mui/material"
 import Cargando from "../../../components/cargando/Cargando"
 import MensajeDeError from "../../../components/mensajeDeError/MensajeDeError"
 import { mensajeDeError } from "../../../service/api"
@@ -6,7 +6,7 @@ import { Link } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { buscarProyectos, ESTADOS_DE_PROYECTO } from "../../../service/proyectosService"
 import { useAuth } from "../../../context/AuthContext"
-import { buscarColaboradoras, obtenerPerfilPropio } from "../../../service/colaboradorasService"
+import { obtenerPerfilPropio } from "../../../service/colaboradorasService"
 
 const ProyectosRecomendados = () => {
  
@@ -17,6 +17,9 @@ const ProyectosRecomendados = () => {
   const [paginaActual, setPaginaActual] = useState(1)
   const [totalPaginas, setTotalPaginas] = useState(1)
   const [sinHabilidades, setSinHabilidades] = useState(false)
+
+  const [modalidad, setModalidad] = useState(""); // Vacio = todas
+  const [orden, setOrden] = useState("recientes");
 
   const { usuario } = useAuth() 
 
@@ -46,9 +49,11 @@ const ProyectosRecomendados = () => {
 
         const respuesta = await buscarProyectos({
           habilidades: idsHabilidades,
+          modalidad: modalidad || undefined, // Si está vacío, no lo manda
+          orden: orden,
           page: paginaActual,
           limit: 10
-        })
+        });
         
         setProyectos(respuesta.data || respuesta.proyectos)
             
@@ -63,7 +68,7 @@ const ProyectosRecomendados = () => {
     }
 
     cargar()
-  }, [paginaActual, usuario])
+  }, [paginaActual, usuario, modalidad, orden])
 
   const renderContenido = () => {
     if (cargando) return <Cargando texto="Buscando proyectos que hagan match con vos..." />
@@ -113,6 +118,41 @@ const ProyectosRecomendados = () => {
       <p className="inicio-bajada">
         Basado en tus habilidades, estos colectivos sociales están buscando a alguien como vos.
       </p>
+      <div style={{ display: 'flex', gap: '20px', marginBottom: '30px', alignItems: 'center' }}>
+  {/* Filtro de Modalidad */}
+  <FormControl size="small" style={{ minWidth: 200 }}>
+    <InputLabel>Modalidad</InputLabel>
+    <Select
+      value={modalidad}
+      label="Modalidad"
+      onChange={(e) => {
+        setModalidad(e.target.value);
+        setPaginaActual(1); // Siempre que filtrás, volvés a la pag 1
+      }}
+    >
+      <MenuItem value=""><em>Todas</em></MenuItem>
+      <MenuItem value="GRATUITA">Gratuita</MenuItem>
+      <MenuItem value="CON_INCENTIVO_ECONOMICO">Con incentivo económico</MenuItem>
+      <MenuItem value="CON_POSIBILIDAD_CONTRATACION">Con posibilidad de contratación</MenuItem>
+    </Select>
+  </FormControl>
+
+  {/* Filtro de Ordenamiento */}
+  <FormControl size="small" style={{ minWidth: 200 }}>
+    <InputLabel>Ordenar por</InputLabel>
+    <Select
+      value={orden}
+      label="Ordenar por"
+      onChange={(e) => {
+        setOrden(e.target.value);
+        setPaginaActual(1);
+      }}
+    >
+      <MenuItem value="recientes">Más recientes primero</MenuItem>
+      <MenuItem value="antiguos">Más antiguos primero</MenuItem>
+    </Select>
+  </FormControl>
+</div>
       
       {renderContenido()}
 
