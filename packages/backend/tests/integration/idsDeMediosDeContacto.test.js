@@ -18,7 +18,7 @@ beforeAll(async () => {
   server = app.listen(0, "127.0.0.1")
   await once(server, "listening")
   base = `http://127.0.0.1:${server.address().port}`
-},30000)
+}, 30000)
 
 afterAll(async () => {
   await new Promise((resolve) => server.close(resolve))

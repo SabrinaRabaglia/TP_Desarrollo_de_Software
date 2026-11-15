@@ -19,11 +19,11 @@ export default class ProyectoRepository {
   }
 
   async findAll() {
-  return {
-    proyectos: ProyectoRepository.proyectos,
-    total: ProyectoRepository.proyectos.length
+    return {
+      proyectos: ProyectoRepository.proyectos,
+      total: ProyectoRepository.proyectos.length,
+    }
   }
-}
 
   async findById(id) {
     return ProyectoRepository.proyectos.find((c) => c.id === id)

@@ -45,7 +45,7 @@ beforeAll(async () => {
     habilidadesRequeridas: [habilidades.cypress.id],
     habilidadesOpcionales: [habilidades.soapUi.id],
   }
-},30000)
+}, 30000)
 
 afterAll(async () => {
   await new Promise((resolve) => server.close(resolve))

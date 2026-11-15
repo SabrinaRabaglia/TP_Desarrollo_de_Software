@@ -199,7 +199,6 @@ describe("ProyectoService", () => {
       expect(obtenerDatos(await service.getAll())).toHaveLength(0)
     })
 
-    
     test("lanza EntityNotFound al intentar eliminar un proyecto inexistente", async () => {
       await expect(service.delete("id-inexistente")).rejects.toThrow(
         EntityNotFound,
@@ -392,4 +391,5 @@ describe("ProyectoService", () => {
         abierto,
       ])
     })
-  })})
+  })
+})

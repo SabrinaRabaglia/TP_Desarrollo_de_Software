@@ -81,9 +81,9 @@ describe("ProyectoController", () => {
         expect(proyectoServiceMock.getAll).not.toHaveBeenCalled()
         expect(res.status).toHaveBeenCalledWith(200)
         expect(res.json).toHaveBeenCalledWith({
-  metadata: expect.any(Object),
-  data: lista.map(guardado)
-})
+          metadata: expect.any(Object),
+          data: lista.map(guardado),
+        })
       },
     )
   })

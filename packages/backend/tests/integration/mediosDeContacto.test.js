@@ -140,7 +140,7 @@ beforeAll(async () => {
   ]) {
     tokens[email] = await iniciarSesion(email)
   }
-},30000)
+}, 30000)
 
 afterAll(async () => {
   await new Promise((resolve) => server.close(resolve))
