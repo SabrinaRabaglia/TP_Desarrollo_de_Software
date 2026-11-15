@@ -57,10 +57,14 @@ const aProyecto = (proyectoBack, colectivo, titulosDeHabilidades) => ({
   // NUEVO: Hitos para calcular el progreso
   hitos: proyectoBack.hitos || [],
 
-  colectivo,
-  perfiles: (proyectoBack.perfiles ?? []).map((perfil) =>
-    aPerfil(perfil, titulosDeHabilidades),
-  ),
+  perfiles: (proyectoBack.perfiles ?? []).map((perfil) => {
+    const perfilMapeado = aPerfil(perfil, titulosDeHabilidades);
+    return {
+      ...perfil,               // 1. Inyectamos los datos crudos del back (nombre, modalidad, cupos)
+      ...perfilMapeado,        // 2. Mantenemos lo que sea que hacía aPerfil para no romper nada
+      habilidadesRequeridas: perfil.habilidadesRequeridas // 3. Blindamos la lista de habilidades original
+    };
+  }),
 })
 
 const obtenerTitulosDeHabilidades = async () => {

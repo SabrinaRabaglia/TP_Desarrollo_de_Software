@@ -17,11 +17,52 @@ const ProyectosRecomendados = () => {
   const [paginaActual, setPaginaActual] = useState(1)
   const [totalPaginas, setTotalPaginas] = useState(1)
   const [sinHabilidades, setSinHabilidades] = useState(false)
+  const [misHabilidades, setMisHabilidades] = useState([])
 
   const [modalidad, setModalidad] = useState(""); // Vacio = todas
   const [orden, setOrden] = useState("recientes");
 
   const { usuario } = useAuth() 
+
+  // Función para calcular los cupos según el TP
+const calcularCupos = (perfil) => {
+  if (!perfil.limiteColaboraciones) {
+    return "Sin límite";
+  }
+  const aceptadas = perfil.colaboracionesAceptadas || 0;
+  const disponibles = perfil.limiteColaboraciones - aceptadas;
+  return disponibles > 0 ? `${disponibles} cupos disponibles` : "Sin cupos";
+};
+
+const analizarCoincidencia = (perfil, misHabilidadesIds) => {
+  // Atajamos los dos nombres posibles por si aProyecto lo renombró
+  const requeridas = perfil.habilidadesRequeridas || perfil.habilidades || [];
+  
+  const misHabilidadesStr = misHabilidadesIds.map(h => {
+    const id = h?.id || h?._id || h;
+    return typeof id === 'object' ? id.toString() : String(id);
+  });
+
+  const faltantes = requeridas.filter(req => {
+    if (!req) return false; 
+    
+    const idReq = req?.id || req?._id || req;
+    const idReqStr = typeof idReq === 'object' ? idReq.toString() : String(idReq);
+
+    return !misHabilidadesStr.includes(idReqStr);
+  });
+
+  // LOG CLAVE PARA DEBUGGEAR:
+  console.log(`🔍 Perfil: ${perfil.nombre}`);
+  console.log("   - Requeridas:", requeridas.map(r => r?.titulo || r?.nombre || r));
+  console.log("   - Faltantes:", faltantes.map(f => f?.titulo || f?.nombre || f));
+
+  if (faltantes.length === 0) {
+    return { nivel: "TOTAL", faltantes: [] };
+  }
+  
+  return { nivel: "PARCIAL", faltantes };
+};
 
   useEffect(() => {
     const cargar = async () => {
@@ -46,6 +87,7 @@ const ProyectosRecomendados = () => {
           return
         }
         const idsHabilidades = perfilCompleto.habilidades.map(h => h.id || h._id || h)
+        setMisHabilidades(idsHabilidades)
 
         const respuesta = await buscarProyectos({
           habilidades: idsHabilidades,
@@ -106,6 +148,43 @@ const ProyectosRecomendados = () => {
                   </Link>
                 </h3>
                 <p>{proyecto.descripcion}</p>
+
+                {/* NUEVO: Mapeo de los perfiles del proyecto */}
+                <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                  <h4 style={{ marginBottom: '5px' }}>Perfiles Requeridos:</h4>
+                  
+                  {proyecto.perfiles?.map(perfil => {
+                    // Calculamos los datos en vivo para este perfil
+                    const { nivel, faltantes } = analizarCoincidencia(perfil, misHabilidades);
+                    const textoCupos = calcularCupos(perfil);
+
+                    return (
+                      <div key={perfil.id || perfil._id} style={{ borderLeft: '4px solid #1976d2', paddingLeft: '12px' }}>
+                        <div style={{ fontWeight: 'bold' }}>
+                          {perfil.nombre}
+                        </div>
+                        
+                        <div style={{ fontSize: '0.9em', color: '#555', marginTop: '4px' }}>
+                          <span>Modalidad: {perfil.modalidadColaboracion || perfil.modalidad}</span>
+                          <span style={{ margin: '0 8px' }}>|</span>
+                          <span>{textoCupos}</span>
+                        </div>
+
+                        <div style={{ fontSize: '0.9em', marginTop: '4px' }}>
+                          Coincidencia:{' '}
+                          <strong style={{ color: nivel === 'TOTAL' ? 'green' : '#d32f2f' }}>
+                            {nivel}
+                          </strong>
+                          {nivel === "PARCIAL" && faltantes.length > 0 && (
+                            <span style={{ color: '#666', marginLeft: '5px' }}>
+                              (Faltan: {faltantes.map(f => f.nombre || f.titulo || f).join(', ')})
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </CardContent>
             </Card>
           </li>
@@ -158,7 +237,7 @@ const ProyectosRecomendados = () => {
       
       {renderContenido()}
 
-      {!cargando && totalPaginas > 1 && (
+      {!cargando && totalPaginas > 0 && (
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', margin: '30px 0' }}>
           <button 
             disabled={paginaActual === 1} 

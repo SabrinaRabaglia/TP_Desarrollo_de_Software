@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import { Card, CardContent } from "@mui/material"
+import { Button, Card, CardContent } from "@mui/material"
 import Cargando from "../../components/cargando/Cargando"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
 import {
@@ -10,6 +10,7 @@ import {
 import { mensajeDeError } from "../../service/api"
 import "./Inicio.css"
 import BarraDeBusqueda from "../../components/barraDeBusqueda/BarraDeBusqueda";
+import { useAuth } from "../../context/AuthContext"
 
 const Inicio = () => {
   const [proyectos, setProyectos] = useState([])
@@ -21,6 +22,8 @@ const Inicio = () => {
   const [paginaActual, setPaginaActual] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
 
+  const { usuario } = useAuth();
+
   useEffect(() => {
     const cargar = async () => {
       setCargando(true)
@@ -29,7 +32,7 @@ const Inicio = () => {
         const respuesta = await buscarProyectos({
           q: textoBusqueda,
           page: paginaActual,
-          limit:2 // TODO BORRAR
+          limit:10
         })
         // EXTRAEMOS SOLO EL ARRAY PARA QUE EL .map() FUNCIONE
         setProyectos(respuesta.proyectos) 
@@ -97,6 +100,25 @@ const Inicio = () => {
       </p>
       
       <h2>Proyectos</h2>
+      <div className="home-container">
+      {/* ... todo el contenido que ya tengas en tu home (hero, texto, etc) ... */}
+
+      {/* 3. Agregamos la condición: solo se renderiza si hay usuario Y es colaboradora */}
+      {usuario?.rol === 'PERSONA_COLABORADORA' && (
+        <div style={{ textAlign: 'center', marginTop: '30px' }}>
+          <Button 
+            component={Link} 
+            to="/recomendados" 
+            variant="contained" 
+            color="primary"
+            size="large"
+          >
+            Buscar Proyectos Recomendados
+          </Button>
+        </div>
+      )}
+      
+    </div>
 
       {/* ACÁ AGREGAMOS LA BARRA DE BÚSQUEDA */}
       <BarraDeBusqueda 
