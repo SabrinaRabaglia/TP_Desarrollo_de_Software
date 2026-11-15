@@ -71,4 +71,17 @@ describe("ConfirmarAccion", () => {
     expect(alConfirmar).toHaveBeenCalledTimes(1)
     expect(alCancelar).toHaveBeenCalledTimes(1)
   })
+
+  test("la confirmación es roja salvo que no sea peligrosa", () => {
+    const { unmount } = renderizar()
+    expect(
+      screen.getByRole("button", { name: "Sí, darme de baja" }),
+    ).toHaveClass("MuiButton-colorError")
+    unmount()
+
+    renderizar({ peligrosa: false })
+    expect(
+      screen.getByRole("button", { name: "Sí, darme de baja" }),
+    ).toHaveClass("MuiButton-colorPrimary")
+  })
 })

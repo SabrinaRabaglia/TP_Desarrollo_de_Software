@@ -2,6 +2,7 @@ import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom"
 import { AuthProvider } from "../../context/AuthContext"
+import { ProveedorDeAvisos } from "../../context/AvisosContext"
 import { obtenerProyecto } from "../../service/proyectosService"
 import PaginaProyecto from "./PaginaProyecto"
 
@@ -22,6 +23,8 @@ const proyecto = {
       modalidades: ["Gratuita"],
       habilidadesRequeridas: ["React"],
       habilidadesOpcionales: ["TypeScript"],
+      postulacionesAceptadas: [],
+      limiteColaboraciones: null,
     },
   ],
   hitos: [
@@ -52,19 +55,21 @@ const UbicacionActual = () => {
 const renderizarEn = (ruta) =>
   render(
     <AuthProvider>
-      <MemoryRouter initialEntries={[ruta]}>
-        <Routes>
-          <Route
-            path="/proyectos/:id"
-            element={
-              <>
-                <PaginaProyecto />
-                <UbicacionActual />
-              </>
-            }
-          />
-        </Routes>
-      </MemoryRouter>
+      <ProveedorDeAvisos>
+        <MemoryRouter initialEntries={[ruta]}>
+          <Routes>
+            <Route
+              path="/proyectos/:id"
+              element={
+                <>
+                  <PaginaProyecto />
+                  <UbicacionActual />
+                </>
+              }
+            />
+          </Routes>
+        </MemoryRouter>
+      </ProveedorDeAvisos>
     </AuthProvider>,
   )
 

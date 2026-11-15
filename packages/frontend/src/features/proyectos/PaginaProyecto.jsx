@@ -131,11 +131,10 @@ const PaginaProyecto = () => {
     )
   }
 
-  // Solo el colectivo dueño busca personas, y un proyecto cerrado ya no busca.
-  const puedeBuscarCandidatas =
+  // Solo el colectivo dueño revisa postulaciones y busca candidatas.
+  const esDueno =
     usuario?.rol === "COLECTIVO" &&
-    usuario.entidad?.id === proyecto.colectivo.id &&
-    proyecto.estado !== "CERRADO"
+    usuario.entidad?.id === proyecto.colectivo.id
 
   const hayEnlaces = proyecto.enlaceSistema || proyecto.enlaceRepositorio
 
@@ -234,11 +233,8 @@ const PaginaProyecto = () => {
                     key={perfil.id}
                     perfil={perfil}
                     proyectoId={proyecto.id}
-                    enlaceACandidatas={
-                      puedeBuscarCandidatas
-                        ? `/proyectos/${proyecto.id}/perfiles/${perfil.id}/candidatas`
-                        : undefined
-                    }
+                    proyectoAbierto={proyecto.estado === "PUBLICADO"}
+                    esDueno={esDueno}
                   />
                 ))}
               </div>

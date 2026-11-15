@@ -1,17 +1,25 @@
 .perfil {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: var(--espacio-4);
+  gap: var(--espacio-3);
+  padding: var(--espacio-5);
   border: var(--borde);
-  border-radius: var(--radio);
+  border-radius: var(--radio-grande);
   background-color: var(--color-superficie);
+}
+
+.perfil-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-2) var(--espacio-3);
 }
 
 .perfil-datos {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 0.25rem var(--espacio-4);
+  gap: var(--espacio-1) var(--espacio-4);
   margin: 0;
 }
 
@@ -23,19 +31,40 @@
   margin: 0;
 }
 
-.perfil-habilidades h4 {
-  margin: 0 0 0.5rem;
-  font-size: 0.875rem;
+.perfil-grupo h4 {
+  margin: 0 0 var(--espacio-2);
+  font-family: var(--fuente-texto);
+  font-size: var(--texto-chico);
   color: var(--color-texto-secundario);
 }
 
-/* Acciones del perfil: postularse, revisar postulaciones, ver colaboradores
-   y ver candidatas. Los botones son de MUI y toman los colores del tema. */
-.contenedor-btn {
+.perfil-ocupantes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.perfil-ocupantes li {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+/* Postularse, revisar postulaciones, ver candidatas y ver colaboradores.
+   Quedan abajo de todo aunque las tarjetas de la grilla midan distinto. */
+.perfil-acciones {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem var(--espacio-4);
+  gap: var(--espacio-2);
   margin-top: auto;
-  padding-top: 0.5rem;
+  padding-top: var(--espacio-2);
+}
+
+.perfil-motivo {
+  font-size: var(--texto-chico);
+  color: var(--color-texto-secundario);
 }

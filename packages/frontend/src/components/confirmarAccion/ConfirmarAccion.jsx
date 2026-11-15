@@ -18,6 +18,9 @@ const ConfirmarAccion = ({
   alConfirmar,
   alAlternativo,
   alCancelar,
+  // Rojo para lo que no se puede deshacer (baja, rechazo). Para una elección
+  // común, como el anonimato al postularse, va el color primario.
+  peligrosa = true,
 }) => {
   // En pantallas chicas el diálogo ocupa toda la pantalla: más lugar para leer
   // el mensaje y botones más fáciles de tocar.
@@ -37,7 +40,11 @@ const ConfirmarAccion = ({
         {textoAlternativo && (
           <Button onClick={alAlternativo}>{textoAlternativo}</Button>
         )}
-        <Button onClick={alConfirmar} color="error" variant="contained">
+        <Button
+          onClick={alConfirmar}
+          color={peligrosa ? "error" : "primary"}
+          variant="contained"
+        >
           {textoConfirmar}
         </Button>
       </DialogActions>
