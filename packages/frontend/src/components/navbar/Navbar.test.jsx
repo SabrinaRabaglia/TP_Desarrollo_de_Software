@@ -41,6 +41,19 @@ afterEach(() => {
 })
 
 describe("Navbar", () => {
+  test("muestra a quien tiene la sesión en la barra y en el menú lateral", async () => {
+    iniciarSesionComo("PERSONA_COLABORADORA", "Ana García")
+    renderizar()
+
+    expect(within(barra()).getByText("Ana García")).toBeInTheDocument()
+    expect(within(barra()).getByText("AG")).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole("button", { name: "Abrir menú" }))
+    const menu = screen.getByRole("navigation", { name: "Menú" })
+    expect(within(menu).getByText("Ana García")).toBeInTheDocument()
+    expect(within(menu).getByText("AG")).toBeInTheDocument()
+  })
+
   test("sin sesión ofrece ingresar y registrarse", () => {
     renderizar()
 

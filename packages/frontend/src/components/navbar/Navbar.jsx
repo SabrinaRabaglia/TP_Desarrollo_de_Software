@@ -59,6 +59,17 @@ const iniciales = (nombre = "") =>
     .map((parte) => parte[0].toUpperCase())
     .join("")
 
+// Avatar con las iniciales y el nombre de quien tiene la sesión. En la barra
+// suma el botón de cerrar sesión (children); en el menú lateral, ese botón va
+// al final de la lista.
+const UsuarioActual = ({ usuario, className, claseDelNombre, children }) => (
+  <div className={className}>
+    <Avatar aria-hidden="true">{iniciales(usuario.nombre)}</Avatar>
+    <span className={claseDelNombre}>{usuario.nombre}</span>
+    {children}
+  </div>
+)
+
 const Enlaces = ({ enlaces, alElegir }) =>
   enlaces.map(({ a, texto, Icono }) => (
     <NavLink
@@ -130,11 +141,13 @@ const Navbar = () => {
         </div>
 
         {usuario && (
-          <div className="navbar-usuario">
-            <Avatar aria-hidden="true">{iniciales(usuario.nombre)}</Avatar>
-            <span className="navbar-usuario-nombre">{usuario.nombre}</span>
+          <UsuarioActual
+            usuario={usuario}
+            className="navbar-usuario"
+            claseDelNombre="navbar-usuario-nombre"
+          >
             <span className="navbar-cerrar-sesion">{botonCerrarSesion}</span>
-          </div>
+          </UsuarioActual>
         )}
       </Toolbar>
 
@@ -148,10 +161,10 @@ const Navbar = () => {
             <LuX aria-hidden="true" />
           </IconButton>
           {usuario && (
-            <p className="navbar-drawer-usuario">
-              <Avatar aria-hidden="true">{iniciales(usuario.nombre)}</Avatar>
-              {usuario.nombre}
-            </p>
+            <UsuarioActual
+              usuario={usuario}
+              className="navbar-drawer-usuario"
+            />
           )}
           <div className="navbar-drawer-links">
             <Enlaces enlaces={enlaces} alElegir={cerrarMenu} />
