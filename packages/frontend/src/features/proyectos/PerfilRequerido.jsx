@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom"
+import { Button } from "@mui/material"
 import ListaDeHabilidades from "../../components/listaDeHabilidades/ListaDeHabilidades"
 import ConfirmarAccion from "../../components/confirmarAccion/ConfirmarAccion.jsx"
 import "./PerfilRequerido.css"
@@ -21,7 +23,8 @@ const GrupoDeHabilidades = ({ titulo, habilidades }) => {
   )
 }
 
-const PerfilRequerido = ({ perfil, proyectoId}) => {
+// enlaceACandidatas solo llega si el usuario es el colectivo dueño del proyecto.
+const PerfilRequerido = ({ perfil, proyectoId, enlaceACandidatas }) => {
   const navigate = useNavigate()
   const { usuario } = useAuth()
   const [dialogoAbierto, setDialogoAbierto] = useState(false)
@@ -107,16 +110,16 @@ const PerfilRequerido = ({ perfil, proyectoId}) => {
       />
       <div className="contenedor-btn">
       {usuario?.rol === "PERSONA_COLABORADORA" && (
-      <button className="btn-rol" type="button" 
+      <Button variant="contained" size="small"
         onClick={() => {
           setError(null)
           setExito(false)
           setDialogoAbierto(true)
         }}
-        disabled={enviando || exito || !puedePostularse} 
+        disabled={enviando || exito || !puedePostularse}
         >
         Postularme
-      </button>)}
+      </Button>)}
       {exito && <p>Tu postulación fue enviada.</p>}
 
         {error && <p role="alert">{error}</p>}
@@ -132,15 +135,20 @@ const PerfilRequerido = ({ perfil, proyectoId}) => {
           alCancelar={() => setDialogoAbierto(false)}
         />
         {usuario?.rol === "COLECTIVO" &&(
-          <button className="btn-rol" type="button"
+          <Button variant="contained" size="small"
             onClick={verPostulaciones}>
             Revisar Postulaciones
-          </button>
+          </Button>
         )}
-        <button className="btn-comun"
+        {enlaceACandidatas && (
+          <Button variant="outlined" size="small" component={Link} to={enlaceACandidatas}>
+            Ver candidatas
+          </Button>
+        )}
+        <Button variant="outlined" size="small"
             onClick={verColaboradores}>
           Ver Colaboradores
-        </button>
+        </Button>
         </div>
     </article>
   )

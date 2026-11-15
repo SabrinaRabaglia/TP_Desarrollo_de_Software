@@ -1,6 +1,7 @@
 import PostulacionModel from "../schemas/postulacionSchema.js"
 import ProyectoModel from "../schemas/proyectoSchema.js"
 import guardar from "./guardar.js"
+import { EstadoPostulacion } from "../domain/enums/EstadoPostulacion.js"
 
 const REFERENCIAS = [
   { path: "personaColaboradora", select: "nombreFantasia" },
@@ -50,10 +51,12 @@ export default class PostulacionRepository {
     const perfilesIds = proyectos.flatMap((p) =>
       p.perfiles.map((perf) => perf._id),
     )
+    // Colabora quien tiene una postulación aceptada: postularse no alcanza.
     return Boolean(
       await this.model.exists({
         personaColaboradora: personaId,
         perfil: { $in: perfilesIds },
+        estado: EstadoPostulacion.ACEPTADA,
       }),
     )
   }

@@ -5,13 +5,14 @@ import { ModalidadColaboracion } from "../domain/enums/ModalidadColaboracion.js"
 import { TipoCuenta } from "../domain/enums/TipoCuenta.js"
 import { TipoMedioContacto } from "../domain/enums/TipoMedioContacto.js"
 import { EstadoEnvio } from "../domain/enums/EstadoEnvio.js"
+import { EstadoPostulacion } from "../domain/enums/EstadoPostulacion.js"
 import { UnidadCompromiso } from "../domain/enums/UnidadCompromiso.js"
-import ColaboracionModel from "../schemas/colaboracionSchema.js"
 import ColectivoModel from "../schemas/colectivoSchema.js"
 import HabilidadModel from "../schemas/habilidadSchema.js"
 import NotificacionModel from "../schemas/notificacionSchema.js"
 import PaisModel from "../schemas/paisSchema.js"
 import PersonaColaboradoraModel from "../schemas/personaColaboradoraSchema.js"
+import PostulacionModel from "../schemas/postulacionSchema.js"
 import ProvinciaModel from "../schemas/provinciaSchema.js"
 import ProyectoModel from "../schemas/proyectoSchema.js"
 import UsuarioModel from "../schemas/usuarioSchema.js"
@@ -207,7 +208,6 @@ export default async function sembrarDatosDePrueba() {
       },
     ],
   )
-  const proyectos = await idsPor(ProyectoModel, "titulo")
 
   await sembrar(
     PersonaColaboradoraModel,
@@ -298,28 +298,52 @@ export default async function sembrarDatosDePrueba() {
     ],
   )
 
+  // Las colaboraciones de prueba son postulaciones ya aceptadas a un perfil.
+  const perfilDe = async (titulo, nombre) =>
+    (await ProyectoModel.findOne({ titulo })).perfiles.find(
+      (perfil) => perfil.nombre === nombre,
+    )._id
+  const aceptadas = [
+    {
+      fecha: "2026-09-12",
+      persona: "anag",
+      perfil: await perfilDe("Sitio web de la huerta", "Desarrollo frontend"),
+    },
+    {
+      fecha: "2026-09-14",
+      persona: "lucho_dev",
+      perfil: await perfilDe("API de donaciones", "Desarrollo backend"),
+    },
+    {
+      fecha: "2026-09-16",
+      persona: "sol.datos",
+      perfil: await perfilDe("Mapa de humedales", "Análisis de datos"),
+      esAnonima: true,
+    },
+  ]
   await sembrar(
-    ColaboracionModel,
-    ["personaColaboradora", "proyecto"],
-    [
-      {
-        fechaInscripcion: new Date("2026-09-12T00:00:00.000Z"),
-        personaColaboradora: personas["anag"],
-        proyecto: proyectos["Sitio web de la huerta"],
-      },
-      {
-        fechaInscripcion: new Date("2026-09-14T00:00:00.000Z"),
-        personaColaboradora: personas["lucho_dev"],
-        proyecto: proyectos["API de donaciones"],
-      },
-      {
-        fechaInscripcion: new Date("2026-09-16T00:00:00.000Z"),
-        esAnonima: true,
-        personaColaboradora: personas["sol.datos"],
-        proyecto: proyectos["Mapa de humedales"],
-      },
-    ],
+    PostulacionModel,
+    ["personaColaboradora", "perfil"],
+    aceptadas.map(({ fecha, persona, perfil, esAnonima = false }) => ({
+      fechaPostulacion: new Date(`${fecha}T00:00:00.000Z`),
+      fechaRevision: new Date(`${fecha}T12:00:00.000Z`),
+      estado: EstadoPostulacion.ACEPTADA,
+      esAnonima,
+      personaColaboradora: personas[persona],
+      perfil,
+    })),
   )
+  // Cada perfil anota sus postulaciones aceptadas ($addToSet: no duplica).
+  for (const { persona, perfil } of aceptadas) {
+    const postulacion = await PostulacionModel.findOne({
+      personaColaboradora: personas[persona],
+      perfil,
+    })
+    await ProyectoModel.updateOne(
+      { "perfiles._id": perfil },
+      { $addToSet: { "perfiles.$.postulacionesAceptadas": postulacion._id } },
+    )
+  }
 
   await sembrar(
     UsuarioModel,

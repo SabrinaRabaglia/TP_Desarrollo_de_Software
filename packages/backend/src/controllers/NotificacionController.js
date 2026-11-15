@@ -9,6 +9,7 @@ export default class NotificacionController {
         .status(201)
         .json(
           await this.notificacionService.create(
+            req.usuario.entidad,
             req.params.id,
             req.params.perfilId,
             req.body,
@@ -28,6 +29,16 @@ export default class NotificacionController {
             req.params.id,
           ),
         )
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  getAllByColectivo = async (req, res, next) => {
+    try {
+      res
+        .status(200)
+        .json(await this.notificacionService.getAllByColectivo(req.params.id))
     } catch (error) {
       next(error)
     }

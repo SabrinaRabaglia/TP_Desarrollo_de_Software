@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto"
+import nuevoId from "./nuevoId.js"
 import { EstadoProyecto } from "../../src/domain/enums/EstadoProyecto.js"
 import { inicioDelDiaSiguiente } from "../../src/domain/fechas.js"
 
@@ -73,9 +73,9 @@ export default class ProyectoRepository {
   }
 
   async save(nuevo) {
-    nuevo.id ??= randomUUID()
+    nuevo.id ??= nuevoId()
     for (const perfil of nuevo.perfiles ?? []) {
-      perfil.id ??= randomUUID()
+      perfil.id ??= nuevoId()
     }
     const indice = ProyectoRepository.proyectos.findIndex(
       (p) => p.id === nuevo.id,
@@ -99,7 +99,7 @@ export default class ProyectoRepository {
     if (!proyecto) {
       return null
     }
-    perfil.id = randomUUID()
+    perfil.id = nuevoId()
     proyecto.perfiles.push(perfil)
     return perfil
   }
@@ -133,7 +133,7 @@ export default class ProyectoRepository {
     if (!proyecto || proyecto.fechaAlta >= inicioDelDiaSiguiente(hito.fecha)) {
       return null
     }
-    hito.id = randomUUID()
+    hito.id = nuevoId()
     proyecto.hitos.push(hito)
     return hito
   }

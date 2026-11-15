@@ -96,6 +96,8 @@ const notificacionService = new NotificacionService(
   perfilService,
   personaColaboradoraService,
   envioDeNotificaciones,
+  proyectoRepository,
+  colectivoRepository,
 )
 const postulacionService = new PostulacionService(
   colectivoRepository,

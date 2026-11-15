@@ -17,6 +17,7 @@ import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraReposi
 import {
   EntityNotFound,
   InvalidReference,
+  NoAutorizado,
 } from "../../../src/errors/ApplicationErrors.js"
 import {
   DomainRuleError,
@@ -30,6 +31,7 @@ describe("NotificacionService", () => {
   let notificacionRepository
   let envios
   let proyectoService
+  let perfilService
   let personaColaboradoraService
   let colectivo
   let proyecto
@@ -65,7 +67,7 @@ describe("NotificacionService", () => {
       habilidadService,
       postulacionRepository,
     )
-    const perfilService = new PerfilService(
+    perfilService = new PerfilService(
       proyectoService,
       proyectoRepository,
       habilidadService,
@@ -77,6 +79,8 @@ describe("NotificacionService", () => {
       perfilService,
       personaColaboradoraService,
       envios,
+      proyectoRepository,
+      colectivoRepository,
     )
 
     colectivo = await colectivoService.create({
@@ -113,7 +117,10 @@ describe("NotificacionService", () => {
   })
 
   const contactar = (personaColaboradora, contenido = "Hola") =>
-    service.create(proyecto.id, perfil.id, { personaColaboradora, contenido })
+    service.create(colectivo.id, proyecto.id, perfil.id, {
+      personaColaboradora,
+      contenido,
+    })
 
   describe("create", () => {
     test("guarda la notificación con un envío pendiente por cada medio de contacto y despierta al proceso de envío", async () => {
@@ -122,7 +129,7 @@ describe("NotificacionService", () => {
       expect(notificacion.contenido).toBe("Hola")
       expect(notificacion.colectivo).toBe(colectivo.id)
       expect(notificacion.personaColaboradora).toBe(ana)
-      expect(notificacion.perfil).toBe(perfil)
+      expect(notificacion.perfil).toBe(perfil.id)
       expect(notificacion.pendienteDeEnvio).toBe(true)
       expect(notificacion.mediosExternosUtilizados).toEqual([])
       expect(notificacion.envios.map((envio) => envio.medio)).toEqual([
@@ -188,15 +195,57 @@ describe("NotificacionService", () => {
 
     test("lanza EntityNotFound si el perfil no es del proyecto", async () => {
       await expect(
-        service.create(proyecto.id, "perfil-inexistente", {
+        service.create(colectivo.id, proyecto.id, "perfil-inexistente", {
           personaColaboradora: ana.id,
           contenido: "Hola",
         }),
       ).rejects.toThrow(EntityNotFound)
     })
+
+    test("lanza NoAutorizado si el proyecto es de otro colectivo, sin enviar ni guardar nada", async () => {
+      await expect(
+        service.create("otro-colectivo", proyecto.id, perfil.id, {
+          personaColaboradora: ana.id,
+          contenido: "Hola",
+        }),
+      ).rejects.toThrow(NoAutorizado)
+      expect(envios.despertar).not.toHaveBeenCalled()
+      expect(notificacionRepository.notificaciones).toEqual([])
+    })
   })
 
   describe("getAllByPersonaColaboradora", () => {
+    test("devuelve cada notificación con el nombre del colectivo, el proyecto y el perfil", async () => {
+      await contactar(ana.id, "Primera")
+
+      expect(await service.getAllByPersonaColaboradora(ana.id)).toEqual([
+        {
+          id: expect.any(String),
+          fecha: expect.any(Date),
+          contenido: "Primera",
+          colectivo: { id: colectivo.id, nombre: "Huerta Comunitaria Sur" },
+          proyecto: { id: proyecto.id, titulo: "Sitio web de la huerta" },
+          perfil: { id: perfil.id, nombre: perfil.nombre },
+          pendienteDeEnvio: true,
+          mediosExternosUtilizados: [],
+        },
+      ])
+    })
+
+    test("si el perfil ya no existe, lo devuelve en null sin fallar", async () => {
+      await contactar(ana.id)
+      await perfilService.delete(proyecto.id, perfil.id)
+
+      const [mensaje] = await service.getAllByPersonaColaboradora(ana.id)
+
+      expect(mensaje.perfil).toBeNull()
+      expect(mensaje.proyecto).toBeNull()
+      expect(mensaje.colectivo).toEqual({
+        id: colectivo.id,
+        nombre: "Huerta Comunitaria Sur",
+      })
+    })
+
     test("devuelve las notificaciones de la persona, de la más nueva a la más vieja", async () => {
       const sol = await personaColaboradoraService.create({
         nombreFantasia: "sol.datos",
@@ -204,12 +253,14 @@ describe("NotificacionService", () => {
       })
       const primera = await contactar(ana.id, "Primera")
       primera.fecha = new Date("2026-01-01T00:00:00.000Z")
-      const segunda = await contactar(ana.id, "Segunda")
+      await contactar(ana.id, "Segunda")
       await contactar(sol.id)
 
-      expect(await service.getAllByPersonaColaboradora(ana.id)).toEqual([
-        segunda,
-        primera,
+      const mensajes = await service.getAllByPersonaColaboradora(ana.id)
+
+      expect(mensajes.map((mensaje) => mensaje.contenido)).toEqual([
+        "Segunda",
+        "Primera",
       ])
     })
 
@@ -217,6 +268,57 @@ describe("NotificacionService", () => {
       await expect(
         service.getAllByPersonaColaboradora("persona-inexistente"),
       ).rejects.toThrow(EntityNotFound)
+    })
+  })
+
+  describe("getAllByColectivo", () => {
+    test("devuelve cada notificación enviada con el nombre de la destinataria, sin sus medios de contacto", async () => {
+      await contactar(ana.id, "Primera")
+
+      const mensajes = await service.getAllByColectivo(colectivo.id)
+
+      expect(mensajes).toEqual([
+        {
+          id: expect.any(String),
+          fecha: expect.any(Date),
+          contenido: "Primera",
+          colectivo: { id: colectivo.id, nombre: "Huerta Comunitaria Sur" },
+          personaColaboradora: { id: ana.id, nombreFantasia: "anag" },
+          proyecto: { id: proyecto.id, titulo: "Sitio web de la huerta" },
+          perfil: { id: perfil.id, nombre: perfil.nombre },
+          pendienteDeEnvio: true,
+          mediosExternosUtilizados: [],
+        },
+      ])
+      expect(JSON.stringify(mensajes)).not.toContain("ana@example.com")
+    })
+
+    test("devuelve solo las del colectivo, de la más nueva a la más vieja", async () => {
+      const primera = await contactar(ana.id, "Primera")
+      primera.fecha = new Date("2026-01-01T00:00:00.000Z")
+      await contactar(ana.id, "Segunda")
+
+      const mensajes = await service.getAllByColectivo(colectivo.id)
+
+      expect(mensajes.map((mensaje) => mensaje.contenido)).toEqual([
+        "Segunda",
+        "Primera",
+      ])
+      expect(await service.getAllByColectivo("otro-colectivo")).toEqual([])
+    })
+
+    test("si el perfil ya no existe, lo devuelve en null sin fallar", async () => {
+      await contactar(ana.id)
+      await perfilService.delete(proyecto.id, perfil.id)
+
+      const [mensaje] = await service.getAllByColectivo(colectivo.id)
+
+      expect(mensaje.perfil).toBeNull()
+      expect(mensaje.proyecto).toBeNull()
+      expect(mensaje.personaColaboradora).toEqual({
+        id: ana.id,
+        nombreFantasia: "anag",
+      })
     })
   })
 })

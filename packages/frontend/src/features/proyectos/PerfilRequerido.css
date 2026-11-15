@@ -29,48 +29,13 @@
   color: var(--color-texto-secundario);
 }
 
-.btn-rol {
-  padding: 10px 20px;
-  width: fit-content;
-  background-color: #1e55eb;
-  color: rgb(247, 247, 247);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.btn-rol:hover:not(:disabled) {
-  background-color: #1d4ed8;
-}
-
-/* Estilo automático cuando disabled={true} */
-.btn-rol:disabled {
-  background-color: #cbd5e1; /* Gris claro */
-  color: #64748b;            /* Texto gris apagado */
-  cursor: not-allowed;       /* Cambia el cursor a "prohibido" */
-  opacity: 0.8;
-}
-
-.btn-rol:hover {
-  background-color: #1d4ed8;
-}
-
-.btn-comun {
-  padding: 10px 20px;
-  width: fit-content;
-  background-color: #1e55eb;
-  color: rgb(247, 247, 247);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-}
+/* Acciones del perfil: postularse, revisar postulaciones, ver colaboradores
+   y ver candidatas. Los botones son de MUI y toman los colores del tema. */
 .contenedor-btn {
   display: flex;
-  justify-content: center;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 40px;
-  width: 100%;
-  margin-top: 16px; /* El margen superior ahora lo maneja el contenedor */
+  gap: 0.5rem var(--espacio);
+  margin-top: auto;
+  padding-top: 0.5rem;
 }

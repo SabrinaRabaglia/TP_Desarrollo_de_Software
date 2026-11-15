@@ -45,7 +45,14 @@ export default class PostulacionController {
 
   aceptar = async (req, res, next) => {
     try {
-      res.status(200).json(await this.postulacionService.aceptar(req.params.id))
+      res
+        .status(200)
+        .json(
+          await this.postulacionService.aceptar(
+            req.params.id,
+            req.usuario.entidad,
+          ),
+        )
     } catch (error) {
       next(error)
     }
@@ -53,7 +60,14 @@ export default class PostulacionController {
 
   rechazar = async (req, res, next) => {
     try {
-      res.status(200).json(await this.postulacionService.rechazar(req.params.id))
+      res
+        .status(200)
+        .json(
+          await this.postulacionService.rechazar(
+            req.params.id,
+            req.usuario.entidad,
+          ),
+        )
     } catch (error) {
       next(error)
     }

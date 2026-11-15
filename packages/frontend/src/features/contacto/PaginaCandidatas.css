@@ -1,0 +1,30 @@
+.pagina-candidatas {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--espacio) * 1.5);
+}
+
+.pagina-candidatas-encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pagina-candidatas-encabezado p,
+.pagina-candidatas-vacia {
+  color: var(--color-texto-secundario);
+}
+
+.pagina-candidatas-lista {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espacio);
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 768px) {
+  .pagina-candidatas-lista {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
