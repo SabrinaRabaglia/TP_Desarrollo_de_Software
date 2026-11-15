@@ -219,4 +219,39 @@ describe("desanotaciones", () => {
     ).toBe(409)
     expect((await darDeBaja(postulaciones.ana, "ana")).status).toBe(409)
   })
+
+  test("el colectivo ve en las postulaciones del perfil quién dio la baja y cuándo", async () => {
+    const respuesta = await enviar(
+      "GET",
+      `/proyectos/${proyecto.id}/perfiles/${perfil.id}/postulaciones`,
+      token("huerta"),
+    )
+
+    expect(respuesta.status).toBe(200)
+    const dePersona = (quien) =>
+      respuesta.body.find(
+        (postulacion) => postulacion._id === postulaciones[quien],
+      )
+    expect(dePersona("ana")).toEqual(
+      expect.objectContaining({
+        estado: "BAJA",
+        origenBaja: "PERSONA_COLABORADORA",
+        fechaBaja: expect.any(String),
+      }),
+    )
+    expect(dePersona("lucho")).toEqual(
+      expect.objectContaining({
+        estado: "BAJA",
+        origenBaja: "COLECTIVO",
+        fechaBaja: expect.any(String),
+      }),
+    )
+    expect(dePersona("caro")).toEqual(
+      expect.objectContaining({
+        estado: "PENDIENTE",
+        origenBaja: null,
+        fechaBaja: null,
+      }),
+    )
+  })
 })

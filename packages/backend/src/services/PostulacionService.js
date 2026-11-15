@@ -114,6 +114,8 @@ export default class PostulacionService {
           estado: postulacion.estado,
           fechaPostulacion: postulacion.fechaPostulacion,
           fechaRevision: postulacion.fechaRevision,
+          fechaBaja: postulacion.fechaBaja,
+          origenBaja: postulacion.origenBaja,
           personaColaboradora: persona
             ? {
                 id: persona.id,
