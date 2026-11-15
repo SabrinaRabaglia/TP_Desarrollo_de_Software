@@ -4,7 +4,10 @@ import Cargando from "../../components/cargando/Cargando"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
 import { mensajeDeError } from "../../service/api"
 import "./PaginaPostulaciones.css"
-import { ESTADOS_DE_POSTULACION, obtenerPostulacionesColaborador } from "../../service/postulacionesService.js"
+import {
+  ESTADOS_DE_POSTULACION,
+  obtenerPostulacionesColaborador,
+} from "../../service/postulacionesService.js"
 
 const PaginaPostulaciones = () => {
   const [postulaciones, setPostulaciones] = useState([])
@@ -55,21 +58,31 @@ const PaginaPostulaciones = () => {
                     </div>
                     <div className="postulacion-badges">
                       {postulacion.esAnonima && (
-                        <span className="badge-anonimo">Postulación anónima</span>
+                        <span className="badge-anonimo">
+                          Postulación anónima
+                        </span>
                       )}
 
-                      <span className={`estado-postulacion estado-${postulacion.estado?.toLowerCase()}`}>
+                      <span
+                        className={`estado-postulacion estado-${postulacion.estado?.toLowerCase()}`}
+                      >
                         {ESTADOS_DE_POSTULACION[postulacion.estado]}
                       </span>
-                  </div>
+                    </div>
                   </div>
                   <div className="nombre-perfil">
-                    <span>Perfil:</span> {postulacion.perfil?.nombre ?? "Perfil no disponible"}
+                    <span>Perfil:</span>{" "}
+                    {postulacion.perfil?.nombre ?? "Perfil no disponible"}
                   </div>
                   <div>
-                    <span className="fecha-postulacion">Fecha: </span> {postulacion.fechaRevision
-                                  ? new Date(postulacion.fechaRevision).toLocaleDateString('es-AR') 
-                                  : new Date(postulacion.fechaPostulacion).toLocaleDateString('es-AR') }
+                    <span className="fecha-postulacion">Fecha: </span>{" "}
+                    {postulacion.fechaRevision
+                      ? new Date(postulacion.fechaRevision).toLocaleDateString(
+                          "es-AR",
+                        )
+                      : new Date(
+                          postulacion.fechaPostulacion,
+                        ).toLocaleDateString("es-AR")}
                   </div>
                 </div>
               </CardContent>
@@ -84,8 +97,8 @@ const PaginaPostulaciones = () => {
     <section className="postulaciones">
       <h1>Mis postulaciones</h1>
       <p className="postulaciones-bajada">
-        Aca se muestran todas las postulaciones realizadas 
-        con sus respectivos estados, junto al titulo del proyecto y el perfil correspondiente
+        Aca se muestran todas las postulaciones realizadas con sus respectivos
+        estados, junto al titulo del proyecto y el perfil correspondiente
       </p>
       <h2>Postulaciones</h2>
       {renderPostulaciones()}

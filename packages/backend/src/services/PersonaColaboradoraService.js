@@ -1,4 +1,8 @@
-import { EntityNotFound, NoAutorizado, InvalidReference } from "../errors/ApplicationErrors.js"
+import {
+  EntityNotFound,
+  NoAutorizado,
+  InvalidReference,
+} from "../errors/ApplicationErrors.js"
 import { RolUsuario } from "../domain/enums/RolUsuario.js"
 import PersonaColaboradora from "../domain/PersonaColaboradora.js"
 import Cuenta from "../domain/Cuenta.js"
@@ -169,49 +173,49 @@ export default class PersonaColaboradoraService {
   }
 
   getAllByPostulacionAceptada = async (perfilId) => {
-  const { proyecto, perfil } =
-    await this.proyectoRepository.findProyectoYPerfilPorId(perfilId)
+    const { proyecto, perfil } =
+      await this.proyectoRepository.findProyectoYPerfilPorId(perfilId)
 
-  if (!proyecto || !perfil) {
-    throw new InvalidReference("Perfil no encontrado")
-  }
-  const postulaciones = await Promise.all(
-    perfil.postulacionesAceptadas.map((id) =>
-      this.postulacionRepository.findById(id),
-    ),
-  )
-  const colaboradores = await Promise.all(
-    postulaciones
-      .filter((postulacion) => postulacion !== null)
-      .map(async (postulacion) => {
-        // Si es anónima, no recuperamos ni exponemos sus datos personales.
-        if (postulacion.esAnonima) {
-          return {
-            esAnonima: true,
+    if (!proyecto || !perfil) {
+      throw new InvalidReference("Perfil no encontrado")
+    }
+    const postulaciones = await Promise.all(
+      perfil.postulacionesAceptadas.map((id) =>
+        this.postulacionRepository.findById(id),
+      ),
+    )
+    const colaboradores = await Promise.all(
+      postulaciones
+        .filter((postulacion) => postulacion !== null)
+        .map(async (postulacion) => {
+          // Si es anónima, no recuperamos ni exponemos sus datos personales.
+          if (postulacion.esAnonima) {
+            return {
+              esAnonima: true,
+            }
           }
-        }
 
-        const persona = await this.personaColaboradoraRepository.findById(
-          postulacion.personaColaboradora,
-        )
+          const persona = await this.personaColaboradoraRepository.findById(
+            postulacion.personaColaboradora,
+          )
 
-        if (!persona) return null
+          if (!persona) return null
 
-        return {
-          id: persona.id,
-          esAnonima: false,
-          nombre: persona.nombre,
-          apellido: persona.apellido,
-          nombreFantasia: persona.nombreFantasia,
-          pronombres: persona.pronombres,
-          presentacion: persona.presentacion,
-          habilidades: persona.habilidades,
-          cuentas: persona.cuentas,
-        }
-      }),
-  )
-  return colaboradores
-}
+          return {
+            id: persona.id,
+            esAnonima: false,
+            nombre: persona.nombre,
+            apellido: persona.apellido,
+            nombreFantasia: persona.nombreFantasia,
+            pronombres: persona.pronombres,
+            presentacion: persona.presentacion,
+            habilidades: persona.habilidades,
+            cuentas: persona.cuentas,
+          }
+        }),
+    )
+    return colaboradores
+  }
 
   puedeVerContactoDe = async (personaId, usuario) => {
     if (usuario.rol === RolUsuario.PERSONA_COLABORADORA) {

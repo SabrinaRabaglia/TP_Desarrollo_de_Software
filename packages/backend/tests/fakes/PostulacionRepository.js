@@ -17,8 +17,11 @@ export default class PostulacionRepository {
   async findAllByColaborador(colaboradorId) {
     return this.postulaciones.filter(
       (p) =>
-        String(p.personaColaboradora?.id ?? p.personaColaboradora?._id ?? p.personaColaboradora) ===
-        String(colaboradorId),
+        String(
+          p.personaColaboradora?.id ??
+            p.personaColaboradora?._id ??
+            p.personaColaboradora,
+        ) === String(colaboradorId),
     )
   }
 
@@ -32,8 +35,11 @@ export default class PostulacionRepository {
   async findByPersonaAndPerfil(personaId, perfilId) {
     return this.postulaciones.find(
       (p) =>
-        String(p.personaColaboradora?.id ?? p.personaColaboradora?._id ?? p.personaColaboradora) ===
-          String(personaId) &&
+        String(
+          p.personaColaboradora?.id ??
+            p.personaColaboradora?._id ??
+            p.personaColaboradora,
+        ) === String(personaId) &&
         String(p.perfil?.id ?? p.perfil?._id ?? p.perfil) === String(perfilId),
     )
   }
@@ -46,16 +52,15 @@ export default class PostulacionRepository {
       String(p.id ?? p._id),
     )
     return this.postulaciones
-      .filter(
-        (p) =>
-          String(p.proyecto?.id ?? p.proyecto?._id ?? p.proyecto) ===
-            String(proyectoId) ||
-          perfilesIds.includes(
-            String(p.perfil?.id ?? p.perfil?._id ?? p.perfil),
-          ),
+      .filter((p) =>
+        perfilesIds.includes(String(p.perfil?.id ?? p.perfil?._id ?? p.perfil)),
       )
       .map((p) =>
-        String(p.personaColaboradora?.id ?? p.personaColaboradora?._id ?? p.personaColaboradora),
+        String(
+          p.personaColaboradora?.id ??
+            p.personaColaboradora?._id ??
+            p.personaColaboradora,
+        ),
       )
   }
 
@@ -70,12 +75,12 @@ export default class PostulacionRepository {
     return this.postulaciones.some(
       (p) =>
         p.estado === EstadoPostulacion.ACEPTADA &&
-        String(p.personaColaboradora?.id ?? p.personaColaboradora?._id ?? p.personaColaboradora) ===
-          String(personaId) &&
-        (ids.includes(String(p.proyecto?.id ?? p.proyecto?._id ?? p.proyecto)) ||
-          perfilesIds.includes(
-            String(p.perfil?.id ?? p.perfil?._id ?? p.perfil),
-          )),
+        String(
+          p.personaColaboradora?.id ??
+            p.personaColaboradora?._id ??
+            p.personaColaboradora,
+        ) === String(personaId) &&
+        perfilesIds.includes(String(p.perfil?.id ?? p.perfil?._id ?? p.perfil)),
     )
   }
 
@@ -89,8 +94,11 @@ export default class PostulacionRepository {
   async deleteByPersona(personaId) {
     this.postulaciones = this.postulaciones.filter(
       (p) =>
-        String(p.personaColaboradora?.id ?? p.personaColaboradora?._id ?? p.personaColaboradora) !==
-        String(personaId),
+        String(
+          p.personaColaboradora?.id ??
+            p.personaColaboradora?._id ??
+            p.personaColaboradora,
+        ) !== String(personaId),
     )
   }
 
@@ -101,7 +109,8 @@ export default class PostulacionRepository {
     // Como en Mongo: del perfil se guarda solo el id.
     postulacion.perfil = postulacion.perfil?.id ?? postulacion.perfil
     const index = this.postulaciones.findIndex(
-      (p) => String(p.id ?? p._id) === String(postulacion.id ?? postulacion._id),
+      (p) =>
+        String(p.id ?? p._id) === String(postulacion.id ?? postulacion._id),
     )
     if (index >= 0) {
       this.postulaciones[index] = postulacion

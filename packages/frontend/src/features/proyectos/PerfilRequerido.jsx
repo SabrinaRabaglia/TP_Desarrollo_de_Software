@@ -3,7 +3,10 @@ import { Button } from "@mui/material"
 import ListaDeHabilidades from "../../components/listaDeHabilidades/ListaDeHabilidades"
 import ConfirmarAccion from "../../components/confirmarAccion/ConfirmarAccion.jsx"
 import "./PerfilRequerido.css"
-import { crearPostulacion, obtenerPostulacionesColaborador } from "../../service/postulacionesService.js"
+import {
+  crearPostulacion,
+  obtenerPostulacionesColaborador,
+} from "../../service/postulacionesService.js"
 import { mensajeDeError } from "../../service/api.js"
 import { useState, useEffect } from "react"
 import { useAuth } from "../../context/AuthContext.jsx"
@@ -35,7 +38,7 @@ const PerfilRequerido = ({ perfil, proyectoId, enlaceACandidatas }) => {
   const [proyecto, setProyecto] = useState(null)
 
   const verPostulaciones = () => {
-   navigate(`/proyectos/${proyectoId}/perfiles/${perfil.id}/postulaciones`)
+    navigate(`/proyectos/${proyectoId}/perfiles/${perfil.id}/postulaciones`)
   }
 
   const verColaboradores = () => {
@@ -59,14 +62,13 @@ const PerfilRequerido = ({ perfil, proyectoId, enlaceACandidatas }) => {
     }
   }
 
-   useEffect(() => {
+  useEffect(() => {
     const cargarDatos = async () => {
       try {
-        const [postulacionesObtenidas, proyectoObtenido] =
-          await Promise.all([
-            obtenerPostulacionesColaborador(),
-            obtenerProyecto(proyectoId),
-          ])
+        const [postulacionesObtenidas, proyectoObtenido] = await Promise.all([
+          obtenerPostulacionesColaborador(),
+          obtenerProyecto(proyectoId),
+        ])
 
         setPostulaciones(postulacionesObtenidas)
         setProyecto(proyectoObtenido)
@@ -98,7 +100,11 @@ const PerfilRequerido = ({ perfil, proyectoId, enlaceACandidatas }) => {
         <dt>Modalidades</dt>
         <dd>{perfil.modalidades.join(", ")}</dd>
         <dt>Puestos disponibles</dt>
-        <dd>{perfil.limiteColaboraciones ? perfil.limiteColaboraciones : "Sin Limite"}</dd>
+        <dd>
+          {perfil.limiteColaboraciones
+            ? perfil.limiteColaboraciones
+            : "Sin Limite"}
+        </dd>
       </dl>
       <GrupoDeHabilidades
         titulo="Habilidades requeridas"
@@ -109,18 +115,21 @@ const PerfilRequerido = ({ perfil, proyectoId, enlaceACandidatas }) => {
         habilidades={perfil.habilidadesOpcionales}
       />
       <div className="contenedor-btn">
-      {usuario?.rol === "PERSONA_COLABORADORA" && (
-      <Button variant="contained" size="small"
-        onClick={() => {
-          setError(null)
-          setExito(false)
-          setDialogoAbierto(true)
-        }}
-        disabled={enviando || exito || !puedePostularse}
-        >
-        Postularme
-      </Button>)}
-      {exito && <p>Tu postulación fue enviada.</p>}
+        {usuario?.rol === "PERSONA_COLABORADORA" && (
+          <Button
+            variant="contained"
+            size="small"
+            onClick={() => {
+              setError(null)
+              setExito(false)
+              setDialogoAbierto(true)
+            }}
+            disabled={enviando || exito || !puedePostularse}
+          >
+            Postularme
+          </Button>
+        )}
+        {exito && <p>Tu postulación fue enviada.</p>}
 
         {error && <p role="alert">{error}</p>}
 
@@ -134,22 +143,25 @@ const PerfilRequerido = ({ perfil, proyectoId, enlaceACandidatas }) => {
           alAlternativo={() => postularse(false)}
           alCancelar={() => setDialogoAbierto(false)}
         />
-        {usuario?.rol === "COLECTIVO" &&(
-          <Button variant="contained" size="small"
-            onClick={verPostulaciones}>
+        {usuario?.rol === "COLECTIVO" && (
+          <Button variant="contained" size="small" onClick={verPostulaciones}>
             Revisar Postulaciones
           </Button>
         )}
         {enlaceACandidatas && (
-          <Button variant="outlined" size="small" component={Link} to={enlaceACandidatas}>
+          <Button
+            variant="outlined"
+            size="small"
+            component={Link}
+            to={enlaceACandidatas}
+          >
             Ver candidatas
           </Button>
         )}
-        <Button variant="outlined" size="small"
-            onClick={verColaboradores}>
+        <Button variant="outlined" size="small" onClick={verColaboradores}>
           Ver Colaboradores
         </Button>
-        </div>
+      </div>
     </article>
   )
 }

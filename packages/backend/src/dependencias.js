@@ -36,7 +36,6 @@ import ProyectoService from "./services/ProyectoService.js"
 // Único lugar donde se arman las dependencias (repositorio → servicio →
 // controller). Las rutas solo conocen a los controllers.
 
-
 const colectivoRepository = new ColectivoRepository()
 const habilidadRepository = new HabilidadRepository()
 const notificacionRepository = new NotificacionRepository()
@@ -103,7 +102,7 @@ const postulacionService = new PostulacionService(
   colectivoRepository,
   postulacionRepository,
   proyectoRepository,
-  personaColaboradoraRepository
+  personaColaboradoraRepository,
 )
 const hitoService = new HitoService(proyectoService, proyectoRepository)
 const authService = new AuthService(
@@ -127,4 +126,6 @@ export const personaColaboradoraController = new PersonaColaboradoraController(
 )
 export const proyectoController = new ProyectoController(proyectoService)
 export const hitoController = new HitoController(hitoService)
-export const postulacionController = new PostulacionController(postulacionService)
+export const postulacionController = new PostulacionController(
+  postulacionService,
+)

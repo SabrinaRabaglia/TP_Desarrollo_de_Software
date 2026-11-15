@@ -259,13 +259,14 @@ describe("PerfilService", () => {
       const enOtroProyecto = await crearPersona("en otro proyecto", [
         habilidad1.id,
       ])
+      const perfilDeOtroProyecto = await service.create(otroProyecto.id, datos)
       await postulacionRepository.save({
         personaColaboradora: { id: inscripta.id },
-        proyecto: { id: proyecto.id },
+        perfil: perfil.id,
       })
       await postulacionRepository.save({
         personaColaboradora: { id: enOtroProyecto.id },
-        proyecto: { id: otroProyecto.id },
+        perfil: perfilDeOtroProyecto.id,
       })
 
       expect(await buscarColaboradores(perfil)).toEqual([enOtroProyecto])

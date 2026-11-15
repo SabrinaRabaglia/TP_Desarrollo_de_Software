@@ -69,16 +69,18 @@ routes.delete(
   perfilController.delete,
 )
 
-routes.get("/proyectos/:id/perfiles/:perfilId/postulaciones",
+routes.get(
+  "/proyectos/:id/perfiles/:perfilId/postulaciones",
   autenticar,
   validateId,
   autorizar(RolUsuario.COLECTIVO),
-  postulacionController.getAllByPerfil
+  postulacionController.getAllByPerfil,
 )
 
-routes.get("/proyectos/:id/perfiles/:perfilId/colaboradores",
+routes.get(
+  "/proyectos/:id/perfiles/:perfilId/colaboradores",
   validateId,
-  personaColaboradoraController.getAllByPostulacionAceptada
+  personaColaboradoraController.getAllByPostulacionAceptada,
 )
 
 routes.post(

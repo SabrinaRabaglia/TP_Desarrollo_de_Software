@@ -162,16 +162,15 @@ describe("PersonaColaboradoraService", () => {
     expect(await repository.findById(persona.id)).toEqual(antes)
   })
 
-  test("eliminar una persona elimina sus colaboraciones y conserva las de otras", async () => {
+  test("eliminar una persona elimina sus postulaciones y conserva las de otras", async () => {
     const persona = await service.create(datos)
-    const proyecto = { id: "proyecto-1" }
     await postulacionRepository.save({
       personaColaboradora: { id: persona.id },
-      proyecto,
+      perfil: "perfil-1",
     })
     await postulacionRepository.save({
       personaColaboradora: { id: "otra-persona" },
-      proyecto,
+      perfil: "perfil-1",
     })
 
     await service.delete(persona.id)
@@ -180,7 +179,7 @@ describe("PersonaColaboradoraService", () => {
     expect(await postulacionRepository.findAll()).toEqual([
       expect.objectContaining({
         personaColaboradora: { id: "otra-persona" },
-        proyecto,
+        perfil: "perfil-1",
       }),
     ])
   })
@@ -272,13 +271,15 @@ describe("PersonaColaboradoraService", () => {
       colectivoId,
       { esAnonima = false, estado = "ACEPTADA" } = {},
     ) => {
-      const proyecto = await proyectoRepository.save({
+      const {
+        perfiles: [perfil],
+      } = await proyectoRepository.save({
         colectivo: colectivoId,
-        perfiles: [],
+        perfiles: [{}],
       })
       await postulacionRepository.save({
         personaColaboradora: { id: persona.id },
-        proyecto: { id: proyecto.id },
+        perfil: perfil.id,
         esAnonima,
         estado,
       })

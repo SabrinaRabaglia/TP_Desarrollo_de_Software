@@ -28,9 +28,7 @@ const ConfirmarAccion = ({
           Cancelar
         </Button>
         {textoAlternativo && (
-          <Button onClick={alAlternativo}>
-            {textoAlternativo}
-          </Button>
+          <Button onClick={alAlternativo}>{textoAlternativo}</Button>
         )}
         <Button onClick={alConfirmar} color="error" variant="contained">
           {textoConfirmar}

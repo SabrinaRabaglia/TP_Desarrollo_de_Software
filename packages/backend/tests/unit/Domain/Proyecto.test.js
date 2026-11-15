@@ -38,7 +38,6 @@ describe("Proyecto", () => {
     )
     expect(proyecto.fechaCierre).toBeNull()
     expect(proyecto.perfiles).toEqual([])
-    expect(proyecto.colaboraciones).toEqual([])
   })
 
   test("se construye correctamente pasando todos los parámetros explícitos", () => {
@@ -99,14 +98,12 @@ describe("Proyecto", () => {
     ).toThrow(DomainValidationError)
   })
 
-  test("cierra el proyecto conservando sus colaboraciones y la fecha del primer cierre", () => {
+  test("cierra el proyecto conservando la fecha del primer cierre", () => {
     const proyecto = new Proyecto(
       "Taller de Reciclaje",
       "Capacitación comunitaria",
       colectivo,
     )
-    const colaboracion = { personaColaboradora: "persona-1" }
-    proyecto.agregarColaboracion(colaboracion)
     const antes = Date.now()
 
     proyecto.cerrar()
@@ -114,7 +111,6 @@ describe("Proyecto", () => {
     expect(proyecto.estado).toBe(EstadoProyecto.CERRADO)
     expect(proyecto.fechaCierre.getTime()).toBeGreaterThanOrEqual(antes)
     expect(proyecto.fechaCierre.getTime()).toBeLessThanOrEqual(Date.now())
-    expect(proyecto.colaboraciones).toEqual([colaboracion])
     const fechaCierre = proyecto.fechaCierre
     expect(() => proyecto.cerrar()).toThrow(DomainRuleError)
     expect(proyecto.fechaCierre).toBe(fechaCierre)

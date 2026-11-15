@@ -20,7 +20,6 @@ describe("PersonaColaboradora", () => {
     expect(persona.presentacion).toBeNull()
     expect(persona.cuentas).toEqual([])
     expect(persona.habilidades).toEqual([])
-    expect(persona.colaboraciones).toEqual([])
     expect(persona.aceptaMensajeriaInterna).toBe(false)
     expect(persona.mediosDeContacto).toEqual([])
   })
@@ -95,14 +94,6 @@ describe("PersonaColaboradora", () => {
     persona.agregarCuenta(cuenta)
 
     expect(persona.cuentas).toEqual([cuenta])
-  })
-
-  test("agregarColaboracion agrega una colaboración al array existente", () => {
-    const persona = new PersonaColaboradora("anon123")
-    const colaboracionFalsa = { proyecto: "algún proyecto" }
-    persona.agregarColaboracion(colaboracionFalsa)
-
-    expect(persona.colaboraciones).toEqual([colaboracionFalsa])
   })
 
   test("solo se puede contactar por mensajería interna si lo aceptó", () => {
