@@ -8,12 +8,41 @@ import { mensajeDeError } from "../../service/api"
 import "./PaginaPostulaciones.css"
 import {
   aceptarPostulacion,
+  darDeBajaPostulacion,
   ESTADOS_DE_POSTULACION,
   obtenerPostulacionesPerfil,
   rechazarPostulacion,
 } from "../../service/postulacionesService.js"
 import ConfirmarAccion from "../../components/confirmarAccion/ConfirmarAccion.jsx"
 import ListaDeHabilidades from "../../components/listaDeHabilidades/ListaDeHabilidades.jsx"
+
+// Lo que hace cada acción y cómo se le pide confirmación al colectivo.
+const ACCIONES = {
+  ACEPTAR: {
+    enviar: aceptarPostulacion,
+    titulo: "Aceptar postulación",
+    mensaje: "¿Seguro que quieres aceptar esta postulación?",
+    textoConfirmar: "Sí",
+  },
+  RECHAZAR: {
+    enviar: rechazarPostulacion,
+    titulo: "Rechazar postulación",
+    mensaje: "¿Seguro que quieres rechazar esta postulación?",
+    textoConfirmar: "Sí",
+  },
+  DESANOTAR: {
+    enviar: darDeBajaPostulacion,
+    titulo: "Desanotar",
+    mensaje:
+      "La persona deja de colaborar en este perfil y no podrá volver a postularse. Esta acción no se puede deshacer.",
+    textoConfirmar: "Desanotar",
+  },
+}
+
+const QUIEN_DIO_LA_BAJA = {
+  PERSONA_COLABORADORA: "Se dio de baja",
+  COLECTIVO: "La desanotaste",
+}
 
 const GrupoDeHabilidades = ({ titulo, habilidades }) => {
   if (habilidades.length === 0) {
@@ -77,11 +106,7 @@ const PostulacionesPerfil = () => {
         setErrorAccion(null)
         setExito(false)
 
-        if (accion === "ACEPTAR") {
-          await aceptarPostulacion(postulacionSeleccionada)
-        } else {
-          await rechazarPostulacion(postulacionSeleccionada)
-        }
+        await ACCIONES[accion].enviar(postulacionSeleccionada)
 
         setExito(true)
         setDialogoAbierto(false)
@@ -135,14 +160,18 @@ const PostulacionesPerfil = () => {
                     </div>
                     <div>
                       <span className="fecha-postulacion">Fecha: </span>{" "}
-                      {postulacion.fechaRevision
-                        ? new Date(
-                            postulacion.fechaRevision,
-                          ).toLocaleDateString("es-AR")
-                        : new Date(
-                            postulacion.fechaPostulacion,
-                          ).toLocaleDateString("es-AR")}
+                      {new Date(
+                        postulacion.fechaBaja ??
+                          postulacion.fechaRevision ??
+                          postulacion.fechaPostulacion,
+                      ).toLocaleDateString("es-AR")}
                     </div>
+                    {postulacion.estado === "BAJA" && (
+                      <div className="origen-baja">
+                        {QUIEN_DIO_LA_BAJA[postulacion.origenBaja] ??
+                          "Postulación dada de baja"}
+                      </div>
+                    )}
                     {postulacion.estado === "ACEPTADA" && (
                       <div className="datos-contacto">
                         <span>datos de contacto: </span>
@@ -190,6 +219,25 @@ const PostulacionesPerfil = () => {
                       </Button>
                     </div>
                   )}
+                  {postulacion.estado === "ACEPTADA" && (
+                    <div className="acciones-postulacion">
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        onClick={() => {
+                          setPostulacionSeleccionada(postulacion.id)
+                          setAccion("DESANOTAR")
+                          setErrorAccion(null)
+                          setExito(false)
+                          setDialogoAbierto(true)
+                        }}
+                        disabled={enviando}
+                      >
+                        Desanotar
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </li>
@@ -201,17 +249,9 @@ const PostulacionesPerfil = () => {
 
         <ConfirmarAccion
           abierto={dialogoAbierto}
-          titulo={
-            accion === "ACEPTAR"
-              ? "Aceptar postulación"
-              : "Rechazar postulación"
-          }
-          mensaje={
-            accion === "ACEPTAR"
-              ? "¿Seguro que quieres aceptar esta postulación?"
-              : "¿Seguro que quieres rechazar esta postulación?"
-          }
-          textoConfirmar="Sí"
+          titulo={ACCIONES[accion]?.titulo}
+          mensaje={ACCIONES[accion]?.mensaje}
+          textoConfirmar={ACCIONES[accion]?.textoConfirmar}
           alConfirmar={Accion}
           alCancelar={() => setDialogoAbierto(false)}
         />
