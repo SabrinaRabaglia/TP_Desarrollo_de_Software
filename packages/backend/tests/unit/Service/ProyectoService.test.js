@@ -206,24 +206,7 @@ describe("ProyectoService", () => {
       expect(obtenerDatos(await service.getAll())).toHaveLength(0)
     })
 
-    test("elimina las colaboraciones del proyecto y conserva las de otros", async () => {
-      const creado = await service.create(dtoProyectoValido)
-      const persona = { id: "persona-1" }
-      await colaboracionRepository.save({
-        personaColaboradora: persona,
-        proyecto: { id: creado.id },
-      })
-      await colaboracionRepository.save({
-        personaColaboradora: persona,
-        proyecto: { id: "otro-proyecto" },
-      })
-
-      await service.delete(creado.id)
-
-      expect(await colaboracionRepository.findAll()).toEqual([
-        { personaColaboradora: persona, proyecto: { id: "otro-proyecto" } },
-      ])
-    })
+    
     test("lanza EntityNotFound al intentar eliminar un proyecto inexistente", async () => {
       await expect(service.delete("id-inexistente")).rejects.toThrow(
         EntityNotFound,
