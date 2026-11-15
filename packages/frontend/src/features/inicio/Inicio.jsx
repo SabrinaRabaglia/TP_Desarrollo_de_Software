@@ -9,6 +9,7 @@ import {
 } from "../../service/proyectosService"
 import { mensajeDeError } from "../../service/api"
 import "./Inicio.css"
+import BarraDeBusqueda from "../../components/barraDeBusqueda/BarraDeBusqueda";
 
 const Inicio = () => {
   const [proyectos, setProyectos] = useState([])
@@ -16,12 +17,20 @@ const Inicio = () => {
   const [error, setError] = useState(null)
   const [intento, setIntento] = useState(0)
 
+  const [textoBusqueda, setTextoBusqueda] = useState("");
+  const [paginaActual, setPaginaActual] = useState(1);
+
   useEffect(() => {
     const cargar = async () => {
       setCargando(true)
       setError(null)
       try {
-        setProyectos(await buscarProyectos())
+        const respuesta = await buscarProyectos({
+          q: textoBusqueda,
+          page: paginaActual
+        })
+        // EXTRAEMOS SOLO EL ARRAY PARA QUE EL .map() FUNCIONE
+        setProyectos(respuesta.proyectos) 
       } catch (e) {
         setError(mensajeDeError(e))
       } finally {
@@ -30,7 +39,12 @@ const Inicio = () => {
     }
 
     cargar()
-  }, [intento])
+  },[textoBusqueda, paginaActual, intento]);
+
+  const ejecutarBusqueda = (texto) => {
+    setTextoBusqueda(texto);
+    setPaginaActual(1); // Fundamental: resetear a la página 1 al buscar algo nuevo
+  };
 
   const renderProyectos = () => {
     if (cargando) {
@@ -77,7 +91,15 @@ const Inicio = () => {
         Conectamos colectivos sociales que necesitan software con personas que
         quieren colaborar con su tiempo y sus habilidades.
       </p>
+      
       <h2>Proyectos</h2>
+
+      {/* ACÁ AGREGAMOS LA BARRA DE BÚSQUEDA */}
+      <BarraDeBusqueda 
+        placeholder="Buscar proyectos por nombre o descripción..." 
+        onBuscar={ejecutarBusqueda} 
+      />
+
       {renderProyectos()}
     </section>
   )

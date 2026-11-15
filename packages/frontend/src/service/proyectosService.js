@@ -38,6 +38,7 @@ const aPerfil = (perfilBack, titulosDeHabilidades) => ({
     (id) => titulosDeHabilidades[id],
   ),
   limiteColaboraciones: perfilBack.limiteColaboraciones,
+  ocupante: perfilBack.ocupante || null,
 })
 
 const aProyecto = (proyectoBack, colectivo, titulosDeHabilidades) => ({
@@ -45,6 +46,17 @@ const aProyecto = (proyectoBack, colectivo, titulosDeHabilidades) => ({
   titulo: proyectoBack.titulo,
   descripcion: proyectoBack.descripcion,
   estado: proyectoBack.estado,
+
+
+  // NUEVO: Atributos de búsqueda y enlaces del backend de la Entrega 3
+  busquedaAbierta: proyectoBack.busquedaAbierta ?? false,
+  busquedaAbiertaHasta: proyectoBack.busquedaAbiertaHasta || null,
+  enlaceCodigoFuente: proyectoBack.enlaceCodigoFuente || null,
+  enlaceSistemaEnFuncionamiento: proyectoBack.enlaceSistemaEnFuncionamiento || null,
+  
+  // NUEVO: Hitos para calcular el progreso
+  hitos: proyectoBack.hitos || [],
+
   colectivo,
   perfiles: (proyectoBack.perfiles ?? []).map((perfil) =>
     aPerfil(perfil, titulosDeHabilidades),
@@ -61,15 +73,21 @@ const obtenerNombresDeColectivos = async () => {
   return Object.fromEntries(response.data.map((c) => [c.id, c.nombre]))
 }
 
-export const buscarProyectos = async ({ habilidades } = {}) => {
+export const buscarProyectos = async ({ habilidades,q, page = 1, limit = 10 } = {}) => {
+  // 1. Armamos los parámetros base que siempre viajan
+  const params = { page, limit };
+  if (habilidades) params.habilidades = habilidades;
+  if (q) params.q = q;
+
+ 
   const [response, nombresDeColectivos, titulosDeHabilidades] =
     await Promise.all([
-      api.get("/proyectos", { params: { habilidades } }),
+      api.get("/proyectos", { params }), 
       obtenerNombresDeColectivos(),
       obtenerTitulosDeHabilidades(),
     ])
 
-  return response.data.map((proyecto) =>
+  const proyectos = response.data.data.map((proyecto) =>
     aProyecto(
       proyecto,
       {
@@ -79,6 +97,11 @@ export const buscarProyectos = async ({ habilidades } = {}) => {
       titulosDeHabilidades,
     ),
   )
+
+  return {
+    proyectos,
+    metadata: response.data.metadata
+  }
 }
 
 export const obtenerProyecto = async (id) => {
