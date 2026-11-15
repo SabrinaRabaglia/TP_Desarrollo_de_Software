@@ -29,7 +29,6 @@ export default class ProyectoService {
     this.colectivoRepository = colectivoRepository
   }
 
-
   async getById(id) {
     const proyecto = await this.proyectoRepository.findById(id)
     if (!proyecto) {
@@ -114,7 +113,7 @@ export default class ProyectoService {
   }
 
   async getAll(queryParams = {}) {
-    const { page=1, limit=10, ...criterios } = queryParams
+    const { page = 1, limit = 10, ...criterios } = queryParams
     const query = {}
 
     if (criterios.q) {

@@ -88,7 +88,9 @@ export const buscarCandidatas = async (perfilId) => {
   const response = await api.get("/personas-colaboradoras", {
     params: { perfiles: perfilId },
   })
-  return response.data.map((personaBack) => ({
+  // Con `perfiles`, el backend devuelve todas las candidatas en una sola
+  // página: { metadata, data }.
+  return response.data.data.map((personaBack) => ({
     ...aColaboradora(personaBack),
     aceptaMensajeriaInterna: personaBack.aceptaMensajeriaInterna,
   }))

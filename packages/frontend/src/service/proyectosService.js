@@ -61,24 +61,34 @@ const obtenerNombresDeColectivos = async () => {
   return Object.fromEntries(response.data.map((c) => [c.id, c.nombre]))
 }
 
-export const buscarProyectos = async ({ habilidades } = {}) => {
+// El backend devuelve los proyectos de a páginas: { metadata: { page, limit,
+// total }, data }. Se devuelven los de la página pedida y cuántas páginas hay.
+export const buscarProyectos = async ({ habilidades, pagina = 1 } = {}) => {
   const [response, nombresDeColectivos, titulosDeHabilidades] =
     await Promise.all([
-      api.get("/proyectos", { params: { habilidades } }),
+      api.get("/proyectos", { params: { habilidades, page: pagina } }),
       obtenerNombresDeColectivos(),
       obtenerTitulosDeHabilidades(),
     ])
+  const { metadata, data } = response.data
 
-  return response.data.map((proyecto) =>
-    aProyecto(
-      proyecto,
-      {
-        id: proyecto.colectivo,
-        nombre: nombresDeColectivos[proyecto.colectivo],
-      },
-      titulosDeHabilidades,
+  return {
+    proyectos: data.map((proyecto) =>
+      aProyecto(
+        proyecto,
+        {
+          id: proyecto.colectivo,
+          nombre: nombresDeColectivos[proyecto.colectivo],
+        },
+        titulosDeHabilidades,
+      ),
     ),
-  )
+    pagina: metadata.page,
+    totalPaginas: Math.max(
+      1,
+      Math.ceil(metadata.total / (metadata.limit || 1)),
+    ),
+  }
 }
 
 export const obtenerProyecto = async (id) => {

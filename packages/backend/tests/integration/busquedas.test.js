@@ -64,7 +64,8 @@ const crearPersona = (nombreFantasia, conHabilidades) =>
   )
 
 //const titulos = (lista) => lista.map((proyecto) => proyecto.titulo).sort()
-const titulos = (respuesta) => respuesta.data.map((proyecto) => proyecto.titulo).sort()
+const titulos = (respuesta) =>
+  respuesta.data.map((proyecto) => proyecto.titulo).sort()
 
 beforeAll(async () => {
   await conectar("busquedas")
@@ -110,7 +111,7 @@ beforeAll(async () => {
     lucho: await crearPersona("lucho", [habilidades.javascript]),
     sol: await crearPersona("sol", [habilidades.python, habilidades.sql]),
   }
-},30000)
+}, 30000)
 
 afterAll(async () => {
   await new Promise((resolve) => server.close(resolve))
@@ -140,7 +141,9 @@ describe("búsqueda de proyectos según habilidades", () => {
         ),
       ),
     ).toEqual(["Análisis"])
-    expect((await request("GET", `/proyectos?habilidades=${sql.id}`)).data).toEqual([])
+    expect(
+      (await request("GET", `/proyectos?habilidades=${sql.id}`)).data,
+    ).toEqual([])
   })
 
   test("sin habilidades lista todos los proyectos", async () => {
@@ -150,6 +153,17 @@ describe("búsqueda de proyectos según habilidades", () => {
       "Mapa",
       "Sitio web",
     ])
+  })
+
+  test("pagina el listado y devuelve cada proyecto con su id, como el resto de la API", async () => {
+    const pagina = await request("GET", "/proyectos?limit=3&page=2")
+
+    expect(pagina.metadata).toEqual({ page: 2, limit: 3, total: 4 })
+    expect(pagina.data).toHaveLength(1)
+    const [proyecto] = pagina.data
+    expect(Object.values(proyectos).map((p) => p.id)).toContain(proyecto.id)
+    expect(proyecto).not.toHaveProperty("_id")
+    expect(proyecto).not.toHaveProperty("__v")
   })
 
   test("rechaza una habilidad que no es un id", async () => {
@@ -168,6 +182,23 @@ describe("búsqueda de colaboradores según un perfil", () => {
     return request("GET", `/personas-colaboradoras?${query}`)
   }
 
+  test("el listado paginado de personas devuelve cada una con su id y sin el valor de sus medios de contacto", async () => {
+    const pagina = await request(
+      "GET",
+      `/personas-colaboradoras?habilidades=${habilidades.python.id}&limit=5`,
+    )
+
+    expect(pagina.metadata).toEqual({ page: 1, limit: 5, total: 1 })
+    expect(pagina.data).toEqual([
+      expect.objectContaining({
+        id: personas.sol.id,
+        mediosDeContacto: [{ id: expect.any(String), tipo: "EMAIL" }],
+      }),
+    ])
+    expect(pagina.data[0]).not.toHaveProperty("_id")
+    expect(pagina.data[0]).not.toHaveProperty("__v")
+  })
+
   test("devuelve las personas con todas las habilidades requeridas, sin el valor de sus medios de contacto", async () => {
     const encontradas = (await colaboradores(proyectos.web.perfil)).data
 
@@ -181,7 +212,9 @@ describe("búsqueda de colaboradores según un perfil", () => {
       { id: expect.any(String), tipo: "EMAIL" },
     ])
     expect(
-      (await colaboradores(proyectos.mapa.perfil)).data.map((persona) => persona.id),
+      (await colaboradores(proyectos.mapa.perfil)).data.map(
+        (persona) => persona.id,
+      ),
     ).toEqual([personas.ana.id, personas.lucho.id])
   })
 
@@ -193,7 +226,9 @@ describe("búsqueda de colaboradores según un perfil", () => {
     })
 
     expect(
-      (await colaboradores(proyectos.mapa.perfil)).data.map((persona) => persona.id),
+      (await colaboradores(proyectos.mapa.perfil)).data.map(
+        (persona) => persona.id,
+      ),
     ).toEqual([personas.ana.id])
   })
 

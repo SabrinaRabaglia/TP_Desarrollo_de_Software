@@ -133,8 +133,7 @@ export default class ProyectoRepository {
         .find(query)
         .populate("perfiles.habilidadesRequeridas")
         .skip(skip)
-        .limit(limit)
-        .lean(),
+        .limit(limit),
       this.model.countDocuments(query),
     ])
     return { proyectos, total }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import { Card, CardContent } from "@mui/material"
+import { Card, CardContent, Pagination } from "@mui/material"
 import Cargando from "../../components/cargando/Cargando"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
 import {
@@ -12,6 +12,8 @@ import "./Inicio.css"
 
 const Inicio = () => {
   const [proyectos, setProyectos] = useState([])
+  const [pagina, setPagina] = useState(1)
+  const [totalPaginas, setTotalPaginas] = useState(1)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
   const [intento, setIntento] = useState(0)
@@ -21,7 +23,9 @@ const Inicio = () => {
       setCargando(true)
       setError(null)
       try {
-        setProyectos(await buscarProyectos())
+        const resultado = await buscarProyectos({ pagina })
+        setProyectos(resultado.proyectos)
+        setTotalPaginas(resultado.totalPaginas)
       } catch (e) {
         setError(mensajeDeError(e))
       } finally {
@@ -30,7 +34,7 @@ const Inicio = () => {
     }
 
     cargar()
-  }, [intento])
+  }, [intento, pagina])
 
   const renderProyectos = () => {
     if (cargando) {
@@ -70,6 +74,21 @@ const Inicio = () => {
     )
   }
 
+  // Fuera de renderProyectos para que no desaparezca mientras carga otra página.
+  const renderPaginacion = () =>
+    totalPaginas > 1 &&
+    !error && (
+      <nav aria-label="Páginas de proyectos" className="inicio-paginacion">
+        <Pagination
+          count={totalPaginas}
+          page={pagina}
+          onChange={(_evento, nueva) => setPagina(nueva)}
+          disabled={cargando}
+          color="primary"
+        />
+      </nav>
+    )
+
   return (
     <section className="inicio">
       <h1>Código a Voluntad</h1>
@@ -79,6 +98,7 @@ const Inicio = () => {
       </p>
       <h2>Proyectos</h2>
       {renderProyectos()}
+      {renderPaginacion()}
     </section>
   )
 }

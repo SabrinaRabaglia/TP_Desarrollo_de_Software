@@ -199,13 +199,13 @@ describe("PersonaColaboradoraController", () => {
       expect(service.getAll).not.toHaveBeenCalled()
       expect(res.status).toHaveBeenCalledWith(200)
       expect(res.json).toHaveBeenCalledWith({
-  data: personas,
-  metadata: {
-    page: 1,
-    limit: 1,
-    total: 1,
-  },
-})
+        data: personas,
+        metadata: {
+          page: 1,
+          limit: 1,
+          total: 1,
+        },
+      })
     })
   })
 })
