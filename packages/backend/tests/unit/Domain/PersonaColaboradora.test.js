@@ -2,6 +2,7 @@ import { describe, expect, test } from "@jest/globals"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import Habilidad from "../../../src/domain/Habilidad.js"
 import Cuenta from "../../../src/domain/Cuenta.js"
+import MedioDeContacto from "../../../src/domain/MedioDeContacto.js"
 import { TipoCuenta } from "../../../src/domain/enums/TipoCuenta.js"
 import {
   DomainRuleError,
@@ -104,5 +105,43 @@ describe("PersonaColaboradora", () => {
     expect(() =>
       new PersonaColaboradora("anon123").assertAceptaMensajeriaInterna(),
     ).toThrow(DomainRuleError)
+  })
+  describe("conectarTelegram", () => {
+    const valoresPorTipo = (persona) =>
+      persona.mediosDeContacto.map(({ tipo, valor }) => [tipo, valor])
+
+    test("agrega Telegram con el chat id", () => {
+      const persona = new PersonaColaboradora("anag")
+
+      persona.conectarTelegram("987654321")
+
+      expect(valoresPorTipo(persona)).toEqual([["TELEGRAM", "987654321"]])
+    })
+
+    test("reemplaza el chat anterior en vez de sumar otro", () => {
+      const persona = new PersonaColaboradora("anag")
+      persona.mediosDeContacto = [new MedioDeContacto("TELEGRAM", "111", "m1")]
+
+      persona.conectarTelegram("222")
+
+      expect(valoresPorTipo(persona)).toEqual([["TELEGRAM", "222"]])
+    })
+
+    test("no toca los demás medios de contacto", () => {
+      const persona = new PersonaColaboradora("anag")
+      const email = new MedioDeContacto("EMAIL", "ana@example.com", "m1")
+      persona.mediosDeContacto = [
+        email,
+        new MedioDeContacto("TELEGRAM", "111", "m2"),
+      ]
+
+      persona.conectarTelegram("222")
+
+      expect(persona.mediosDeContacto[0]).toBe(email)
+      expect(valoresPorTipo(persona)).toEqual([
+        ["EMAIL", "ana@example.com"],
+        ["TELEGRAM", "222"],
+      ])
+    })
   })
 })

@@ -8,6 +8,7 @@ import PersonaColaboradoraController from "./controllers/PersonaColaboradoraCont
 import ProyectoController from "./controllers/ProyectoController.js"
 import HitoController from "./controllers/HitoController.js"
 import PostulacionController from "./controllers/PostulacionController.js"
+import TelegramController from "./controllers/TelegramController.js"
 
 import ColectivoRepository from "./repositories/ColectivoRepository.js"
 import HabilidadRepository from "./repositories/HabilidadRepository.js"
@@ -30,7 +31,10 @@ import PostulacionService from "./services/PostulacionService.js"
 
 import EnvioDeNotificaciones from "./services/EnvioDeNotificaciones.js"
 import RedaccionDeAvisos from "./services/RedaccionDeAvisos.js"
+import ConexionDeTelegram from "./services/ConexionDeTelegram.js"
+import RecepcionDeTelegram from "./services/RecepcionDeTelegram.js"
 import { crearCanales } from "./canales/canales.js"
+import { clienteTelegram } from "./canales/telegram.js"
 import PerfilService from "./services/PerfilService.js"
 import PersonaColaboradoraService from "./services/PersonaColaboradoraService.js"
 import ProyectoService from "./services/ProyectoService.js"
@@ -46,6 +50,9 @@ const provinciaRepository = new ProvinciaRepository()
 const postulacionRepository = new PostulacionRepository()
 const { canales, simulados } = crearCanales(process.env)
 export const mediosSimulados = simulados
+const telegram = process.env.TELEGRAM_BOT_TOKEN
+  ? clienteTelegram(process.env.TELEGRAM_BOT_TOKEN)
+  : null
 
 const proyectoRepository = new ProyectoRepository()
 const tipoColectivoRepository = new TipoColectivoRepository()
@@ -97,6 +104,13 @@ export const envioDeNotificaciones = new EnvioDeNotificaciones(
     redactar: redaccionDeAvisos.redactar,
   },
 )
+const conexionDeTelegram = new ConexionDeTelegram(
+  telegram,
+  personaColaboradoraRepository,
+)
+export const recepcionDeTelegram = telegram
+  ? new RecepcionDeTelegram(telegram, conexionDeTelegram)
+  : null
 const notificacionService = new NotificacionService(
   notificacionRepository,
   perfilService,
@@ -136,3 +150,4 @@ export const hitoController = new HitoController(hitoService)
 export const postulacionController = new PostulacionController(
   postulacionService,
 )
+export const telegramController = new TelegramController(conexionDeTelegram)
