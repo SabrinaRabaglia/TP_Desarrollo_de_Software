@@ -139,6 +139,46 @@ describe("Perfil", () => {
     expect(perfil.estaCubiertoPor([])).toBe(false)
   })
 
+  test("tiene alguna requerida entre las habilidades si coincide con al menos una", () => {
+    const perfil = new Perfil({
+      ...datos,
+      habilidadesRequeridas: ["cypress", "postman"],
+    })
+
+    expect(perfil.tieneAlgunaRequeridaEntre(["cypress"])).toBe(true)
+    expect(perfil.tieneAlgunaRequeridaEntre(["jmeter", "postman"])).toBe(true)
+    expect(perfil.tieneAlgunaRequeridaEntre(["jmeter"])).toBe(false)
+    expect(perfil.tieneAlgunaRequeridaEntre([])).toBe(false)
+  })
+
+  test("las habilidades opcionales no alcanzan para tener una requerida", () => {
+    const perfil = new Perfil({
+      ...datos,
+      habilidadesRequeridas: ["cypress"],
+      habilidadesOpcionales: ["postman"],
+    })
+
+    expect(perfil.tieneAlgunaRequeridaEntre(["postman"])).toBe(false)
+  })
+
+  test("reconoce una requerida sea ObjectId, texto o documento", () => {
+    const habilidad = (codigo) =>
+      new HabilidadModel({ titulo: codigo, codigo, descripcion: codigo })
+    const cypress = habilidad("cypress")
+    const postman = habilidad("postman")
+    const perfil = new Perfil({
+      ...datos,
+      habilidadesRequeridas: [cypress._id, postman._id],
+    })
+
+    expect(perfil.tieneAlgunaRequeridaEntre([cypress.id])).toBe(true)
+    expect(perfil.tieneAlgunaRequeridaEntre([postman])).toBe(true)
+    expect(perfil.tieneAlgunaRequeridaEntre([postman._id])).toBe(true)
+    expect(
+      perfil.tieneAlgunaRequeridaEntre([new mongoose.Types.ObjectId()]),
+    ).toBe(false)
+  })
+
   test("quitar una postulación aceptada libera su lugar en el límite", () => {
     const aceptada = new mongoose.Types.ObjectId()
     const otra = new mongoose.Types.ObjectId()

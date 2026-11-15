@@ -1891,7 +1891,7 @@
             "$ref": "#/components/responses/NotFound"
           },
           "409": {
-            "description": "La persona ya se postuló a este perfil (también si después se dio de baja), el proyecto está cerrado o la persona no tiene ninguna de las habilidades del perfil.",
+            "description": "La persona ya se postuló a este perfil (también si después se dio de baja), el proyecto está cerrado o la persona no tiene ninguna de las habilidades requeridas del perfil.",
             "content": {
               "application/json": {
                 "schema": {
