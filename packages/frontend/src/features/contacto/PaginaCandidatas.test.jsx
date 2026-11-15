@@ -3,7 +3,10 @@ import userEvent from "@testing-library/user-event"
 import { MemoryRouter, Route, Routes } from "react-router-dom"
 import { buscarCandidatas } from "../../service/colaboradorasService"
 import { enviarMensaje } from "../../service/mensajesService"
-import { obtenerProyecto } from "../../service/proyectosService"
+import {
+  obtenerNombresDelPerfil,
+  obtenerProyecto,
+} from "../../service/proyectosService"
 import PaginaCandidatas from "./PaginaCandidatas"
 
 jest.mock("../../service/colaboradorasService")
@@ -46,6 +49,10 @@ const tarjetaDe = async (nombreFantasia) =>
 
 beforeEach(() => {
   obtenerProyecto.mockResolvedValue(proyecto)
+  obtenerNombresDelPerfil.mockResolvedValue({
+    proyecto: proyecto.titulo,
+    perfil: "Frontend",
+  })
   buscarCandidatas.mockResolvedValue([
     candidata("p1", "anag", true),
     candidata("p2", "beto", false),

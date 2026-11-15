@@ -1,6 +1,10 @@
 import api from "./api"
 import { obtenerHabilidades } from "./habilidadesService"
-import { buscarProyectos, obtenerProyecto } from "./proyectosService"
+import {
+  buscarProyectos,
+  obtenerNombresDelPerfil,
+  obtenerProyecto,
+} from "./proyectosService"
 
 jest.mock("./api", () => ({ __esModule: true, default: { get: jest.fn() } }))
 jest.mock("./habilidadesService", () => ({ obtenerHabilidades: jest.fn() }))
@@ -152,4 +156,26 @@ test("un proyecto sin hitos tiene avance 0", async () => {
 
   expect(proyecto.hitos).toEqual([])
   expect(proyecto.avance).toBe(0)
+})
+
+test("para las migas trae el título del proyecto y el nombre del perfil", async () => {
+  api.get.mockResolvedValue({
+    data: {
+      titulo: "Sitio web de la huerta",
+      perfiles: [
+        { id: "perfil-1", nombre: "Frontend" },
+        { id: "perfil-2", nombre: "Tester" },
+      ],
+    },
+  })
+
+  expect(await obtenerNombresDelPerfil("proyecto-1", "perfil-2")).toEqual({
+    proyecto: "Sitio web de la huerta",
+    perfil: "Tester",
+  })
+  expect(api.get).toHaveBeenCalledWith("/proyectos/proyecto-1")
+  expect(await obtenerNombresDelPerfil("proyecto-1", "otro")).toEqual({
+    proyecto: "Sitio web de la huerta",
+    perfil: null,
+  })
 })

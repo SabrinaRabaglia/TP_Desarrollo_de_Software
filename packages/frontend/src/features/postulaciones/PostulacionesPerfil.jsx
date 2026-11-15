@@ -15,6 +15,7 @@ import {
 } from "../../service/postulacionesService.js"
 import ConfirmarAccion from "../../components/confirmarAccion/ConfirmarAccion.jsx"
 import ListaDeHabilidades from "../../components/listaDeHabilidades/ListaDeHabilidades.jsx"
+import Migas from "../../components/migas/Migas"
 
 // Lo que hace cada acción y cómo se le pide confirmación al colectivo.
 const ACCIONES = {
@@ -266,6 +267,11 @@ const PostulacionesPerfil = () => {
 
   return (
     <section className="postulaciones">
+      <Migas
+        proyectoId={proyectoId}
+        perfilId={perfilId}
+        actual="Postulaciones"
+      />
       <h1>Postulaciones</h1>
       <p className="postulaciones-bajada">
         Aca se muestran todas las postulaciones realizadas con sus respectivos

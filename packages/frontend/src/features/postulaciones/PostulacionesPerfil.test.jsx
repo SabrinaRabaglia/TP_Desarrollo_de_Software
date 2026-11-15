@@ -10,6 +10,13 @@ import {
 } from "../../service/postulacionesService"
 import PostulacionesPerfil from "./PostulacionesPerfil"
 
+jest.mock("../../service/proyectosService", () => ({
+  obtenerNombresDelPerfil: async () => ({
+    proyecto: "Sitio web de la huerta",
+    perfil: "Frontend",
+  }),
+}))
+
 jest.mock("../../service/postulacionesService", () => ({
   ...jest.requireActual("../../service/postulacionesService"),
   obtenerPostulacionesPerfil: jest.fn(),

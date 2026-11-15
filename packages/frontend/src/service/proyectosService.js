@@ -126,3 +126,13 @@ export const obtenerProyecto = async (id) => {
     titulosDeHabilidades,
   )
 }
+
+// Para las migas de pan: solo los nombres, con un único pedido al back.
+export const obtenerNombresDelPerfil = async (proyectoId, perfilId) => {
+  const response = await api.get(`/proyectos/${proyectoId}`)
+  const perfil = (response.data.perfiles ?? []).find(
+    (perfil) => perfil.id === perfilId,
+  )
+
+  return { proyecto: response.data.titulo, perfil: perfil?.nombre ?? null }
+}

@@ -7,6 +7,7 @@ import "./ColaboradoresPerfil.css"
 import { useParams } from "react-router-dom"
 import { obtenerColaboradoresPerfil } from "../../service/colaboradorasService.js"
 import ListaDeCuentas from "../../components/listaDeCuentas/ListaDeCuentas.jsx"
+import Migas from "../../components/migas/Migas"
 
 const GrupoDeCuentas = ({ cuentas }) => {
   if (cuentas.length === 0) {
@@ -96,6 +97,11 @@ const ColaboradoresPerfil = () => {
 
   return (
     <section className="colaboradores">
+      <Migas
+        proyectoId={proyectoId}
+        perfilId={perfilId}
+        actual="Colaboradores"
+      />
       <h1>Colaboradores Activos</h1>
       <p className="colaboradores-bajada">
         Aca veran todos los usuarios que ya estan colaborando en este perfil
