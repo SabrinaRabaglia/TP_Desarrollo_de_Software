@@ -37,7 +37,7 @@ const aPerfil = (perfilBack, titulosDeHabilidades) => ({
   habilidadesOpcionales: (perfilBack.habilidadesOpcionales ?? []).map(
     (id) => titulosDeHabilidades[id],
   ),
-  postulacionesAceptadas: (perfilBack.postulacionesAceptadas ?? []),
+  postulacionesAceptadas: perfilBack.postulacionesAceptadas ?? [],
   limiteColaboraciones: perfilBack.limiteColaboraciones,
 })
 

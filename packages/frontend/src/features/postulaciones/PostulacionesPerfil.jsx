@@ -177,14 +177,16 @@ const PostulacionesPerfil = () => {
                     {postulacion.estado === "ACEPTADA" && (
                       <div className="datos-contacto">
                         <span>datos de contacto: </span>
-                        { postulacion.personaColaboradora.mediosDeContacto.length > 0 ?
-                        postulacion.personaColaboradora.mediosDeContacto.map(
-                          (medio) => (
-                            <div key={medio.tipo}>
-                              {medio.tipo}: {medio.valor}
-                            </div>
-                          ),
-                        ) : "No tiene"}
+                        {postulacion.personaColaboradora.mediosDeContacto
+                          .length > 0
+                          ? postulacion.personaColaboradora.mediosDeContacto.map(
+                              (medio) => (
+                                <div key={medio.tipo}>
+                                  {medio.tipo}: {medio.valor}
+                                </div>
+                              ),
+                            )
+                          : "No tiene"}
                       </div>
                     )}
                   </div>

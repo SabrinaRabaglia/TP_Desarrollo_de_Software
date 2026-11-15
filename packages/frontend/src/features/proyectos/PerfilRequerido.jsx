@@ -7,6 +7,7 @@ import {
   crearPostulacion,
   obtenerPostulacionesColaborador,
 } from "../../service/postulacionesService.js"
+import Tooltip from "@mui/material/Tooltip"
 import { mensajeDeError } from "../../service/api.js"
 import { useState, useEffect } from "react"
 import { useAuth } from "../../context/AuthContext.jsx"
@@ -90,6 +91,12 @@ const PerfilRequerido = ({ perfil, proyectoId, enlaceACandidatas }) => {
 
   const puedePostularse = proyectoEstaAbierto && !yaSePostulo
 
+  const motivoNoPuedePostularse = yaSePostulo
+    ? "Ya enviaste una postulación para este perfil."
+    : !proyectoEstaAbierto
+      ? "Este proyecto ya no está disponible."
+      : null
+
   return (
     <article className="perfil">
       <h3>{perfil.nombre}</h3>
@@ -117,18 +124,22 @@ const PerfilRequerido = ({ perfil, proyectoId, enlaceACandidatas }) => {
       />
       <div className="contenedor-btn">
         {usuario?.rol === "PERSONA_COLABORADORA" && (
-          <Button
-            variant="contained"
-            size="small"
-            onClick={() => {
-              setError(null)
-              setExito(false)
-              setDialogoAbierto(true)
-            }}
-            disabled={enviando || exito || !puedePostularse}
-          >
-            Postularme
-          </Button>
+          <Tooltip title={motivoNoPuedePostularse ?? ""} arrow>
+            <span>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => {
+                  setError(null)
+                  setExito(false)
+                  setDialogoAbierto(true)
+                }}
+                disabled={enviando || exito || !puedePostularse}
+              >
+                Postularme
+              </Button>
+            </span>
+          </Tooltip>
         )}
         {exito && <p>Tu postulación fue enviada.</p>}
 
