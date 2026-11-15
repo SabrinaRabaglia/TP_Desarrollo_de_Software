@@ -178,7 +178,7 @@ describe("PersonaColaboradoraService", () => {
     await expect(service.getById(persona.id)).rejects.toThrow(EntityNotFound)
     expect(await postulacionRepository.findAll()).toEqual([
       expect.objectContaining({
-        personaColaboradora: { id: "otra-persona" },
+        personaColaboradora: "otra-persona",
         perfil: "perfil-1",
       }),
     ])

@@ -1,5 +1,7 @@
 import Postulacion from "../domain/Postulacion.js"
 import { EstadoPostulacion } from "../domain/enums/EstadoPostulacion.js"
+import { OrigenBaja } from "../domain/enums/OrigenBaja.js"
+import { RolUsuario } from "../domain/enums/RolUsuario.js"
 import {
   AlreadyExists,
   InvalidReference,
@@ -93,7 +95,7 @@ export default class PostulacionService {
     if (!colectivo) {
       throw new InvalidReference("Colectivo no encontrado")
     }
-    if (proyecto.colectivo != colectivoId) {
+    if (!proyecto.esDelColectivo(colectivoId)) {
       throw new NoAutorizado(
         "El proyecto no pertenece al colectivo autenticado",
       )
@@ -149,7 +151,8 @@ export default class PostulacionService {
   }
 
   // Solo el colectivo dueño del proyecto revisa las postulaciones de sus perfiles.
-  postulacionARevisar = async (id, colectivoId) => {
+  // La postulación con el proyecto y el perfil al que pertenece.
+  postulacionConSuPerfil = async (id) => {
     const postulacion = await this.postulacionRepository.findById(id)
     if (!postulacion) {
       throw new InvalidReference("Postulacion no encontrada")
@@ -159,7 +162,13 @@ export default class PostulacionService {
     if (!proyecto || !perfil) {
       throw new InvalidReference("Perfil no encontrado")
     }
-    if (String(proyecto.colectivo) !== String(colectivoId)) {
+    return { postulacion, proyecto, perfil }
+  }
+
+  postulacionARevisar = async (id, colectivoId) => {
+    const { postulacion, proyecto, perfil } =
+      await this.postulacionConSuPerfil(id)
+    if (!proyecto.esDelColectivo(colectivoId)) {
       throw new NoAutorizado(
         "El proyecto no pertenece al colectivo autenticado",
       )
@@ -182,6 +191,33 @@ export default class PostulacionService {
   rechazar = async (id, colectivoId) => {
     const { postulacion } = await this.postulacionARevisar(id, colectivoId)
     postulacion.rechazar()
+    return await this.postulacionRepository.save(postulacion)
+  }
+
+  // La persona se da de baja de su propia postulación; el colectivo desanota
+  // solo en sus proyectos. Cualquier otro caso no está autorizado.
+  origenDeBaja = (usuario, postulacion, proyecto) => {
+    if (
+      usuario.rol === RolUsuario.PERSONA_COLABORADORA &&
+      postulacion.esDe(usuario.entidad)
+    ) {
+      return OrigenBaja.PERSONA_COLABORADORA
+    }
+    if (
+      usuario.rol === RolUsuario.COLECTIVO &&
+      proyecto.esDelColectivo(usuario.entidad)
+    ) {
+      return OrigenBaja.COLECTIVO
+    }
+    throw new NoAutorizado("No podés dar de baja esta postulación")
+  }
+
+  darDeBaja = async (id, usuario) => {
+    const { postulacion, proyecto, perfil } =
+      await this.postulacionConSuPerfil(id)
+    postulacion.darDeBaja(this.origenDeBaja(usuario, postulacion, proyecto))
+    perfil.quitarPostulacion(id)
+    await this.proyectoRepository.save(proyecto)
     return await this.postulacionRepository.save(postulacion)
   }
 }

@@ -27,6 +27,12 @@ export default class Postulacion {
     this.perfil = perfil
   }
 
+  // La persona llega como ObjectId desde Mongo y como texto desde el token:
+  // se comparan por su forma de texto (los 24 caracteres hexadecimales).
+  esDe(personaId) {
+    return String(this.personaColaboradora) === String(personaId)
+  }
+
   aceptar() {
     if (this.estado !== EstadoPostulacion.PENDIENTE) {
       throw new DomainRuleError(

@@ -1,4 +1,5 @@
 import { expect, test } from "@jest/globals"
+import mongoose from "mongoose"
 import Postulacion from "../../../src/domain/Postulacion.js"
 import Perfil from "../../../src/domain/Perfil.js"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
@@ -124,4 +125,16 @@ test("rechaza un origen de baja inválido sin cambiar la postulación", () => {
   expect(() => postulacion.darDeBaja("ADMIN")).toThrow(DomainValidationError)
   expect(postulacion.estado).toBe(EstadoPostulacion.ACEPTADA)
   expect(postulacion.fechaBaja).toBeNull()
+})
+
+test("es de la persona con el mismo id, venga como ObjectId o como texto", () => {
+  const postulacion = new Postulacion(personaConHabilidad(), perfilValido())
+  const personaId = new mongoose.Types.ObjectId()
+  // Como queda al leerla de Mongo: solo el id de la persona.
+  postulacion.personaColaboradora = personaId
+
+  expect(postulacion.esDe(personaId)).toBe(true)
+  expect(postulacion.esDe(personaId.toString())).toBe(true)
+  expect(postulacion.esDe(new mongoose.Types.ObjectId(personaId))).toBe(true)
+  expect(postulacion.esDe(new mongoose.Types.ObjectId())).toBe(false)
 })

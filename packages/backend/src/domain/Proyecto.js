@@ -121,6 +121,12 @@ export default class Proyecto {
     return this.estado === EstadoProyecto.CERRADO
   }
 
+  // El colectivo llega como ObjectId desde Mongo y como texto desde el token:
+  // se comparan por su forma de texto (los 24 caracteres hexadecimales).
+  esDelColectivo(colectivoId) {
+    return String(this.colectivo) === String(colectivoId)
+  }
+
   static validarDatos({
     titulo,
     descripcion,
