@@ -4,7 +4,11 @@ import MongoDBClient from "./config/database.js"
 import sembrarCatalogos from "./seeds/catalogos.js"
 import asignarIdsAMediosDeContacto from "./migraciones/asignarIdsAMediosDeContacto.js"
 import { usaSecretoDeDesarrollo } from "./auth/tokens.js"
-import { envioDeNotificaciones, mediosSimulados } from "./dependencias.js"
+import {
+  envioDeNotificaciones,
+  mediosSimulados,
+  recepcionDeTelegram,
+} from "./dependencias.js"
 
 const port = process.env.SERVER_PORT || 8000
 const intervaloDeEnvio =
@@ -34,6 +38,13 @@ if (mediosSimulados.length > 0) {
 
 setInterval(envioDeNotificaciones.despertar, intervaloDeEnvio).unref()
 envioDeNotificaciones.despertar()
+
+if (recepcionDeTelegram) {
+  recepcionDeTelegram.iniciar()
+  console.log(
+    "El bot de Telegram está escuchando mensajes para conectar cuentas.",
+  )
+}
 
 app.listen(port, () => {
   console.log(`Backend escuchando en puerto ${port}`)

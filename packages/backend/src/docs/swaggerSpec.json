@@ -803,6 +803,43 @@
         }
       }
     },
+    "/personas-colaboradoras/{id}/telegram/enlace": {
+      "post": {
+        "tags": ["Personas colaboradoras"],
+        "summary": "Crear un enlace para conectar Telegram",
+        "description": "Devuelve un enlace al bot de Telegram con un código firmado que vence a los 15 minutos. Cuando la persona lo abre y toca Iniciar, el bot guarda su chat id como medio de contacto `TELEGRAM` y reemplaza el anterior si había uno. Para desconectarse se borra ese medio con `DELETE /personas-colaboradoras/{id}/medios-de-contacto/{contactoId}`. Solo puede pedirlo la propia persona; cualquier otro usuario recibe `403`.",
+        "operationId": "crearEnlaceDeTelegram",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/IdPath" }],
+        "responses": {
+          "201": {
+            "description": "Enlace creado.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EnlaceDeTelegram" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "500": { "$ref": "#/components/responses/InternalServerError" },
+          "503": {
+            "description": "El servidor no tiene configurado `TELEGRAM_BOT_TOKEN`.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "example": {
+                  "message": "Telegram no está disponible en este servidor",
+                  "details": []
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/personas-colaboradoras/{id}/notificaciones": {
       "get": {
         "tags": ["Notificaciones"],
@@ -3480,6 +3517,22 @@
             "items": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          }
+        }
+      },
+      "EnlaceDeTelegram": {
+        "type": "object",
+        "required": ["enlace", "venceEn"],
+        "properties": {
+          "enlace": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://t.me/CodigoAVoluntadBot?start=65f1a2b3c4d5e6f708192a100tqk2m8kq3Yl0gH1m8Xw2aB4nJ7rT5uVcEe9sF"
+          },
+          "venceEn": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Desde este momento el bot rechaza el código."
           }
         }
       },

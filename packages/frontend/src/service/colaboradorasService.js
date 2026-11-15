@@ -12,6 +12,11 @@ export const TIPOS_DE_MEDIO = {
   TELEGRAM: "Telegram",
 }
 
+// Telegram no se carga a mano: se conecta desde Mi perfil con un enlace al bot.
+export const TIPOS_DE_MEDIO_MANUALES = Object.fromEntries(
+  Object.entries(TIPOS_DE_MEDIO).filter(([tipo]) => tipo !== "TELEGRAM"),
+)
+
 const textoOpcional = (texto) => texto.trim() || undefined
 
 const aPersonaBack = (persona) => ({
@@ -129,4 +134,17 @@ export const obtenerPerfilPropio = async (id) => {
 
 export const actualizarColaboradora = async (id, persona) => {
   await api.put(`/personas-colaboradoras/${id}`, aPersonaBack(persona))
+}
+
+export const crearEnlaceDeTelegram = async (id) => {
+  const response = await api.post(
+    `/personas-colaboradoras/${id}/telegram/enlace`,
+  )
+  return { enlace: response.data.enlace, venceEn: response.data.venceEn }
+}
+
+export const eliminarMedioDeContacto = async (id, medioId) => {
+  await api.delete(
+    `/personas-colaboradoras/${id}/medios-de-contacto/${medioId}`,
+  )
 }

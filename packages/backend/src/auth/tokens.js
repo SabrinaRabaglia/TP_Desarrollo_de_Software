@@ -3,7 +3,7 @@ import { NoAutenticado } from "../errors/ApplicationErrors.js"
 
 const SECRETO_DE_DESARROLLO = "codigo-a-voluntad-secreto-de-desarrollo"
 
-const secreto = () => {
+export const secreto = () => {
   if (process.env.JWT_SECRET) {
     return process.env.JWT_SECRET
   }
