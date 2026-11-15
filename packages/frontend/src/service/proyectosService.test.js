@@ -1,6 +1,10 @@
 import api from "./api"
 import { obtenerHabilidades } from "./habilidadesService"
-import { buscarProyectos } from "./proyectosService"
+import {
+  buscarProyectos,
+  obtenerProyecto,
+  obtenerResumenDelPerfil,
+} from "./proyectosService"
 
 jest.mock("./api", () => ({ __esModule: true, default: { get: jest.fn() } }))
 jest.mock("./habilidadesService", () => ({ obtenerHabilidades: jest.fn() }))
@@ -100,4 +104,87 @@ test("sin proyectos hay una sola página", async () => {
     pagina: 1,
     totalPaginas: 1,
   })
+})
+
+test("el detalle trae los hitos en orden, el avance del más reciente y los enlaces", async () => {
+  api.get.mockImplementation(async (url) => ({
+    data:
+      url === "/proyectos/proyecto-1"
+        ? {
+            ...respuestas["/proyectos"].data[0],
+            enlaceSistemaEnFuncionamiento: "https://huerta.example.com",
+            enlaceCodigoFuente: null,
+            hitos: [
+              {
+                id: "h2",
+                descripcion: "Calendario publicado",
+                fecha: "2026-10-10T00:00:00.000Z",
+                porcentajeConcrecion: 50,
+              },
+              {
+                id: "h1",
+                descripcion: "Maqueta aprobada",
+                fecha: "2026-09-20T00:00:00.000Z",
+                porcentajeConcrecion: 20,
+              },
+            ],
+          }
+        : { id: "colectivo-1", nombre: "Huerta Comunitaria Sur" },
+  }))
+
+  const proyecto = await obtenerProyecto("proyecto-1")
+
+  expect(proyecto.hitos.map((hito) => hito.descripcion)).toEqual([
+    "Maqueta aprobada",
+    "Calendario publicado",
+  ])
+  expect(proyecto.hitos[0].fecha).toEqual(new Date("2026-09-20T00:00:00.000Z"))
+  expect(proyecto.avance).toBe(50)
+  expect(proyecto.enlaceSistema).toBe("https://huerta.example.com")
+  expect(proyecto.enlaceRepositorio).toBeNull()
+})
+
+test("un proyecto sin hitos tiene avance 0", async () => {
+  api.get.mockImplementation(async (url) => ({
+    data:
+      url === "/proyectos/proyecto-1"
+        ? { ...respuestas["/proyectos"].data[0], hitos: [] }
+        : { id: "colectivo-1", nombre: "Huerta Comunitaria Sur" },
+  }))
+
+  const proyecto = await obtenerProyecto("proyecto-1")
+
+  expect(proyecto.hitos).toEqual([])
+  expect(proyecto.avance).toBe(0)
+})
+
+test("el resumen del perfil trae los nombres y los cupos con un solo pedido", async () => {
+  api.get.mockResolvedValue({
+    data: {
+      id: "proyecto-1",
+      titulo: "Sitio web de la huerta",
+      perfiles: [
+        {
+          id: "perfil-1",
+          nombre: "Tester",
+          limiteColaboraciones: 2,
+          postulacionesAceptadas: ["a1"],
+        },
+        { id: "perfil-2", nombre: "Frontend", limiteColaboraciones: null },
+      ],
+    },
+  })
+
+  expect(await obtenerResumenDelPerfil("proyecto-1", "perfil-1")).toEqual({
+    proyecto: { id: "proyecto-1", titulo: "Sitio web de la huerta" },
+    perfil: { nombre: "Tester", limite: 2, aceptadas: 1 },
+  })
+  expect(api.get).toHaveBeenCalledTimes(1)
+  expect(api.get).toHaveBeenCalledWith("/proyectos/proyecto-1")
+  expect(
+    (await obtenerResumenDelPerfil("proyecto-1", "perfil-2")).perfil,
+  ).toEqual({ nombre: "Frontend", limite: null, aceptadas: 0 })
+  expect(
+    (await obtenerResumenDelPerfil("proyecto-1", "otro")).perfil,
+  ).toBeNull()
 })

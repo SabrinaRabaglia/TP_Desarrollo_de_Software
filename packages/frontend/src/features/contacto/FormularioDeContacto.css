@@ -1,5 +1,5 @@
 .formulario-de-contacto {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio);
+  gap: var(--espacio-4);
 }

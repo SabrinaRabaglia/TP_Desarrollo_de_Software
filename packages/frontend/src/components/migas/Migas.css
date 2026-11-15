@@ -1,0 +1,20 @@
+.migas {
+  margin-bottom: var(--espacio-4);
+  font-size: var(--texto-chico);
+  color: var(--color-texto-secundario);
+}
+
+/* Los títulos largos cortan línea en lugar de desbordar en el celular */
+.migas .MuiBreadcrumbs-li {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.migas-actual {
+  font-weight: 600;
+}
+
+.migas-cargando {
+  display: inline-block;
+  vertical-align: middle;
+}

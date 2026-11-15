@@ -1,118 +1,79 @@
-/* Estilos de las tarjetas de postulación. Los usan PaginaPostulaciones y
-   PostulacionesPerfil. */
-
-.postulaciones {
+.mis-postulaciones-pagina {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio);
+  gap: var(--espacio-6);
 }
 
-.postulaciones-bajada {
-  max-width: 40rem;
-  font-size: 1.125rem;
+.mis-postulaciones-encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+}
+
+.mis-postulaciones-encabezado p {
   color: var(--color-texto-secundario);
 }
 
-.mis-postulaciones {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--espacio);
+.mis-postulaciones-lista {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.postulacion {
-  height: 100%;
-}
-
-.postulacion-carta {
+.mi-postulacion {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--espacio-2);
+  height: 100%;
+  padding: var(--espacio-5);
+  border: var(--borde);
+  border-radius: var(--radio-grande);
+  background-color: var(--color-superficie);
 }
 
-.postulacion-header {
+.mi-postulacion-chips {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.5rem var(--espacio);
+  gap: var(--espacio-2);
 }
 
-.titulo-proyecto {
-  font-size: 1.125rem;
-  font-weight: 700;
+.mi-postulacion-titulo {
+  font-size: 1.25rem;
   overflow-wrap: anywhere;
 }
 
-.postulacion-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+.mi-postulacion-titulo a {
+  color: inherit;
+  text-decoration: none;
 }
 
-/* Etiqueta del estado: el color sale de las variables de index.css. */
-.estado-postulacion,
-.badge-anonimo {
-  padding: 0.125rem 0.75rem;
-  border: 1px solid currentColor;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
+.mi-postulacion-titulo a:hover,
+.mi-postulacion-titulo a:focus-visible {
+  text-decoration: underline;
+}
+
+.mi-postulacion-perfil,
+.mi-postulacion-baja {
   color: var(--color-texto-secundario);
 }
 
-.estado-pendiente {
-  color: var(--color-advertencia);
+.mi-postulacion-fechas {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--espacio-1) var(--espacio-3);
+  margin: 0;
+  font-size: var(--texto-chico);
 }
 
-.estado-aceptada {
-  color: var(--color-exito);
-}
-
-.estado-rechazada {
-  color: var(--color-error);
-}
-
-/* La baja es definitiva: se muestra apagada, con el borde punteado. */
-.estado-baja {
-  border-style: dashed;
-  color: var(--color-texto-secundario);
-}
-
-.badge-anonimo {
-  color: var(--color-acento);
-}
-
-.nombre-perfil,
-.fecha-postulacion,
-.origen-baja {
-  color: var(--color-texto-secundario);
-}
-
-.nombre-perfil span,
-.fecha-postulacion span {
+.mi-postulacion-fechas dt {
   font-weight: 600;
 }
 
-.postulacion-detalles {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
+.mi-postulacion-fechas dd {
+  margin: 0;
 }
 
-@media (min-width: 768px) {
-  .mis-postulaciones {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .mis-postulaciones {
-    grid-template-columns: repeat(3, 1fr);
-  }
+.mi-postulacion-acciones {
+  margin-top: auto;
+  padding-top: var(--espacio-2);
 }

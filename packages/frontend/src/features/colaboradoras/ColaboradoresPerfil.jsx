@@ -6,7 +6,9 @@ import { mensajeDeError } from "../../service/api"
 import "./ColaboradoresPerfil.css"
 import { useParams } from "react-router-dom"
 import { obtenerColaboradoresPerfil } from "../../service/colaboradorasService.js"
+import { obtenerResumenDelPerfil } from "../../service/proyectosService"
 import ListaDeCuentas from "../../components/listaDeCuentas/ListaDeCuentas.jsx"
+import Migas from "../../components/migas/Migas"
 
 const GrupoDeCuentas = ({ cuentas }) => {
   if (cuentas.length === 0) {
@@ -23,6 +25,8 @@ const GrupoDeCuentas = ({ cuentas }) => {
 const ColaboradoresPerfil = () => {
   const { proyectoId, perfilId } = useParams()
   const [colaboradores, setColaboradores] = useState([])
+  // Nombres para las migas
+  const [resumen, setResumen] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
   const [intento, setIntento] = useState(0)
@@ -32,7 +36,13 @@ const ColaboradoresPerfil = () => {
       setCargando(true)
       setError(null)
       try {
-        setColaboradores(await obtenerColaboradoresPerfil(proyectoId, perfilId))
+        const [colaboradoresCargados, resumenCargado] = await Promise.all([
+          obtenerColaboradoresPerfil(proyectoId, perfilId),
+          // Las migas son un dato extra: si no llegan, la lista sigue.
+          obtenerResumenDelPerfil(proyectoId, perfilId).catch(() => null),
+        ])
+        setColaboradores(colaboradoresCargados)
+        setResumen(resumenCargado)
       } catch (e) {
         setError(mensajeDeError(e))
       } finally {
@@ -96,6 +106,13 @@ const ColaboradoresPerfil = () => {
 
   return (
     <section className="colaboradores">
+      <Migas
+        proyectoId={proyectoId}
+        proyecto={resumen?.proyecto.titulo}
+        perfil={resumen?.perfil?.nombre}
+        actual="Colaboradores"
+        cargando={cargando && !resumen}
+      />
       <h1>Colaboradores Activos</h1>
       <p className="colaboradores-bajada">
         Aca veran todos los usuarios que ya estan colaborando en este perfil

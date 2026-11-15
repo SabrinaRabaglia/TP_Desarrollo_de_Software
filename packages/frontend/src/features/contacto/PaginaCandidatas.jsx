@@ -9,6 +9,7 @@ import { obtenerProyecto } from "../../service/proyectosService"
 import Candidata from "./Candidata"
 import FormularioDeContacto from "./FormularioDeContacto"
 import "./PaginaCandidatas.css"
+import Migas from "../../components/migas/Migas"
 
 const PaginaCandidatas = () => {
   const { id, perfilId } = useParams()
@@ -72,6 +73,12 @@ const PaginaCandidatas = () => {
 
   return (
     <section className="pagina-candidatas">
+      <Migas
+        proyectoId={proyecto.id}
+        proyecto={proyecto.titulo}
+        perfil={perfil.nombre}
+        actual="Candidatas"
+      />
       <header className="pagina-candidatas-encabezado">
         <h1>Personas para el perfil {perfil.nombre}</h1>
         <p>

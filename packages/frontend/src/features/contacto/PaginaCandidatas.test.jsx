@@ -62,6 +62,12 @@ describe("PaginaCandidatas", () => {
       }),
     ).toBeInTheDocument()
     expect(buscarCandidatas).toHaveBeenCalledWith("pf1")
+    // Las migas usan el proyecto que ya trajo la página, sin pedirlo de nuevo
+    const migas = screen.getByRole("navigation", { name: "Ubicación" })
+    expect(
+      within(migas).getByRole("link", { name: "Sitio web de la huerta" }),
+    ).toHaveAttribute("href", "/proyectos/pr1")
+    expect(obtenerProyecto).toHaveBeenCalledTimes(1)
     expect(
       within(await tarjetaDe("anag")).getByRole("link", { name: "Ver perfil" }),
     ).toHaveAttribute("href", "/colaboradoras/p1")

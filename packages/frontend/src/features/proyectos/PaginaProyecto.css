@@ -1,43 +1,107 @@
 .pagina-proyecto {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--espacio) * 1.5);
+  gap: var(--espacio-6);
 }
 
 .pagina-proyecto-encabezado {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.5rem;
-}
-
-.pagina-proyecto-estado {
-  padding: 0.125rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--color-primario-contraste);
-  background-color: var(--color-primario);
+  gap: var(--espacio-2);
 }
 
 .pagina-proyecto-colectivo {
   color: var(--color-texto-secundario);
 }
 
-.pagina-proyecto-perfiles {
+/* Descripción a la izquierda y concreción a la derecha en pantallas anchas */
+.pagina-proyecto-resumen {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espacio-6);
+}
+
+.pagina-proyecto-concrecion {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio);
+  gap: var(--espacio-3);
+  padding: var(--espacio-5);
+  border: var(--borde);
+  border-radius: var(--radio-grande);
+  background: var(--color-superficie);
+}
+
+.pagina-proyecto-subtitulo {
+  font-family: var(--fuente-texto);
+  font-size: 1rem;
+}
+
+.pagina-proyecto-avance {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.pagina-proyecto-avance .MuiLinearProgress-root {
+  flex: 1;
+}
+
+.pagina-proyecto-avance-valor {
+  min-width: 4ch;
+  font-weight: 600;
+  text-align: right;
+}
+
+.pagina-proyecto-enlaces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.pagina-proyecto-panel {
+  padding-top: var(--espacio-6);
 }
 
 .pagina-proyecto-grilla {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--espacio);
+  gap: var(--separacion-grilla);
+}
+
+.pagina-proyecto-hitos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pagina-proyecto-hito {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+  padding: var(--espacio-5);
+  border: var(--borde);
+  border-radius: var(--radio-grande);
+  background: var(--color-superficie);
+}
+
+.pagina-proyecto-hito time {
+  font-size: var(--texto-chico);
+  color: var(--color-texto-secundario);
 }
 
 @media (min-width: 768px) {
   .pagina-proyecto-grilla {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .pagina-proyecto-resumen {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
   }
 }

@@ -1,6 +1,6 @@
 .pagina-mensajes {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--espacio) * 1.5);
+  gap: var(--espacio-6);
   max-width: var(--ancho-formulario);
 }

@@ -1,7 +1,7 @@
 .colaboradores {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio);
+  gap: var(--espacio-4);
 }
 
 .colaboradores-bajada {
@@ -13,7 +13,7 @@
 .todos-los-colaboradores {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--espacio);
+  gap: var(--espacio-4);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -34,7 +34,7 @@
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 0.5rem var(--espacio);
+  gap: 0.5rem var(--espacio-4);
 }
 
 .nombre-colaborador {

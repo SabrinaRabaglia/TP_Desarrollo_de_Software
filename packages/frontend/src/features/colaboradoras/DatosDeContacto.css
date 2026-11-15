@@ -1,33 +1,46 @@
 .datos-de-contacto {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio);
+  align-items: flex-start;
+  gap: var(--espacio-4);
+  padding: var(--espacio-5);
+  border: var(--borde);
+  border-radius: var(--radio-grande);
+  background-color: var(--color-superficie);
 }
 
+.datos-de-contacto h2 {
+  font-size: 1.25rem;
+}
+
+/* Etiqueta arriba y valor abajo: un email largo entra sin cortarse */
 .datos-de-contacto-lista {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--espacio-3);
+  width: 100%;
   margin: 0;
 }
 
+.datos-de-contacto-medio {
+  display: flex;
+  flex-direction: column;
+}
+
 .datos-de-contacto-medio dt {
-  font-weight: 600;
+  font-size: var(--texto-chico);
+  color: var(--color-texto-secundario);
 }
 
 .datos-de-contacto-medio dd {
   margin: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
-@media (min-width: 768px) {
-  .datos-de-contacto-lista {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: 0.75rem calc(var(--espacio) * 2);
-  }
+.datos-de-contacto-vacio {
+  color: var(--color-texto-secundario);
+}
 
-  .datos-de-contacto-medio {
-    display: contents;
-  }
+.datos-de-contacto .MuiAlert-root {
+  align-self: stretch;
 }

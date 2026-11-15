@@ -5,12 +5,22 @@ import "./Layout.css"
 const Layout = () => {
   return (
     <div className="layout">
+      <a className="saltar-contenido" href="#contenido">
+        Saltar al contenido
+      </a>
       <Navbar />
-      <main className="layout-contenido">
+      <main
+        id="contenido"
+        className="layout-contenido contenedor"
+        tabIndex={-1}
+      >
         <Outlet />
       </main>
       <footer className="layout-pie">
-        Código a Voluntad · Desarrollo de Software · UTN FRBA
+        <div className="layout-pie-contenido contenedor">
+          <span className="layout-pie-marca">Código a Voluntad</span>
+          <span>Desarrollo de Software · UTN FRBA</span>
+        </div>
       </footer>
     </div>
   )

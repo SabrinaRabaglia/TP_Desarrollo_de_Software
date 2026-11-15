@@ -41,16 +41,37 @@ const aPerfil = (perfilBack, titulosDeHabilidades) => ({
   limiteColaboraciones: perfilBack.limiteColaboraciones,
 })
 
-const aProyecto = (proyectoBack, colectivo, titulosDeHabilidades) => ({
-  id: proyectoBack.id,
-  titulo: proyectoBack.titulo,
-  descripcion: proyectoBack.descripcion,
-  estado: proyectoBack.estado,
-  colectivo,
-  perfiles: (proyectoBack.perfiles ?? []).map((perfil) =>
-    aPerfil(perfil, titulosDeHabilidades),
-  ),
-})
+// Los hitos (logros) van del más viejo al más nuevo. El avance del proyecto es
+// el porcentaje del hito más reciente, igual que en el dominio del backend
+// (Proyecto.getPorcentajeConcrecionActual).
+const aHitos = (hitosBack = []) =>
+  hitosBack
+    .map((hito) => ({
+      id: hito.id,
+      descripcion: hito.descripcion,
+      fecha: new Date(hito.fecha),
+      porcentaje: hito.porcentajeConcrecion,
+    }))
+    .sort((a, b) => a.fecha - b.fecha)
+
+const aProyecto = (proyectoBack, colectivo, titulosDeHabilidades) => {
+  const hitos = aHitos(proyectoBack.hitos ?? [])
+
+  return {
+    id: proyectoBack.id,
+    titulo: proyectoBack.titulo,
+    descripcion: proyectoBack.descripcion,
+    estado: proyectoBack.estado,
+    colectivo,
+    perfiles: (proyectoBack.perfiles ?? []).map((perfil) =>
+      aPerfil(perfil, titulosDeHabilidades),
+    ),
+    hitos,
+    avance: hitos.at(-1)?.porcentaje ?? 0,
+    enlaceSistema: proyectoBack.enlaceSistemaEnFuncionamiento ?? null,
+    enlaceRepositorio: proyectoBack.enlaceCodigoFuente ?? null,
+  }
+}
 
 const obtenerTitulosDeHabilidades = async () => {
   const habilidades = await obtenerHabilidades()
@@ -104,4 +125,25 @@ export const obtenerProyecto = async (id) => {
     { id: colectivo.data.id, nombre: colectivo.data.nombre },
     titulosDeHabilidades,
   )
+}
+
+// Lo que necesitan las pantallas de un perfil (migas y cupos), con un único
+// pedido al back. `limite` en null es un perfil sin límite; `perfil` es null
+// si el perfil no es de este proyecto.
+export const obtenerResumenDelPerfil = async (proyectoId, perfilId) => {
+  const response = await api.get(`/proyectos/${proyectoId}`)
+  const perfil = (response.data.perfiles ?? []).find(
+    (perfil) => perfil.id === perfilId,
+  )
+
+  return {
+    proyecto: { id: response.data.id, titulo: response.data.titulo },
+    perfil: perfil
+      ? {
+          nombre: perfil.nombre,
+          limite: perfil.limiteColaboraciones ?? null,
+          aceptadas: perfil.postulacionesAceptadas?.length ?? 0,
+        }
+      : null,
+  }
 }
