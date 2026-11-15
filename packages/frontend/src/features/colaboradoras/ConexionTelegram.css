@@ -1,0 +1,33 @@
+.conexion-telegram {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding-top: var(--espacio);
+  border-top: var(--borde);
+}
+
+.conexion-telegram p {
+  margin: 0;
+}
+
+.conexion-telegram-tipo,
+.conexion-telegram-estado {
+  font-weight: 600;
+}
+
+.conexion-telegram-ayuda {
+  font-size: 0.875rem;
+  color: var(--color-texto-secundario);
+}
+
+.conexion-telegram-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.conexion-telegram-enlace {
+  font-weight: 600;
+}

@@ -6,6 +6,7 @@ import Layout from "../layout/Layout"
 import { obtenerUsuarioActual } from "../../service/authService"
 import {
   actualizarColaboradora,
+  eliminarMedioDeContacto,
   obtenerPerfilPropio,
 } from "../../service/colaboradorasService"
 import { obtenerHabilidades } from "../../service/habilidadesService"
@@ -179,5 +180,69 @@ describe("MiPerfil", () => {
       emailNuevo,
     ])
     await screen.findByText("Guardamos tus cambios")
+  })
+
+  test("al guardar con Telegram conectado, el medio viaja y el formulario no lo ofrece ni lo muestra", async () => {
+    const telegram = { id: "m7", tipo: "TELEGRAM", valor: "555" }
+    obtenerUsuarioActual.mockResolvedValue(usuario)
+    obtenerPerfilPropio.mockResolvedValue({
+      ...perfil,
+      mediosDeContacto: [emailGuardado, telegram],
+    })
+
+    renderizarMiPerfil()
+    await screen.findByLabelText(/^nombre de fantasía/i)
+
+    expect(screen.getByText("Telegram conectado")).toBeInTheDocument()
+    expect(screen.getAllByLabelText(/^dato de contacto/i)).toHaveLength(1)
+    userEvent.click(
+      screen.getByRole("button", { name: "Agregar medio de contacto" }),
+    )
+    userEvent.click(screen.getAllByRole("combobox", { name: "Tipo" }).at(-1))
+    const opciones = within(screen.getByRole("listbox"))
+      .getAllByRole("option")
+      .map((opcion) => opcion.textContent)
+    expect(opciones).toEqual(["Email", "WhatsApp", "SMS"])
+    userEvent.keyboard("{Escape}")
+
+    cambiarPresentacion("Con Telegram")
+    userEvent.click(
+      screen.getByRole("button", { name: "Quitar medio de contacto 2" }),
+    )
+    guardar()
+    await screen.findByText("Guardamos tus cambios")
+
+    expect(actualizarColaboradora.mock.calls[0][1].mediosDeContacto).toEqual([
+      emailGuardado,
+      telegram,
+    ])
+  })
+
+  test("al desconectar Telegram, el próximo guardado ya no lo envía y lo tipeado se conserva", async () => {
+    const telegram = { id: "m7", tipo: "TELEGRAM", valor: "555" }
+    obtenerUsuarioActual.mockResolvedValue(usuario)
+    obtenerPerfilPropio.mockResolvedValue({
+      ...perfil,
+      mediosDeContacto: [emailGuardado, telegram],
+    })
+    eliminarMedioDeContacto.mockResolvedValue()
+
+    renderizarMiPerfil()
+    await screen.findByLabelText(/^nombre de fantasía/i)
+    cambiarPresentacion("A medio escribir")
+    userEvent.click(screen.getByRole("button", { name: "Desconectar" }))
+    userEvent.click(
+      within(await screen.findByRole("dialog")).getByRole("button", {
+        name: "Desconectar",
+      }),
+    )
+    await screen.findByRole("button", { name: "Conectar Telegram" })
+
+    expect(presentacion()).toHaveValue("A medio escribir")
+    guardar()
+    await screen.findByText("Guardamos tus cambios")
+    expect(actualizarColaboradora.mock.calls[0][1].mediosDeContacto).toEqual([
+      emailGuardado,
+    ])
   })
 })

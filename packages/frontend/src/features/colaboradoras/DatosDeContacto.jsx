@@ -12,6 +12,9 @@ import {
 import "./DatosDeContacto.css"
 
 const ValorDelMedio = ({ medio }) => {
+  if (medio.tipo === "TELEGRAM") {
+    return "Conectado"
+  }
   if (medio.tipo === "EMAIL") {
     return <a href={`mailto:${medio.valor}`}>{medio.valor}</a>
   }

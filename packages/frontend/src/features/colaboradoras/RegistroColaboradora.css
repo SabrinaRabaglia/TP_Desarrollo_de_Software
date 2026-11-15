@@ -13,6 +13,11 @@
   gap: 0.5rem;
 }
 
+.registro-colaboradora-telegram {
+  font-size: 0.875rem;
+  color: var(--color-texto-secundario);
+}
+
 .registro-colaboradora-cuenta {
   display: flex;
   flex-direction: column;

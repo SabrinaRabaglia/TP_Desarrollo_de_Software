@@ -9,15 +9,33 @@ import {
   obtenerPerfilPropio,
 } from "../../service/colaboradorasService"
 import { obtenerHabilidades } from "../../service/habilidadesService"
+import ConexionTelegram from "./ConexionTelegram"
 import FormularioColaboradora from "./FormularioColaboradora"
 import "./MiPerfil.css"
+
+// Telegram se maneja aparte del formulario: el medio se conecta desde el bot
+// y el formulario no lo ofrece, pero hay que reenviarlo al guardar porque el
+// PUT reemplaza todos los medios de contacto.
+const separarTelegram = (perfil) => ({
+  perfil: {
+    ...perfil,
+    mediosDeContacto: perfil.mediosDeContacto.filter(
+      (medio) => medio.tipo !== "TELEGRAM",
+    ),
+  },
+  medioTelegram:
+    perfil.mediosDeContacto.find((medio) => medio.tipo === "TELEGRAM") ?? null,
+})
 
 const MiPerfil = () => {
   const { usuario, refrescarUsuario } = useAuth()
   const id = usuario.entidad.id
 
   const [habilidades, setHabilidades] = useState([])
-  const [perfil, setPerfil] = useState(null)
+  const [{ perfil, medioTelegram }, setDatos] = useState({
+    perfil: null,
+    medioTelegram: null,
+  })
   const [cargando, setCargando] = useState(true)
   const [errorDeCarga, setErrorDeCarga] = useState(null)
   const [intento, setIntento] = useState(0)
@@ -36,7 +54,7 @@ const MiPerfil = () => {
           obtenerPerfilPropio(id),
         ])
         setHabilidades(catalogo)
-        setPerfil(perfilGuardado)
+        setDatos(separarTelegram(perfilGuardado))
       } catch (e) {
         setErrorDeCarga(mensajeDeError(e))
       } finally {
@@ -51,11 +69,16 @@ const MiPerfil = () => {
     setEnviando(true)
     setError(null)
     try {
-      await actualizarColaboradora(id, persona)
+      await actualizarColaboradora(id, {
+        ...persona,
+        mediosDeContacto: medioTelegram
+          ? [...persona.mediosDeContacto, medioTelegram]
+          : persona.mediosDeContacto,
+      })
       await refrescarUsuario()
       // Recargamos para que los medios recién agregados tengan el id que les
       // dio el backend y lo conserven si se vuelve a guardar.
-      setPerfil(await obtenerPerfilPropio(id))
+      setDatos(separarTelegram(await obtenerPerfilPropio(id)))
       setGuardados(guardados + 1)
     } catch (e) {
       setError(mensajeDeError(e))
@@ -88,6 +111,15 @@ const MiPerfil = () => {
         error={error}
         exito={guardados > 0 && !error ? "Guardamos tus cambios" : null}
         alGuardar={guardar}
+        telegram={
+          <ConexionTelegram
+            personaId={id}
+            medio={medioTelegram}
+            alCambiar={(medio) =>
+              setDatos((datos) => ({ ...datos, medioTelegram: medio }))
+            }
+          />
+        }
       />
     )
   }
