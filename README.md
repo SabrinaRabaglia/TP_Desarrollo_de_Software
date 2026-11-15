@@ -182,7 +182,7 @@ La persistencia usa MongoDB con Mongoose, siguiendo la guía de la cátedra. Cad
 ### Datos iniciales (seeds)
 
 - Al arrancar, el servidor carga los catálogos: país, las 24 provincias, los tipos de colectivo y las habilidades iniciales.
-- `npm run seed:backend` carga además los datos de prueba: colectivos, proyectos (con perfiles e hitos), personas, postulaciones aceptadas y un usuario por cada colectivo y persona (ver [Usuarios de prueba](#usuarios-de-prueba)).
+- `npm run seed:backend` carga además los datos de prueba: colectivos, proyectos (con perfiles e hitos), personas, postulaciones aceptadas, una postulación dada de baja por el colectivo y un usuario por cada colectivo y persona (ver [Usuarios de prueba](#usuarios-de-prueba)).
 
 Los dos procesos son idempotentes. Insertan lo que falta por su clave natural, nunca borran y no modifican lo que ya existe, así que se pueden correr cualquier cantidad de veces, también en producción.
 
@@ -204,7 +204,7 @@ Hoy hay una. Hasta el 8/11/2026 los medios de contacto se guardaban sin `_id`, y
 | Perfil en Proyecto | Embebido (`proyecto.perfiles`) | Es parte del proyecto: no existe fuera de él, se consulta junto con él y son pocos por proyecto. Cada perfil tiene su propio `_id`, que usan las rutas `/proyectos/:id/perfiles/:perfilId`. Al borrar el proyecto se borran sus perfiles. |
 | Cuentas en Persona | Embebido | Relación uno a pocos, sin existencia propia fuera de la persona. |
 | Medios de contacto en Persona | Embebido | Relación uno a pocos, sin existencia propia fuera de la persona. El valor solo lo ven quienes tienen acceso (ver [Datos de contacto](#datos-de-contacto)). |
-| Postulación | Colección propia con referencias a persona y perfil | Es una relación muchos a muchos que crece con el historial. El perfil se guarda por id porque vive embebido en el proyecto; al aceptarla, el perfil anota su id en `postulacionesAceptadas`. Un índice único impide que la misma persona se postule dos veces al mismo perfil. |
+| Postulación | Colección propia con referencias a persona y perfil | Es una relación muchos a muchos que crece con el historial. El perfil se guarda por id porque vive embebido en el proyecto; al aceptarla, el perfil anota su id en `postulacionesAceptadas`, y al darla de baja lo quita. Un índice único impide que la misma persona se postule dos veces al mismo perfil, también después de una baja. |
 | Notificación | Colección propia con referencias a colectivo, persona y perfil | Crece sin límite con el tiempo y se consulta por persona (su bandeja), con un índice sobre `personaColaboradora`. El perfil se guarda por id porque vive embebido en el proyecto. Guarda un envío embebido por cada medio de contacto de la persona, con su estado (`PENDIENTE`, `ENVIADO`, `FALLIDO`), intentos y último error; un proceso periódico los despacha y reintenta. Se borran junto con la persona. |
 
 ### Ids
@@ -277,6 +277,24 @@ Para un colectivo sería `autorizarEntidad(RolUsuario.COLECTIVO)` en `/colectivo
 ### Datos de contacto
 
 El perfil de una persona es público, pero el valor de sus medios de contacto no. `GET /personas-colaboradoras/:id/medios-de-contacto` exige token y devuelve `[{ id, tipo, valor }]` solo a la propia persona y a los colectivos con algún proyecto en el que la persona colabora (tiene una postulación aceptada), aunque la postulación sea anónima: el anonimato es hacia el público, no hacia el colectivo. Cualquier otro usuario recibe `403`, y una persona inexistente, `404`. La regla vive en `PersonaColaboradoraService.puedeVerContactoDe`.
+
+### Desanotaciones
+
+Una persona deja de colaborar en un perfil cuando se da de baja ella misma o cuando el colectivo del proyecto la desanota. Las dos cosas son la misma ruta, `PATCH /postulaciones/:id/baja`, sin body y con token:
+
+<!-- prettier-ignore -->
+| Quién la usa | Sobre qué postulaciones | `origenBaja` |
+|---|---|---|
+| La persona colaboradora | Las propias | `PERSONA_COLABORADORA` |
+| El colectivo | Las de los perfiles de sus proyectos | `COLECTIVO` |
+
+- Responde `200` con la postulación en estado `BAJA`, con su `fechaBaja` y su `origenBaja`. El perfil la quita de `postulacionesAceptadas`, así que el lugar queda libre para otra persona.
+- Solo se da de baja una postulación aceptada: una pendiente, rechazada o ya dada de baja responde `409`. Un id inválido responde `400`, un pedido sin token `401`, cualquier otro usuario `403` y una postulación inexistente `404`.
+- La baja es permanente: no se puede deshacer ni volver a aceptar, y la persona no puede volver a postularse a ese perfil (`409`). Puede postularse a otros perfiles del mismo proyecto.
+- Al dejar de colaborar, el colectivo deja de ver sus [datos de contacto](#datos-de-contacto) (si no colabora en otro de sus proyectos) y la persona ya no figura en `GET /proyectos/:id/perfiles/:perfilId/colaboradores`.
+- Los listados de postulaciones, el de la persona y el del colectivo por perfil, traen `fechaBaja` y `origenBaja` (en `null` si no hubo baja).
+
+En el frontend, la persona se da de baja desde "Mis postulaciones" y el colectivo desanota desde "Revisar Postulaciones" de cada perfil; las dos pantallas avisan antes que es irreversible (ver [`packages/frontend/README.md`](packages/frontend/README.md)). La regla de quién puede dar la baja vive en `PostulacionService.origenDeBaja`.
 
 ### Mensajería interna
 

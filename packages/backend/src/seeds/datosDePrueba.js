@@ -6,6 +6,7 @@ import { TipoCuenta } from "../domain/enums/TipoCuenta.js"
 import { TipoMedioContacto } from "../domain/enums/TipoMedioContacto.js"
 import { EstadoEnvio } from "../domain/enums/EstadoEnvio.js"
 import { EstadoPostulacion } from "../domain/enums/EstadoPostulacion.js"
+import { OrigenBaja } from "../domain/enums/OrigenBaja.js"
 import { UnidadCompromiso } from "../domain/enums/UnidadCompromiso.js"
 import ColectivoModel from "../schemas/colectivoSchema.js"
 import HabilidadModel from "../schemas/habilidadSchema.js"
@@ -352,6 +353,24 @@ export default async function sembrarDatosDePrueba() {
       { $addToSet: { "perfiles.$.postulacionesAceptadas": postulacion._id } },
     )
   }
+  // Una colaboración que terminó: el colectivo desanotó a anag del mapa.
+  // Ya no ocupa lugar en el perfil, así que no va en postulacionesAceptadas.
+  await sembrar(
+    PostulacionModel,
+    ["personaColaboradora", "perfil"],
+    [
+      {
+        fechaPostulacion: new Date("2026-09-18T00:00:00.000Z"),
+        fechaRevision: new Date("2026-09-19T12:00:00.000Z"),
+        estado: EstadoPostulacion.BAJA,
+        esAnonima: false,
+        fechaBaja: new Date("2026-10-05T12:00:00.000Z"),
+        origenBaja: OrigenBaja.COLECTIVO,
+        personaColaboradora: personas["anag"],
+        perfil: await perfilDe("Mapa de humedales", "Desarrollo del mapa"),
+      },
+    ],
+  )
 
   await sembrar(
     UsuarioModel,

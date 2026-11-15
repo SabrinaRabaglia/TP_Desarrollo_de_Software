@@ -1795,103 +1795,6 @@
       ]
     },
     {
-      "name": "Colaboraciones",
-      "item": [
-        {
-          "name": "Inscribir persona al proyecto",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (!pm.collectionVariables.get(\"personaId\")) throw new Error(\"Ejecutá primero las altas de persona y proyecto.\")",
-                  "if (!pm.collectionVariables.get(\"proyectoId\")) throw new Error(\"Ejecutá primero las altas de persona y proyecto.\")"
-                ]
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
-                  "const respuesta = pm.response.json()",
-                  "pm.test(\"asocia la persona y el proyecto\", () => {",
-                  "  pm.expect(respuesta.personaColaboradora.id).to.eql(pm.collectionVariables.get(\"personaId\"))",
-                  "  pm.expect(respuesta.proyecto.id).to.eql(pm.collectionVariables.get(\"proyectoId\"))",
-                  "})",
-                  "pm.test(\"registra la fecha de inscripción\", () => pm.expect(respuesta.fechaInscripcion).to.be.a(\"string\"))"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"personaColaboradoraId\": \"{{personaId}}\",\n  \"proyectoId\": \"{{proyectoId}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/colaboraciones",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "colaboraciones"
-              ]
-            },
-            "description": "Exige que la persona tenga al menos una de las habilidades requeridas por los perfiles del proyecto, como pide la consigna. Devuelve 409 si no tiene ninguna, si ya está inscripta o si el proyecto está cerrado, y 404 si falta alguna entidad."
-          },
-          "response": []
-        },
-        {
-          "name": "Listar colaboraciones",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
-                  "const respuesta = pm.response.json()",
-                  "pm.test(\"devuelve un array\", () => pm.expect(respuesta).to.be.an(\"array\"))",
-                  "pm.test(\"incluye la inscripción creada\", () => pm.expect(respuesta.some(c => c.personaColaboradora?.id === pm.collectionVariables.get(\"personaId\") && c.proyecto.id === pm.collectionVariables.get(\"proyectoId\"))).to.eql(true))"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/colaboraciones",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "colaboraciones"
-              ]
-            },
-            "description": "Devuelve las colaboraciones con referencias resumidas a la persona y al proyecto."
-          },
-          "response": []
-        }
-      ],
-      "description": "Ejecutar después de crear y actualizar la persona y el proyecto. Ambos comparten la habilidad creada al comienzo."
-    },
-    {
       "name": "Búsquedas y notificaciones",
       "item": [
         {
@@ -2547,6 +2450,530 @@
       ]
     },
     {
+      "name": "Postulaciones y desanotaciones",
+      "description": "La candidata y la persona se postulan al perfil del colectivo del seed y el colectivo las acepta. Después la candidata se da de baja y el colectivo desanota a la persona. La baja es permanente: solo se da de baja una postulación aceptada y no se puede volver a postular.",
+      "item": [
+        {
+          "name": "Postularse como la candidata",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"tokenCandidata\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Iniciar sesión como la candidata.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"perfilMensajeriaId\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Crear perfil del proyecto del colectivo del seed.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
+                  "const postulacion = pm.response.json()",
+                  "pm.test(\"queda pendiente\", () => pm.expect(postulacion.estado).to.eql(\"PENDIENTE\"))",
+                  "pm.collectionVariables.set(\"postulacionCandidataId\", postulacion.id)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCandidata}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"esAnonima\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoMensajeriaId}}/perfiles/{{perfilMensajeriaId}}/postulaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoMensajeriaId}}",
+                "perfiles",
+                "{{perfilMensajeriaId}}",
+                "postulaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Postularse como la persona",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"tokenPersona\")) {",
+                  "  throw new Error(\"Ejecutá primero Personas colaboradoras > Iniciar sesión como la persona.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"perfilMensajeriaId\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Crear perfil del proyecto del colectivo del seed.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
+                  "pm.collectionVariables.set(\"postulacionPersonaId\", pm.response.json().id)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPersona}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"esAnonima\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoMensajeriaId}}/perfiles/{{perfilMensajeriaId}}/postulaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoMensajeriaId}}",
+                "perfiles",
+                "{{perfilMensajeriaId}}",
+                "postulaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Dar de baja una postulación pendiente (409)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"postulacionCandidataId\")) {",
+                  "  throw new Error(\"Ejecutá primero Postulaciones y desanotaciones > Postularse como la candidata.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 409: solo se da de baja una postulación aceptada\", () => pm.response.to.have.status(409))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCandidata}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/postulaciones/{{postulacionCandidataId}}/baja",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "postulaciones",
+                "{{postulacionCandidataId}}",
+                "baja"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Aceptar la postulación de la candidata",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"tokenColectivo\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Iniciar sesión como el colectivo del seed.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"postulacionCandidataId\")) {",
+                  "  throw new Error(\"Ejecutá primero Postulaciones y desanotaciones > Postularse como la candidata.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"queda aceptada\", () => pm.expect(pm.response.json().estado).to.eql(\"ACEPTADA\"))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenColectivo}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/postulaciones/{{postulacionCandidataId}}/aceptar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "postulaciones",
+                "{{postulacionCandidataId}}",
+                "aceptar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Aceptar la postulación de la persona",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"tokenColectivo\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Iniciar sesión como el colectivo del seed.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"postulacionPersonaId\")) {",
+                  "  throw new Error(\"Ejecutá primero Postulaciones y desanotaciones > Postularse como la persona.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenColectivo}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/postulaciones/{{postulacionPersonaId}}/aceptar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "postulaciones",
+                "{{postulacionPersonaId}}",
+                "aceptar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Dar de baja la postulación de otra persona (403)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"tokenPersona\")) {",
+                  "  throw new Error(\"Ejecutá primero Personas colaboradoras > Iniciar sesión como la persona.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"postulacionCandidataId\")) {",
+                  "  throw new Error(\"Ejecutá primero Postulaciones y desanotaciones > Postularse como la candidata.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 403\", () => pm.response.to.have.status(403))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPersona}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/postulaciones/{{postulacionCandidataId}}/baja",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "postulaciones",
+                "{{postulacionCandidataId}}",
+                "baja"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Darse de baja como la candidata",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"tokenCandidata\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Iniciar sesión como la candidata.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"postulacionCandidataId\")) {",
+                  "  throw new Error(\"Ejecutá primero Postulaciones y desanotaciones > Postularse como la candidata.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "const postulacion = pm.response.json()",
+                  "pm.test(\"queda dada de baja por la propia persona, con la fecha\", () => {",
+                  "  pm.expect(postulacion.estado).to.eql(\"BAJA\")",
+                  "  pm.expect(postulacion.origenBaja).to.eql(\"PERSONA_COLABORADORA\")",
+                  "  pm.expect(postulacion.fechaBaja).to.be.a(\"string\")",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCandidata}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/postulaciones/{{postulacionCandidataId}}/baja",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "postulaciones",
+                "{{postulacionCandidataId}}",
+                "baja"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Volver a postularse después de la baja (409)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"tokenCandidata\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Iniciar sesión como la candidata.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"perfilMensajeriaId\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Crear perfil del proyecto del colectivo del seed.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 409: la baja es permanente\", () => pm.response.to.have.status(409))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCandidata}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"esAnonima\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoMensajeriaId}}/perfiles/{{perfilMensajeriaId}}/postulaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoMensajeriaId}}",
+                "perfiles",
+                "{{perfilMensajeriaId}}",
+                "postulaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Desanotar a la persona desde el colectivo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"tokenColectivo\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Iniciar sesión como el colectivo del seed.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"postulacionPersonaId\")) {",
+                  "  throw new Error(\"Ejecutá primero Postulaciones y desanotaciones > Postularse como la persona.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "const postulacion = pm.response.json()",
+                  "pm.test(\"queda dada de baja por el colectivo\", () => {",
+                  "  pm.expect(postulacion.estado).to.eql(\"BAJA\")",
+                  "  pm.expect(postulacion.origenBaja).to.eql(\"COLECTIVO\")",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenColectivo}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/postulaciones/{{postulacionPersonaId}}/baja",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "postulaciones",
+                "{{postulacionPersonaId}}",
+                "baja"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Colaboradores del perfil después de las bajas",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"perfilMensajeriaId\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Crear perfil del proyecto del colectivo del seed.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"ya no figura ninguna de las dos\", () => pm.expect(pm.response.json()).to.eql([]))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoMensajeriaId}}/perfiles/{{perfilMensajeriaId}}/colaboradores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoMensajeriaId}}",
+                "perfiles",
+                "{{perfilMensajeriaId}}",
+                "colaboradores"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Cierre del proyecto",
       "item": [
         {
@@ -3124,6 +3551,16 @@
     {
       "key": "hitoAEliminarId",
       "value": ""
+    },
+    {
+      "key": "postulacionCandidataId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "postulacionPersonaId",
+      "value": "",
+      "type": "string"
     }
   ]
 }

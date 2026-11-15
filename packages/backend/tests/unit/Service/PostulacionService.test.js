@@ -81,7 +81,7 @@ describe("PostulacionService", () => {
   test("registra una postulación entre la persona y el perfil", async () => {
     const postulacion = await service.create(datos)
 
-    expect(postulacion.personaColaboradora).toBe(persona)
+    expect(postulacion.personaColaboradora).toBe(persona.id)
     expect(postulacion.perfil).toBe(perfil.id)
     await expect(service.create(datos)).rejects.toThrow(AlreadyExists)
     expect(await postulacionRepository.findAll()).toEqual([postulacion])
@@ -151,4 +151,76 @@ describe("PostulacionService", () => {
       expect(perfil.postulacionesAceptadas).toEqual([])
     },
   )
+
+  describe("darDeBaja", () => {
+    const comoPersona = (id) => ({ rol: "PERSONA_COLABORADORA", entidad: id })
+    const comoColectivo = (id) => ({ rol: "COLECTIVO", entidad: id })
+
+    const postulacionAceptada = async () => {
+      const postulacion = await service.create(datos)
+      await service.aceptar(postulacion.id, "colectivo-1")
+      return postulacion
+    }
+
+    test.each([
+      [
+        "la persona se da de baja",
+        comoPersona("persona-1"),
+        "PERSONA_COLABORADORA",
+      ],
+      [
+        "el colectivo dueño la desanota",
+        comoColectivo("colectivo-1"),
+        "COLECTIVO",
+      ],
+    ])("%s y el perfil libera el lugar", async (_caso, usuario, origen) => {
+      const postulacion = await postulacionAceptada()
+
+      const dadaDeBaja = await service.darDeBaja(postulacion.id, usuario)
+
+      expect(dadaDeBaja.estado).toBe("BAJA")
+      expect(dadaDeBaja.origenBaja).toBe(origen)
+      expect(dadaDeBaja.fechaBaja).toBeInstanceOf(Date)
+      expect(perfil.postulacionesAceptadas).toEqual([])
+    })
+
+    test.each([
+      ["otra persona", comoPersona("otra-persona")],
+      ["otro colectivo", comoColectivo("otro-colectivo")],
+    ])("%s no puede darla de baja", async (_caso, usuario) => {
+      const postulacion = await postulacionAceptada()
+
+      await expect(service.darDeBaja(postulacion.id, usuario)).rejects.toThrow(
+        NoAutorizado,
+      )
+      expect(postulacion.estado).toBe("ACEPTADA")
+      expect(perfil.postulacionesAceptadas).toEqual([postulacion.id])
+    })
+
+    test("una postulación pendiente no se puede dar de baja", async () => {
+      const postulacion = await service.create(datos)
+
+      await expect(
+        service.darDeBaja(postulacion.id, comoPersona("persona-1")),
+      ).rejects.toThrow(DomainRuleError)
+      expect(postulacion.estado).toBe("PENDIENTE")
+    })
+
+    test("la baja es permanente: no se vuelve a postular ni a aceptar", async () => {
+      const postulacion = await postulacionAceptada()
+      await service.darDeBaja(postulacion.id, comoPersona("persona-1"))
+
+      await expect(service.create(datos)).rejects.toThrow(AlreadyExists)
+      await expect(
+        service.aceptar(postulacion.id, "colectivo-1"),
+      ).rejects.toThrow(DomainRuleError)
+      expect(perfil.postulacionesAceptadas).toEqual([])
+    })
+
+    test("una postulación inexistente da InvalidReference", async () => {
+      await expect(
+        service.darDeBaja("inexistente", comoPersona("persona-1")),
+      ).rejects.toThrow(InvalidReference)
+    })
+  })
 })

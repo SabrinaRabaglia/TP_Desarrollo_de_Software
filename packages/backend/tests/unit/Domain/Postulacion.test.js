@@ -1,9 +1,11 @@
 import { expect, test } from "@jest/globals"
+import mongoose from "mongoose"
 import Postulacion from "../../../src/domain/Postulacion.js"
 import Perfil from "../../../src/domain/Perfil.js"
 import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
 import Habilidad from "../../../src/domain/Habilidad.js"
 import { EstadoPostulacion } from "../../../src/domain/enums/EstadoPostulacion.js"
+import { OrigenBaja } from "../../../src/domain/enums/OrigenBaja.js"
 import { UnidadCompromiso } from "../../../src/domain/enums/UnidadCompromiso.js"
 import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColaboracion.js"
 import {
@@ -77,4 +79,62 @@ test("aceptar y rechazar cambian el estado y registran la fecha de revisión", (
   expect(otra.estado).toBe(EstadoPostulacion.RECHAZADA)
   expect(otra.fechaRevision).toBeInstanceOf(Date)
   expect(() => otra.rechazar()).toThrow(DomainRuleError)
+})
+
+test.each(Object.values(OrigenBaja))(
+  "dar de baja una postulación aceptada registra la fecha y el origen %s",
+  (origen) => {
+    const postulacion = new Postulacion(personaConHabilidad(), perfilValido())
+    postulacion.aceptar()
+    const antes = Date.now()
+
+    postulacion.darDeBaja(origen)
+
+    expect(postulacion.estado).toBe(EstadoPostulacion.BAJA)
+    expect(postulacion.origenBaja).toBe(origen)
+    expect(postulacion.fechaBaja.getTime()).toBeGreaterThanOrEqual(antes)
+    expect(postulacion.fechaBaja.getTime()).toBeLessThanOrEqual(Date.now())
+  },
+)
+
+test("solo se da de baja una postulación aceptada, y una sola vez", () => {
+  const persona = personaConHabilidad()
+  const perfil = perfilValido()
+  const pendiente = new Postulacion(persona, perfil)
+  const rechazada = new Postulacion(persona, perfil)
+  rechazada.rechazar()
+  const dadaDeBaja = new Postulacion(persona, perfil)
+  dadaDeBaja.aceptar()
+  dadaDeBaja.darDeBaja(OrigenBaja.COLECTIVO)
+
+  for (const postulacion of [pendiente, rechazada, dadaDeBaja]) {
+    expect(() =>
+      postulacion.darDeBaja(OrigenBaja.PERSONA_COLABORADORA),
+    ).toThrow(DomainRuleError)
+  }
+  expect(pendiente.fechaBaja).toBeNull()
+  expect(dadaDeBaja.origenBaja).toBe(OrigenBaja.COLECTIVO)
+  // La baja es permanente: no se puede volver a aceptar.
+  expect(() => dadaDeBaja.aceptar()).toThrow(DomainRuleError)
+})
+
+test("rechaza un origen de baja inválido sin cambiar la postulación", () => {
+  const postulacion = new Postulacion(personaConHabilidad(), perfilValido())
+  postulacion.aceptar()
+
+  expect(() => postulacion.darDeBaja("ADMIN")).toThrow(DomainValidationError)
+  expect(postulacion.estado).toBe(EstadoPostulacion.ACEPTADA)
+  expect(postulacion.fechaBaja).toBeNull()
+})
+
+test("es de la persona con el mismo id, venga como ObjectId o como texto", () => {
+  const postulacion = new Postulacion(personaConHabilidad(), perfilValido())
+  const personaId = new mongoose.Types.ObjectId()
+  // Como queda al leerla de Mongo: solo el id de la persona.
+  postulacion.personaColaboradora = personaId
+
+  expect(postulacion.esDe(personaId)).toBe(true)
+  expect(postulacion.esDe(personaId.toString())).toBe(true)
+  expect(postulacion.esDe(new mongoose.Types.ObjectId(personaId))).toBe(true)
+  expect(postulacion.esDe(new mongoose.Types.ObjectId())).toBe(false)
 })

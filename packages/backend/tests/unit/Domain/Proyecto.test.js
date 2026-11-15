@@ -1,4 +1,5 @@
 import { describe, expect, test } from "@jest/globals"
+import mongoose from "mongoose"
 import Proyecto from "../../../src/domain/Proyecto.js"
 import Perfil from "../../../src/domain/Perfil.js"
 import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColaboracion.js"
@@ -298,5 +299,17 @@ describe("Proyecto", () => {
         proyecto.contactar(perfil, crearPersona(true), "Hola"),
       ).toThrow(DomainRuleError)
     })
+  })
+
+  test("es del colectivo con el mismo id, venga como ObjectId o como texto", () => {
+    const colectivoId = new mongoose.Types.ObjectId()
+    const proyecto = new Proyecto("Mapa", "Mapa de humedales", colectivoId)
+
+    expect(proyecto.esDelColectivo(colectivoId)).toBe(true)
+    expect(proyecto.esDelColectivo(colectivoId.toString())).toBe(true)
+    expect(
+      proyecto.esDelColectivo(new mongoose.Types.ObjectId(colectivoId)),
+    ).toBe(true)
+    expect(proyecto.esDelColectivo(new mongoose.Types.ObjectId())).toBe(false)
   })
 })

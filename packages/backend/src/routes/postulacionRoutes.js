@@ -30,4 +30,13 @@ routes.patch(
   autorizar(RolUsuario.COLECTIVO),
   postulacionController.rechazar,
 )
+
+// La persona se da de baja y el colectivo desanota: el service decide quién puede.
+routes.patch(
+  "/postulaciones/:id/baja",
+  autenticar,
+  validateId,
+  autorizar(RolUsuario.COLECTIVO, RolUsuario.PERSONA_COLABORADORA),
+  postulacionController.darDeBaja,
+)
 export default routes

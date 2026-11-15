@@ -84,4 +84,16 @@ export default class PostulacionController {
       next(error)
     }
   }
+
+  darDeBaja = async (req, res, next) => {
+    try {
+      res
+        .status(200)
+        .json(
+          await this.postulacionService.darDeBaja(req.params.id, req.usuario),
+        )
+    } catch (error) {
+      next(error)
+    }
+  }
 }

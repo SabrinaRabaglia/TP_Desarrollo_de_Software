@@ -51,6 +51,8 @@ const aPostulacionColaborador = (postulacionBack) => ({
   estado: postulacionBack.estado,
   fechaPostulacion: postulacionBack.fechaPostulacion,
   fechaRevision: postulacionBack.fechaRevision,
+  fechaBaja: postulacionBack.fechaBaja ?? null,
+  origenBaja: postulacionBack.origenBaja ?? null,
   esAnonima: postulacionBack.esAnonima,
 })
 
@@ -66,6 +68,8 @@ const aPostulacionColectivo = (postulacionBack) => ({
   estado: postulacionBack.estado,
   fechaPostulacion: postulacionBack.fechaPostulacion,
   fechaRevision: postulacionBack.fechaRevision,
+  fechaBaja: postulacionBack.fechaBaja ?? null,
+  origenBaja: postulacionBack.origenBaja ?? null,
   esAnonima: postulacionBack.esAnonima,
 })
 
@@ -99,4 +103,18 @@ export const aceptarPostulacion = async (postulacionId) => {
 export const rechazarPostulacion = async (postulacionId) => {
   const response = await api.patch(`/postulaciones/${postulacionId}/rechazar`)
   return response.data
+}
+
+// La baja es permanente: la persona deja de colaborar en el perfil y no puede
+// volver a postularse. La da la propia persona o el colectivo del proyecto.
+// El back devuelve la postulación sin el proyecto ni el perfil, así que se
+// devuelve solo lo que cambia, para actualizarla en la lista.
+export const darDeBajaPostulacion = async (postulacionId) => {
+  const response = await api.patch(`/postulaciones/${postulacionId}/baja`)
+  return {
+    id: response.data.id,
+    estado: response.data.estado,
+    fechaBaja: response.data.fechaBaja,
+    origenBaja: response.data.origenBaja,
+  }
 }
