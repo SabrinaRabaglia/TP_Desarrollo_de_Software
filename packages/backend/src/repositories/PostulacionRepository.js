@@ -18,11 +18,11 @@ export default class PostulacionRepository {
   }
 
   async findAllByColaborador(colaboradorId) {
-    return await this.model.find({personaColaboradora : colaboradorId})
+    return await this.model.find({ personaColaboradora: colaboradorId })
   }
 
   async findAllByPerfil(perfilId) {
-    return await this.model.find({perfil : perfilId})
+    return await this.model.find({ perfil: perfilId })
   }
 
   async findById(id) {

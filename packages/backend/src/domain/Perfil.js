@@ -26,20 +26,20 @@ export default class Perfil {
   }
 
   assertPuedeAceptarPostulaciones() {
-  if (
-    this.limiteColaboraciones !== null &&
-    this.postulacionesAceptadas.length >= this.limiteColaboraciones
-  ) {
-    throw new DomainValidationError(
-      "Se alcanzó el límite de colaboradores para este perfil"
-    )
+    if (
+      this.limiteColaboraciones !== null &&
+      this.postulacionesAceptadas.length >= this.limiteColaboraciones
+    ) {
+      throw new DomainValidationError(
+        "Se alcanzó el límite de colaboradores para este perfil",
+      )
+    }
   }
-}
 
   agregarPostulacion(postulacionId) {
     const yaExiste = this.postulacionesAceptadas.some(
-    (id) => id.toString() === postulacionId.toString()
-  )
+      (id) => id.toString() === postulacionId.toString(),
+    )
 
     if (!yaExiste) {
       this.postulacionesAceptadas.push(postulacionId)

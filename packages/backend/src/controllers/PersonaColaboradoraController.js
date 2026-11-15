@@ -84,7 +84,10 @@ export default class PersonaColaboradoraController {
   }
   getAllByPostulacionAceptada = async (req, res, next) => {
     try {
-      const personas = await this.personaColaboradoraService.getAllByPostulacionAceptada(req.params.perfilId)
+      const personas =
+        await this.personaColaboradoraService.getAllByPostulacionAceptada(
+          req.params.perfilId,
+        )
       res.status(200).json(personas)
     } catch (error) {
       next(error)

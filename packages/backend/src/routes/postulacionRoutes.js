@@ -15,17 +15,19 @@ routes.get(
 
 //routes.get("/postulaciones/:id", validateId, postulacionController.getById)
 
-routes.patch("/postulaciones/:id/aceptar",
+routes.patch(
+  "/postulaciones/:id/aceptar",
   autenticar,
   validateId,
   autorizar(RolUsuario.COLECTIVO),
-  postulacionController.aceptar
+  postulacionController.aceptar,
 )
 
-routes.patch("/postulaciones/:id/rechazar",
+routes.patch(
+  "/postulaciones/:id/rechazar",
   autenticar,
   validateId,
   autorizar(RolUsuario.COLECTIVO),
-  postulacionController.rechazar
+  postulacionController.rechazar,
 )
 export default routes

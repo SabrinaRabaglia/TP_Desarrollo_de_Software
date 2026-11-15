@@ -41,10 +41,7 @@ describe("ProyectoService", () => {
       new ProvinciaRepository(),
       new PaisRepository(),
     )
-    service = new ProyectoService(
-      proyectoRepository,
-      colectivoRepository,
-    )
+    service = new ProyectoService(proyectoRepository, colectivoRepository)
 
     const colectivo = await colectivoService.create({
       nombre: "Asamblea Ambiental",

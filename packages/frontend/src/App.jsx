@@ -32,12 +32,14 @@ const App = () => {
             />
             <Route path="/colaboradoras/:id" element={<PaginaColaboradora />} />
             <Route path="/proyectos/:id" element={<PaginaProyecto />} />
-            <Route element={<RutaPrivada rol ="PERSONA_COLABORADORA" />}>
-              <Route path ="/postulaciones" element = {<PaginaPostulaciones/>} />
+            <Route element={<RutaPrivada rol="PERSONA_COLABORADORA" />}>
+              <Route path="/postulaciones" element={<PaginaPostulaciones />} />
             </Route>
-            <Route element={<RutaPrivada rol ="COLECTIVO" />}>
-              <Route path ="/proyectos/:proyectoId/perfiles/:perfilId/postulaciones" 
-                element = {<PostulacionesPerfil/>} />
+            <Route element={<RutaPrivada rol="COLECTIVO" />}>
+              <Route
+                path="/proyectos/:proyectoId/perfiles/:perfilId/postulaciones"
+                element={<PostulacionesPerfil />}
+              />
             </Route>
             <Route element={<RutaPrivada />}>
               <Route path="/mi-cuenta" element={<MiCuenta />} />
@@ -52,8 +54,10 @@ const App = () => {
                 element={<PaginaCandidatas />}
               />
             </Route>
-            <Route path= "/proyectos/:proyectoId/perfiles/:perfilId/colaboradores"
-              element={<ColaboradoresPerfil/>}/>
+            <Route
+              path="/proyectos/:proyectoId/perfiles/:perfilId/colaboradores"
+              element={<ColaboradoresPerfil />}
+            />
             <Route path="*" element={<NoEncontrado />} />
           </Route>
         </Routes>

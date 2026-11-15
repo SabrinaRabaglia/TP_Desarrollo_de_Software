@@ -19,10 +19,7 @@ describe("HitoService", () => {
     proyectoRepository = new ProyectoRepository()
     proyectoRepository.deleteAll()
     service = new HitoService(
-      new ProyectoService(
-        proyectoRepository,
-        new ColectivoRepository(),
-      ),
+      new ProyectoService(proyectoRepository, new ColectivoRepository()),
       proyectoRepository,
     )
     proyecto = await proyectoRepository.save(

@@ -95,10 +95,10 @@ export const buscarCandidatas = async (perfilId) => {
 }
 
 export const obtenerColaboradoresPerfil = async (proyectoId, perfilId) => {
-  const response = await api.get(`/proyectos/${proyectoId}/perfiles/${perfilId}/colaboradores`)
-  return response.data.map((persona) =>
-    aColaboradora(persona)
+  const response = await api.get(
+    `/proyectos/${proyectoId}/perfiles/${perfilId}/colaboradores`,
   )
+  return response.data.map((persona) => aColaboradora(persona))
 }
 
 export const obtenerMediosDeContacto = async (id) => {
