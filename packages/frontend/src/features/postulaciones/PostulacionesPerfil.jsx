@@ -101,6 +101,9 @@ const PostulacionesPerfil = () => {
     }
 
     const Accion = async () => {
+      // Se cierra antes de enviar: si el back falla, el error tiene que quedar
+      // a la vista y no detrás del diálogo.
+      setDialogoAbierto(false)
       try {
         setEnviando(true)
         setErrorAccion(null)
@@ -109,7 +112,6 @@ const PostulacionesPerfil = () => {
         await ACCIONES[accion].enviar(postulacionSeleccionada)
 
         setExito(true)
-        setDialogoAbierto(false)
 
         // Volvemos a cargar las postulaciones actualizadas.
         setIntento((anterior) => anterior + 1)
