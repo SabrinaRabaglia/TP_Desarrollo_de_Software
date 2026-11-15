@@ -5,7 +5,9 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  useMediaQuery,
 } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 
 const ConfirmarAccion = ({
   abierto,
@@ -17,8 +19,13 @@ const ConfirmarAccion = ({
   alAlternativo,
   alCancelar,
 }) => {
+  // En pantallas chicas el diálogo ocupa toda la pantalla: más lugar para leer
+  // el mensaje y botones más fáciles de tocar.
+  const theme = useTheme()
+  const pantallaChica = useMediaQuery(theme.breakpoints.down("md"))
+
   return (
-    <Dialog open={abierto} onClose={alCancelar}>
+    <Dialog open={abierto} onClose={alCancelar} fullScreen={pantallaChica}>
       <DialogTitle>{titulo}</DialogTitle>
       <DialogContent>
         <DialogContentText>{mensaje}</DialogContentText>
