@@ -18,16 +18,23 @@ const MODALIDADES = {
   CON_POSIBILIDAD_CONTRATACION: "Con posibilidad de contratación",
 }
 
+// Perfiles cargados antes de las validaciones actuales pueden traer campos en
+// null: se muestran igual en lugar de romper la lista de proyectos.
 const aPerfil = (perfilBack, titulosDeHabilidades) => ({
   id: perfilBack.id,
   nombre: perfilBack.nombre ?? "Perfil sin nombre",
   descripcion: perfilBack.descripcion,
-  compromiso: `${perfilBack.cantidadHoras} ${UNIDADES_DE_COMPROMISO[perfilBack.unidadCompromiso]}`,
-  modalidades: perfilBack.modalidadesColaboracion.map((m) => MODALIDADES[m]),
-  habilidadesRequeridas: perfilBack.habilidadesRequeridas.map(
+  compromiso:
+    perfilBack.cantidadHoras && perfilBack.unidadCompromiso
+      ? `${perfilBack.cantidadHoras} ${UNIDADES_DE_COMPROMISO[perfilBack.unidadCompromiso]}`
+      : "Sin especificar",
+  modalidades: (perfilBack.modalidadesColaboracion ?? []).map(
+    (m) => MODALIDADES[m],
+  ),
+  habilidadesRequeridas: (perfilBack.habilidadesRequeridas ?? []).map(
     (id) => titulosDeHabilidades[id],
   ),
-  habilidadesOpcionales: perfilBack.habilidadesOpcionales.map(
+  habilidadesOpcionales: (perfilBack.habilidadesOpcionales ?? []).map(
     (id) => titulosDeHabilidades[id],
   ),
   limiteColaboraciones: perfilBack.limiteColaboraciones,

@@ -42,7 +42,16 @@ api.interceptors.response.use(
   },
 )
 
-export const mensajeDeError = (error) =>
-  error.response?.data?.message ?? "No pudimos conectarnos con el servidor"
+// Sin respuesta del servidor es un problema de conexión; con respuesta (o un
+// error propio del front) no lo es, y no hay que decir que lo fue.
+export const mensajeDeError = (error) => {
+  if (error.response?.data?.message) {
+    return error.response.data.message
+  }
+  if (error.isAxiosError && !error.response) {
+    return "No pudimos conectarnos con el servidor"
+  }
+  return "Ocurrió un error inesperado"
+}
 
 export default api
