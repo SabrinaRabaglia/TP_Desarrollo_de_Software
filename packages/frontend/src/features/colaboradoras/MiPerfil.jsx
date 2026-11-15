@@ -11,6 +11,7 @@ import {
 import { obtenerHabilidades } from "../../service/habilidadesService"
 import FormularioColaboradora from "./FormularioColaboradora"
 import "./MiPerfil.css"
+import { Button } from "@mui/material";
 
 const MiPerfil = () => {
   const { usuario, refrescarUsuario } = useAuth()
@@ -98,6 +99,17 @@ const MiPerfil = () => {
         <h1>Mi perfil</h1>
         <p>
           <Link to={`/colaboradoras/${id}`}>Ver mi perfil público</Link>
+          <div style={{ marginTop: '30px', textAlign: 'center' }}>
+  <Button 
+    variant="contained" 
+    color="primary" 
+    size="large"
+    component={Link} 
+    to="/recomendados"
+  >
+    Explorar proyectos para mí
+  </Button>
+</div>
         </p>
       </header>
       {renderFormulario()}
