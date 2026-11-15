@@ -102,7 +102,8 @@ const PerfilRequerido = ({ perfil, proyectoId, enlaceACandidatas }) => {
         <dt>Puestos disponibles</dt>
         <dd>
           {perfil.limiteColaboraciones
-            ? perfil.limiteColaboraciones
+            ? `${perfil.limiteColaboraciones - perfil.postulacionesAceptadas.length} 
+                de ${perfil.limiteColaboraciones}`
             : "Sin Limite"}
         </dd>
       </dl>
