@@ -61,6 +61,14 @@ export default class PerfilController {
     }
   }
 
+  buscar = async (req, res, next) => {
+    try {
+      res.status(200).json(await this.perfilService.buscarAbiertos(req.query))
+    } catch (error) {
+      next(error)
+    }
+  }
+
   getById = async (req, res, next) => {
     try {
       res

@@ -51,6 +51,13 @@ export default class ProyectoRepository {
     )
   }
 
+  async findConPerfilesQueRequieran(estado, habilidadesIds) {
+    return await this.findByEstadoYAlgunaHabilidadRequerida(
+      estado,
+      habilidadesIds,
+    )
+  }
+
   async findProyectoYPerfilPorId(perfilId) {
     for (const proyecto of ProyectoRepository.proyectos) {
       const perfil = proyecto.perfiles.find((p) => p.id === perfilId)

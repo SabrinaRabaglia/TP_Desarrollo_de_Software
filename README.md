@@ -301,6 +301,15 @@ Para un colectivo sería `autorizarEntidad(RolUsuario.COLECTIVO)` en `/colectivo
 
 El perfil de una persona es público, pero el valor de sus medios de contacto no. `GET /personas-colaboradoras/:id/medios-de-contacto` exige token y devuelve `[{ id, tipo, valor }]` solo a la propia persona y a los colectivos con algún proyecto en el que la persona colabora (tiene una postulación aceptada), aunque la postulación sea anónima: el anonimato es hacia el público, no hacia el colectivo. Cualquier otro usuario recibe `403`, y una persona inexistente, `404`. La regla vive en `PersonaColaboradoraService.puedeVerContactoDe`.
 
+### Buscar perfiles a los que postularse
+
+`GET /perfiles?habilidades=<id>&habilidades=<id>` es la búsqueda de una persona colaboradora. Pide su token y al menos una habilidad.
+
+- Devuelve los perfiles de proyectos publicados, con la búsqueda abierta, que piden al menos una de esas habilidades.
+- Cada resultado trae el proyecto con su colectivo, el perfil, la `coincidencia` (`TOTAL` si las habilidades cubren todas las requeridas, `PARCIAL` con las que faltan) y los `cuposDisponibles` (`null` es sin límite).
+- `modalidad` deja solo los perfiles que admiten esa modalidad. `orden` es `recientes` (por defecto) o `antiguos`, por fecha de alta del proyecto.
+- Un filtro inválido responde `400`. Una combinación sin resultados responde `200` con la lista vacía.
+
 ### Búsqueda y límite de un perfil
 
 Cada perfil tiene su propia búsqueda de colaboraciones. Nace abierta y se cierra de dos formas: el colectivo la cierra a mano (`busquedaAbierta: false`) o pasa su fecha límite (`busquedaAbiertaHasta`). Sin fecha límite queda abierta hasta que el colectivo la cierre.

@@ -8,6 +8,23 @@ const fechaSchema = z
   .union([z.iso.date(), z.iso.datetime({ offset: true })])
   .transform((fecha) => new Date(fecha))
 
+export const OrdenDeBusqueda = Object.freeze({
+  RECIENTES: "recientes",
+  ANTIGUOS: "antiguos",
+})
+
+// Filtros de la búsqueda de perfiles con búsqueda abierta. Las habilidades son
+// obligatorias: contra ellas se calcula la coincidencia.
+export const busquedaDePerfilesSchema = z.object({
+  habilidades: z
+    .union([objectIdSchema, z.array(objectIdSchema).min(1)])
+    .transform((habilidades) => [habilidades].flat()),
+  modalidad: z.enum(ModalidadColaboracion).optional(),
+  orden: z.enum(OrdenDeBusqueda).default(OrdenDeBusqueda.RECIENTES),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(10),
+})
+
 export const perfilSchema = z
   .object({
     nombre: z.string().optional(),

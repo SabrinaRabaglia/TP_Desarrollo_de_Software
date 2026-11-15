@@ -3,13 +3,14 @@ import { once } from "node:events"
 import app from "../../src/app.js"
 import PostulacionModel from "../../src/schemas/postulacionSchema.js"
 import { conectar, desconectar } from "./mongo.js"
-import { tokenDeColectivo } from "./tokens.js"
+import { tokenDeColectivo, tokenDePersona } from "./tokens.js"
 
 let server
 let base
 let habilidades
 let proyectos
 let personas
+let colectivoDeLosProyectos
 
 const request = async (method, path, body, status = 200, token) => {
   const response = await fetch(base + path, {
@@ -90,6 +91,7 @@ beforeAll(async () => {
     { nombre: "Colectivo", descripcion: "Desarrollo comunitario", tipo: "ONG" },
     201,
   )
+  colectivoDeLosProyectos = colectivo
   proyectos = {
     web: await crearProyectoConPerfil("Sitio web", colectivo, [
       habilidades.javascript,
@@ -173,6 +175,120 @@ describe("búsqueda de proyectos según habilidades", () => {
 
   test("rechaza una habilidad que no es un id", async () => {
     await request("GET", "/proyectos?habilidades=hola", undefined, 400)
+  })
+})
+
+describe("búsqueda de perfiles con búsqueda abierta", () => {
+  const buscar = (
+    query,
+    status = 200,
+    token = tokenDePersona(personas.ana.id),
+  ) => request("GET", `/perfiles?${query}`, undefined, status, token)
+
+  const resumen = (respuesta) =>
+    respuesta.data.map(({ proyecto, coincidencia }) => [
+      proyecto.titulo,
+      coincidencia,
+    ])
+
+  test("devuelve los perfiles de proyectos publicados que piden alguna de las habilidades, con su coincidencia y sus cupos", async () => {
+    const { javascript, react } = habilidades
+
+    const respuesta = await buscar(`habilidades=${javascript.id}`)
+
+    expect(respuesta.metadata).toEqual({ page: 1, limit: 10, total: 2 })
+    expect(resumen(respuesta)).toEqual([
+      ["Mapa", "TOTAL"],
+      ["Sitio web", "PARCIAL"],
+    ])
+    expect(respuesta.data[1]).toEqual({
+      proyecto: {
+        id: proyectos.web.id,
+        titulo: "Sitio web",
+        fechaAlta: expect.any(String),
+        colectivo: { id: colectivoDeLosProyectos.id, nombre: "Colectivo" },
+      },
+      perfil: {
+        id: proyectos.web.perfil.id,
+        nombre: null,
+        descripcion: "Perfil de Sitio web",
+        unidadCompromiso: "HORAS_MENSUALES",
+        cantidadHoras: 10,
+        modalidadesColaboracion: ["GRATUITA"],
+        limiteColaboraciones: null,
+        cuposDisponibles: null,
+      },
+      coincidencia: "PARCIAL",
+      habilidadesRequeridasFaltantes: [{ id: react.id, titulo: "React" }],
+    })
+  })
+
+  test("ordena por fecha de alta del proyecto, en los dos sentidos", async () => {
+    const { javascript } = habilidades
+
+    expect(
+      resumen(await buscar(`habilidades=${javascript.id}&orden=antiguos`)),
+    ).toEqual([
+      ["Sitio web", "PARCIAL"],
+      ["Mapa", "TOTAL"],
+    ])
+    expect(
+      resumen(await buscar(`habilidades=${javascript.id}&orden=recientes`)),
+    ).toEqual([
+      ["Mapa", "TOTAL"],
+      ["Sitio web", "PARCIAL"],
+    ])
+  })
+
+  test("filtra por modalidad y una combinación sin resultados devuelve una lista vacía", async () => {
+    const { javascript } = habilidades
+
+    expect(
+      resumen(await buscar(`habilidades=${javascript.id}&modalidad=GRATUITA`)),
+    ).toHaveLength(2)
+    expect(
+      await buscar(
+        `habilidades=${javascript.id}&modalidad=CON_INCENTIVO_ECONOMICO`,
+      ),
+    ).toEqual({ metadata: { page: 1, limit: 10, total: 0 }, data: [] })
+  })
+
+  test("no lista los perfiles con la búsqueda cerrada y muestra los cupos que quedan", async () => {
+    const { javascript } = habilidades
+    const como = tokenDeColectivo(colectivoDeLosProyectos.id)
+    const mapa = `/proyectos/${proyectos.mapa.id}/perfiles/${proyectos.mapa.perfil.id}`
+    const web = `/proyectos/${proyectos.web.id}/perfiles/${proyectos.web.perfil.id}`
+    await request("PATCH", mapa, { busquedaAbierta: false }, 200, como)
+    await request("PATCH", web, { limiteColaboraciones: 3 }, 200, como)
+
+    const respuesta = await buscar(`habilidades=${javascript.id}`)
+
+    expect(resumen(respuesta)).toEqual([["Sitio web", "PARCIAL"]])
+    expect(respuesta.data[0].perfil.cuposDisponibles).toBe(3)
+
+    await request("PATCH", mapa, { busquedaAbierta: true }, 200, como)
+    await request("PATCH", web, { limiteColaboraciones: null }, 200, como)
+  })
+
+  test("rechaza filtros inválidos", async () => {
+    const { javascript } = habilidades
+
+    await buscar("", 400)
+    await buscar("habilidades=hola", 400)
+    await buscar(`habilidades=${javascript.id}&modalidad=REGALADA`, 400)
+    await buscar(`habilidades=${javascript.id}&orden=alfabetico`, 400)
+    await buscar(`habilidades=${javascript.id}&limit=0`, 400)
+  })
+
+  test("es solo para personas colaboradoras con sesión", async () => {
+    const { javascript } = habilidades
+
+    await buscar(`habilidades=${javascript.id}`, 401, null)
+    await buscar(
+      `habilidades=${javascript.id}`,
+      403,
+      tokenDeColectivo(colectivoDeLosProyectos.id),
+    )
   })
 })
 

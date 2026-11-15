@@ -62,6 +62,21 @@ export default class Perfil {
     ).length
   }
 
+  // Lugares libres para nuevas colaboraciones; null si el perfil no tiene límite.
+  cuposDisponibles() {
+    if (this.limiteColaboraciones === null) {
+      return null
+    }
+    return Math.max(
+      0,
+      this.limiteColaboraciones - this.postulacionesAceptadas.length,
+    )
+  }
+
+  admiteModalidad(modalidad) {
+    return this.modalidadesColaboracion.includes(modalidad)
+  }
+
   assertPuedeAceptarPostulaciones() {
     if (
       this.limiteColaboraciones !== null &&

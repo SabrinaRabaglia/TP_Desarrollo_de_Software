@@ -2636,6 +2636,253 @@
           }
         }
       }
+    },
+    "/perfiles": {
+      "get": {
+        "tags": ["Perfiles"],
+        "summary": "Buscar perfiles con búsqueda abierta",
+        "description": "Una persona colaboradora busca perfiles a los que postularse. Devuelve los perfiles de proyectos publicados, con la búsqueda abierta, que piden al menos una de las habilidades indicadas. Cada resultado trae la `coincidencia` contra esas habilidades (`TOTAL` si cubren todas las requeridas del perfil, `PARCIAL` si falta alguna, con cuáles faltan) y los `cuposDisponibles` del perfil (`null` es sin límite). Una combinación sin resultados devuelve la lista vacía.",
+        "operationId": "buscarPerfiles",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "habilidades",
+            "in": "query",
+            "required": true,
+            "description": "Ids de habilidades. Se puede repetir. Contra ellas se calcula la coincidencia.",
+            "schema": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "modalidad",
+            "in": "query",
+            "required": false,
+            "description": "Solo perfiles que admiten esa modalidad de colaboración.",
+            "schema": {
+              "$ref": "#/components/schemas/ModalidadColaboracion"
+            }
+          },
+          {
+            "name": "orden",
+            "in": "query",
+            "required": false,
+            "description": "Por fecha de alta del proyecto.",
+            "schema": {
+              "type": "string",
+              "enum": ["recientes", "antiguos"],
+              "default": "recientes"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Perfiles encontrados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["metadata", "data"],
+                  "properties": {
+                    "metadata": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer"
+                        },
+                        "limit": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "proyecto": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "$ref": "#/components/schemas/ObjectId"
+                              },
+                              "titulo": {
+                                "type": "string"
+                              },
+                              "fechaAlta": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "colectivo": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "$ref": "#/components/schemas/ObjectId"
+                                  },
+                                  "nombre": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "perfil": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "$ref": "#/components/schemas/ObjectId"
+                              },
+                              "nombre": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "descripcion": {
+                                "type": "string"
+                              },
+                              "unidadCompromiso": {
+                                "$ref": "#/components/schemas/UnidadCompromiso"
+                              },
+                              "cantidadHoras": {
+                                "type": "integer"
+                              },
+                              "modalidadesColaboracion": {
+                                "type": "array",
+                                "items": {
+                                  "$ref": "#/components/schemas/ModalidadColaboracion"
+                                }
+                              },
+                              "limiteColaboraciones": {
+                                "type": "integer",
+                                "nullable": true
+                              },
+                              "cuposDisponibles": {
+                                "type": "integer",
+                                "nullable": true,
+                                "description": "Límite menos colaboraciones aceptadas. `null` es sin límite."
+                              }
+                            }
+                          },
+                          "coincidencia": {
+                            "type": "string",
+                            "enum": ["TOTAL", "PARCIAL"]
+                          },
+                          "habilidadesRequeridasFaltantes": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "$ref": "#/components/schemas/ObjectId"
+                                },
+                                "titulo": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "metadata": {
+                    "page": 1,
+                    "limit": 10,
+                    "total": 1
+                  },
+                  "data": [
+                    {
+                      "proyecto": {
+                        "id": "64f1a2b3c4d5e6f7a8b9c010",
+                        "titulo": "Sistema de reservas del salón comunitario",
+                        "fechaAlta": "2026-10-10T00:00:00.000Z",
+                        "colectivo": {
+                          "id": "64f1a2b3c4d5e6f7a8b9c020",
+                          "nombre": "Asamblea Barrial Los Ceibos"
+                        }
+                      },
+                      "perfil": {
+                        "id": "64f1a2b3c4d5e6f7a8b9c030",
+                        "nombre": "Desarrollador/a Web",
+                        "descripcion": "Construir la pantalla de reservas y su API",
+                        "unidadCompromiso": "HORAS_SEMANALES",
+                        "cantidadHoras": 10,
+                        "modalidadesColaboracion": [
+                          "GRATUITA",
+                          "CON_POSIBILIDAD_CONTRATACION"
+                        ],
+                        "limiteColaboraciones": null,
+                        "cuposDisponibles": null
+                      },
+                      "coincidencia": "PARCIAL",
+                      "habilidadesRequeridasFaltantes": [
+                        {
+                          "id": "64f1a2b3c4d5e6f7a8b9c003",
+                          "titulo": "Node.js"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es una persona colaboradora.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
     }
   },
   "components": {

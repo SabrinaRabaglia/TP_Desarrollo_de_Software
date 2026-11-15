@@ -1,5 +1,38 @@
 import Perfil from "../domain/Perfil.js"
+import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
+import { OrdenDeBusqueda } from "../validations/perfil.js"
 import { EntityNotFound, NoAutorizado } from "../errors/ApplicationErrors.js"
+
+const idDe = (documento) => String(documento._id ?? documento.id ?? documento)
+
+// Cada perfil encontrado con lo que la persona necesita para decidir, sin el
+// resto del proyecto.
+const aResultado = ({ proyecto, perfil, coincidencia }) => ({
+  proyecto: {
+    id: idDe(proyecto),
+    titulo: proyecto.titulo,
+    fechaAlta: proyecto.fechaAlta,
+    colectivo: {
+      id: idDe(proyecto.colectivo),
+      nombre: proyecto.colectivo.nombre ?? null,
+    },
+  },
+  perfil: {
+    id: idDe(perfil),
+    nombre: perfil.nombre,
+    descripcion: perfil.descripcion,
+    unidadCompromiso: perfil.unidadCompromiso,
+    cantidadHoras: perfil.cantidadHoras,
+    modalidadesColaboracion: perfil.modalidadesColaboracion,
+    limiteColaboraciones: perfil.limiteColaboraciones,
+    cuposDisponibles: perfil.cuposDisponibles(),
+  },
+  coincidencia: coincidencia.nivel,
+  habilidadesRequeridasFaltantes: coincidencia.faltantes.map((habilidad) => ({
+    id: idDe(habilidad),
+    titulo: habilidad.titulo ?? null,
+  })),
+})
 
 export default class PerfilService {
   constructor(proyectoService, proyectoRepository, habilidadService) {
@@ -100,6 +133,41 @@ export default class PerfilService {
     )
     if (!eliminado) {
       await this.rechazar(proyectoId, perfilId)
+    }
+  }
+
+  // Perfiles con la búsqueda abierta, de proyectos publicados, que piden al
+  // menos una de las habilidades. La consulta trae los proyectos candidatos y
+  // el dominio decide perfil por perfil.
+  buscarAbiertos = async (
+    { habilidades, modalidad, orden, page, limit },
+    ahora = new Date(),
+  ) => {
+    const proyectos = await this.proyectoRepository.findConPerfilesQueRequieran(
+      EstadoProyecto.PUBLICADO,
+      habilidades,
+    )
+    const sentido = orden === OrdenDeBusqueda.ANTIGUOS ? 1 : -1
+    const encontrados = proyectos
+      .toSorted((uno, otro) => sentido * (uno.fechaAlta - otro.fechaAlta))
+      .flatMap((proyecto) =>
+        proyecto.perfiles
+          .filter(
+            (perfil) =>
+              perfil.tieneBusquedaAbierta(ahora) &&
+              (!modalidad || perfil.admiteModalidad(modalidad)),
+          )
+          .map((perfil) => ({
+            proyecto,
+            perfil,
+            coincidencia: perfil.coincidenciaCon(habilidades),
+          }))
+          .filter(({ coincidencia }) => coincidencia),
+      )
+    const desde = (page - 1) * limit
+    return {
+      metadata: { page, limit, total: encontrados.length },
+      data: encontrados.slice(desde, desde + limit).map(aResultado),
     }
   }
 

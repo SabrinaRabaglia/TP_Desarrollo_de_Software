@@ -63,6 +63,18 @@ export default class ProyectoRepository {
     })
   }
 
+  // Como el anterior, con el colectivo y las habilidades requeridas completas:
+  // la búsqueda de perfiles muestra sus nombres.
+  async findConPerfilesQueRequieran(estado, habilidadesIds) {
+    return await this.model
+      .find({
+        estado,
+        "perfiles.habilidadesRequeridas": { $in: habilidadesIds },
+      })
+      .populate("colectivo")
+      .populate("perfiles.habilidadesRequeridas")
+  }
+
   async agregarPerfil(proyectoId, perfil) {
     const _id = new mongoose.Types.ObjectId()
     const proyecto = await this.model.findOneAndUpdate(
