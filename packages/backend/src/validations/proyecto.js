@@ -19,4 +19,11 @@ export const busquedaProyectosSchema = z.object({
     .union([objectIdSchema, z.array(objectIdSchema)])
     .transform((habilidades) => [habilidades].flat())
     .optional(),
+
+  q: z.string().trim().optional(),
+  busquedaAbierta: z.coerce.boolean().optional(),
+
+  //para la paginación pongo valores por defecto.
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(10),
 })

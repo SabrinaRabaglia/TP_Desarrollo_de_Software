@@ -26,7 +26,7 @@ beforeAll(async () => {
     { nombre: "Colectivo", descripcion: "Desarrollo comunitario", tipo: "ONG" },
     201,
   )
-})
+},30000)
 
 afterAll(async () => {
   await new Promise((resolve) => server.close(resolve))

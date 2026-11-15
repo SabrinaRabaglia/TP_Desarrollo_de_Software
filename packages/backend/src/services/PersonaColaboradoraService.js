@@ -108,10 +108,6 @@ export default class PersonaColaboradoraService {
     }
   }
 
-  getAll = async () => {
-    return await this.personaColaboradoraRepository.findAll()
-  }
-
   getAllByPerfiles = async (perfilesIds) => {
     const personasPorId = new Map()
 
@@ -242,5 +238,43 @@ export default class PersonaColaboradoraService {
       tipo,
       valor,
     }))
+  }
+
+  async getAll(queryParams={}) {
+    const { page=1, limit=10, ...criterios } = queryParams
+    const query = {}
+
+    if (criterios.q) {
+      query.$or = [
+        { nombre: { $regex: criterios.q, $options: "i" } },
+        { apellido: { $regex: criterios.q, $options: "i" } },
+        { nombreFantasia: { $regex: criterios.q, $options: "i" } },
+      ]
+    }
+
+    if (criterios.habilidades && criterios.habilidades.length > 0) {
+      query.habilidades = { $in: criterios.habilidades }
+    }
+
+    const skip = (page - 1) * limit
+
+    const { colaboradoras, total } =
+      await this.personaColaboradoraRepository.findAll(query, skip, limit)
+    
+      const dataCensurada = colaboradoras.map(colab => {
+    const obj = colab.toJSON ? colab.toJSON() : { ...colab }
+    if (obj.mediosDeContacto) {
+      obj.mediosDeContacto = obj.mediosDeContacto.map(mc => ({
+        id: mc.id || mc._id.toString(), // Nos aseguramos de devolver 'id'
+        tipo: mc.tipo
+      }))
+    }
+    return obj
+  })
+
+    return {
+      metadata: { page, limit, total },
+      data: dataCensurada,
+    }
   }
 }

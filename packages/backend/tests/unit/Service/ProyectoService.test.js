@@ -26,6 +26,8 @@ describe("ProyectoService", () => {
   let proyectoRepository
   let dtoProyectoValido
 
+  const obtenerDatos = (respuesta) => respuesta.data
+
   beforeEach(async () => {
     proyectoRepository = new ProyectoRepository()
     const colectivoRepository = new ColectivoRepository()
@@ -62,7 +64,7 @@ describe("ProyectoService", () => {
     await expect(
       service.create({ ...dtoProyectoValido, ...cambios }),
     ).rejects.toThrow(DomainValidationError)
-    expect(await service.getAll()).toEqual([])
+    expect(obtenerDatos(await service.getAll())).toEqual([])
 
     const proyecto = await service.create(dtoProyectoValido)
     const antes = { ...proyecto }
@@ -84,7 +86,7 @@ describe("ProyectoService", () => {
       expect(proyectoCreado.descripcion).toBe(dtoProyectoValido.descripcion)
       expect(proyectoCreado.colectivo).toBe(dtoProyectoValido.colectivo)
       expect(proyectoCreado.perfiles).toEqual([])
-      expect(await service.getAll()).toEqual([proyectoCreado])
+      expect(obtenerDatos(await service.getAll())).toEqual([proyectoCreado])
     })
 
     test("la fecha de alta es la del momento de la creación, no la del body", async () => {
@@ -106,7 +108,7 @@ describe("ProyectoService", () => {
         }),
       ).rejects.toThrow(InvalidReference)
 
-      expect(await service.getAll()).toHaveLength(0)
+      expect(obtenerDatos(await service.getAll())).toHaveLength(0)
     })
 
     test("lanza AlreadyExists si ya existe un proyecto con el mismo título", async () => {
@@ -119,7 +121,7 @@ describe("ProyectoService", () => {
         }),
       ).rejects.toThrow(AlreadyExists)
 
-      expect(await service.getAll()).toHaveLength(1)
+      expect(obtenerDatos(await service.getAll())).toHaveLength(1)
     })
   })
 
@@ -165,7 +167,7 @@ describe("ProyectoService", () => {
       ).rejects.toThrow(InvalidReference)
 
       expect(await service.getById(creado.id)).toEqual(antes)
-      expect(await service.getAll()).toHaveLength(1)
+      expect(obtenerDatos(await service.getAll())).toHaveLength(1)
     })
 
     test("permite cambiar el colectivo por otro existente", async () => {
@@ -188,23 +190,22 @@ describe("ProyectoService", () => {
       ).rejects.toThrow(EntityNotFound)
     })
   })
-
   describe("delete", () => {
     test("elimina el proyecto correctamente si existe", async () => {
       const creado = await service.create(dtoProyectoValido)
 
       await service.delete(creado.id)
 
-      expect(await service.getAll()).toHaveLength(0)
+      expect(obtenerDatos(await service.getAll())).toHaveLength(0)
     })
 
+    
     test("lanza EntityNotFound al intentar eliminar un proyecto inexistente", async () => {
       await expect(service.delete("id-inexistente")).rejects.toThrow(
         EntityNotFound,
       )
     })
   })
-
   describe("cerrar proyecto", () => {
     test("cierra y guarda el proyecto al actualizar el estado", async () => {
       const creado = await service.create(dtoProyectoValido)
@@ -258,7 +259,6 @@ describe("ProyectoService", () => {
       expect(editado.fechaCierre).toEqual(antes.fechaCierre)
     })
   })
-
   describe("perfiles del proyecto", () => {
     const nuevoPerfil = (descripcion) =>
       new Perfil({
@@ -344,12 +344,11 @@ describe("ProyectoService", () => {
 
       await expect(service.getById(borrado.id)).rejects.toThrow(EntityNotFound)
       const restantes = await service.getAll()
-      expect(restantes.map((proyecto) => proyecto.id)).toEqual([otro.id])
-      expect(restantes[0].perfiles).toEqual(perfilesDelOtro)
+      expect(restantes.data.map((proyecto) => proyecto.id)).toEqual([otro.id])
+      expect(restantes.data[0].perfiles).toEqual(perfilesDelOtro)
       expect(await service.getAllByHabilidades(["javascript"])).toEqual([otro])
     })
   })
-
   describe("getAllByHabilidades", () => {
     const crearConPerfil = async (titulo, habilidadesRequeridas) => {
       const proyecto = await service.create({ ...dtoProyectoValido, titulo })
@@ -393,5 +392,4 @@ describe("ProyectoService", () => {
         abierto,
       ])
     })
-  })
-})
+  })})

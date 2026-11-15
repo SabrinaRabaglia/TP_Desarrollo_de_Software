@@ -21,6 +21,7 @@ routes.get(
   validar(busquedaPersonasSchema, "query"),
   personaColaboradoraController.getAll,
 )
+
 routes.get(
   "/personas-colaboradoras/:id",
   validateId,

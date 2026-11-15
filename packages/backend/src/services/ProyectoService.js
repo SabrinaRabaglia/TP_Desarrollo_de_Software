@@ -29,9 +29,6 @@ export default class ProyectoService {
     this.colectivoRepository = colectivoRepository
   }
 
-  getAll = async () => {
-    return await this.proyectoRepository.findAll()
-  }
 
   async getById(id) {
     const proyecto = await this.proyectoRepository.findById(id)
@@ -114,5 +111,42 @@ export default class ProyectoService {
   delete = async (id) => {
     await this.getById(id)
     await this.proyectoRepository.deleteById(id)
+  }
+
+  async getAll(queryParams = {}) {
+    const { page=1, limit=10, ...criterios } = queryParams
+    const query = {}
+
+    if (criterios.q) {
+      query.$or = [
+        { titulo: { $regex: criterios.q, $options: "i" } },
+        { descripcion: { $regex: criterios.q, $options: "i" } },
+      ]
+    }
+
+    if (criterios.habilidades && criterios.habilidades.length > 0) {
+      query["perfiles.habilidadesRequeridas"] = { $in: criterios.habilidades }
+    }
+
+    if (criterios.busquedaAbierta !== undefined) {
+      query.busquedaAbierta = criterios.busquedaAbierta
+      if (criterios.busquedaAbierta === true) {
+        query.$or = [
+          { busquedaAbiertaHasta: { $exists: false } },
+          { busquedaAbiertaHasta: { $gte: new Date() } },
+        ]
+      }
+    }
+
+    const skip = (page - 1) * limit
+    const { proyectos, total } = await this.proyectoRepository.findAll(
+      query,
+      skip,
+      limit,
+    )
+    return {
+      metadata: { page, limit, total },
+      data: proyectos,
+    }
   }
 }
