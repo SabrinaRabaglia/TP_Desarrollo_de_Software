@@ -14,9 +14,9 @@ export default class PersonaColaboradoraRepository {
     return await this.model.findById(id).populate("habilidades")
   }
 
-  async findConTodasLasHabilidades(habilidades) {
+  async findConAlgunaHabilidad(habilidades) {
     return await this.model
-      .find({ habilidades: { $all: habilidades } })
+      .find({ habilidades: { $in: habilidades } })
       .populate("habilidades")
   }
 

@@ -204,13 +204,22 @@ describe("búsqueda de colaboradores según un perfil", () => {
     expect(pagina.data[0]).not.toHaveProperty("__v")
   })
 
-  test("devuelve las personas con todas las habilidades requeridas, sin el valor de sus medios de contacto", async () => {
+  test("devuelve las personas con alguna habilidad requerida y su coincidencia, sin el valor de sus medios de contacto", async () => {
     const encontradas = (await colaboradores(proyectos.web.perfil)).data
 
     expect(encontradas).toEqual([
       expect.objectContaining({
         id: personas.ana.id,
         habilidades: [habilidades.javascript, habilidades.react],
+        coincidencia: "TOTAL",
+        habilidadesRequeridasFaltantes: [],
+        habilidadesOpcionalesCubiertas: 0,
+      }),
+      expect.objectContaining({
+        id: personas.lucho.id,
+        coincidencia: "PARCIAL",
+        habilidadesCoincidentes: [habilidades.javascript.id],
+        habilidadesRequeridasFaltantes: [habilidades.react.id],
       }),
     ])
     expect(encontradas[0].mediosDeContacto).toEqual([

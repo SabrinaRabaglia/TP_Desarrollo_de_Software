@@ -1,4 +1,5 @@
 import { ModalidadColaboracion } from "./enums/ModalidadColaboracion.js"
+import { NivelCoincidencia } from "./enums/NivelCoincidencia.js"
 import { UnidadCompromiso } from "./enums/UnidadCompromiso.js"
 import {
   DomainRuleError,
@@ -26,6 +27,32 @@ export default class Perfil {
     return this.habilidadesRequeridas.some((habilidad) =>
       disponibles.has(idDe(habilidad)),
     )
+  }
+
+  // Cuánto de lo que pide el perfil cubre un conjunto de habilidades. Sin
+  // ninguna de las requeridas no hay coincidencia: devuelve null.
+  coincidenciaCon(habilidades) {
+    const disponibles = new Set(habilidades.map(idDe))
+    const laTiene = (habilidad) => disponibles.has(idDe(habilidad))
+    const faltantes = this.habilidadesRequeridas.filter(
+      (habilidad) => !laTiene(habilidad),
+    )
+    if (faltantes.length === this.habilidadesRequeridas.length) {
+      return null
+    }
+    const opcionales = this.habilidadesOpcionales.filter(laTiene)
+    return {
+      nivel:
+        faltantes.length === 0
+          ? NivelCoincidencia.TOTAL
+          : NivelCoincidencia.PARCIAL,
+      faltantes,
+      coincidentes: [
+        ...this.habilidadesRequeridas.filter(laTiene),
+        ...opcionales,
+      ],
+      opcionalesCubiertas: opcionales.length,
+    }
   }
 
   cantidadDeHabilidadesOpcionalesDe(personaColaboradora) {

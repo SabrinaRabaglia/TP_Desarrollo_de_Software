@@ -202,28 +202,43 @@ describe("PerfilService", () => {
     const crearPersona = (nombreFantasia, habilidades) =>
       personaColaboradoraService.create({ nombreFantasia, habilidades })
 
-    test("devuelve las personas que tienen todas las habilidades requeridas del perfil", async () => {
+    // De cada candidata, lo que decide si aparece y en qué orden.
+    const resumen = (candidatas) =>
+      candidatas.map((candidata) => [
+        candidata.nombreFantasia,
+        candidata.coincidencia,
+        candidata.habilidadesOpcionalesCubiertas,
+      ])
+
+    test("devuelve a quienes tienen al menos una habilidad requerida, con su nivel de coincidencia", async () => {
       const perfil = await service.create(proyecto.id, {
         ...datos,
         habilidadesRequeridas: [habilidad1.id, habilidad2.id],
         habilidadesOpcionales: [habilidad1.id],
       })
-      const completa = await crearPersona("completa", [
-        habilidad1.id,
-        habilidad2.id,
-      ])
       await crearPersona("solo javascript", [habilidad1.id])
+      await crearPersona("completa", [habilidad1.id, habilidad2.id])
       await crearPersona("sin habilidades", [])
 
-      expect(await buscarColaboradores(perfil)).toEqual([completa])
+      const candidatas = await buscarColaboradores(perfil)
+
+      expect(resumen(candidatas)).toEqual([
+        ["completa", "TOTAL", 1],
+        ["solo javascript", "PARCIAL", 1],
+      ])
+      expect(candidatas[1].habilidadesRequeridasFaltantes).toEqual([
+        habilidad2.id,
+      ])
     })
 
     test("tener solo habilidades opcionales no alcanza para aparecer", async () => {
       const perfil = await service.create(proyecto.id, datos)
-      const conRequerida = await crearPersona("con requerida", [habilidad1.id])
+      await crearPersona("con requerida", [habilidad1.id])
       await crearPersona("solo opcional", [habilidad2.id])
 
-      expect(await buscarColaboradores(perfil)).toEqual([conRequerida])
+      expect(resumen(await buscarColaboradores(perfil))).toEqual([
+        ["con requerida", "TOTAL", 0],
+      ])
     })
 
     test("ordena primero a quienes tienen más habilidades opcionales del perfil", async () => {
@@ -234,15 +249,40 @@ describe("PerfilService", () => {
         ...datos,
         habilidadesOpcionales: [habilidad2.id, habilidad3.id],
       })
-      const ninguna = await crearPersona("ninguna", [habilidad1.id])
-      const ambas = await crearPersona("ambas", [
+      await crearPersona("ninguna", [habilidad1.id])
+      await crearPersona("ambas", [habilidad1.id, habilidad2.id, habilidad3.id])
+      await crearPersona("una", [habilidad1.id, habilidad3.id])
+
+      expect(resumen(await buscarColaboradores(perfil))).toEqual([
+        ["ambas", "TOTAL", 2],
+        ["una", "TOTAL", 1],
+        ["ninguna", "TOTAL", 0],
+      ])
+    })
+
+    test("la coincidencia total va antes que la parcial, aunque la parcial cubra más opcionales", async () => {
+      const habilidad3 = await new HabilidadService(
+        new HabilidadRepository(),
+      ).create({ titulo: "SQL", codigo: "sql", descripcion: "Bases de datos" })
+      const perfil = await service.create(proyecto.id, {
+        ...datos,
+        habilidadesRequeridas: [habilidad1.id, habilidad2.id],
+        habilidadesOpcionales: [habilidad3.id],
+      })
+      await crearPersona("parcial con opcional", [habilidad1.id, habilidad3.id])
+      await crearPersona("total sin opcional", [habilidad1.id, habilidad2.id])
+      await crearPersona("total con opcional", [
         habilidad1.id,
         habilidad2.id,
         habilidad3.id,
       ])
-      const una = await crearPersona("una", [habilidad1.id, habilidad3.id])
+      await crearPersona("solo opcional", [habilidad3.id])
 
-      expect(await buscarColaboradores(perfil)).toEqual([ambas, una, ninguna])
+      expect(resumen(await buscarColaboradores(perfil))).toEqual([
+        ["total con opcional", "TOTAL", 1],
+        ["total sin opcional", "TOTAL", 0],
+        ["parcial con opcional", "PARCIAL", 1],
+      ])
     })
 
     test("lanza DomainRuleError si el proyecto está cerrado", async () => {
@@ -269,7 +309,9 @@ describe("PerfilService", () => {
         perfil: perfilDeOtroProyecto.id,
       })
 
-      expect(await buscarColaboradores(perfil)).toEqual([enOtroProyecto])
+      expect(resumen(await buscarColaboradores(perfil))).toEqual([
+        [enOtroProyecto.nombreFantasia, "TOTAL", 0],
+      ])
     })
 
     test("lanza EntityNotFound si el perfil no existe", async () => {
@@ -287,15 +329,12 @@ describe("PerfilService", () => {
         ...datos,
         habilidadesOpcionales: [habilidad3.id],
       })
-      const soloJs = await crearPersona("solo javascript", [habilidad1.id])
-      const conSql = await crearPersona("con sql", [
-        habilidad1.id,
-        habilidad3.id,
-      ])
+      await crearPersona("solo javascript", [habilidad1.id])
+      await crearPersona("con sql", [habilidad1.id, habilidad3.id])
 
-      expect(await buscarColaboradores(perfil, perfilConSql)).toEqual([
-        conSql,
-        soloJs,
+      expect(resumen(await buscarColaboradores(perfil, perfilConSql))).toEqual([
+        ["con sql", "TOTAL", 1],
+        ["solo javascript", "TOTAL", 0],
       ])
     })
   })

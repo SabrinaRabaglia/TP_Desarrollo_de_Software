@@ -1,3 +1,4 @@
+import { NivelCoincidencia } from "../domain/enums/NivelCoincidencia.js"
 import {
   EntityNotFound,
   NoAutorizado,
@@ -7,6 +8,15 @@ import { RolUsuario } from "../domain/enums/RolUsuario.js"
 import PersonaColaboradora from "../domain/PersonaColaboradora.js"
 import Cuenta from "../domain/Cuenta.js"
 import MedioDeContacto from "../domain/MedioDeContacto.js"
+const idDe = (habilidad) => String(habilidad._id ?? habilidad.id ?? habilidad)
+
+const esTotal = ({ nivel }) => nivel === NivelCoincidencia.TOTAL
+
+const esMejor = (una, otra) =>
+  esTotal(una) !== esTotal(otra)
+    ? esTotal(una)
+    : una.opcionalesCubiertas > otra.opcionalesCubiertas
+
 export default class PersonaColaboradoraService {
   constructor(
     proyectoRepository,
@@ -108,8 +118,11 @@ export default class PersonaColaboradoraService {
     }
   }
 
+  // Personas con al menos una habilidad requerida de alguno de los perfiles.
+  // Primero las de coincidencia total y, a igual nivel, las que cubren más
+  // habilidades opcionales. Con varios perfiles cuenta la mejor coincidencia.
   getAllByPerfiles = async (perfilesIds) => {
-    const personasPorId = new Map()
+    const candidatasPorId = new Map()
 
     for (const perfilId of perfilesIds) {
       const { proyecto, perfil } =
@@ -121,42 +134,44 @@ export default class PersonaColaboradoraService {
 
       proyecto.assertPuedeBuscarColaboradores()
 
-      const personas = await this.getAllConHabilidades(
-        perfil.habilidadesRequeridas,
-      )
+      const personas =
+        await this.personaColaboradoraRepository.findConAlgunaHabilidad(
+          perfil.habilidadesRequeridas,
+        )
 
       const inscriptas = new Set(
         await this.postulacionRepository.findPersonasInscriptasEn(proyecto.id),
       )
 
       for (const persona of personas) {
-        if (inscriptas.has(String(persona.id))) {
+        const personaId = String(persona.id)
+        const coincidencia = perfil.coincidenciaCon(persona.habilidades)
+        if (!coincidencia || inscriptas.has(personaId)) {
           continue
         }
 
-        const puntaje = perfil.cantidadDeHabilidadesOpcionalesDe(persona)
-        const personaId = String(persona.id)
-
-        const personaRegistrada = personasPorId.get(personaId)
-
-        if (!personaRegistrada || puntaje > personaRegistrada.puntaje) {
-          personasPorId.set(personaId, {
-            persona,
-            puntaje,
-          })
+        const anterior = candidatasPorId.get(personaId)
+        if (!anterior || esMejor(coincidencia, anterior.coincidencia)) {
+          candidatasPorId.set(personaId, { persona, coincidencia })
         }
       }
     }
 
-    return [...personasPorId.values()]
-      .toSorted((una, otra) => otra.puntaje - una.puntaje)
-      .map(({ persona }) => persona)
-  }
-
-  getAllConHabilidades = async (habilidades) => {
-    return await this.personaColaboradoraRepository.findConTodasLasHabilidades(
-      habilidades,
-    )
+    return [...candidatasPorId.values()]
+      .toSorted((una, otra) =>
+        esMejor(una.coincidencia, otra.coincidencia)
+          ? -1
+          : esMejor(otra.coincidencia, una.coincidencia)
+            ? 1
+            : 0,
+      )
+      .map(({ persona, coincidencia }) => ({
+        ...(persona.toJSON ? persona.toJSON() : { ...persona }),
+        coincidencia: coincidencia.nivel,
+        habilidadesCoincidentes: coincidencia.coincidentes.map(idDe),
+        habilidadesRequeridasFaltantes: coincidencia.faltantes.map(idDe),
+        habilidadesOpcionalesCubiertas: coincidencia.opcionalesCubiertas,
+      }))
   }
 
   getById = async (id) => {

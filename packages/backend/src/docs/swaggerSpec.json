@@ -471,14 +471,14 @@
       "get": {
         "tags": ["Personas colaboradoras"],
         "summary": "Listar personas colaboradoras",
-        "description": "Devuelve todas las personas colaboradoras. Las habilidades vuelven como objetos completos. Con el parámetro `perfiles` busca colaboradores para esos perfiles: devuelve a quienes tienen todas las habilidades requeridas de alguno de ellos, ordenadas primero por quienes tienen más habilidades opcionales del perfil. Tener solo opcionales no alcanza para aparecer, y no se sugiere a quienes ya están inscriptos en el proyecto del perfil. Responde 404 si algún perfil no existe y 409 si su proyecto está cerrado.",
+        "description": "Lista personas colaboradoras. Con `perfiles` devuelve las candidatas para esos perfiles: quienes tienen al menos una de sus habilidades requeridas y no están ya inscriptas en el proyecto. Cada una trae `coincidencia` (`TOTAL` si tiene todas las requeridas, `PARCIAL` si le faltan), `habilidadesCoincidentes`, `habilidadesRequeridasFaltantes` y `habilidadesOpcionalesCubiertas`. Primero van las de coincidencia total y, a igual nivel, las que cubren más opcionales. Nunca se devuelve el valor de los medios de contacto. Sin `perfiles` es el listado paginado, con `q` y `habilidades` como filtros. Responde 404 si algún perfil no existe.",
         "operationId": "listarPersonasColaboradoras",
         "parameters": [
           {
             "name": "perfiles",
             "in": "query",
             "required": false,
-            "description": "Ids de perfiles para los que se buscan colaboradores. Se puede repetir.",
+            "description": "Ids de perfiles para los que se buscan candidatas. Se puede repetir. Un proyecto cerrado responde 409.",
             "schema": {
               "type": "array",
               "items": {

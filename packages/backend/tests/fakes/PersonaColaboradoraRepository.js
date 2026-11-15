@@ -10,10 +10,10 @@ export default class PersonaColaboradoraRepository {
     return PersonaColaboradoraRepository.personas.find((p) => p.id === id)
   }
 
-  async findConTodasLasHabilidades(habilidades) {
+  async findConAlgunaHabilidad(habilidades) {
     const idDe = (habilidad) => habilidad.id ?? habilidad
     return PersonaColaboradoraRepository.personas.filter((persona) =>
-      habilidades.every((requerida) =>
+      habilidades.some((requerida) =>
         persona.habilidades.some(
           (habilidad) => idDe(habilidad) === idDe(requerida),
         ),

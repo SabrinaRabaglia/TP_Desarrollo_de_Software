@@ -347,7 +347,7 @@ Un mensaje interno es una notificación que un colectivo le envía a una persona
 - Cualquier otro usuario recibe `403`, y un pedido sin token, `401`. Una persona colaboradora no puede enviar mensajes.
 - Enviar responde `409` si la persona no acepta mensajería interna (`aceptaMensajeriaInterna`) o si el proyecto está cerrado, y `404` si el proyecto, el perfil o la persona no existen.
 - Los listados devuelven nombres en lugar de ids: `colectivo: { id, nombre }`, `proyecto: { id, titulo }` y `perfil: { id, nombre }`. Si el proyecto o el perfil se borraron, ese dato viene en `null` y el mensaje se lista igual. Los enviados traen además `personaColaboradora: { id, nombreFantasia }`, sin sus medios de contacto.
-- Para elegir a quién escribirle, `GET /personas-colaboradoras?perfiles=<perfilId>` devuelve las personas que encajan con el perfil, con su `aceptaMensajeriaInterna`.
+- Para elegir a quién escribirle, `GET /personas-colaboradoras?perfiles=<perfilId>` devuelve las personas que tienen al menos una habilidad requerida del perfil, con su `aceptaMensajeriaInterna` y su `coincidencia`: `TOTAL` si tienen todas las requeridas, `PARCIAL` si les falta alguna. Van primero las de coincidencia total y, a igual nivel, las que cubren más habilidades opcionales. Tener solo opcionales no alcanza para aparecer.
 
 En el frontend, el colectivo llega a las candidatas desde "Ver candidatas" en cada perfil de su proyecto, y cualquier sesión ve sus mensajes en `/mensajes` (ver [`packages/frontend/README.md`](packages/frontend/README.md)).
 
