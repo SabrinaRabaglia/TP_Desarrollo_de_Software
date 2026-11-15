@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { Alert } from "@mui/material"
+import { Alert, Button } from "@mui/material"
+import { LuLogIn } from "react-icons/lu"
 import Cargando from "../../components/cargando/Cargando"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
 import ValorDelMedio from "../../components/valorDelMedio/ValorDelMedio"
@@ -50,11 +51,16 @@ const DatosDeContacto = ({ personaId }) => {
   const renderContenido = () => {
     if (!usuario) {
       return (
-        <p>
-          <Link to="/login" state={{ desde: location }}>
-            Ingresá para ver los datos de contacto
-          </Link>
-        </p>
+        <Button
+          variant="outlined"
+          size="small"
+          component={Link}
+          to="/login"
+          state={{ desde: location }}
+          startIcon={<LuLogIn aria-hidden="true" />}
+        >
+          Ingresá para ver los datos de contacto
+        </Button>
       )
     }
 
@@ -76,7 +82,11 @@ const DatosDeContacto = ({ personaId }) => {
     }
 
     if (medios.length === 0) {
-      return <p>Esta persona no cargó medios de contacto.</p>
+      return (
+        <p className="datos-de-contacto-vacio">
+          Esta persona no cargó medios de contacto.
+        </p>
+      )
     }
 
     return (

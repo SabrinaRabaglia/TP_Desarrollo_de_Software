@@ -72,7 +72,10 @@ describe("PaginaColaboradora", () => {
     expect(screen.getByText("Desarrolladora frontend")).toBeInTheDocument()
     expect(screen.getByText("React")).toBeInTheDocument()
     expect(screen.getByText("GitHub")).toBeInTheDocument()
-    expect(screen.getByText("anagomez")).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "anagomez" })).toHaveAttribute(
+      "href",
+      "https://github.com/anagomez",
+    )
 
     expect(
       await screen.findByRole("link", { name: "ana.gomez@example.com" }),

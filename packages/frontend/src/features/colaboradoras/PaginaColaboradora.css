@@ -1,17 +1,36 @@
 .pagina-colaboradora {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio-6);
-}
-
-.pagina-colaboradora h1 {
-  overflow-wrap: anywhere;
+  gap: var(--espacio-8);
 }
 
 .pagina-colaboradora-encabezado {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-4);
+}
+
+.pagina-colaboradora-avatar.MuiAvatar-root {
+  width: 64px;
+  height: 64px;
+  font-family: var(--fuente-titulos);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-sobre-primario);
+  background-color: var(--color-primario);
+}
+
+.pagina-colaboradora-identidad {
+  display: flex;
+  flex: 1;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--espacio-1);
+  min-width: 0;
+}
+
+.pagina-colaboradora-identidad h1 {
+  overflow-wrap: anywhere;
 }
 
 .pagina-colaboradora-nombre,
@@ -19,21 +38,54 @@
   color: var(--color-texto-secundario);
 }
 
+/* Lo público a la izquierda y el contacto a la derecha en pantallas anchas */
+.pagina-colaboradora-cuerpo {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espacio-8);
+}
+
+.pagina-colaboradora-principal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-6);
+  min-width: 0;
+}
+
 .pagina-colaboradora-seccion {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio-4);
+  gap: var(--espacio-3);
+}
+
+.pagina-colaboradora-seccion h2 {
+  font-size: 1.25rem;
 }
 
 .pagina-colaboradora-cuentas {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--espacio-2);
+  margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.pagina-colaboradora-cuenta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2);
   overflow-wrap: anywhere;
 }
 
 .pagina-colaboradora-cuenta-tipo {
   font-weight: 600;
+}
+
+@media (min-width: 1024px) {
+  .pagina-colaboradora-cuerpo {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+  }
 }
