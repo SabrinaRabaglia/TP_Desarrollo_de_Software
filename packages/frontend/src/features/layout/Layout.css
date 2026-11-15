@@ -12,6 +12,11 @@
   padding: var(--espacio-4);
 }
 
+/* Recibe el foco al usar "Saltar al contenido": no necesita anillo propio */
+.layout-contenido:focus {
+  outline: none;
+}
+
 .layout-pie {
   padding: var(--espacio-4);
   border-top: var(--borde);

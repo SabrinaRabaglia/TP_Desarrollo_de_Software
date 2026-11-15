@@ -5,8 +5,11 @@ import "./Layout.css"
 const Layout = () => {
   return (
     <div className="layout">
+      <a className="saltar-contenido" href="#contenido">
+        Saltar al contenido
+      </a>
       <Navbar />
-      <main className="layout-contenido">
+      <main id="contenido" className="layout-contenido" tabIndex={-1}>
         <Outlet />
       </main>
       <footer className="layout-pie">
