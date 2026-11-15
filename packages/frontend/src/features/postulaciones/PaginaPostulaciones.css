@@ -76,12 +76,19 @@
   color: var(--color-error);
 }
 
+/* La baja es definitiva: se muestra apagada, con el borde punteado. */
+.estado-baja {
+  border-style: dashed;
+  color: var(--color-texto-secundario);
+}
+
 .badge-anonimo {
   color: var(--color-acento);
 }
 
 .nombre-perfil,
-.fecha-postulacion {
+.fecha-postulacion,
+.origen-baja {
   color: var(--color-texto-secundario);
 }
 
