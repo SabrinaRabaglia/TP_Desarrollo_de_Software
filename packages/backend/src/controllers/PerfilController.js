@@ -3,8 +3,12 @@ export default class PerfilController {
     this.perfilService = perfilService
   }
 
+  assertEsDelColectivo = (req) =>
+    this.perfilService.assertEsDelColectivo(req.params.id, req.usuario.entidad)
+
   create = async (req, res, next) => {
     try {
+      await this.assertEsDelColectivo(req)
       res
         .status(201)
         .json(await this.perfilService.create(req.params.id, req.body))
@@ -15,6 +19,7 @@ export default class PerfilController {
 
   update = async (req, res, next) => {
     try {
+      await this.assertEsDelColectivo(req)
       res
         .status(200)
         .json(
@@ -31,6 +36,7 @@ export default class PerfilController {
 
   modificar = async (req, res, next) => {
     try {
+      await this.assertEsDelColectivo(req)
       res
         .status(200)
         .json(
@@ -47,6 +53,7 @@ export default class PerfilController {
 
   delete = async (req, res, next) => {
     try {
+      await this.assertEsDelColectivo(req)
       await this.perfilService.delete(req.params.id, req.params.perfilId)
       res.status(204).send()
     } catch (error) {

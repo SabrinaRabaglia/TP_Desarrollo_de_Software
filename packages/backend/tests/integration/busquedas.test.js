@@ -3,6 +3,7 @@ import { once } from "node:events"
 import app from "../../src/app.js"
 import PostulacionModel from "../../src/schemas/postulacionSchema.js"
 import { conectar, desconectar } from "./mongo.js"
+import { tokenDeColectivo } from "./tokens.js"
 
 let server
 let base
@@ -10,10 +11,13 @@ let habilidades
 let proyectos
 let personas
 
-const request = async (method, path, body, status = 200) => {
+const request = async (method, path, body, status = 200, token) => {
   const response = await fetch(base + path, {
     method,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: body === undefined ? undefined : JSON.stringify(body),
   })
   expect(response.status).toBe(status)
@@ -45,6 +49,7 @@ const crearProyectoConPerfil = async (titulo, colectivo, requeridas) => {
       habilidadesOpcionales: [habilidades.sql.id],
     },
     201,
+    tokenDeColectivo(colectivo.id),
   )
   return { ...proyecto, perfil }
 }

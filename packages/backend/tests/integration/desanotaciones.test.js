@@ -6,6 +6,7 @@ import ColectivoRepository from "../../src/repositories/ColectivoRepository.js"
 import PersonaColaboradoraRepository from "../../src/repositories/PersonaColaboradoraRepository.js"
 import UsuarioRepository from "../../src/repositories/UsuarioRepository.js"
 import { conectar, desconectar } from "./mongo.js"
+import { tokenDeColectivo } from "./tokens.js"
 
 // Contra Mongo real: la postulación guarda la persona y el perfil como
 // ObjectId, y la pertenencia se compara contra el id que trae el token.
@@ -38,10 +39,13 @@ const iniciarSesion = async (email) => {
   return { token, entidadId: usuario.entidad.id }
 }
 
-const crearConJson = async (path, body) => {
+const crearConJson = async (path, body, token) => {
   const response = await fetch(base + path, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify(body),
   })
   return await response.json()
@@ -122,15 +126,19 @@ beforeAll(async () => {
     estado: "PUBLICADO",
     fechaCierre: null,
   })
-  perfil = await crearConJson(`/proyectos/${proyecto.id}/perfiles`, {
-    nombre: "Frontend",
-    descripcion: "Desarrollo web",
-    unidadCompromiso: "HORAS_TOTALES",
-    cantidadHoras: 5,
-    modalidadesColaboracion: ["GRATUITA"],
-    habilidadesRequeridas: [habilidad.id],
-    habilidadesOpcionales: [habilidad.id],
-  })
+  perfil = await crearConJson(
+    `/proyectos/${proyecto.id}/perfiles`,
+    {
+      nombre: "Frontend",
+      descripcion: "Desarrollo web",
+      unidadCompromiso: "HORAS_TOTALES",
+      cantidadHoras: 5,
+      modalidadesColaboracion: ["GRATUITA"],
+      habilidadesRequeridas: [habilidad.id],
+      habilidadesOpcionales: [habilidad.id],
+    },
+    tokenDeColectivo(huerta.id),
+  )
 
   for (const [quien, email] of [
     ["huerta", "huerta@colectivo.test"],

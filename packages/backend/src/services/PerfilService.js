@@ -1,5 +1,5 @@
 import Perfil from "../domain/Perfil.js"
-import { EntityNotFound } from "../errors/ApplicationErrors.js"
+import { EntityNotFound, NoAutorizado } from "../errors/ApplicationErrors.js"
 
 export default class PerfilService {
   constructor(proyectoService, proyectoRepository, habilidadService) {
@@ -14,6 +14,15 @@ export default class PerfilService {
       throw new EntityNotFound("Perfil no encontrado")
     }
     return perfil
+  }
+
+  assertEsDelColectivo = async (proyectoId, colectivoId) => {
+    const proyecto = await this.proyectoService.getById(proyectoId)
+    if (!proyecto.esDelColectivo(colectivoId)) {
+      throw new NoAutorizado(
+        "El proyecto no pertenece al colectivo autenticado",
+      )
+    }
   }
 
   // Cambia los ids de habilidades por las habilidades, para rechazar los que

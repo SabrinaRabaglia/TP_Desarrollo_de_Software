@@ -308,6 +308,7 @@ Cada perfil tiene su propia búsqueda de colaboraciones. Nace abierta y se cierr
 - Postularse a un perfil con la búsqueda cerrada o vencida responde `409` y no crea la postulación. Lo mismo si el proyecto está cerrado.
 - `limiteColaboraciones` es cuántas colaboraciones aceptadas admite el perfil. En `null` no hay límite.
 - `PUT /proyectos/:id/perfiles/:perfilId` reemplaza los datos del perfil y `PATCH` cambia solo los que llegan. Ninguno de los dos toca las colaboraciones ya aceptadas.
+- Crear, editar y borrar perfiles pide la sesión del colectivo dueño del proyecto: sin token responde `401`, y una persona colaboradora u otro colectivo reciben `403`.
 - El límite no puede quedar por debajo de las colaboraciones aceptadas: responde `409` y dice cuántas hay. Subirlo o quitarlo siempre se puede.
 - Una fecha límite nueva tiene que ser futura: si no, `422`. Un perfil con la búsqueda ya vencida se puede seguir editando mientras no se le cambie la fecha.
 - Al aceptar una postulación primero se mira su estado y después el lugar. Aceptar una que ya fue rechazada responde `409` por su estado, esté o no lleno el perfil.

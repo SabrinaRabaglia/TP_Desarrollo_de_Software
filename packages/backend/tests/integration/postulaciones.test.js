@@ -4,6 +4,7 @@ import app from "../../src/app.js"
 import PostulacionModel from "../../src/schemas/postulacionSchema.js"
 import ProvinciaModel from "../../src/schemas/provinciaSchema.js"
 import { conectar, desconectar } from "./mongo.js"
+import { tokenDeColectivo } from "./tokens.js"
 
 beforeAll(() => conectar("postulaciones"), 30000)
 afterAll(desconectar)
@@ -77,6 +78,7 @@ test("postularse permite consultar y actualizar las entidades persistidas", asyn
         habilidadesOpcionales: [habilidad.id],
       },
       201,
+      { Authorization: `Bearer ${tokenDeColectivo(colectivo.id)}` },
     )
     proyecto = await request("GET", `/proyectos/${proyecto.id}`)
     const postulacion = await request(

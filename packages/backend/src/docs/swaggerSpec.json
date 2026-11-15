@@ -1596,7 +1596,7 @@
       "post": {
         "tags": ["Perfiles"],
         "summary": "Agregar un perfil a un proyecto",
-        "description": "Responde 404 si el proyecto o alguna habilidad no existen y 422 si el perfil no cumple las reglas del dominio. Un proyecto cerrado no admite cambios en sus perfiles: responde 409.",
+        "description": "Responde 404 si el proyecto o alguna habilidad no existen y 422 si el perfil no cumple las reglas del dominio. Un proyecto cerrado no admite cambios en sus perfiles: responde 409. Requiere la sesión del colectivo dueño del proyecto: sin token responde 401 y con otro usuario 403.",
         "operationId": "crearPerfil",
         "parameters": [
           {
@@ -1636,6 +1636,19 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o el proyecto es de otro colectivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -1648,7 +1661,12 @@
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/proyectos/{id}/perfiles/{perfilId}": {
@@ -1690,7 +1708,7 @@
       "put": {
         "tags": ["Perfiles"],
         "summary": "Actualizar un perfil",
-        "description": "Reemplaza los datos del perfil. Lo que se omite vuelve a su valor por defecto: nombre en null, sin límite, búsqueda abierta y sin fecha límite. Las colaboraciones aceptadas se conservan. El límite no puede quedar por debajo de las colaboraciones ya aceptadas (409) y una fecha límite nueva tiene que ser futura (422). Un proyecto cerrado no admite cambios en sus perfiles: responde 409.",
+        "description": "Reemplaza los datos del perfil. Lo que se omite vuelve a su valor por defecto: nombre en null, sin límite, búsqueda abierta y sin fecha límite. Las colaboraciones aceptadas se conservan. El límite no puede quedar por debajo de las colaboraciones ya aceptadas (409) y una fecha límite nueva tiene que ser futura (422). Un proyecto cerrado no admite cambios en sus perfiles: responde 409. Requiere la sesión del colectivo dueño del proyecto: sin token responde 401 y con otro usuario 403.",
         "operationId": "actualizarPerfil",
         "parameters": [
           {
@@ -1733,6 +1751,19 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o el proyecto es de otro colectivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -1745,12 +1776,17 @@
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "patch": {
         "tags": ["Perfiles"],
         "summary": "Modificar algunos datos de un perfil",
-        "description": "Cambia solo los datos que llegan y deja el resto como estaba. Sirve para cerrar o reabrir la búsqueda, ponerle fecha límite o cambiar el límite de colaboraciones. Valen las mismas reglas que en el reemplazo: el límite no puede quedar por debajo de las colaboraciones ya aceptadas (409) y una fecha límite nueva tiene que ser futura (422).",
+        "description": "Cambia solo los datos que llegan y deja el resto como estaba. Sirve para cerrar o reabrir la búsqueda, ponerle fecha límite o cambiar el límite de colaboraciones. Valen las mismas reglas que en el reemplazo: el límite no puede quedar por debajo de las colaboraciones ya aceptadas (409) y una fecha límite nueva tiene que ser futura (422). Requiere la sesión del colectivo dueño del proyecto: sin token responde 401 y con otro usuario 403.",
         "operationId": "modificarPerfil",
         "parameters": [
           {
@@ -1793,6 +1829,19 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o el proyecto es de otro colectivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -1805,12 +1854,17 @@
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "delete": {
         "tags": ["Perfiles"],
         "summary": "Eliminar un perfil",
-        "description": "Un proyecto cerrado no admite cambios en sus perfiles: responde 409.",
+        "description": "Un proyecto cerrado no admite cambios en sus perfiles: responde 409. Requiere la sesión del colectivo dueño del proyecto: sin token responde 401 y con otro usuario 403.",
         "operationId": "eliminarPerfil",
         "parameters": [
           {
@@ -1827,6 +1881,19 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o el proyecto es de otro colectivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -1836,7 +1903,12 @@
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/proyectos/{id}/perfiles/{perfilId}/notificaciones": {

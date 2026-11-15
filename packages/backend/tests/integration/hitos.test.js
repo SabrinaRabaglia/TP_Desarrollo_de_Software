@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "@jest/globals"
 import { once } from "node:events"
 import app from "../../src/app.js"
 import { conectar, desconectar } from "./mongo.js"
+import { tokenDeColectivo } from "./tokens.js"
 
 let server
 let base
@@ -33,10 +34,16 @@ afterAll(async () => {
   await desconectar()
 })
 
+// El token es del colectivo dueño: hace falta para dar de alta perfiles.
 const enviar = (method, path, body) =>
   fetch(base + path, {
     method,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(colectivo
+        ? { Authorization: `Bearer ${tokenDeColectivo(colectivo.id)}` }
+        : {}),
+    },
     body: body === undefined ? undefined : JSON.stringify(body),
   })
 
