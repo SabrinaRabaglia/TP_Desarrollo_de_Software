@@ -26,6 +26,11 @@
   margin: 0.25rem 0 0.5rem;
 }
 
+.inicio-paginacion {
+  display: flex;
+  justify-content: center;
+}
+
 .inicio-proyecto-estado {
   font-size: 0.875rem;
   color: var(--color-texto-secundario);
