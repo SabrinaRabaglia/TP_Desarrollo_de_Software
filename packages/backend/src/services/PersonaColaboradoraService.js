@@ -211,10 +211,21 @@ export default class PersonaColaboradoraService {
 
     const { colaboradoras, total } =
       await this.personaColaboradoraRepository.findAll(query, skip, limit)
+    
+      const dataCensurada = colaboradoras.map(colab => {
+    const obj = colab.toJSON ? colab.toJSON() : { ...colab }
+    if (obj.mediosDeContacto) {
+      obj.mediosDeContacto = obj.mediosDeContacto.map(mc => ({
+        id: mc.id || mc._id.toString(), // Nos aseguramos de devolver 'id'
+        tipo: mc.tipo
+      }))
+    }
+    return obj
+  })
 
     return {
       metadata: { page, limit, total },
-      data: colaboradoras,
+      data: dataCensurada,
     }
   }
 }

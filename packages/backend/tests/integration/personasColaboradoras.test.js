@@ -90,7 +90,8 @@ describe("medios de contacto de las personas colaboradoras", () => {
       { id: expect.any(String), tipo: "WHATSAPP" },
     ])
     sinValores(await request("GET", `/personas-colaboradoras/${persona.id}`))
-    for (const listada of (await request("GET", "/personas-colaboradoras")).data) {
+    
+      for (const listada of (await request("GET", "/personas-colaboradoras")).data) {
       sinValores(listada)
     }
     expect(await mediosGuardados(persona.id)).toEqual(mediosDeContacto)

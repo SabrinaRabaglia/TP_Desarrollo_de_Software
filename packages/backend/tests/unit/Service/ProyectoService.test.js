@@ -368,8 +368,8 @@ describe("ProyectoService", () => {
 
       await expect(service.getById(borrado.id)).rejects.toThrow(EntityNotFound)
       const restantes = await service.getAll()
-      expect(restantes.map((proyecto) => proyecto.id)).toEqual([otro.id])
-      expect(restantes[0].perfiles).toEqual(perfilesDelOtro)
+      expect(restantes.data.map((proyecto) => proyecto.id)).toEqual([otro.id])
+      expect(restantes.data[0].perfiles).toEqual(perfilesDelOtro)
       expect(await service.getAllByHabilidades(["javascript"])).toEqual([otro])
     })
   })

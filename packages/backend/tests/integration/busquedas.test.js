@@ -180,7 +180,7 @@ describe("búsqueda de colaboradores según un perfil", () => {
       { id: expect.any(String), tipo: "EMAIL" },
     ])
     expect(
-      (await colaboradores(proyectos.mapa.perfil)).map((persona) => persona.id),
+      (await colaboradores(proyectos.mapa.perfil)).data.map((persona) => persona.id),
     ).toEqual([personas.ana.id, personas.lucho.id])
   })
 
