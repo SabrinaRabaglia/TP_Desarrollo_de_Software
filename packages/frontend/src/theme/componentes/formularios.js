@@ -31,11 +31,10 @@ const componentes = {
         "&.Mui-disabled": {
           backgroundColor: v(theme).palette.superficie.alt,
         },
-        // El hueco del borde se mide con el texto de la etiqueta achicada:
-        // misma letra que la etiqueta (0.9rem × 0.75) para que calce justo.
+        // La etiqueta achicada va arriba del borde y no sobre él (ver
+        // MuiInputLabel), así que el borde no deja hueco: la línea sigue entera.
         "& .MuiOutlinedInput-notchedOutline legend": {
-          fontSize: "0.675rem",
-          fontWeight: 600,
+          maxWidth: 0.01,
         },
       }),
       input: { minHeight: 24, paddingBlock: 10 },
@@ -63,13 +62,14 @@ const componentes = {
 
   // MUI ubica la etiqueta para un campo de 56px con letra de 1rem; los
   // nuestros miden 44px (24 de texto + 10 arriba y abajo) y la etiqueta va en
-  // 0.9rem. Centrada adentro del campo y, achicada, sobre la línea del borde.
+  // 0.9rem. Centrada adentro del campo y, achicada, apoyada arriba del borde
+  // para que la línea no la cruce.
   MuiInputLabel: {
     styleOverrides: {
       outlined: {
         transform: "translate(14px, 12px) scale(1)",
         "&.MuiInputLabel-shrink": {
-          transform: "translate(14px, -8px) scale(0.75)",
+          transform: "translate(14px, -17px) scale(0.75)",
         },
       },
     },
