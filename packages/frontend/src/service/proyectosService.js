@@ -41,16 +41,37 @@ const aPerfil = (perfilBack, titulosDeHabilidades) => ({
   limiteColaboraciones: perfilBack.limiteColaboraciones,
 })
 
-const aProyecto = (proyectoBack, colectivo, titulosDeHabilidades) => ({
-  id: proyectoBack.id,
-  titulo: proyectoBack.titulo,
-  descripcion: proyectoBack.descripcion,
-  estado: proyectoBack.estado,
-  colectivo,
-  perfiles: (proyectoBack.perfiles ?? []).map((perfil) =>
-    aPerfil(perfil, titulosDeHabilidades),
-  ),
-})
+// Los hitos (logros) van del más viejo al más nuevo. El avance del proyecto es
+// el porcentaje del hito más reciente, igual que en el dominio del backend
+// (Proyecto.getPorcentajeConcrecionActual).
+const aHitos = (hitosBack = []) =>
+  hitosBack
+    .map((hito) => ({
+      id: hito.id,
+      descripcion: hito.descripcion,
+      fecha: new Date(hito.fecha),
+      porcentaje: hito.porcentajeConcrecion,
+    }))
+    .sort((a, b) => a.fecha - b.fecha)
+
+const aProyecto = (proyectoBack, colectivo, titulosDeHabilidades) => {
+  const hitos = aHitos(proyectoBack.hitos ?? [])
+
+  return {
+    id: proyectoBack.id,
+    titulo: proyectoBack.titulo,
+    descripcion: proyectoBack.descripcion,
+    estado: proyectoBack.estado,
+    colectivo,
+    perfiles: (proyectoBack.perfiles ?? []).map((perfil) =>
+      aPerfil(perfil, titulosDeHabilidades),
+    ),
+    hitos,
+    avance: hitos.at(-1)?.porcentaje ?? 0,
+    enlaceSistema: proyectoBack.enlaceSistemaEnFuncionamiento ?? null,
+    enlaceRepositorio: proyectoBack.enlaceCodigoFuente ?? null,
+  }
+}
 
 const obtenerTitulosDeHabilidades = async () => {
   const habilidades = await obtenerHabilidades()
