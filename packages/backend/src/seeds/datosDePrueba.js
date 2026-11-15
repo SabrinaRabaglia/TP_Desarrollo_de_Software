@@ -71,143 +71,151 @@ export default async function sembrarDatosDePrueba() {
   )
   const colectivos = await idsPor(ColectivoModel, "nombre")
 
-  await sembrar(
-    ProyectoModel,
-    ["titulo"],
-    [
-      {
-        titulo: "Sitio web de la huerta",
-        descripcion: "Publicar el calendario de talleres y cosechas",
-        estado: EstadoProyecto.PUBLICADO,
-        fechaAlta: new Date("2026-09-01T00:00:00.000Z"),
-        colectivo: colectivos["Huerta Comunitaria Sur"],
-        perfiles: [
-          {
-            nombre: "Desarrollo frontend",
-            descripcion: "Maquetar y mantener el sitio con el calendario",
-            unidadCompromiso: UnidadCompromiso.HORAS_SEMANALES,
-            cantidadHoras: 4,
-            modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
-            habilidadesRequeridas: [
-              habilidades["javascript"],
-              habilidades["react"],
-            ],
-            habilidadesOpcionales: [habilidades["typescript"]],
-          },
-        ],
-        hitos: [
-          {
-            fecha: new Date("2026-09-20T00:00:00.000Z"),
-            porcentajeConcrecion: 20,
-            descripcion: "Maqueta aprobada por el colectivo",
-          },
-          {
-            fecha: new Date("2026-10-10T00:00:00.000Z"),
-            porcentajeConcrecion: 50,
-            descripcion: "Calendario de talleres publicado",
-          },
-        ],
-      },
-      {
-        titulo: "API de donaciones",
-        descripcion: "Registrar donaciones y emitir comprobantes",
-        estado: EstadoProyecto.PUBLICADO,
-        fechaAlta: new Date("2026-09-05T00:00:00.000Z"),
-        colectivo: colectivos["Fundación Código Abierto"],
-        perfiles: [
-          {
-            nombre: "Desarrollo backend",
-            descripcion: "Diseñar la API y el modelo de datos de donaciones",
-            unidadCompromiso: UnidadCompromiso.HORAS_TOTALES,
-            cantidadHoras: 80,
-            modalidadesColaboracion: [
-              ModalidadColaboracion.GRATUITA,
-              ModalidadColaboracion.CON_INCENTIVO_ECONOMICO,
-            ],
-            habilidadesRequeridas: [
-              habilidades["node_js"],
-              habilidades["mongodb"],
-            ],
-            habilidadesOpcionales: [habilidades["docker"]],
-          },
-        ],
-        hitos: [
-          {
-            fecha: new Date("2026-10-01T00:00:00.000Z"),
-            porcentajeConcrecion: 15,
-            descripcion: "Modelo de datos de donaciones definido",
-          },
-        ],
-      },
-      {
-        titulo: "Mapa de humedales",
-        descripcion: "Visualizar los puntos de monitoreo en un mapa",
-        estado: EstadoProyecto.PUBLICADO,
-        fechaAlta: new Date("2026-09-10T00:00:00.000Z"),
-        colectivo: colectivos["Asamblea Ambiental del Litoral"],
-        perfiles: [
-          {
-            nombre: "Análisis de datos",
-            descripcion: "Procesar las mediciones de los puntos de monitoreo",
-            unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
-            cantidadHoras: 10,
-            modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
-            habilidadesRequeridas: [habilidades["python"]],
-            habilidadesOpcionales: [habilidades["sql"]],
-          },
-          {
-            nombre: "Desarrollo del mapa",
-            descripcion: "Construir el mapa interactivo",
-            unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
-            cantidadHoras: 15,
-            modalidadesColaboracion: [
-              ModalidadColaboracion.CON_INCENTIVO_ECONOMICO,
-            ],
-            habilidadesRequeridas: [habilidades["javascript"]],
-            habilidadesOpcionales: [habilidades["react"]],
-          },
-        ],
-      },
-      {
-        titulo: "Rediseño de la app de voluntariado",
-        descripcion: "Mejorar la experiencia de inscripción",
-        estado: EstadoProyecto.CERRADO,
-        fechaAlta: new Date("2026-08-01T00:00:00.000Z"),
-        fechaCierre: new Date("2026-09-15T00:00:00.000Z"),
-        colectivo: colectivos["Fundación Código Abierto"],
-        perfiles: [
-          {
-            nombre: "Diseño UX/UI",
-            descripcion: "Rediseñar el flujo de inscripción",
-            unidadCompromiso: UnidadCompromiso.HORAS_TOTALES,
-            cantidadHoras: 40,
-            modalidadesColaboracion: [
-              ModalidadColaboracion.CON_POSIBILIDAD_CONTRATACION,
-            ],
-            habilidadesRequeridas: [habilidades["diseno_ux_ui"]],
-            habilidadesOpcionales: [habilidades["react"]],
-          },
-        ],
-        hitos: [
-          {
-            fecha: new Date("2026-08-15T00:00:00.000Z"),
-            porcentajeConcrecion: 30,
-            descripcion: "Entrevistas a personas voluntarias",
-          },
-          {
-            fecha: new Date("2026-09-01T00:00:00.000Z"),
-            porcentajeConcrecion: 70,
-            descripcion: "Prototipo navegable del nuevo flujo",
-          },
-          {
-            fecha: new Date("2026-09-15T00:00:00.000Z"),
-            porcentajeConcrecion: 100,
-            descripcion: "Rediseño entregado",
-          },
-        ],
-      },
-    ],
-  )
+  const proyectos = [
+    {
+      titulo: "Sitio web de la huerta",
+      descripcion: "Publicar el calendario de talleres y cosechas",
+      estado: EstadoProyecto.PUBLICADO,
+      fechaAlta: new Date("2026-09-01T00:00:00.000Z"),
+      colectivo: colectivos["Huerta Comunitaria Sur"],
+      perfiles: [
+        {
+          nombre: "Desarrollo frontend",
+          descripcion: "Maquetar y mantener el sitio con el calendario",
+          unidadCompromiso: UnidadCompromiso.HORAS_SEMANALES,
+          cantidadHoras: 4,
+          modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
+          habilidadesRequeridas: [
+            habilidades["javascript"],
+            habilidades["react"],
+          ],
+          habilidadesOpcionales: [habilidades["typescript"]],
+        },
+      ],
+      hitos: [
+        {
+          fecha: new Date("2026-09-20T00:00:00.000Z"),
+          porcentajeConcrecion: 20,
+          descripcion: "Maqueta aprobada por el colectivo",
+        },
+        {
+          fecha: new Date("2026-10-10T00:00:00.000Z"),
+          porcentajeConcrecion: 50,
+          descripcion: "Calendario de talleres publicado",
+        },
+      ],
+    },
+    {
+      titulo: "API de donaciones",
+      descripcion: "Registrar donaciones y emitir comprobantes",
+      estado: EstadoProyecto.PUBLICADO,
+      fechaAlta: new Date("2026-09-05T00:00:00.000Z"),
+      colectivo: colectivos["Fundación Código Abierto"],
+      perfiles: [
+        {
+          nombre: "Desarrollo backend",
+          descripcion: "Diseñar la API y el modelo de datos de donaciones",
+          unidadCompromiso: UnidadCompromiso.HORAS_TOTALES,
+          cantidadHoras: 80,
+          modalidadesColaboracion: [
+            ModalidadColaboracion.GRATUITA,
+            ModalidadColaboracion.CON_INCENTIVO_ECONOMICO,
+          ],
+          habilidadesRequeridas: [
+            habilidades["node_js"],
+            habilidades["mongodb"],
+          ],
+          habilidadesOpcionales: [habilidades["docker"]],
+        },
+      ],
+      hitos: [
+        {
+          fecha: new Date("2026-10-01T00:00:00.000Z"),
+          porcentajeConcrecion: 15,
+          descripcion: "Modelo de datos de donaciones definido",
+        },
+      ],
+    },
+    {
+      titulo: "Mapa de humedales",
+      descripcion: "Visualizar los puntos de monitoreo en un mapa",
+      estado: EstadoProyecto.PUBLICADO,
+      fechaAlta: new Date("2026-09-10T00:00:00.000Z"),
+      colectivo: colectivos["Asamblea Ambiental del Litoral"],
+      perfiles: [
+        {
+          nombre: "Análisis de datos",
+          descripcion: "Procesar las mediciones de los puntos de monitoreo",
+          unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
+          cantidadHoras: 10,
+          modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
+          habilidadesRequeridas: [habilidades["python"]],
+          habilidadesOpcionales: [habilidades["sql"]],
+        },
+        {
+          nombre: "Desarrollo del mapa",
+          descripcion: "Construir el mapa interactivo",
+          unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
+          cantidadHoras: 15,
+          modalidadesColaboracion: [
+            ModalidadColaboracion.CON_INCENTIVO_ECONOMICO,
+          ],
+          habilidadesRequeridas: [habilidades["javascript"]],
+          habilidadesOpcionales: [habilidades["react"]],
+        },
+      ],
+    },
+    {
+      titulo: "Rediseño de la app de voluntariado",
+      descripcion: "Mejorar la experiencia de inscripción",
+      estado: EstadoProyecto.CERRADO,
+      fechaAlta: new Date("2026-08-01T00:00:00.000Z"),
+      fechaCierre: new Date("2026-09-15T00:00:00.000Z"),
+      colectivo: colectivos["Fundación Código Abierto"],
+      perfiles: [
+        {
+          nombre: "Diseño UX/UI",
+          descripcion: "Rediseñar el flujo de inscripción",
+          unidadCompromiso: UnidadCompromiso.HORAS_TOTALES,
+          cantidadHoras: 40,
+          modalidadesColaboracion: [
+            ModalidadColaboracion.CON_POSIBILIDAD_CONTRATACION,
+          ],
+          habilidadesRequeridas: [habilidades["diseno_ux_ui"]],
+          habilidadesOpcionales: [habilidades["react"]],
+        },
+      ],
+      hitos: [
+        {
+          fecha: new Date("2026-08-15T00:00:00.000Z"),
+          porcentajeConcrecion: 30,
+          descripcion: "Entrevistas a personas voluntarias",
+        },
+        {
+          fecha: new Date("2026-09-01T00:00:00.000Z"),
+          porcentajeConcrecion: 70,
+          descripcion: "Prototipo navegable del nuevo flujo",
+        },
+        {
+          fecha: new Date("2026-09-15T00:00:00.000Z"),
+          porcentajeConcrecion: 100,
+          descripcion: "Rediseño entregado",
+        },
+      ],
+    },
+  ]
+  await sembrar(ProyectoModel, ["titulo"], proyectos)
+  // Un proyecto que ya existía no se vuelve a insertar: si le falta alguno de
+  // los perfiles de prueba (por nombre), se le agrega sin tocar los demás.
+  for (const { titulo, perfiles } of proyectos) {
+    for (const perfil of perfiles) {
+      await ProyectoModel.updateOne(
+        { titulo, "perfiles.nombre": { $ne: perfil.nombre } },
+        { $push: { perfiles: perfil } },
+        { runValidators: true, timestamps: false },
+      )
+    }
+  }
 
   await sembrar(
     PersonaColaboradoraModel,
