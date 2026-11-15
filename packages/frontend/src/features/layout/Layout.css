@@ -4,12 +4,11 @@
   min-height: 100vh;
 }
 
+/* El ancho y los márgenes laterales los pone .contenedor, igual que en la
+   navbar, así el contenido queda alineado con el logo. */
 .layout-contenido {
   flex: 1;
-  width: 100%;
-  max-width: var(--ancho-maximo);
-  margin: 0 auto;
-  padding: var(--espacio-4);
+  padding-block: var(--espacio-6) var(--espacio-10);
 }
 
 /* Recibe el foco al usar "Saltar al contenido": no necesita anillo propio */
@@ -18,15 +17,36 @@
 }
 
 .layout-pie {
-  padding: var(--espacio-4);
   border-top: var(--borde);
-  font-size: 0.875rem;
-  text-align: center;
+  background: var(--color-superficie);
+  font-size: var(--texto-chico);
   color: var(--color-texto-secundario);
 }
 
+.layout-pie-contenido {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-1);
+  padding-block: var(--espacio-6);
+  text-align: center;
+}
+
+.layout-pie-marca {
+  font-family: var(--fuente-titulos);
+  font-weight: 600;
+  color: var(--color-texto);
+}
+
 @media (min-width: 768px) {
+  .layout-pie-contenido {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+@media (min-width: 1024px) {
   .layout-contenido {
-    padding: var(--espacio-8);
+    padding-block: var(--espacio-8) var(--espacio-16);
   }
 }
