@@ -29,6 +29,7 @@ import HitoService from "./services/HitoService.js"
 import PostulacionService from "./services/PostulacionService.js"
 
 import EnvioDeNotificaciones from "./services/EnvioDeNotificaciones.js"
+import RedaccionDeAvisos from "./services/RedaccionDeAvisos.js"
 import { crearCanales } from "./canales/canales.js"
 import PerfilService from "./services/PerfilService.js"
 import PersonaColaboradoraService from "./services/PersonaColaboradoraService.js"
@@ -81,6 +82,11 @@ const perfilService = new PerfilService(
   habilidadService,
 )
 
+const redaccionDeAvisos = new RedaccionDeAvisos(
+  colectivoRepository,
+  proyectoRepository,
+  process.env.FRONTEND_URL?.replace(/\/+$/, ""),
+)
 export const envioDeNotificaciones = new EnvioDeNotificaciones(
   notificacionRepository,
   canales,
@@ -88,6 +94,7 @@ export const envioDeNotificaciones = new EnvioDeNotificaciones(
     maximoDeIntentos: Number(process.env.NOTIFICACIONES_MAXIMO_INTENTOS) || 5,
     esperaEntreIntentosMs:
       Number(process.env.NOTIFICACIONES_INTERVALO_MS) || 30_000,
+    redactar: redaccionDeAvisos.redactar,
   },
 )
 const notificacionService = new NotificacionService(

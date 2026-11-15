@@ -7,8 +7,10 @@ export default class EnvioDeNotificaciones {
       esperaEntreIntentosMs = 30_000,
       bloqueoMs = 5 * 60_000,
       ahora = () => new Date(),
+      redactar = (notificacion) => notificacion.contenido,
     } = {},
   ) {
+    this.redactar = redactar
     this.notificacionRepository = notificacionRepository
     this.canales = canales
     this.maximoDeIntentos = maximoDeIntentos
@@ -51,14 +53,23 @@ export default class EnvioDeNotificaciones {
     }
   }
 
+  redactarAviso = async (notificacion) => {
+    try {
+      return await this.redactar(notificacion)
+    } catch (error) {
+      console.error(
+        `No se pudo redactar el aviso de la notificación ${notificacion.id}; se envía solo el contenido: ${String(error?.message ?? error)}`,
+      )
+      return notificacion.contenido
+    }
+  }
+
   enviar = async (notificacion) => {
     const reclamadaEn = notificacion.procesandoDesde
+    const aviso = await this.redactarAviso(notificacion)
     for (const envio of notificacion.enviosPendientes()) {
       try {
-        await this.canales[envio.medio.tipo].enviar(
-          envio.medio.valor,
-          notificacion.contenido,
-        )
+        await this.canales[envio.medio.tipo].enviar(envio.medio.valor, aviso)
         notificacion.registrarEnvioExitoso(envio, this.ahora())
       } catch (error) {
         const motivo = String(error?.message ?? error)

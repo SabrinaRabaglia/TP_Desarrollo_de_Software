@@ -207,6 +207,50 @@ describe("EnvioDeNotificaciones", () => {
     expect(notificacion.procesandoDesde).toBeNull()
   })
 
+  test("manda por cada canal el aviso redactado una sola vez", async () => {
+    const redactar = jest.fn(async (n) => `Aviso: ${n.contenido}`)
+    servicio = new EnvioDeNotificaciones(repositorio, canales, {
+      ahora: () => reloj,
+      redactar,
+    })
+    await crearNotificacion([
+      new MedioDeContacto("EMAIL", "ana@example.com"),
+      new MedioDeContacto("SMS", "+54 9 11 2345-6789"),
+    ])
+
+    await servicio.procesarPendientes()
+
+    expect(redactar).toHaveBeenCalledTimes(1)
+    expect(canales.EMAIL.enviar).toHaveBeenCalledWith(
+      "ana@example.com",
+      "Aviso: Hola",
+    )
+    expect(canales.SMS.enviar).toHaveBeenCalledWith(
+      "+54 9 11 2345-6789",
+      "Aviso: Hola",
+    )
+  })
+
+  test("si no se puede redactar el aviso, igual envía el contenido", async () => {
+    servicio = new EnvioDeNotificaciones(repositorio, canales, {
+      ahora: () => reloj,
+      redactar: async () => {
+        throw new Error("Mongo caído")
+      },
+    })
+    const notificacion = await crearNotificacion([
+      new MedioDeContacto("EMAIL", "ana@example.com"),
+    ])
+
+    await servicio.procesarPendientes()
+
+    expect(canales.EMAIL.enviar).toHaveBeenCalledWith("ana@example.com", "Hola")
+    expect(notificacion.mediosExternosUtilizados).toEqual(["EMAIL"])
+    expect(console.error).toHaveBeenCalledWith(
+      expect.stringContaining("Mongo caído"),
+    )
+  })
+
   test("despertar procesa en segundo plano sin bloquear", async () => {
     const notificacion = await crearNotificacion([
       new MedioDeContacto("EMAIL", "ana@example.com"),
