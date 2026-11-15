@@ -183,6 +183,7 @@ La persistencia usa MongoDB con Mongoose, siguiendo la guía de la cátedra. Cad
 
 - Al arrancar, el servidor carga los catálogos: país, las 24 provincias, los tipos de colectivo y las habilidades iniciales.
 - `npm run seed:backend` carga además los datos de prueba: colectivos, proyectos (con perfiles e hitos), personas, postulaciones aceptadas, una postulación dada de baja por el colectivo y un usuario por cada colectivo y persona (ver [Usuarios de prueba](#usuarios-de-prueba)).
+- Los datos de prueba incluyen el punto de partida del flujo de postulación: el proyecto "Mapa de comedores comunitarios" de Red Solidaria Sur, con el perfil Tester (requiere Testing E2E con Cypress, un solo lugar), la postulación pendiente de Pampa y a Nube, que cumple la habilidad pero todavía no se postuló.
 
 Los dos procesos son idempotentes. Insertan lo que falta por su clave natural, nunca borran y no modifican lo que ya existe, así que se pueden correr cualquier cantidad de veces, también en producción.
 
@@ -324,10 +325,13 @@ En el frontend, el colectivo llega a las candidatas desde "Ver candidatas" en ca
 | `huerta@colectivo.test` | `COLECTIVO` | Huerta Comunitaria Sur | `secreto123` |
 | `codigoabierto@colectivo.test` | `COLECTIVO` | Fundación Código Abierto | `secreto123` |
 | `litoral@colectivo.test` | `COLECTIVO` | Asamblea Ambiental del Litoral | `secreto123` |
+| `redsolidariasur@colectivo.test` | `COLECTIVO` | Red Solidaria Sur | `secreto123` |
 | `anag@persona.test` | `PERSONA_COLABORADORA` | anag | `secreto123` |
 | `lucho_dev@persona.test` | `PERSONA_COLABORADORA` | lucho_dev | `secreto123` |
 | `sol.datos@persona.test` | `PERSONA_COLABORADORA` | sol.datos | `secreto123` |
 | `anon123@persona.test` | `PERSONA_COLABORADORA` | anon123 | `secreto123` |
+| `nube@persona.test` | `PERSONA_COLABORADORA` | Nube | `secreto123` |
+| `pampa@persona.test` | `PERSONA_COLABORADORA` | Pampa | `secreto123` |
 
 ### Obtener un token sin pasar por el front
 
