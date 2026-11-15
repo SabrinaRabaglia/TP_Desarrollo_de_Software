@@ -118,6 +118,16 @@ const PaginaProyecto = () => {
     cargar()
   }, [id, intento])
 
+  // Después de modificar un perfil se piden los datos de nuevo, sin volver al
+  // esqueleto de carga: las tarjetas siguen en pantalla mientras tanto.
+  const refrescar = async () => {
+    try {
+      setProyecto(await obtenerProyecto(id))
+    } catch (e) {
+      setError(mensajeDeError(e))
+    }
+  }
+
   if (cargando) {
     return <PaginaProyectoCargando />
   }
@@ -131,7 +141,8 @@ const PaginaProyecto = () => {
     )
   }
 
-  // Solo el colectivo dueño revisa postulaciones y busca candidatas.
+  // Solo el colectivo dueño revisa postulaciones, busca candidatas y gestiona
+  // los perfiles.
   const esDueno =
     usuario?.rol === "COLECTIVO" &&
     usuario.entidad?.id === proyecto.colectivo.id
@@ -235,6 +246,7 @@ const PaginaProyecto = () => {
                     proyectoId={proyecto.id}
                     proyectoAbierto={proyecto.estado === "PUBLICADO"}
                     esDueno={esDueno}
+                    alModificar={refrescar}
                   />
                 ))}
               </div>

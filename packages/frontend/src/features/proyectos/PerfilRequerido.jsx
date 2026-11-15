@@ -13,7 +13,15 @@ import {
   crearPostulacion,
   obtenerPostulacionesColaborador,
 } from "../../service/postulacionesService"
+import { modificarPerfil } from "../../service/proyectosService"
+import EditarPerfil from "./EditarPerfil"
 import "./PerfilRequerido.css"
+
+const formatoDia = new Intl.DateTimeFormat("es-AR", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+})
 
 const GrupoDeHabilidades = ({ titulo, habilidades, opcionales }) => {
   if (habilidades.length === 0) {
@@ -23,7 +31,10 @@ const GrupoDeHabilidades = ({ titulo, habilidades, opcionales }) => {
   return (
     <div className="perfil-grupo">
       <h4>{titulo}</h4>
-      <ListaDeHabilidades habilidades={habilidades} opcionales={opcionales} />
+      <ListaDeHabilidades
+        habilidades={habilidades.map((habilidad) => habilidad.titulo)}
+        opcionales={opcionales}
+      />
     </div>
   )
 }
@@ -52,10 +63,17 @@ const Ocupantes = ({ ocupantes }) => {
   )
 }
 
-const PerfilRequerido = ({ perfil, proyectoId, proyectoAbierto, esDueno }) => {
+const PerfilRequerido = ({
+  perfil,
+  proyectoId,
+  proyectoAbierto,
+  esDueno,
+  alModificar,
+}) => {
   const { usuario } = useAuth()
   const { mostrarAviso } = useAvisos()
-  const [dialogoAbierto, setDialogoAbierto] = useState(false)
+  // Qué diálogo está abierto: "POSTULARSE", "CERRAR_BUSQUEDA", "EDITAR" o null.
+  const [dialogo, setDialogo] = useState(null)
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState(null)
   const [yaSePostulo, setYaSePostulo] = useState(false)
@@ -64,6 +82,13 @@ const PerfilRequerido = ({ perfil, proyectoId, proyectoAbierto, esDueno }) => {
   const esColaboradora = usuario?.rol === "PERSONA_COLABORADORA"
   const cantidadAceptadas = perfil.postulacionesAceptadas.length
   const rutaDelPerfil = `/proyectos/${proyectoId}/perfiles/${perfil.id}`
+
+  // La búsqueda de un perfil se cierra con el proyecto, a mano o cuando pasa
+  // su fecha límite.
+  const fechaLimite = perfil.busquedaAbiertaHasta
+  const vencio = fechaLimite !== null && fechaLimite < new Date()
+  const busquedaAbierta = proyectoAbierto && perfil.busquedaAbierta && !vencio
+  const puedeGestionar = esDueno && proyectoAbierto
 
   // Solo una persona colaboradora tiene postulaciones propias para revisar.
   useEffect(() => {
@@ -114,30 +139,70 @@ const PerfilRequerido = ({ perfil, proyectoId, proyectoAbierto, esDueno }) => {
     try {
       await crearPostulacion(proyectoId, perfil.id, esAnonima)
       setYaSePostulo(true)
-      setDialogoAbierto(false)
+      setDialogo(null)
       mostrarAviso(
         "Tu postulación fue enviada. El colectivo la revisará a la brevedad.",
       )
     } catch (e) {
       // El error se muestra en la tarjeta, al lado de la acción.
-      setDialogoAbierto(false)
+      setDialogo(null)
       setError(mensajeDeError(e))
     } finally {
       setEnviando(false)
     }
   }
 
+  const avisarYRefrescar = (aviso) => {
+    setDialogo(null)
+    mostrarAviso(aviso)
+    return alModificar()
+  }
+
+  const cambiarBusqueda = async (cambios, aviso) => {
+    setDialogo(null)
+    setEnviando(true)
+    setError(null)
+    try {
+      await modificarPerfil(proyectoId, perfil.id, cambios)
+      await avisarYRefrescar(aviso)
+    } catch (e) {
+      setError(mensajeDeError(e))
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  const cerrarBusqueda = () =>
+    cambiarBusqueda(
+      { busquedaAbierta: false },
+      `Cerraste la búsqueda del perfil ${perfil.nombre}.`,
+    )
+
+  // Con la fecha límite vencida, abrirla a mano no alcanza: hay que quitarla.
+  const reabrirBusqueda = () =>
+    vencio
+      ? cambiarBusqueda(
+          { busquedaAbierta: true, busquedaAbiertaHasta: null },
+          `Reabriste la búsqueda del perfil ${perfil.nombre}. Ya no tiene fecha límite.`,
+        )
+      : cambiarBusqueda(
+          { busquedaAbierta: true },
+          `Reabriste la búsqueda del perfil ${perfil.nombre}.`,
+        )
+
   const motivoNoPuedePostularse = yaSePostulo
     ? "Ya te postulaste a este perfil."
     : !proyectoAbierto
       ? "La búsqueda de este proyecto está cerrada."
-      : null
+      : !busquedaAbierta
+        ? "La búsqueda de este perfil está cerrada."
+        : null
 
   return (
     <article className="perfil" aria-labelledby={`perfil-${perfil.id}`}>
       <header className="perfil-encabezado">
         <h3 id={`perfil-${perfil.id}`}>{perfil.nombre}</h3>
-        {proyectoAbierto ? (
+        {busquedaAbierta ? (
           <Cupos
             limite={perfil.limiteColaboraciones}
             aceptadas={cantidadAceptadas}
@@ -151,6 +216,17 @@ const PerfilRequerido = ({ perfil, proyectoId, proyectoAbierto, esDueno }) => {
           />
         )}
       </header>
+
+      {busquedaAbierta && fechaLimite && (
+        <p className="perfil-busqueda">
+          Búsqueda abierta hasta el {formatoDia.format(fechaLimite)}
+        </p>
+      )}
+      {proyectoAbierto && vencio && (
+        <p className="perfil-busqueda">
+          La búsqueda venció el {formatoDia.format(fechaLimite)}
+        </p>
+      )}
 
       {perfil.descripcion && <p>{perfil.descripcion}</p>}
 
@@ -179,7 +255,7 @@ const PerfilRequerido = ({ perfil, proyectoId, proyectoAbierto, esDueno }) => {
             size="small"
             onClick={() => {
               setError(null)
-              setDialogoAbierto(true)
+              setDialogo("POSTULARSE")
             }}
             disabled={enviando || motivoNoPuedePostularse !== null}
             aria-describedby={
@@ -209,6 +285,42 @@ const PerfilRequerido = ({ perfil, proyectoId, proyectoAbierto, esDueno }) => {
             Ver candidatas
           </Button>
         )}
+        {puedeGestionar &&
+          (busquedaAbierta ? (
+            <Button
+              variant="outlined"
+              color="inherit"
+              size="small"
+              onClick={() => setDialogo("CERRAR_BUSQUEDA")}
+              disabled={enviando}
+            >
+              Cerrar búsqueda
+            </Button>
+          ) : (
+            <Button
+              variant="outlined"
+              color="inherit"
+              size="small"
+              onClick={reabrirBusqueda}
+              disabled={enviando}
+            >
+              Reabrir búsqueda
+            </Button>
+          ))}
+        {puedeGestionar && (
+          <Button
+            variant="outlined"
+            color="inherit"
+            size="small"
+            onClick={() => {
+              setError(null)
+              setDialogo("EDITAR")
+            }}
+            disabled={enviando}
+          >
+            Editar perfil
+          </Button>
+        )}
         <Button
           variant="text"
           size="small"
@@ -227,16 +339,37 @@ const PerfilRequerido = ({ perfil, proyectoId, proyectoAbierto, esDueno }) => {
       {error && <Alert severity="error">{error}</Alert>}
 
       <ConfirmarAccion
-        abierto={dialogoAbierto}
+        abierto={dialogo === "POSTULARSE"}
         titulo="Enviar postulación"
         mensaje="¿Querés que tu contribución permanezca anónima en la plataforma? Si es anónima, en el proyecto no se va a mostrar tu nombre."
         textoConfirmar="Sí, anónima"
         textoAlternativo="No, pública"
         alConfirmar={() => postularse(true)}
         alAlternativo={() => postularse(false)}
-        alCancelar={() => setDialogoAbierto(false)}
+        alCancelar={() => setDialogo(null)}
         peligrosa={false}
       />
+      <ConfirmarAccion
+        abierto={dialogo === "CERRAR_BUSQUEDA"}
+        titulo="Cerrar búsqueda"
+        mensaje={`Las personas no van a poder postularse al perfil ${perfil.nombre} mientras la búsqueda esté cerrada. Podés reabrirla cuando quieras.`}
+        textoConfirmar="Cerrar búsqueda"
+        alConfirmar={cerrarBusqueda}
+        alCancelar={() => setDialogo(null)}
+        peligrosa={false}
+      />
+      {dialogo === "EDITAR" && (
+        <EditarPerfil
+          perfil={perfil}
+          proyectoId={proyectoId}
+          alCerrar={() => setDialogo(null)}
+          alGuardar={() =>
+            avisarYRefrescar(
+              `Guardaste los cambios del perfil ${perfil.nombre}.`,
+            )
+          }
+        />
+      )}
     </article>
   )
 }

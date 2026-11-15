@@ -1,0 +1,21 @@
+.editar-perfil {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-4);
+}
+
+.editar-perfil-numeros {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espacio-4);
+}
+
+.editar-perfil-error {
+  padding: var(--espacio-2) var(--espacio-6) 0;
+}
+
+@media (min-width: 768px) {
+  .editar-perfil-numeros {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

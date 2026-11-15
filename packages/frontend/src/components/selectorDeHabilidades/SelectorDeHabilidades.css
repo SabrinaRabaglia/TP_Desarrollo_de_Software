@@ -1,0 +1,10 @@
+.selector-de-habilidades {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .selector-de-habilidades {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

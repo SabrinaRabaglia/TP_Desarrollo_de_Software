@@ -3,9 +3,14 @@ import userEvent from "@testing-library/user-event"
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom"
 import { AuthProvider } from "../../context/AuthContext"
 import { ProveedorDeAvisos } from "../../context/AvisosContext"
-import { obtenerProyecto } from "../../service/proyectosService"
+import { obtenerHabilidades } from "../../service/habilidadesService"
+import {
+  modificarPerfil,
+  obtenerProyecto,
+} from "../../service/proyectosService"
 import PaginaProyecto from "./PaginaProyecto"
 
+jest.mock("../../service/habilidadesService")
 jest.mock("../../service/proyectosService")
 
 const proyecto = {
@@ -20,11 +25,14 @@ const proyecto = {
       nombre: "Desarrollo frontend",
       descripcion: "Maquetar el sitio",
       compromiso: "4 horas por semana",
+      cantidadHoras: 4,
       modalidades: ["Gratuita"],
-      habilidadesRequeridas: ["React"],
-      habilidadesOpcionales: ["TypeScript"],
+      habilidadesRequeridas: [{ id: "h1", titulo: "React" }],
+      habilidadesOpcionales: [{ id: "h2", titulo: "TypeScript" }],
       postulacionesAceptadas: [],
       limiteColaboraciones: null,
+      busquedaAbierta: true,
+      busquedaAbiertaHasta: null,
     },
   ],
   hitos: [
@@ -72,6 +80,10 @@ const renderizarEn = (ruta) =>
       </ProveedorDeAvisos>
     </AuthProvider>,
   )
+
+afterEach(() => {
+  localStorage.clear()
+})
 
 describe("PaginaProyecto", () => {
   test("muestra el proyecto de la URL con sus perfiles", async () => {
@@ -171,5 +183,73 @@ describe("PaginaProyecto", () => {
     expect(
       await screen.findByRole("heading", { name: "Sitio web de la huerta" }),
     ).toBeInTheDocument()
+  })
+
+  test("cuando el colectivo dueño edita un perfil, la tarjeta muestra los datos nuevos", async () => {
+    localStorage.setItem(
+      "sesion",
+      JSON.stringify({
+        token: "token",
+        usuario: {
+          id: "u1",
+          rol: "COLECTIVO",
+          entidad: { id: "c1", nombre: "Huerta Comunitaria Sur" },
+        },
+      }),
+    )
+    obtenerHabilidades.mockResolvedValue([{ id: "h1", titulo: "React" }])
+    modificarPerfil.mockResolvedValue()
+    obtenerProyecto.mockResolvedValueOnce(proyecto).mockResolvedValueOnce({
+      ...proyecto,
+      perfiles: [{ ...proyecto.perfiles[0], limiteColaboraciones: 3 }],
+    })
+
+    renderizarEn("/proyectos/abc")
+
+    expect(await screen.findByText("Sin límite de cupos")).toBeInTheDocument()
+    userEvent.click(screen.getByRole("button", { name: "Editar perfil" }))
+    const dialogo = await screen.findByRole("dialog")
+    userEvent.type(
+      await within(dialogo).findByLabelText("Límite de colaboraciones"),
+      "3",
+    )
+    userEvent.click(within(dialogo).getByRole("button", { name: "Guardar" }))
+
+    expect(
+      await screen.findByText("3 cupos disponibles de 3"),
+    ).toBeInTheDocument()
+    expect(modificarPerfil).toHaveBeenCalledWith("abc", "p1", {
+      limiteColaboraciones: 3,
+    })
+    expect(
+      screen.getByRole("heading", { name: "Sitio web de la huerta" }),
+    ).toBeInTheDocument()
+  })
+
+  test("quien no es el colectivo dueño no ve las acciones de gestión", async () => {
+    localStorage.setItem(
+      "sesion",
+      JSON.stringify({
+        token: "token",
+        usuario: {
+          id: "u2",
+          rol: "COLECTIVO",
+          entidad: { id: "c2", nombre: "Otro colectivo" },
+        },
+      }),
+    )
+    obtenerProyecto.mockResolvedValue(proyecto)
+
+    renderizarEn("/proyectos/abc")
+
+    expect(
+      await screen.findByRole("heading", { name: "Desarrollo frontend" }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Editar perfil" }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Cerrar búsqueda" }),
+    ).not.toBeInTheDocument()
   })
 })

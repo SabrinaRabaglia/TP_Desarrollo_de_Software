@@ -18,6 +18,9 @@ const MODALIDADES = {
   CON_POSIBILIDAD_CONTRATACION: "Con posibilidad de contratación",
 }
 
+const aHabilidades = (ids, titulosDeHabilidades) =>
+  (ids ?? []).map((id) => ({ id, titulo: titulosDeHabilidades[id] }))
+
 // Perfiles cargados antes de las validaciones actuales pueden traer campos en
 // null: se muestran igual en lugar de romper la lista de proyectos.
 const aPerfil = (perfilBack, titulosDeHabilidades) => ({
@@ -28,17 +31,24 @@ const aPerfil = (perfilBack, titulosDeHabilidades) => ({
     perfilBack.cantidadHoras && perfilBack.unidadCompromiso
       ? `${perfilBack.cantidadHoras} ${UNIDADES_DE_COMPROMISO[perfilBack.unidadCompromiso]}`
       : "Sin especificar",
+  cantidadHoras: perfilBack.cantidadHoras ?? null,
   modalidades: (perfilBack.modalidadesColaboracion ?? []).map(
     (m) => MODALIDADES[m],
   ),
-  habilidadesRequeridas: (perfilBack.habilidadesRequeridas ?? []).map(
-    (id) => titulosDeHabilidades[id],
+  habilidadesRequeridas: aHabilidades(
+    perfilBack.habilidadesRequeridas,
+    titulosDeHabilidades,
   ),
-  habilidadesOpcionales: (perfilBack.habilidadesOpcionales ?? []).map(
-    (id) => titulosDeHabilidades[id],
+  habilidadesOpcionales: aHabilidades(
+    perfilBack.habilidadesOpcionales,
+    titulosDeHabilidades,
   ),
   postulacionesAceptadas: perfilBack.postulacionesAceptadas ?? [],
   limiteColaboraciones: perfilBack.limiteColaboraciones,
+  busquedaAbierta: perfilBack.busquedaAbierta !== false,
+  busquedaAbiertaHasta: perfilBack.busquedaAbiertaHasta
+    ? new Date(perfilBack.busquedaAbiertaHasta)
+    : null,
 })
 
 // Los hitos (logros) van del más viejo al más nuevo. El avance del proyecto es
@@ -125,6 +135,12 @@ export const obtenerProyecto = async (id) => {
     { id: colectivo.data.id, nombre: colectivo.data.nombre },
     titulosDeHabilidades,
   )
+}
+
+// `cambios` lleva solo los campos del perfil que se modifican, con la forma
+// que espera el back.
+export const modificarPerfil = async (proyectoId, perfilId, cambios) => {
+  await api.patch(`/proyectos/${proyectoId}/perfiles/${perfilId}`, cambios)
 }
 
 // Lo que necesitan las pantallas de un perfil (migas y cupos), con un único
