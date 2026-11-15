@@ -1,0 +1,5 @@
+/* La baja es definitiva: además del ícono, se muestra con borde punteado. */
+.estado-chip-baja {
+  border-style: dashed;
+  border-color: var(--color-borde-control);
+}
