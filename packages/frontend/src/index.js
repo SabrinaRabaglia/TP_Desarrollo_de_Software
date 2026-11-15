@@ -9,6 +9,7 @@ import "@fontsource/geist/500.css"
 import "@fontsource/geist/600.css"
 import "@fontsource/geist/700.css"
 import theme from "./theme/theme"
+import { ProveedorDeAvisos } from "./context/AvisosContext"
 import "./index.css"
 import App from "./App"
 
@@ -19,9 +20,11 @@ root.render(
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
+        <ProveedorDeAvisos>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </ProveedorDeAvisos>
       </ThemeProvider>
     </StyledEngineProvider>
   </React.StrictMode>,
