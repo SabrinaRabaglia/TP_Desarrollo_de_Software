@@ -24,7 +24,6 @@ export default class PersonaColaboradora {
     this.habilidades = habilidades
     this.aceptaMensajeriaInterna = aceptaMensajeriaInterna
     this.mediosDeContacto = mediosDeContacto
-    this.colaboraciones = []
     this.notificacionesRecibidas = []
   }
 
@@ -42,10 +41,6 @@ export default class PersonaColaboradora {
 
   agregarCuenta(cuenta) {
     this.cuentas.push(cuenta)
-  }
-
-  agregarColaboracion(colaboracion) {
-    this.colaboraciones.push(colaboracion)
   }
 
   assertAceptaMensajeriaInterna() {

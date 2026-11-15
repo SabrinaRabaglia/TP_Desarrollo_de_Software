@@ -46,13 +46,8 @@ export default class PostulacionRepository {
       String(p.id ?? p._id),
     )
     return this.postulaciones
-      .filter(
-        (p) =>
-          String(p.proyecto?.id ?? p.proyecto?._id ?? p.proyecto) ===
-            String(proyectoId) ||
-          perfilesIds.includes(
-            String(p.perfil?.id ?? p.perfil?._id ?? p.perfil),
-          ),
+      .filter((p) =>
+        perfilesIds.includes(String(p.perfil?.id ?? p.perfil?._id ?? p.perfil)),
       )
       .map((p) =>
         String(p.personaColaboradora?.id ?? p.personaColaboradora?._id ?? p.personaColaboradora),
@@ -72,10 +67,7 @@ export default class PostulacionRepository {
         p.estado === EstadoPostulacion.ACEPTADA &&
         String(p.personaColaboradora?.id ?? p.personaColaboradora?._id ?? p.personaColaboradora) ===
           String(personaId) &&
-        (ids.includes(String(p.proyecto?.id ?? p.proyecto?._id ?? p.proyecto)) ||
-          perfilesIds.includes(
-            String(p.perfil?.id ?? p.perfil?._id ?? p.perfil),
-          )),
+        perfilesIds.includes(String(p.perfil?.id ?? p.perfil?._id ?? p.perfil)),
     )
   }
 
