@@ -22,7 +22,7 @@ const formatoFecha = new Intl.DateTimeFormat("es-AR", {
 // Mientras carga se muestra la forma de la página, no un spinner suelto.
 const PaginaProyectoCargando = () => (
   <div className="pagina-proyecto" aria-busy="true">
-    <span role="status" className="pagina-proyecto-oculto">
+    <span role="status" className="visualmente-oculto">
       Cargando el proyecto...
     </span>
     <div className="pagina-proyecto-encabezado" aria-hidden="true">

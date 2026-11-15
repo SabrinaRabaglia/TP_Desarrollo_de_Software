@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react"
-import { Alert, Button, Card, CardContent } from "@mui/material"
-import Cargando from "../../components/cargando/Cargando"
-import ConfirmarAccion from "../../components/confirmarAccion/ConfirmarAccion.jsx"
+import { Link } from "react-router-dom"
+import { Alert, Button, Chip, Skeleton } from "@mui/material"
+import { LuEyeOff, LuInbox } from "react-icons/lu"
+import ConfirmarAccion from "../../components/confirmarAccion/ConfirmarAccion"
+import EstadoChip from "../../components/estadoChip/EstadoChip"
+import EstadoVacio from "../../components/estadoVacio/EstadoVacio"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
+import { useAvisos } from "../../context/AvisosContext"
 import { mensajeDeError } from "../../service/api"
-import "./PaginaPostulaciones.css"
 import {
-  ESTADOS_DE_POSTULACION,
   darDeBajaPostulacion,
   obtenerPostulacionesColaborador,
-} from "../../service/postulacionesService.js"
+} from "../../service/postulacionesService"
+import "./PaginaPostulaciones.css"
 
 const QUIEN_DIO_LA_BAJA = {
   PERSONA_COLABORADORA: "Te diste de baja",
@@ -18,7 +21,101 @@ const QUIEN_DIO_LA_BAJA = {
 
 const fecha = (valor) => new Date(valor).toLocaleDateString("es-AR")
 
+// Mientras carga se ve la forma de la lista, no un spinner suelto.
+const PostulacionesCargando = () => (
+  <div aria-busy="true">
+    <span role="status" className="visualmente-oculto">
+      Cargando tus postulaciones...
+    </span>
+    <div className="grilla-tarjetas" aria-hidden="true">
+      {[1, 2, 3].map((n) => (
+        <Skeleton key={n} variant="rounded" height={180} />
+      ))}
+    </div>
+  </div>
+)
+
+const Fechas = ({ postulacion }) => (
+  <dl className="mi-postulacion-fechas">
+    <dt>Te postulaste</dt>
+    <dd>{fecha(postulacion.fechaPostulacion)}</dd>
+    {postulacion.fechaRevision && (
+      <>
+        <dt>Revisada</dt>
+        <dd>{fecha(postulacion.fechaRevision)}</dd>
+      </>
+    )}
+    {postulacion.estado === "BAJA" && postulacion.fechaBaja && (
+      <>
+        <dt>Baja</dt>
+        <dd>{fecha(postulacion.fechaBaja)}</dd>
+      </>
+    )}
+  </dl>
+)
+
+const MiPostulacion = ({ postulacion, enviando, alDarDeBaja }) => {
+  const { proyecto, perfil } = postulacion
+
+  return (
+    <article
+      className="mi-postulacion"
+      aria-labelledby={`postulacion-${postulacion.id}`}
+    >
+      <div className="mi-postulacion-chips">
+        <EstadoChip estado={postulacion.estado} />
+        {postulacion.esAnonima && (
+          <Chip
+            size="small"
+            variant="outlined"
+            icon={<LuEyeOff aria-hidden="true" />}
+            label="Anónima"
+          />
+        )}
+      </div>
+
+      <h2
+        id={`postulacion-${postulacion.id}`}
+        className="mi-postulacion-titulo"
+      >
+        {proyecto ? (
+          <Link to={`/proyectos/${proyecto.id}`}>{proyecto.titulo}</Link>
+        ) : (
+          "Proyecto no disponible"
+        )}
+      </h2>
+      <p className="mi-postulacion-perfil">
+        Perfil: {perfil?.nombre ?? "Perfil no disponible"}
+      </p>
+
+      <Fechas postulacion={postulacion} />
+
+      {postulacion.estado === "BAJA" && (
+        <p className="mi-postulacion-baja">
+          {QUIEN_DIO_LA_BAJA[postulacion.origenBaja] ??
+            "Postulación dada de baja"}
+        </p>
+      )}
+
+      {postulacion.estado === "ACEPTADA" && (
+        <div className="mi-postulacion-acciones">
+          <Button
+            variant="outlined"
+            color="error"
+            size="small"
+            disabled={enviando}
+            onClick={() => alDarDeBaja(postulacion)}
+          >
+            Darme de baja
+          </Button>
+        </div>
+      )}
+    </article>
+  )
+}
+
 const PaginaPostulaciones = () => {
+  const { mostrarAviso } = useAvisos()
   const [postulaciones, setPostulaciones] = useState([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
@@ -45,7 +142,7 @@ const PaginaPostulaciones = () => {
   }, [intento])
 
   const confirmarBaja = async () => {
-    const postulacionId = aDarDeBaja.id
+    const { id: postulacionId, perfil } = aDarDeBaja
     setADarDeBaja(null)
     setEnviando(true)
     setErrorBaja(null)
@@ -58,6 +155,11 @@ const PaginaPostulaciones = () => {
             : postulacion,
         ),
       )
+      mostrarAviso(
+        perfil
+          ? `Te diste de baja del perfil ${perfil.nombre}.`
+          : "Te diste de baja.",
+      )
     } catch (e) {
       setErrorBaja(mensajeDeError(e))
     } finally {
@@ -67,7 +169,7 @@ const PaginaPostulaciones = () => {
 
   const renderPostulaciones = () => {
     if (cargando) {
-      return <Cargando texto="Cargando postulaciones..." />
+      return <PostulacionesCargando />
     }
 
     if (error) {
@@ -79,90 +181,61 @@ const PaginaPostulaciones = () => {
       )
     }
 
+    if (postulaciones.length === 0) {
+      return (
+        <EstadoVacio
+          icono={<LuInbox />}
+          titulo="Todavía no te postulaste"
+          texto="Explorá los proyectos y sumate a los perfiles que te interesen."
+          accion={{ etiqueta: "Ver proyectos", a: "/" }}
+        />
+      )
+    }
+
     return (
-      <ul className="mis-postulaciones">
+      <ul className="grilla-tarjetas mis-postulaciones-lista">
         {postulaciones.map((postulacion) => (
           <li key={postulacion.id}>
-            <Card variant="outlined" className="postulacion">
-              <CardContent>
-                <div className="postulacion-carta">
-                  <div className="postulacion-header">
-                    <div className="titulo-proyecto">
-                      {postulacion.proyecto?.titulo ?? "Proyecto no disponible"}
-                    </div>
-                    <div className="postulacion-badges">
-                      {postulacion.esAnonima && (
-                        <span className="badge-anonimo">
-                          Postulación anónima
-                        </span>
-                      )}
-
-                      <span
-                        className={`estado-postulacion estado-${postulacion.estado?.toLowerCase()}`}
-                      >
-                        {ESTADOS_DE_POSTULACION[postulacion.estado]}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="nombre-perfil">
-                    <span>Perfil:</span>{" "}
-                    {postulacion.perfil?.nombre ?? "Perfil no disponible"}
-                  </div>
-                  <div>
-                    <span className="fecha-postulacion">Fecha: </span>{" "}
-                    {fecha(
-                      postulacion.fechaBaja ??
-                        postulacion.fechaRevision ??
-                        postulacion.fechaPostulacion,
-                    )}
-                  </div>
-                  {postulacion.estado === "BAJA" && (
-                    <div className="origen-baja">
-                      {QUIEN_DIO_LA_BAJA[postulacion.origenBaja] ??
-                        "Postulación dada de baja"}
-                    </div>
-                  )}
-                  {postulacion.estado === "ACEPTADA" && (
-                    <div>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        size="small"
-                        disabled={enviando}
-                        onClick={() => setADarDeBaja(postulacion)}
-                      >
-                        Darme de baja
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <MiPostulacion
+              postulacion={postulacion}
+              enviando={enviando}
+              alDarDeBaja={(elegida) => {
+                setErrorBaja(null)
+                setADarDeBaja(elegida)
+              }}
+            />
           </li>
         ))}
       </ul>
     )
   }
 
+  const perfilADarDeBaja = aDarDeBaja?.perfil?.nombre
+
   return (
-    <section className="postulaciones">
-      <h1>Mis postulaciones</h1>
-      <p className="postulaciones-bajada">
-        Aca se muestran todas las postulaciones realizadas con sus respectivos
-        estados, junto al titulo del proyecto y el perfil correspondiente
-      </p>
-      <h2>Postulaciones</h2>
+    <section className="mis-postulaciones-pagina">
+      <header className="mis-postulaciones-encabezado">
+        <h1>Mis postulaciones</h1>
+        <p className="texto-lectura">
+          Seguí en qué estado está cada perfil al que te postulaste.
+        </p>
+      </header>
+
       {errorBaja && (
         <Alert severity="error" onClose={() => setErrorBaja(null)}>
           {errorBaja}
         </Alert>
       )}
+
       {renderPostulaciones()}
+
       <ConfirmarAccion
         abierto={aDarDeBaja !== null}
         titulo="Darme de baja"
-        mensaje="Vas a dejar de colaborar en este perfil y no vas a poder volver a postularte. Esta acción no se puede deshacer."
-        textoConfirmar="Darme de baja"
+        mensaje={`La baja es permanente: vas a dejar de colaborar${
+          perfilADarDeBaja ? ` en el perfil ${perfilADarDeBaja}` : ""
+        } y no vas a poder volver a postularte. Esta acción no se puede deshacer.`}
+        textoConfirmar="Sí, darme de baja"
         alConfirmar={confirmarBaja}
         alCancelar={() => setADarDeBaja(null)}
       />

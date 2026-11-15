@@ -2,6 +2,7 @@ import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router-dom"
 import { AuthProvider } from "../../context/AuthContext"
+import { ProveedorDeAvisos } from "../../context/AvisosContext"
 import {
   darDeBajaPostulacion,
   obtenerPostulacionesColaborador,
@@ -15,7 +16,7 @@ jest.mock("../../service/postulacionesService", () => ({
 }))
 
 const ADVERTENCIA =
-  "Vas a dejar de colaborar en este perfil y no vas a poder volver a postularte. Esta acción no se puede deshacer."
+  "La baja es permanente: vas a dejar de colaborar en el perfil Desarrollo frontend y no vas a poder volver a postularte. Esta acción no se puede deshacer."
 
 const postulacion = (datos) => ({
   proyecto: { id: "pr1", titulo: "Sitio web de la huerta" },
@@ -58,15 +59,21 @@ const renderizar = () => {
   )
   return render(
     <AuthProvider>
-      <MemoryRouter>
-        <PaginaPostulaciones />
-      </MemoryRouter>
+      <ProveedorDeAvisos>
+        <MemoryRouter>
+          <PaginaPostulaciones />
+        </MemoryRouter>
+      </ProveedorDeAvisos>
     </AuthProvider>,
   )
 }
 
 const tarjetaDe = async (titulo) =>
   (await screen.findByText(titulo)).closest("li")
+
+// El estado se lee en el chip (la palabra "Baja" también es una fecha)
+const estadoEn = (tarjeta, estado) =>
+  within(tarjeta).getByText(estado, { selector: ".MuiChip-label" })
 
 afterEach(() => {
   localStorage.clear()
@@ -108,7 +115,7 @@ describe("PaginaPostulaciones", () => {
     renderizar()
 
     const delColectivo = await tarjetaDe("Mapa de humedales")
-    expect(within(delColectivo).getByText("Baja")).toBeInTheDocument()
+    expect(estadoEn(delColectivo, "Baja")).toBeInTheDocument()
     expect(
       within(delColectivo).getByText("Te desanotó el colectivo"),
     ).toBeInTheDocument()
@@ -141,7 +148,7 @@ describe("PaginaPostulaciones", () => {
     const dialogo = screen.getByRole("dialog")
     expect(within(dialogo).getByText(ADVERTENCIA)).toBeInTheDocument()
     await userEvent.click(
-      within(dialogo).getByRole("button", { name: "Darme de baja" }),
+      within(dialogo).getByRole("button", { name: "Sí, darme de baja" }),
     )
 
     expect(darDeBajaPostulacion).toHaveBeenCalledWith("po1")
@@ -149,9 +156,12 @@ describe("PaginaPostulaciones", () => {
     expect(
       await within(tarjeta).findByText("Te diste de baja"),
     ).toBeInTheDocument()
-    expect(within(tarjeta).getByText("Baja")).toBeInTheDocument()
+    expect(estadoEn(tarjeta, "Baja")).toBeInTheDocument()
     // Conserva el proyecto y el perfil, que la respuesta de la baja no trae.
     expect(tarjeta).toHaveTextContent("Perfil: Desarrollo frontend")
+    expect(
+      screen.getByText("Te diste de baja del perfil Desarrollo frontend."),
+    ).toBeInTheDocument()
     expect(
       within(tarjeta).queryByRole("button", { name: "Darme de baja" }),
     ).not.toBeInTheDocument()
@@ -168,7 +178,7 @@ describe("PaginaPostulaciones", () => {
 
     expect(darDeBajaPostulacion).not.toHaveBeenCalled()
     expect(
-      within(await tarjetaDe("Sitio web de la huerta")).getByText("Aceptada"),
+      estadoEn(await tarjetaDe("Sitio web de la huerta"), "Aceptada"),
     ).toBeInTheDocument()
   })
 
@@ -187,7 +197,7 @@ describe("PaginaPostulaciones", () => {
     )
     await userEvent.click(
       within(screen.getByRole("dialog")).getByRole("button", {
-        name: "Darme de baja",
+        name: "Sí, darme de baja",
       }),
     )
 
@@ -195,8 +205,47 @@ describe("PaginaPostulaciones", () => {
       "Solo se pueden dar de baja postulaciones aceptadas",
     )
     expect(
-      within(await tarjetaDe("Sitio web de la huerta")).getByText("Aceptada"),
+      estadoEn(await tarjetaDe("Sitio web de la huerta"), "Aceptada"),
     ).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Darme de baja" })).toBeEnabled()
+  })
+
+  test("marca las anónimas y lleva al proyecto de cada una", async () => {
+    obtenerPostulacionesColaborador.mockResolvedValue([
+      { ...pendiente, esAnonima: true },
+    ])
+
+    renderizar()
+
+    const tarjeta = await tarjetaDe("API de donaciones")
+    expect(within(tarjeta).getByText("Anónima")).toBeInTheDocument()
+    expect(estadoEn(tarjeta, "Pendiente")).toBeInTheDocument()
+    expect(
+      within(tarjeta).getByRole("link", { name: "API de donaciones" }),
+    ).toHaveAttribute("href", "/proyectos/pr2")
+  })
+
+  test("mientras carga avisa que está cargando", () => {
+    obtenerPostulacionesColaborador.mockReturnValue(new Promise(() => {}))
+
+    renderizar()
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Cargando tus postulaciones...",
+    )
+  })
+
+  test("sin postulaciones invita a ver proyectos", async () => {
+    obtenerPostulacionesColaborador.mockResolvedValue([])
+
+    renderizar()
+
+    expect(
+      await screen.findByRole("heading", { name: "Todavía no te postulaste" }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Ver proyectos" })).toHaveAttribute(
+      "href",
+      "/",
+    )
   })
 })

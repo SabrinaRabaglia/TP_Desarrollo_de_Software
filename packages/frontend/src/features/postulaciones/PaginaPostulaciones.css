@@ -116,3 +116,86 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+/* ---------- Mis postulaciones (estilo Colectivo) ----------
+   Las clases de arriba las sigue usando PostulacionesPerfil. */
+
+.mis-postulaciones-pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-6);
+}
+
+.mis-postulaciones-encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+}
+
+.mis-postulaciones-encabezado p {
+  color: var(--color-texto-secundario);
+}
+
+.mis-postulaciones-lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mi-postulacion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+  height: 100%;
+  padding: var(--espacio-5);
+  border: var(--borde);
+  border-radius: var(--radio-grande);
+  background-color: var(--color-superficie);
+}
+
+.mi-postulacion-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.mi-postulacion-titulo {
+  font-size: 1.25rem;
+  overflow-wrap: anywhere;
+}
+
+.mi-postulacion-titulo a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.mi-postulacion-titulo a:hover,
+.mi-postulacion-titulo a:focus-visible {
+  text-decoration: underline;
+}
+
+.mi-postulacion-perfil,
+.mi-postulacion-baja {
+  color: var(--color-texto-secundario);
+}
+
+.mi-postulacion-fechas {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--espacio-1) var(--espacio-3);
+  margin: 0;
+  font-size: var(--texto-chico);
+}
+
+.mi-postulacion-fechas dt {
+  font-weight: 600;
+}
+
+.mi-postulacion-fechas dd {
+  margin: 0;
+}
+
+.mi-postulacion-acciones {
+  margin-top: auto;
+  padding-top: var(--espacio-2);
+}
