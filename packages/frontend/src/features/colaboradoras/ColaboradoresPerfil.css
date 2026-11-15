@@ -14,55 +14,46 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--espacio);
-  margin: 0 auto;
-  padding: 20px 0px;
+  margin: 0;
+  padding: 0;
   list-style: none;
 }
 
 .colaborador {
-  border-radius: 12px !important;
-  border: 1px solid #e2e8f0 !important;
-  border-top: 5px solid #3b82f6 !important; /* Franja lateral de color para darle estilo */
-  background-color: #ffffff !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-  margin-bottom: 16px;
+  height: 100%;
 }
 
-.colaborador:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
-}
-
-/* Contenedor interno */
 .colaborador-carta {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.75rem;
 }
-
 
 .colaborador-header {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  align-items: center;
-  gap: 16px;
+  align-items: flex-start;
+  gap: 0.5rem var(--espacio);
 }
 
-
 .nombre-colaborador {
-  font-size: 1.15rem;
+  font-size: 1.125rem;
   font-weight: 700;
-  color: #1e293b;
+  overflow-wrap: anywhere;
 }
 
 .cuentas-colaborador {
-  margin: 0 0 0.5rem;
   font-size: 0.875rem;
   color: var(--color-texto-secundario);
 }
 
-.cuentas-titulo{
-    font-size: 1,15rem ;
-    font-weight: 700;
+.cuentas-titulo {
+  font-weight: 700;
+}
+
+@media (min-width: 768px) {
+  .todos-los-colaboradores {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

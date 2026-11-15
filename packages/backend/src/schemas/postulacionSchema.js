@@ -7,19 +7,19 @@ import { OrigenBaja } from "../domain/enums/OrigenBaja.js"
 const postulacionSchema = new mongoose.Schema(
   {
     fechaPostulacion: { type: Date, required: true },
-    fechaRevision: {type: Date, default: null},
+    fechaRevision: { type: Date, default: null },
     estado: {
-          type: String,
-          enum: Object.values(EstadoPostulacion),
-          default: EstadoPostulacion.PENDIENTE,
-        },
+      type: String,
+      enum: Object.values(EstadoPostulacion),
+      default: EstadoPostulacion.PENDIENTE,
+    },
     esAnonima: { type: Boolean, required: true, default: false },
-    fechaBaja: {type: Date, default: null},
+    fechaBaja: { type: Date, default: null },
     origenBaja: {
-          type: String,
-          enum: Object.values(OrigenBaja),
-          default: null,
-        },
+      type: String,
+      enum: Object.values(OrigenBaja),
+      default: null,
+    },
     personaColaboradora: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "PersonaColaboradora",
@@ -39,10 +39,7 @@ const postulacionSchema = new mongoose.Schema(
   },
 )
 
-postulacionSchema.index(
-  { personaColaboradora: 1, perfil: 1 },
-  { unique: true },
-)
+postulacionSchema.index({ personaColaboradora: 1, perfil: 1 }, { unique: true })
 
 postulacionSchema.loadClass(Postulacion)
 

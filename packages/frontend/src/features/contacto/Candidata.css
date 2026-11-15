@@ -1,0 +1,36 @@
+.candidata {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  height: 100%;
+  padding: var(--espacio);
+  border: var(--borde);
+  border-radius: var(--radio);
+  background-color: var(--color-superficie);
+}
+
+.candidata-encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.candidata-encabezado h2 {
+  font-size: 1.125rem;
+  overflow-wrap: anywhere;
+}
+
+.candidata-nombre,
+.candidata-aclaracion {
+  font-size: 0.875rem;
+  color: var(--color-texto-secundario);
+}
+
+.candidata-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem var(--espacio);
+  margin-top: auto;
+}

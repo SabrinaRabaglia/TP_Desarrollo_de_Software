@@ -11,6 +11,9 @@ import { conectar, desconectar } from "./mongo.js"
 let server
 let base
 let ana
+let lucho
+let proyecto
+let perfil
 const tokens = {}
 
 const mediosDeAna = [
@@ -90,16 +93,20 @@ beforeAll(async () => {
     habilidades: [habilidad.id],
     mediosDeContacto: mediosDeAna,
   })
-  await registrarPersona("lucho@persona.test", { nombreFantasia: "lucho_dev" })
-
-  const { body: proyecto } = await enviar("POST", "/proyectos", {
-    titulo: "Sitio web de la huerta",
-    descripcion: "Calendario de talleres",
-    colectivo: huerta.id,
-    estado: "PUBLICADO",
-    fechaCierre: null,
+  lucho = await registrarPersona("lucho@persona.test", {
+    nombreFantasia: "lucho_dev",
   })
-  const { body: perfil } = await enviar(
+
+  proyecto = (
+    await enviar("POST", "/proyectos", {
+      titulo: "Sitio web de la huerta",
+      descripcion: "Calendario de talleres",
+      colectivo: huerta.id,
+      estado: "PUBLICADO",
+      fechaCierre: null,
+    })
+  ).body
+  const { body: perfilCreado } = await enviar(
     "POST",
     `/proyectos/${proyecto.id}/perfiles`,
     {
@@ -111,8 +118,16 @@ beforeAll(async () => {
       habilidadesOpcionales: [habilidad.id],
     },
   )
+  perfil = perfilCreado
+  // Ana colabora (aceptada); Lucho solo se postuló (pendiente).
   await PostulacionModel.create({
     personaColaboradora: ana.id,
+    perfil: perfil.id,
+    fechaPostulacion: new Date(),
+    estado: "ACEPTADA",
+  })
+  await PostulacionModel.create({
+    personaColaboradora: lucho.id,
     perfil: perfil.id,
     fechaPostulacion: new Date(),
   })
@@ -187,6 +202,15 @@ describe("GET /personas-colaboradoras/:id/medios-de-contacto", () => {
     )
   })
 
+  test("el colectivo de un proyecto en el que la persona solo se postuló recibe 403", async () => {
+    const respuesta = await mediosDeContacto(
+      lucho.id,
+      tokens["huerta@colectivo.test"],
+    )
+
+    expect(respuesta.status).toBe(403)
+  })
+
   test("un colectivo con el que la persona no colabora recibe 403", async () => {
     const respuesta = await mediosDeContacto(
       ana.id,
@@ -215,5 +239,28 @@ describe("GET /personas-colaboradoras/:id/medios-de-contacto", () => {
       { id: expect.any(String), tipo: "EMAIL" },
       { id: expect.any(String), tipo: "WHATSAPP" },
     ])
+  })
+})
+
+describe("GET /proyectos/:id/perfiles/:perfilId/postulaciones", () => {
+  test("el colectivo ve el contacto solo de las postulaciones aceptadas", async () => {
+    const respuesta = await enviar(
+      "GET",
+      `/proyectos/${proyecto.id}/perfiles/${perfil.id}/postulaciones`,
+      undefined,
+      tokens["huerta@colectivo.test"],
+    )
+
+    expect(respuesta.status).toBe(200)
+    const medios = Object.fromEntries(
+      respuesta.body.map((postulacion) => [
+        postulacion.personaColaboradora.nombreFantasia,
+        postulacion.personaColaboradora.mediosDeContacto,
+      ]),
+    )
+    expect(medios).toEqual({
+      anag: mediosDeAna.map((medio) => ({ id: expect.any(String), ...medio })),
+      lucho_dev: [],
+    })
   })
 })

@@ -87,15 +87,15 @@ describe("serialización a JSON de los documentos", () => {
     )
   })
 
-  test("una colaboración anónima figura igual pero sin indicar quién la realizó", () => {
-    const colaboracion = new PostulacionModel({
+  test("una postulación anónima figura igual pero sin indicar quién la realizó", () => {
+    const postulacion = new PostulacionModel({
       fechaPostulacion: fecha,
       esAnonima: true,
       personaColaboradora: new mongoose.Types.ObjectId(),
       perfil: new mongoose.Types.ObjectId(),
     })
 
-    const json = colaboracion.toJSON()
+    const json = postulacion.toJSON()
 
     expect(json.esAnonima).toBe(true)
     expect(json.personaColaboradora).toBeNull()

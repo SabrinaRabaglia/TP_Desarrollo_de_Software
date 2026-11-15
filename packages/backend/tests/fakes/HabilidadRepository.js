@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto"
+import nuevoId from "./nuevoId.js"
 export default class HabilidadRepository {
   static habilidades = []
 
@@ -22,7 +22,7 @@ export default class HabilidadRepository {
   }
 
   async save(habilidad) {
-    habilidad.id ??= randomUUID()
+    habilidad.id ??= nuevoId()
     const indice = HabilidadRepository.habilidades.findIndex(
       (h) => h.id === habilidad.id,
     )

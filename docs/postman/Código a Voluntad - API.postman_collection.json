@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Código a Voluntad - API",
-    "description": "Importar este archivo desde Postman > Import > Files. No hace falta un environment: la colección incluye baseUrl (http://localhost:8000) y las variables para los IDs.\n\nCon el backend iniciado, ejecutar las carpetas en el orden mostrado. Las altas guardan automáticamente los IDs para las solicitudes siguientes. Los ejemplos usan nombres únicos y se pueden volver a ejecutar. Ajustar baseUrl si se usa otro puerto o servidor.\n\nIncluye healthcheck, catálogos de países y provincias, CRUD de habilidades, personas, colectivos y proyectos, perfiles, hitos de avance, inscripción/listado de colaboraciones, búsquedas de proyectos y colaboradores, notificaciones y cierre manual. Casi toda la API es pública. Editar o borrar a una persona colaboradora exige el token de esa misma persona, así que las personas se crean con el registro, que también crea su cuenta, y la colección inicia sesión con ellas y guarda el token. Los datos se guardan en MongoDB. Los ids son ObjectId de Mongo. La carpeta Catálogos guarda los ids de Argentina y de Buenos Aires para usarlos en los colectivos, así que hay que ejecutarla antes de Colectivos.\n\nEl cierre se ejecuta después de inscribir a la persona. Una vez cerrado, el proyecto no admite nuevas inscripciones ni reapertura. Para repetir ese flujo hay que crear un proyecto nuevo.\n\nLa carpeta final Limpieza primero muestra los 409 al intentar borrar un colectivo con proyectos o una habilidad en uso, y después elimina el proyecto, la persona, el colectivo y la habilidad creados en la ejecución. Las colaboraciones se borran con el proyecto y la persona, y las notificaciones y la cuenta con la persona. Omitir Limpieza si se quieren conservar los datos de ejemplo para probar manualmente.",
+    "description": "Importar este archivo desde Postman > Import > Files. No hace falta un environment: la colección incluye baseUrl (http://localhost:8000) y las variables para los IDs.\n\nCon el backend iniciado, ejecutar las carpetas en el orden mostrado. Las altas guardan automáticamente los IDs para las solicitudes siguientes. Los ejemplos usan nombres únicos y se pueden volver a ejecutar. Ajustar baseUrl si se usa otro puerto o servidor.\n\nIncluye healthcheck, catálogos de países y provincias, CRUD de habilidades, personas, colectivos y proyectos, perfiles, hitos de avance, inscripción/listado de colaboraciones, búsquedas de proyectos y colaboradores, notificaciones y cierre manual. Casi toda la API es pública. Editar o borrar a una persona colaboradora exige el token de esa misma persona, así que las personas se crean con el registro, que también crea su cuenta, y la colección inicia sesión con ellas y guarda el token. La mensajería interna también exige token: contactar y ver los enviados, el de un colectivo; leer la bandeja, el de la persona. Como la API no tiene registro de colectivos, la carpeta Búsquedas y notificaciones inicia sesión con huerta@colectivo.test, así que antes hay que correr `npm run seed:backend`, y crea un proyecto y un perfil de ese colectivo para contactar desde ahí. Los datos se guardan en MongoDB. Los ids son ObjectId de Mongo. La carpeta Catálogos guarda los ids de Argentina y de Buenos Aires para usarlos en los colectivos, así que hay que ejecutarla antes de Colectivos.\n\nEl cierre se ejecuta después de inscribir a la persona. Una vez cerrado, el proyecto no admite nuevas inscripciones ni reapertura. Para repetir ese flujo hay que crear un proyecto nuevo.\n\nLa carpeta final Limpieza primero muestra los 409 al intentar borrar un colectivo con proyectos o una habilidad en uso, y después elimina el proyecto, la persona, el colectivo y la habilidad creados en la ejecución. Las colaboraciones se borran con el proyecto y la persona, y las notificaciones y la cuenta con la persona. Omitir Limpieza si se quieren conservar los datos de ejemplo para probar manualmente.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -2125,6 +2125,172 @@
           "response": []
         },
         {
+          "name": "Iniciar sesión como el colectivo del seed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "const respuesta = pm.response.json()",
+                  "pm.test(\"inicia sesión como un colectivo\", () => pm.expect(respuesta.usuario.rol).to.eql(\"COLECTIVO\"))",
+                  "pm.collectionVariables.set(\"tokenColectivo\", respuesta.token)",
+                  "pm.collectionVariables.set(\"colectivoSeedId\", respuesta.usuario.entidad.id)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"huerta@colectivo.test\",\n  \"contrasena\": \"secreto123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Contactar exige el token de un colectivo y la API no tiene registro de colectivos, así que se usa un usuario del seed: requiere haber corrido `npm run seed:backend`. Guarda el token en `tokenColectivo` y el id del colectivo en `colectivoSeedId`."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear proyecto del colectivo del seed",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"colectivoSeedId\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Iniciar sesión como el colectivo del seed.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
+                  "const respuesta = pm.response.json()",
+                  "pm.test(\"es del colectivo del seed\", () => pm.expect(respuesta.colectivo).to.eql(pm.collectionVariables.get(\"colectivoSeedId\")))",
+                  "pm.collectionVariables.set(\"proyectoMensajeriaId\", respuesta.id)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Mensajería {{runSuffix}}\",\n  \"descripcion\": \"Proyecto para probar la mensajería interna.\",\n  \"colectivo\": \"{{colectivoSeedId}}\",\n  \"estado\": \"PUBLICADO\",\n  \"fechaCierre\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/proyectos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos"
+              ]
+            },
+            "description": "Solo el colectivo dueño del proyecto puede contactar, así que se crea un proyecto del colectivo con el que se inició sesión. Guarda el id en `proyectoMensajeriaId`."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear perfil del proyecto del colectivo del seed",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"proyectoMensajeriaId\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Crear proyecto del colectivo del seed.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"habilidadId\")) {",
+                  "  throw new Error(\"Ejecutá primero Habilidades > Crear habilidad.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
+                  "const perfil = pm.response.json()",
+                  "pm.collectionVariables.set(\"perfilMensajeriaId\", perfil.id)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Frontend\",\n  \"descripcion\": \"Perfil para probar la mensajería {{runSuffix}}\",\n  \"unidadCompromiso\": \"HORAS_SEMANALES\",\n  \"cantidadHoras\": 4,\n  \"modalidadesColaboracion\": [\n    \"GRATUITA\"\n  ],\n  \"habilidadesRequeridas\": [\n    \"{{habilidadId}}\"\n  ],\n  \"habilidadesOpcionales\": [\n    \"{{habilidadId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoMensajeriaId}}/perfiles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoMensajeriaId}}",
+                "perfiles"
+              ]
+            },
+            "description": "Crea el perfil por el que se va a contactar a la persona y guarda su id en `perfilMensajeriaId`."
+          },
+          "response": []
+        },
+        {
           "name": "Contactar persona por el perfil",
           "event": [
             {
@@ -2132,6 +2298,87 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
+                  "if (!pm.collectionVariables.get(\"tokenColectivo\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Iniciar sesión como el colectivo del seed.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"perfilMensajeriaId\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Crear perfil del proyecto del colectivo del seed.\")",
+                  "}",
+                  "if (!pm.collectionVariables.get(\"personaId\")) {",
+                  "  throw new Error(\"Ejecutá primero Personas colaboradoras > Crear persona colaboradora.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
+                  "const notificacion = pm.response.json()",
+                  "pm.test(\"la manda el colectivo del proyecto a la persona, con ids\", () => {",
+                  "  pm.expect(notificacion.colectivo).to.eql(pm.collectionVariables.get(\"colectivoSeedId\"))",
+                  "  pm.expect(notificacion.personaColaboradora).to.eql(pm.collectionVariables.get(\"personaId\"))",
+                  "  pm.expect(notificacion.perfil).to.eql(pm.collectionVariables.get(\"perfilMensajeriaId\"))",
+                  "})",
+                  "pm.test(\"queda pendiente de envío por email, sin exponer la dirección\", () => {",
+                  "  pm.expect(notificacion.pendienteDeEnvio).to.eql(true)",
+                  "  pm.expect(notificacion.mediosExternosUtilizados).to.eql([])",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenColectivo}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personaColaboradora\": \"{{personaId}}\",\n  \"contenido\": \"Hola! Tu perfil encaja con nuestro proyecto {{runSuffix}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoMensajeriaId}}/perfiles/{{perfilMensajeriaId}}/notificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoMensajeriaId}}",
+                "perfiles",
+                "{{perfilMensajeriaId}}",
+                "notificaciones"
+              ]
+            },
+            "description": "El colectivo del proyecto le manda un mensaje interno a la persona y se replica por sus medios de contacto. Exige el token de un colectivo (`tokenColectivo`). Devuelve la notificación con ids; los listados devuelven nombres. Responde 401 sin token, 403 si el proyecto es de otro colectivo, y 409 si la persona no acepta mensajería interna o si el proyecto está cerrado."
+          },
+          "response": []
+        },
+        {
+          "name": "Contactar desde un proyecto ajeno (403)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"tokenColectivo\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Iniciar sesión como el colectivo del seed.\")",
+                  "}",
                   "if (!pm.collectionVariables.get(\"proyectoId\")) {",
                   "  throw new Error(\"Ejecutá primero Proyectos > Crear proyecto.\")",
                   "}",
@@ -2149,16 +2396,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"responde 201\", () => pm.response.to.have.status(201))",
-                  "const notificacion = pm.response.json()",
-                  "pm.test(\"la manda el colectivo del proyecto a la persona\", () => {",
-                  "  pm.expect(notificacion.colectivo).to.eql(pm.collectionVariables.get(\"colectivoId\"))",
-                  "  pm.expect(notificacion.personaColaboradora).to.eql(pm.collectionVariables.get(\"personaId\"))",
-                  "})",
-                  "pm.test(\"queda pendiente de envío por email, sin exponer la dirección\", () => {",
-                  "  pm.expect(notificacion.pendienteDeEnvio).to.eql(true)",
-                  "  pm.expect(notificacion.mediosExternosUtilizados).to.eql([])",
-                  "})"
+                  "pm.test(\"responde 403\", () => pm.response.to.have.status(403))"
                 ]
               }
             }
@@ -2169,11 +2407,15 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenColectivo}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"personaColaboradora\": \"{{personaId}}\",\n  \"contenido\": \"Hola! Tu perfil encaja con nuestro proyecto {{runSuffix}}\"\n}",
+              "raw": "{\n  \"personaColaboradora\": \"{{personaId}}\",\n  \"contenido\": \"Hola desde un proyecto que no es mío\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2193,7 +2435,7 @@
                 "notificaciones"
               ]
             },
-            "description": "El colectivo del proyecto le manda un mensaje interno a la persona y se replica por sus medios de contacto. Responde 409 si la persona no acepta mensajería interna o si el proyecto está cerrado."
+            "description": "El colectivo del seed intenta contactar desde el proyecto `proyectoId`, que es de otro colectivo: responde 403 y no se guarda nada."
           },
           "response": []
         },
@@ -2205,8 +2447,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "if (!pm.collectionVariables.get(\"personaId\")) {",
-                  "  throw new Error(\"Ejecutá primero Personas colaboradoras > Crear persona colaboradora.\")",
+                  "if (!pm.collectionVariables.get(\"tokenPersona\")) {",
+                  "  throw new Error(\"Ejecutá primero Personas colaboradoras > Iniciar sesión como la persona.\")",
                   "}"
                 ]
               }
@@ -2218,7 +2460,11 @@
                 "exec": [
                   "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
                   "const notificaciones = pm.response.json()",
-                  "pm.test(\"contiene la notificación enviada\", () => pm.expect(notificaciones[0].personaColaboradora).to.eql(pm.collectionVariables.get(\"personaId\")))",
+                  "pm.test(\"contiene la notificación enviada, con nombres\", () => {",
+                  "  pm.expect(notificaciones[0].colectivo.id).to.eql(pm.collectionVariables.get(\"colectivoSeedId\"))",
+                  "  pm.expect(notificaciones[0].proyecto.id).to.eql(pm.collectionVariables.get(\"proyectoMensajeriaId\"))",
+                  "  pm.expect(notificaciones[0].perfil).to.eql({ id: pm.collectionVariables.get(\"perfilMensajeriaId\"), nombre: \"Frontend\" })",
+                  "})",
                   "pm.test(\"o sigue pendiente o ya salió por email; el envío corre en segundo plano\", () => pm.expect(notificaciones[0].pendienteDeEnvio || notificaciones[0].mediosExternosUtilizados.includes(\"EMAIL\")).to.be.true)"
                 ]
               }
@@ -2226,7 +2472,12 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPersona}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/personas-colaboradoras/{{personaId}}/notificaciones",
               "host": [
@@ -2238,7 +2489,58 @@
                 "notificaciones"
               ]
             },
-            "description": "Lista los mensajes internos que recibió la persona, del más nuevo al más viejo."
+            "description": "Lista los mensajes internos que recibió la persona, del más nuevo al más viejo, con el nombre del colectivo, el título del proyecto y el nombre del perfil (`null` si ya no existen). Solo puede leerla la propia persona (`tokenPersona`); cualquier otro usuario recibe 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Mensajes enviados por el colectivo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"tokenColectivo\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Iniciar sesión como el colectivo del seed.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
+                  "const notificaciones = pm.response.json()",
+                  "const enviada = notificaciones.find((n) => n.personaColaboradora.id === pm.collectionVariables.get(\"personaId\"))",
+                  "pm.test(\"contiene el mensaje a la persona, con su nombre de fantasía\", () => pm.expect(enviada.personaColaboradora.nombreFantasia).to.be.a(\"string\"))",
+                  "pm.test(\"no expone los medios de contacto de la persona\", () => pm.expect(JSON.stringify(notificaciones)).to.not.include(\"@example.com\"))"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenColectivo}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/colectivos/{{colectivoSeedId}}/notificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "colectivos",
+                "{{colectivoSeedId}}",
+                "notificaciones"
+              ]
+            },
+            "description": "Lista los mensajes que envió el colectivo, del más nuevo al más viejo, con el nombre de fantasía de la destinataria y sin sus medios de contacto. Solo puede leerlos el propio colectivo (`tokenColectivo`); cualquier otro usuario recibe 403."
           },
           "response": []
         }
@@ -2479,6 +2781,49 @@
               ]
             },
             "description": "Elimina el proyecto junto con sus perfiles y colaboraciones, y limpia `proyectoId`."
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar proyecto del colectivo del seed",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"proyectoMensajeriaId\")) {",
+                  "  throw new Error(\"Ejecutá primero Búsquedas y notificaciones > Crear proyecto del colectivo del seed.\")",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 204\", () => pm.response.to.have.status(204))",
+                  "pm.collectionVariables.unset(\"proyectoMensajeriaId\")",
+                  "pm.collectionVariables.unset(\"perfilMensajeriaId\")"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/proyectos/{{proyectoMensajeriaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proyectos",
+                "{{proyectoMensajeriaId}}"
+              ]
+            },
+            "description": "Elimina el proyecto creado para la mensajería, con su perfil, y limpia `proyectoMensajeriaId` y `perfilMensajeriaId`. El colectivo del seed no se borra."
           },
           "response": []
         },
@@ -2729,6 +3074,26 @@
     },
     {
       "key": "tokenCandidata",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenColectivo",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "colectivoSeedId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "proyectoMensajeriaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "perfilMensajeriaId",
       "value": "",
       "type": "string"
     },

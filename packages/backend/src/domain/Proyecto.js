@@ -32,7 +32,6 @@ export default class Proyecto {
     this.fechaCierre = fechaCierre
     this.colectivo = colectivo
     this.perfiles = []
-    this.colaboraciones = []
     this.enlaceSistemaEnFuncionamiento = enlaceSistemaEnFuncionamiento
     this.enlaceCodigoFuente = enlaceCodigoFuente
     this.hitos = []
@@ -106,10 +105,6 @@ export default class Proyecto {
       perfil,
       mediosDeContacto: personaColaboradora.mediosDeContacto,
     })
-  }
-
-  agregarColaboracion(colaboracion) {
-    this.colaboraciones.push(colaboracion)
   }
 
   poseeHabilidadNecesaria(personaColaboradora) {

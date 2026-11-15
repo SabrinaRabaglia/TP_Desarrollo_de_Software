@@ -6,13 +6,12 @@ export default class PostulacionController {
   create = async (req, res, next) => {
     try {
       const datosPostulacion = {
-      personaColaboradoraId: req.usuario.entidad,
-      perfilId: req.params.perfilId,
-      esAnonima: req.body.esAnonima,
-    }
+        personaColaboradoraId: req.usuario.entidad,
+        perfilId: req.params.perfilId,
+        esAnonima: req.body.esAnonima,
+      }
 
-    const postulacion =
-      await this.postulacionService.create(datosPostulacion)
+      const postulacion = await this.postulacionService.create(datosPostulacion)
       res.status(201).json(postulacion)
     } catch (error) {
       next(error)
@@ -21,18 +20,31 @@ export default class PostulacionController {
 
   getAllByColaborador = async (req, res, next) => {
     try {
-      res.status(200).json(await this.postulacionService.getAllByColaborador(req.usuario.entidad))
+      res
+        .status(200)
+        .json(
+          await this.postulacionService.getAllByColaborador(
+            req.usuario.entidad,
+          ),
+        )
     } catch (error) {
       next(error)
     }
   }
 
   getAllByPerfil = async (req, res, next) => {
-   try {
-      res.status(200).json(await this.postulacionService.getAllByPerfil(req.params.perfilId,req.usuario.entidad))
+    try {
+      res
+        .status(200)
+        .json(
+          await this.postulacionService.getAllByPerfil(
+            req.params.perfilId,
+            req.usuario.entidad,
+          ),
+        )
     } catch (error) {
       next(error)
-    } 
+    }
   }
 
   getById = async (req, res, next) => {
@@ -45,7 +57,14 @@ export default class PostulacionController {
 
   aceptar = async (req, res, next) => {
     try {
-      res.status(200).json(await this.postulacionService.aceptar(req.params.id))
+      res
+        .status(200)
+        .json(
+          await this.postulacionService.aceptar(
+            req.params.id,
+            req.usuario.entidad,
+          ),
+        )
     } catch (error) {
       next(error)
     }
@@ -53,7 +72,14 @@ export default class PostulacionController {
 
   rechazar = async (req, res, next) => {
     try {
-      res.status(200).json(await this.postulacionService.rechazar(req.params.id))
+      res
+        .status(200)
+        .json(
+          await this.postulacionService.rechazar(
+            req.params.id,
+            req.usuario.entidad,
+          ),
+        )
     } catch (error) {
       next(error)
     }

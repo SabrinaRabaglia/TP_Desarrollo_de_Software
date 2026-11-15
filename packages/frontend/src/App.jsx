@@ -11,6 +11,8 @@ import RegistroColaboradora from "./features/colaboradoras/RegistroColaboradora"
 import PaginaColaboradora from "./features/colaboradoras/PaginaColaboradora"
 import MiPerfil from "./features/colaboradoras/MiPerfil"
 import PaginaProyecto from "./features/proyectos/PaginaProyecto"
+import PaginaMensajes from "./features/mensajes/PaginaMensajes"
+import PaginaCandidatas from "./features/contacto/PaginaCandidatas"
 import NoEncontrado from "./features/noEncontrado/NoEncontrado"
 import PaginaPostulaciones from "./features/postulaciones/PaginaPostulaciones.jsx"
 import PostulacionesPerfil from "./features/postulaciones/PostulacionesPerfil.jsx"
@@ -30,21 +32,32 @@ const App = () => {
             />
             <Route path="/colaboradoras/:id" element={<PaginaColaboradora />} />
             <Route path="/proyectos/:id" element={<PaginaProyecto />} />
-            <Route element={<RutaPrivada rol ="PERSONA_COLABORADORA" />}>
-              <Route path ="/postulaciones" element = {<PaginaPostulaciones/>} />
+            <Route element={<RutaPrivada rol="PERSONA_COLABORADORA" />}>
+              <Route path="/postulaciones" element={<PaginaPostulaciones />} />
             </Route>
-            <Route element={<RutaPrivada rol ="COLECTIVO" />}>
-              <Route path ="/proyectos/:proyectoId/perfiles/:perfilId/postulaciones" 
-                element = {<PostulacionesPerfil/>} />
+            <Route element={<RutaPrivada rol="COLECTIVO" />}>
+              <Route
+                path="/proyectos/:proyectoId/perfiles/:perfilId/postulaciones"
+                element={<PostulacionesPerfil />}
+              />
             </Route>
             <Route element={<RutaPrivada />}>
               <Route path="/mi-cuenta" element={<MiCuenta />} />
+              <Route path="/mensajes" element={<PaginaMensajes />} />
             </Route>
             <Route element={<RutaPrivada rol="PERSONA_COLABORADORA" />}>
               <Route path="/mi-perfil" element={<MiPerfil />} />
             </Route>
-            <Route path= "/proyectos/:proyectoId/perfiles/:perfilId/colaboradores" 
-              element={<ColaboradoresPerfil/>}/>
+            <Route element={<RutaPrivada rol="COLECTIVO" />}>
+              <Route
+                path="/proyectos/:id/perfiles/:perfilId/candidatas"
+                element={<PaginaCandidatas />}
+              />
+            </Route>
+            <Route
+              path="/proyectos/:proyectoId/perfiles/:perfilId/colaboradores"
+              element={<ColaboradoresPerfil />}
+            />
             <Route path="*" element={<NoEncontrado />} />
           </Route>
         </Routes>

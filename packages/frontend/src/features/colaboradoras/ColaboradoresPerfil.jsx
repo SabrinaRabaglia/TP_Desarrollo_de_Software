@@ -8,7 +8,6 @@ import { useParams } from "react-router-dom"
 import { obtenerColaboradoresPerfil } from "../../service/colaboradorasService.js"
 import ListaDeCuentas from "../../components/listaDeCuentas/ListaDeCuentas.jsx"
 
-
 const GrupoDeCuentas = ({ cuentas }) => {
   if (cuentas.length === 0) {
     return null
@@ -21,9 +20,8 @@ const GrupoDeCuentas = ({ cuentas }) => {
   )
 }
 
-
 const ColaboradoresPerfil = () => {
-  const { proyectoId , perfilId } = useParams()
+  const { proyectoId, perfilId } = useParams()
   const [colaboradores, setColaboradores] = useState([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
@@ -43,7 +41,7 @@ const ColaboradoresPerfil = () => {
     }
 
     cargar()
-  }, [intento ,proyectoId, perfilId])
+  }, [intento, proyectoId, perfilId])
 
   const renderColaboradores = () => {
     if (cargando) {
@@ -77,17 +75,14 @@ const ColaboradoresPerfil = () => {
                           : colaborador.nombreFantasia}
 
                         <div>
-                          {colaborador.presentacion ??
-                            "Sin presentación"}
+                          {colaborador.presentacion ?? "Sin presentación"}
                         </div>
                       </div>
                     </div>
 
                     <div className="cuentas-colaborador">
                       <span className="cuentas-titulo">Cuentas: </span>
-                      <GrupoDeCuentas
-                        cuentas={colaborador.cuentas}
-                      />
+                      <GrupoDeCuentas cuentas={colaborador.cuentas} />
                     </div>
                   </div>
                 )}

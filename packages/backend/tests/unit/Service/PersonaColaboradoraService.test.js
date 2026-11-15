@@ -162,16 +162,15 @@ describe("PersonaColaboradoraService", () => {
     expect(await repository.findById(persona.id)).toEqual(antes)
   })
 
-  test("eliminar una persona elimina sus colaboraciones y conserva las de otras", async () => {
+  test("eliminar una persona elimina sus postulaciones y conserva las de otras", async () => {
     const persona = await service.create(datos)
-    const proyecto = { id: "proyecto-1" }
     await postulacionRepository.save({
       personaColaboradora: { id: persona.id },
-      proyecto,
+      perfil: "perfil-1",
     })
     await postulacionRepository.save({
       personaColaboradora: { id: "otra-persona" },
-      proyecto,
+      perfil: "perfil-1",
     })
 
     await service.delete(persona.id)
@@ -180,7 +179,7 @@ describe("PersonaColaboradoraService", () => {
     expect(await postulacionRepository.findAll()).toEqual([
       expect.objectContaining({
         personaColaboradora: { id: "otra-persona" },
-        proyecto,
+        perfil: "perfil-1",
       }),
     ])
   })
@@ -266,17 +265,27 @@ describe("PersonaColaboradoraService", () => {
       rol: "PERSONA_COLABORADORA",
       entidad: id,
     })
-    const colaboraEn = async (persona, colectivoId, esAnonima = false) => {
-      const proyecto = await proyectoRepository.save({
+    // Colaborar es tener una postulación aceptada.
+    const postulaEn = async (
+      persona,
+      colectivoId,
+      { esAnonima = false, estado = "ACEPTADA" } = {},
+    ) => {
+      const {
+        perfiles: [perfil],
+      } = await proyectoRepository.save({
         colectivo: colectivoId,
-        perfiles: [],
+        perfiles: [{}],
       })
       await postulacionRepository.save({
         personaColaboradora: { id: persona.id },
-        proyecto: { id: proyecto.id },
+        perfil: perfil.id,
         esAnonima,
+        estado,
       })
     }
+    const colaboraEn = (persona, colectivoId, esAnonima = false) =>
+      postulaEn(persona, colectivoId, { esAnonima })
 
     test("la propia persona ve sus medios de contacto con el valor", async () => {
       const persona = await service.create(datos)
@@ -319,6 +328,18 @@ describe("PersonaColaboradoraService", () => {
         service.mediosDeContactoPara(persona.id, colectivo("colectivo-1")),
       ).rejects.toThrow(NoAutorizado)
     })
+
+    test.each(["PENDIENTE", "RECHAZADA"])(
+      "una postulación %s no le da acceso al colectivo",
+      async (estado) => {
+        const persona = await service.create(datos)
+        await postulaEn(persona, "colectivo-1", { estado })
+
+        await expect(
+          service.mediosDeContactoPara(persona.id, colectivo("colectivo-1")),
+        ).rejects.toThrow(NoAutorizado)
+      },
+    )
 
     test("una colaboración anónima también le da acceso al colectivo", async () => {
       const persona = await service.create(datos)

@@ -1,0 +1,53 @@
+.mensaje {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: var(--espacio);
+  border: var(--borde);
+  border-radius: var(--radio);
+  background-color: var(--color-superficie);
+}
+
+.mensaje-encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mensaje-encabezado h2 {
+  font-size: 1.125rem;
+}
+
+.mensaje-encabezado time {
+  font-size: 0.875rem;
+  color: var(--color-texto-secundario);
+}
+
+.mensaje-datos {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem var(--espacio);
+  margin: 0;
+}
+
+.mensaje-datos dt {
+  font-weight: 600;
+}
+
+.mensaje-datos dd {
+  margin: 0;
+}
+
+/* Respeta los saltos de línea que escribió el colectivo. */
+.mensaje-contenido {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 768px) {
+  .mensaje-encabezado {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+}

@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@mui/material"
 import {
+  FaEnvelope,
   FaHandsHelping,
   FaSignInAlt,
   FaSignOutAlt,
@@ -40,6 +41,10 @@ const Navbar = () => {
             <Link to="/mi-cuenta" className="navbar-link">
               <FaUserCircle aria-hidden="true" />
               Mi cuenta
+            </Link>
+            <Link to="/mensajes" className="navbar-link">
+              <FaEnvelope aria-hidden="true" />
+              Mensajes
             </Link>
             {usuario.rol === "PERSONA_COLABORADORA" && (
               <Link to="/mi-perfil" className="navbar-link">
