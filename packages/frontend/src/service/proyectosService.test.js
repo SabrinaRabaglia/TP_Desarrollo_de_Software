@@ -58,6 +58,7 @@ test("lista los proyectos aunque un perfil tenga campos en null", async () => {
       modalidades: [],
       habilidadesRequeridas: ["JavaScript"],
       habilidadesOpcionales: [],
+      postulacionesAceptadas: [],
       limiteColaboraciones: undefined,
     },
   ])
