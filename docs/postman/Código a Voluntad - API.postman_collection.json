@@ -327,7 +327,11 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
-                  "pm.test(\"devuelve un array\", () => pm.expect(pm.response.json()).to.be.an(\"array\"))"
+                  "pm.test(\"devuelve una página: metadata y data\", () => {",
+                  "  const pagina = pm.response.json()",
+                  "  pm.expect(pagina.data).to.be.an(\"array\")",
+                  "  pm.expect(pagina.metadata).to.include.all.keys(\"page\", \"limit\", \"total\")",
+                  "})"
                 ]
               }
             }
@@ -882,7 +886,11 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
-                  "pm.test(\"devuelve un array\", () => pm.expect(pm.response.json()).to.be.an(\"array\"))"
+                  "pm.test(\"devuelve una página: metadata y data\", () => {",
+                  "  const pagina = pm.response.json()",
+                  "  pm.expect(pagina.data).to.be.an(\"array\")",
+                  "  pm.expect(pagina.metadata).to.include.all.keys(\"page\", \"limit\", \"total\")",
+                  "})"
                 ]
               }
             }
@@ -1940,7 +1948,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
-                  "const ids = pm.response.json().map((proyecto) => proyecto.id)",
+                  "const ids = pm.response.json().data.map((proyecto) => proyecto.id)",
                   "pm.test(\"encuentra el proyecto cuyo perfil requiere solo esa habilidad\", () => pm.expect(ids).to.include(pm.collectionVariables.get(\"proyectoId\")))"
                 ]
               }
@@ -1997,7 +2005,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"responde 200\", () => pm.response.to.have.status(200))",
-                  "const personas = pm.response.json()",
+                  "const personas = pm.response.json().data",
                   "pm.test(\"sugiere a la candidata, que tiene las habilidades requeridas\", () => pm.expect(personas.map((persona) => persona.id)).to.include(pm.collectionVariables.get(\"candidataId\")))",
                   "pm.test(\"no sugiere a la persona que ya está inscripta en el proyecto\", () => pm.expect(personas.map((persona) => persona.id)).to.not.include(pm.collectionVariables.get(\"personaId\")))",
                   "pm.test(\"no expone el valor de los medios de contacto\", () => personas.forEach((persona) => persona.mediosDeContacto.forEach((medio) => pm.expect(medio).to.not.have.property(\"valor\"))))"
