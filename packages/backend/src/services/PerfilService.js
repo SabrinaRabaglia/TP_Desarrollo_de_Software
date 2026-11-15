@@ -16,18 +16,25 @@ export default class PerfilService {
     return perfil
   }
 
-  resolverHabilidades = async (datos) => ({
-    ...datos,
-    habilidadesRequeridas: await this.habilidadService.buscarReferenciadas(
-      datos.habilidadesRequeridas,
-    ),
-    habilidadesOpcionales: await this.habilidadService.buscarReferenciadas(
-      datos.habilidadesOpcionales,
-    ),
-  })
+  // Cambia los ids de habilidades por las habilidades, para rechazar los que
+  // no existen. En una edición parcial pueden no venir.
+  resolverHabilidades = async (datos) => {
+    const resueltos = { ...datos }
+    for (const campo of ["habilidadesRequeridas", "habilidadesOpcionales"]) {
+      if (datos[campo] !== undefined) {
+        resueltos[campo] = await this.habilidadService.buscarReferenciadas(
+          datos[campo],
+        )
+      }
+    }
+    return resueltos
+  }
 
-  armarPerfil = async (datos) =>
-    new Perfil(await this.resolverHabilidades(datos))
+  armarPerfil = async (datos) => {
+    const perfil = new Perfil(await this.resolverHabilidades(datos))
+    perfil.assertFechaLimiteFutura()
+    return perfil
+  }
 
   rechazar = async (proyectoId, perfilId) => {
     const proyecto = await this.proyectoService.getById(proyectoId)
@@ -48,11 +55,28 @@ export default class PerfilService {
     return perfil
   }
 
-  update = async (proyectoId, perfilId, datos) => {
+  // PUT: llegan todos los datos editables y reemplazan a los anteriores.
+  update = async (proyectoId, perfilId, datos) =>
+    await this.reemplazar(proyectoId, perfilId, () => datos)
+
+  // PATCH: llegan algunos y el resto queda como estaba.
+  modificar = async (proyectoId, perfilId, cambios) =>
+    await this.reemplazar(proyectoId, perfilId, (actual) => ({
+      ...actual.datosEditables(),
+      ...cambios,
+    }))
+
+  reemplazar = async (proyectoId, perfilId, datosPara) => {
+    const { proyecto, perfil: actual } = await this.buscarEnProyecto(
+      proyectoId,
+      perfilId,
+    )
+    proyecto.assertPuedeModificarPerfiles()
+    const cambios = await this.resolverHabilidades(datosPara(actual))
     const perfil = await this.proyectoRepository.actualizarPerfil(
       proyectoId,
       perfilId,
-      await this.armarPerfil(datos),
+      actual.reemplazarDatos(cambios),
     )
     if (!perfil) {
       await this.rechazar(proyectoId, perfilId)

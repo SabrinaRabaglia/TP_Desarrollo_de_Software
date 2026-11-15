@@ -194,7 +194,7 @@ La persistencia usa MongoDB con Mongoose, siguiendo la guía de la cátedra. Cad
 
 Los dos procesos son idempotentes. Insertan lo que falta por su clave natural, nunca borran y no modifican lo que ya existe, así que se pueden correr cualquier cantidad de veces, también en producción.
 
-Para repetir una demo del flujo de postulación, `npm run reiniciar:postulacion` lo vuelve al punto de partida: borra la postulación de Nube, deja la de Pampa pendiente y libera el lugar del perfil Tester. Es el único comando que borra algo, y no toca ningún otro dato.
+Para repetir una demo del flujo de postulación, `npm run reiniciar:postulacion` lo vuelve al punto de partida: borra la postulación de Nube, deja la de Pampa pendiente y deja el perfil Tester sin lugares ocupados, con límite 1 y la búsqueda abierta. Es el único comando que borra algo, y no toca ningún otro dato.
 
 ### Migraciones
 
@@ -300,6 +300,19 @@ Para un colectivo sería `autorizarEntidad(RolUsuario.COLECTIVO)` en `/colectivo
 ### Datos de contacto
 
 El perfil de una persona es público, pero el valor de sus medios de contacto no. `GET /personas-colaboradoras/:id/medios-de-contacto` exige token y devuelve `[{ id, tipo, valor }]` solo a la propia persona y a los colectivos con algún proyecto en el que la persona colabora (tiene una postulación aceptada), aunque la postulación sea anónima: el anonimato es hacia el público, no hacia el colectivo. Cualquier otro usuario recibe `403`, y una persona inexistente, `404`. La regla vive en `PersonaColaboradoraService.puedeVerContactoDe`.
+
+### Búsqueda y límite de un perfil
+
+Cada perfil tiene su propia búsqueda de colaboraciones. Nace abierta y se cierra de dos formas: el colectivo la cierra a mano (`busquedaAbierta: false`) o pasa su fecha límite (`busquedaAbiertaHasta`). Sin fecha límite queda abierta hasta que el colectivo la cierre.
+
+- Postularse a un perfil con la búsqueda cerrada o vencida responde `409` y no crea la postulación. Lo mismo si el proyecto está cerrado.
+- `limiteColaboraciones` es cuántas colaboraciones aceptadas admite el perfil. En `null` no hay límite.
+- `PUT /proyectos/:id/perfiles/:perfilId` reemplaza los datos del perfil y `PATCH` cambia solo los que llegan. Ninguno de los dos toca las colaboraciones ya aceptadas.
+- El límite no puede quedar por debajo de las colaboraciones aceptadas: responde `409` y dice cuántas hay. Subirlo o quitarlo siempre se puede.
+- Una fecha límite nueva tiene que ser futura: si no, `422`. Un perfil con la búsqueda ya vencida se puede seguir editando mientras no se le cambie la fecha.
+- Al aceptar una postulación primero se mira su estado y después el lugar. Aceptar una que ya fue rechazada responde `409` por su estado, esté o no lleno el perfil.
+
+Las reglas viven en `Perfil` (`tieneBusquedaAbierta`, `reemplazarDatos`) y en `Postulacion.assertPendiente`.
 
 ### Desanotaciones
 

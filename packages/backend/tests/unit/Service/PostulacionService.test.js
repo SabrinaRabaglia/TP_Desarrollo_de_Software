@@ -132,6 +132,41 @@ describe("PostulacionService", () => {
     expect(perfil.postulacionesAceptadas).toContain(postulacion.id)
   })
 
+  test("no admite postulaciones a un perfil con la búsqueda cerrada", async () => {
+    perfil.busquedaAbierta = false
+
+    await expect(service.create(datos)).rejects.toThrow(
+      "La búsqueda de colaboraciones para este perfil está cerrada.",
+    )
+    expect(
+      await postulacionRepository.findAllByColaborador(persona.id),
+    ).toEqual([])
+  })
+
+  test("con el perfil lleno, aceptar deja la postulación pendiente", async () => {
+    const postulacion = await service.create(datos)
+    perfil.limiteColaboraciones = 1
+    perfil.postulacionesAceptadas = ["otra-postulacion"]
+
+    await expect(
+      service.aceptar(postulacion.id, "colectivo-1"),
+    ).rejects.toThrow("Se alcanzó el límite de colaboradores para este perfil")
+    expect(postulacion.estado).toBe("PENDIENTE")
+    expect(perfil.postulacionesAceptadas).toEqual(["otra-postulacion"])
+  })
+
+  test("aceptar una postulación ya rechazada falla por su estado, aunque el perfil esté lleno", async () => {
+    const postulacion = await service.create(datos)
+    await service.rechazar(postulacion.id, "colectivo-1")
+    perfil.limiteColaboraciones = 1
+    perfil.postulacionesAceptadas = ["otra-postulacion"]
+
+    await expect(
+      service.aceptar(postulacion.id, "colectivo-1"),
+    ).rejects.toThrow("Solo se pueden aceptar postulaciones pendientes")
+    expect(postulacion.estado).toBe("RECHAZADA")
+  })
+
   test("rechazar una postulación actualiza su estado a rechazada", async () => {
     const postulacion = await service.create(datos)
     const rechazada = await service.rechazar(postulacion.id, "colectivo-1")

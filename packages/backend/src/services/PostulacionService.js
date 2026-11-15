@@ -43,6 +43,7 @@ export default class PostulacionService {
       throw new AlreadyExists("La persona ya se postulo en este perfil")
     }
     proyecto.assertPuedeBuscarColaboradores()
+    perfil.assertBusquedaAbierta()
     return await this.postulacionRepository.save(
       new Postulacion(persona, perfil, esAnonima),
     )
@@ -186,6 +187,9 @@ export default class PostulacionService {
       id,
       colectivoId,
     )
+    // Primero el estado: una postulación ya resuelta se rechaza por eso, haya
+    // o no lugar en el perfil.
+    postulacion.assertPendiente("aceptar")
     perfil.assertPuedeAceptarPostulaciones()
     postulacion.aceptar()
     perfil.agregarPostulacion(id)

@@ -47,7 +47,14 @@ await PostulacionModel.updateOne(
 )
 await ProyectoModel.updateOne(
   { "perfiles._id": tester._id },
-  { $set: { "perfiles.$.postulacionesAceptadas": [] } },
+  {
+    $set: {
+      "perfiles.$.postulacionesAceptadas": [],
+      "perfiles.$.limiteColaboraciones": 1,
+      "perfiles.$.busquedaAbierta": true,
+      "perfiles.$.busquedaAbiertaHasta": null,
+    },
+  },
 )
 
 console.log(

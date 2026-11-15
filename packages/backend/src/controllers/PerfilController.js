@@ -29,6 +29,22 @@ export default class PerfilController {
     }
   }
 
+  modificar = async (req, res, next) => {
+    try {
+      res
+        .status(200)
+        .json(
+          await this.perfilService.modificar(
+            req.params.id,
+            req.params.perfilId,
+            req.body,
+          ),
+        )
+    } catch (error) {
+      next(error)
+    }
+  }
+
   delete = async (req, res, next) => {
     try {
       await this.perfilService.delete(req.params.id, req.params.perfilId)

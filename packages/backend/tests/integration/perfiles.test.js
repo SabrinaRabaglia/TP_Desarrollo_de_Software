@@ -84,6 +84,8 @@ describe("perfiles de un proyecto", () => {
       ...datos,
       limiteColaboraciones: null,
       postulacionesAceptadas: [],
+      busquedaAbierta: true,
+      busquedaAbiertaHasta: null,
     })
     expect(await request("GET", perfiles)).toEqual([perfil])
     expect(await request("GET", `${perfiles}/${perfil.id}`)).toEqual(perfil)
@@ -103,6 +105,8 @@ describe("perfiles de un proyecto", () => {
       ...cambios,
       limiteColaboraciones: null,
       postulacionesAceptadas: [],
+      busquedaAbierta: true,
+      busquedaAbiertaHasta: null,
     })
     expect(await request("GET", perfiles)).toEqual([editado])
 
@@ -157,6 +161,94 @@ describe("perfiles de un proyecto", () => {
     expect(await request("GET", `/proyectos/${otro.id}/perfiles`)).toEqual([
       ajeno,
     ])
+  })
+
+  test("editar un perfil con colaboraciones no las pierde ni deja bajar el límite", async () => {
+    const proyecto = await crearProyecto("Proyecto con colaboraciones")
+    const perfiles = `/proyectos/${proyecto.id}/perfiles`
+    const perfil = await request(
+      "POST",
+      perfiles,
+      { ...datos, limiteColaboraciones: 2 },
+      201,
+    )
+    const aceptadas = ["64f1a2b3c4d5e6f7a8b9c001", "64f1a2b3c4d5e6f7a8b9c002"]
+    await ProyectoModel.updateOne(
+      { "perfiles._id": perfil.id },
+      { $set: { "perfiles.$.postulacionesAceptadas": aceptadas } },
+    )
+
+    const rechazo = await request(
+      "PATCH",
+      `${perfiles}/${perfil.id}`,
+      { limiteColaboraciones: 1 },
+      409,
+    )
+    expect(rechazo.message).toBe(
+      "El límite no puede ser menor a las colaboraciones ya aceptadas (2).",
+    )
+
+    const editado = await request("PATCH", `${perfiles}/${perfil.id}`, {
+      descripcion: "Con más lugar",
+      limiteColaboraciones: 3,
+    })
+    expect(editado).toEqual({
+      ...perfil,
+      descripcion: "Con más lugar",
+      limiteColaboraciones: 3,
+      postulacionesAceptadas: aceptadas,
+    })
+
+    const reemplazado = await request("PUT", `${perfiles}/${perfil.id}`, {
+      ...datos,
+      limiteColaboraciones: 2,
+    })
+    expect(reemplazado.postulacionesAceptadas).toEqual(aceptadas)
+  })
+
+  test("cerrar la búsqueda de un perfil y ponerle fecha límite", async () => {
+    const proyecto = await crearProyecto("Proyecto con búsqueda")
+    const ruta = `/proyectos/${proyecto.id}/perfiles`
+    const perfil = await request("POST", ruta, datos, 201)
+
+    const cerrado = await request("PATCH", `${ruta}/${perfil.id}`, {
+      busquedaAbierta: false,
+    })
+    expect(cerrado).toEqual({ ...perfil, busquedaAbierta: false })
+
+    const conFecha = await request("PATCH", `${ruta}/${perfil.id}`, {
+      busquedaAbierta: true,
+      busquedaAbiertaHasta: "2999-12-31",
+    })
+    expect(conFecha.busquedaAbiertaHasta).toBe("2999-12-31T00:00:00.000Z")
+  })
+
+  test("rechaza límites, horas y fechas inválidas con un mensaje que lo explica", async () => {
+    const proyecto = await crearProyecto("Proyecto datos inválidos")
+    const ruta = `/proyectos/${proyecto.id}/perfiles`
+
+    const invalido = async (cambios, status) =>
+      (await request("POST", ruta, { ...datos, ...cambios }, status)).message
+
+    expect(await invalido({ limiteColaboraciones: -1 }, 422)).toBe(
+      "El límite de colaboraciones debe ser un entero positivo.",
+    )
+    expect(await invalido({ cantidadHoras: -5 }, 422)).toBe(
+      "La cantidad de horas debe ser un entero positivo.",
+    )
+    expect(await invalido({ habilidadesRequeridas: [] }, 422)).toBe(
+      "El perfil debe tener al menos una habilidad requerida.",
+    )
+    expect(await invalido({ busquedaAbiertaHasta: "2020-01-01" }, 422)).toBe(
+      "La fecha límite de búsqueda no puede ser anterior a la actual.",
+    )
+    expect(await invalido({ limiteColaboraciones: "dos" }, 400)).toBe(
+      "Datos inválidos",
+    )
+    expect(await invalido({ busquedaAbiertaHasta: "mañana" }, 400)).toBe(
+      "Datos inválidos",
+    )
+    expect(await request("GET", ruta)).toEqual([])
   })
 
   test("un proyecto cerrado no admite cambios en sus perfiles", async () => {
@@ -259,6 +351,8 @@ describe("cambios simultáneos sobre los perfiles de un proyecto", () => {
           descripcion: "Editado",
           limiteColaboraciones: null,
           postulacionesAceptadas: [],
+          busquedaAbierta: true,
+          busquedaAbiertaHasta: null,
         },
       ])
     }

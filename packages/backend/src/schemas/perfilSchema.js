@@ -27,6 +27,8 @@ const perfilSchema = new mongoose.Schema(
       { type: mongoose.Schema.Types.ObjectId, ref: "Postulacion" },
     ],
     limiteColaboraciones: { type: Number, default: null },
+    busquedaAbierta: { type: Boolean, default: true },
+    busquedaAbiertaHasta: { type: Date, default: null },
   },
   { toJSON: opcionesJSON },
 )

@@ -134,6 +134,8 @@ describe("serialización a JSON de los documentos", () => {
       habilidadesOpcionales: [],
       limiteColaboraciones: null,
       postulacionesAceptadas: [],
+      busquedaAbierta: true,
+      busquedaAbiertaHasta: null,
     })
     expect(json.hitos[0]).toEqual({
       id: idDe(proyecto.hitos[0]),

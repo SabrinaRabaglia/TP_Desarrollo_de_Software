@@ -63,6 +63,12 @@ routes.put(
   validar(perfilSchema),
   perfilController.update,
 )
+routes.patch(
+  "/proyectos/:id/perfiles/:perfilId",
+  validateId,
+  validar(perfilSchema.partial()),
+  perfilController.modificar,
+)
 routes.delete(
   "/proyectos/:id/perfiles/:perfilId",
   validateId,
