@@ -12,9 +12,9 @@ export default class Postulacion {
         "La postulacion debe tener una persona colaboradora y un perfil asociados.",
       )
     }
-    if (!perfil.estaCubiertoPor(personaColaboradora.habilidades)) {
+    if (!perfil.tieneAlgunaRequeridaEntre(personaColaboradora.habilidades)) {
       throw new DomainRuleError(
-        "La persona debe cumplir con las habilidades requeridas.",
+        "La persona debe tener al menos una de las habilidades requeridas del perfil.",
       )
     }
     this.fechaPostulacion = new Date()

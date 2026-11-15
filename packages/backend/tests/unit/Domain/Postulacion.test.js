@@ -56,11 +56,30 @@ test("la postulación exige ambas entidades y registra la fecha de postulación"
   expect(() => new Postulacion(persona, null)).toThrow(DomainValidationError)
 })
 
-test("rechaza postularse sin una habilidad requerida", () => {
+test("rechaza postularse sin ninguna habilidad requerida", () => {
   const persona = new PersonaColaboradora("Ana")
   const perfil = perfilValido()
 
+  expect(() => new Postulacion(persona, perfil)).toThrow(
+    "La persona debe tener al menos una de las habilidades requeridas del perfil.",
+  )
   expect(() => new Postulacion(persona, perfil)).toThrow(DomainRuleError)
+})
+
+test("alcanza con una de las habilidades requeridas para postularse", () => {
+  const perfil = perfilValido(["hab-1", "hab-2"])
+
+  const postulacion = new Postulacion(personaConHabilidad(), perfil)
+
+  expect(postulacion.estado).toBe(EstadoPostulacion.PENDIENTE)
+})
+
+test("tener solo una habilidad opcional no alcanza para postularse", () => {
+  const perfil = perfilValido(["hab-2"])
+
+  expect(() => new Postulacion(personaConHabilidad(), perfil)).toThrow(
+    DomainRuleError,
+  )
 })
 
 test("aceptar y rechazar cambian el estado y registran la fecha de revisión", () => {

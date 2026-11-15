@@ -68,6 +68,14 @@ export default async function sembrarDatosDePrueba() {
         provincia: provincias["Santa Fe"],
         ciudad: "Rosario",
       },
+      {
+        nombre: "Red Solidaria Sur",
+        descripcion: "Red de comedores comunitarios del sur del conurbano",
+        tipo: "ONG",
+        pais: paises["Argentina"],
+        provincia: provincias["Buenos Aires"],
+        ciudad: "Quilmes",
+      },
     ],
   )
   const colectivos = await idsPor(ColectivoModel, "nombre")
@@ -204,6 +212,37 @@ export default async function sembrarDatosDePrueba() {
         },
       ],
     },
+    {
+      titulo: "Mapa de comedores comunitarios",
+      descripcion: "Ubicar los comedores de la red y sus días de atención",
+      estado: EstadoProyecto.PUBLICADO,
+      fechaAlta: new Date("2026-10-15T00:00:00.000Z"),
+      colectivo: colectivos["Red Solidaria Sur"],
+      perfiles: [
+        {
+          nombre: "Tester",
+          descripcion: "Probar el mapa de punta a punta antes de cada entrega",
+          unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
+          cantidadHoras: 5,
+          modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
+          habilidadesRequeridas: [habilidades["testing_e2e_con_cypress"]],
+          habilidadesOpcionales: [habilidades["uso_de_soap_ui"]],
+          limiteColaboraciones: 1,
+        },
+      ],
+      hitos: [
+        {
+          fecha: new Date("2026-11-05T00:00:00.000Z"),
+          porcentajeConcrecion: 25,
+          descripcion: "Relevamiento de los comedores de la red",
+        },
+        {
+          fecha: new Date("2026-11-12T00:00:00.000Z"),
+          porcentajeConcrecion: 60,
+          descripcion: "Primera versión del mapa publicada",
+        },
+      ],
+    },
   ]
   await sembrar(ProyectoModel, ["titulo"], proyectos)
   // Un proyecto que ya existía no se vuelve a insertar: si le falta alguno de
@@ -264,6 +303,27 @@ export default async function sembrarDatosDePrueba() {
       {
         nombreFantasia: "anon123",
         habilidades: [habilidades["diseno_ux_ui"]],
+      },
+      {
+        nombreFantasia: "Nube",
+        presentacion: "Testing de aplicaciones web y desarrollo con React",
+        habilidades: [
+          habilidades["testing_e2e_con_cypress"],
+          habilidades["react"],
+        ],
+        aceptaMensajeriaInterna: true,
+        mediosDeContacto: [
+          { tipo: TipoMedioContacto.EMAIL, valor: "nube@example.com" },
+          { tipo: TipoMedioContacto.WHATSAPP, valor: "+54 9 11 5555-0123" },
+        ],
+      },
+      {
+        nombreFantasia: "Pampa",
+        presentacion: "Pruebas automatizadas de interfaces web",
+        habilidades: [habilidades["testing_e2e_con_cypress"]],
+        mediosDeContacto: [
+          { tipo: TipoMedioContacto.EMAIL, valor: "pampa@example.com" },
+        ],
       },
     ],
   )
@@ -371,6 +431,22 @@ export default async function sembrarDatosDePrueba() {
       },
     ],
   )
+  // Pampa ya se postuló al perfil Tester y espera revisión. Nube no: se
+  // postula en la demo.
+  await sembrar(
+    PostulacionModel,
+    ["personaColaboradora", "perfil"],
+    [
+      {
+        fechaPostulacion: new Date("2026-11-08T00:00:00.000Z"),
+        fechaRevision: null,
+        estado: EstadoPostulacion.PENDIENTE,
+        esAnonima: false,
+        personaColaboradora: personas["Pampa"],
+        perfil: await perfilDe("Mapa de comedores comunitarios", "Tester"),
+      },
+    ],
+  )
 
   await sembrar(
     UsuarioModel,
@@ -391,12 +467,18 @@ export default async function sembrarDatosDePrueba() {
         RolUsuario.COLECTIVO,
         colectivos["Asamblea Ambiental del Litoral"],
       ),
-      ...["anag", "lucho_dev", "sol.datos", "anon123"].map((nombreFantasia) =>
-        usuario(
-          `${nombreFantasia}@persona.test`,
-          RolUsuario.PERSONA_COLABORADORA,
-          personas[nombreFantasia],
-        ),
+      usuario(
+        "redsolidariasur@colectivo.test",
+        RolUsuario.COLECTIVO,
+        colectivos["Red Solidaria Sur"],
+      ),
+      ...["anag", "lucho_dev", "sol.datos", "anon123", "Nube", "Pampa"].map(
+        (nombreFantasia) =>
+          usuario(
+            `${nombreFantasia.toLowerCase()}@persona.test`,
+            RolUsuario.PERSONA_COLABORADORA,
+            personas[nombreFantasia],
+          ),
       ),
     ]),
   )

@@ -50,6 +50,16 @@ const HABILIDADES = [
     "diseno_ux_ui",
     "Diseño de experiencia e interfaces",
   ),
+  new Habilidad(
+    "Testing E2E con Cypress",
+    "testing_e2e_con_cypress",
+    "Pruebas de punta a punta de aplicaciones web con Cypress",
+  ),
+  new Habilidad(
+    "Uso de Soap UI",
+    "uso_de_soap_ui",
+    "Pruebas de servicios web con SoapUI",
+  ),
 ]
 
 export const sembrar = (model, claves, documentos) => {
