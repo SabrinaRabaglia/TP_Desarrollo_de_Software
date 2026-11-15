@@ -73,13 +73,15 @@ const obtenerNombresDeColectivos = async () => {
   return Object.fromEntries(response.data.map((c) => [c.id, c.nombre]))
 }
 
-export const buscarProyectos = async ({ habilidades,q, modalidad, orden, page = 1, limit = 10 } = {}) => {
-  // 1. Armamos los parámetros base que siempre viajan
+export const buscarProyectos = async ({ habilidades,q, modalidad, orden, estado, busquedaAbierta, page = 1, limit = 10 } = {}) => {
+ 
   const params = { page, limit };
   if (habilidades) params.habilidades = habilidades;
   if (q) params.q = q;
   if (modalidad) params.modalidad = modalidad;
   if (orden) params.orden = orden;
+  if (estado) params.estado = estado;                       
+  if (busquedaAbierta) params.busquedaAbierta = busquedaAbierta; 
 
  
   const [response, nombresDeColectivos, titulosDeHabilidades] =

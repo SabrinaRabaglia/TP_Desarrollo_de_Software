@@ -114,47 +114,47 @@ export default class ProyectoService {
   }
 
   async getAll(queryParams = {}) {
-    console.log("1. TODO lo que llega al servicio:", queryParams);
     const { page=1, limit=10,orden, ...criterios } = queryParams
-    console.log("2. Criterios armados:", criterios, " | Orden:", orden);
-    const query = {}
+    const condiciones = [];
 
-    if (criterios.q) {
-      query.$or = [
-        { titulo: { $regex: criterios.q, $options: "i" } },
-        { descripcion: { $regex: criterios.q, $options: "i" } },
-      ]
+    if (criterios.estado) {
+      condiciones.push({ estado: criterios.estado });
     }
 
-
-    if (criterios.busquedaAbierta !== undefined) {
-      query.busquedaAbierta = criterios.busquedaAbierta
-      if (criterios.busquedaAbierta === true) {
-        query.$or = [
+    // 2. Filtro de Búsqueda Abierta (fecha límite no existe o es futura)
+    if (String(criterios.busquedaAbierta) === "true") {
+      condiciones.push({
+        $or: [
           { busquedaAbiertaHasta: { $exists: false } },
           { busquedaAbiertaHasta: { $gte: new Date() } },
         ]
-      }
+      });
     }
-
-const filtroPerfil = {};
+    if (criterios.q) {
+      condiciones.push({
+        $or: [
+          { titulo: { $regex: criterios.q, $options: "i" } },
+          { descripcion: { $regex: criterios.q, $options: "i" } },
+        ]
+      });
+    }
+    const filtroPerfil = {};
 
     if (criterios.habilidades && criterios.habilidades.length > 0) {
       filtroPerfil.habilidadesRequeridas = { $in: criterios.habilidades };
     }
 
     if (criterios.modalidad) {
-      // ⚠️ ATENCIÓN ACÁ: 
-      // Revisá en Mongo Compass si la propiedad adentro de 'perfiles' se llama 'modalidad' (singular) 
-      // o 'modalidades' (plural). Si es plural o un array, cambialo acá:
       filtroPerfil.modalidadesColaboracion = criterios.modalidad; 
     }
 
     if (Object.keys(filtroPerfil).length > 0) {
-      query.perfiles = { $elemMatch: filtroPerfil };
+      condiciones.push({ perfiles: { $elemMatch: filtroPerfil } });
     }
+        const query = condiciones.length > 0 ? { $and: condiciones } : {};
 
-    let sortConfig = { createdAt: -1 } // Por defecto: más recientes primero (como pide el TP)
+
+    let sortConfig = { createdAt: -1 } // Por defecto: más recientes primero 
     if (orden === "antiguos") {
       sortConfig = { createdAt: 1 }
     }

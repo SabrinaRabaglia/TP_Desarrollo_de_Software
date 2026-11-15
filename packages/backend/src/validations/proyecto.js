@@ -22,6 +22,7 @@ export const busquedaProyectosSchema = z.object({
 
   q: z.string().trim().optional(),
   busquedaAbierta: z.coerce.boolean().optional(),
+  estado: z.string().optional(),
   modalidad: z.string().optional(),
   orden: z.string().optional(),
 

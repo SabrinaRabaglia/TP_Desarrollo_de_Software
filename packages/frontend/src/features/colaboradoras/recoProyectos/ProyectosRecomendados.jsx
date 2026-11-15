@@ -49,7 +49,9 @@ const ProyectosRecomendados = () => {
 
         const respuesta = await buscarProyectos({
           habilidades: idsHabilidades,
-          modalidad: modalidad || undefined, // Si está vacío, no lo manda
+          modalidad: modalidad || undefined,
+          busquedaAbierta: true, 
+          estado: "PUBLICADO",
           orden: orden,
           page: paginaActual,
           limit: 10
