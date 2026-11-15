@@ -127,26 +127,23 @@ export const obtenerProyecto = async (id) => {
   )
 }
 
-// Para las migas de pan: solo los nombres, con un único pedido al back.
-export const obtenerNombresDelPerfil = async (proyectoId, perfilId) => {
-  const response = await api.get(`/proyectos/${proyectoId}`)
-  const perfil = (response.data.perfiles ?? []).find(
-    (perfil) => perfil.id === perfilId,
-  )
-
-  return { proyecto: response.data.titulo, perfil: perfil?.nombre ?? null }
-}
-
-// Para revisar postulaciones: cuántos lugares tiene el perfil y cuántos ocupa.
-// `limite` en null es un perfil sin límite.
-export const obtenerCuposDelPerfil = async (proyectoId, perfilId) => {
+// Lo que necesitan las pantallas de un perfil (migas y cupos), con un único
+// pedido al back. `limite` en null es un perfil sin límite; `perfil` es null
+// si el perfil no es de este proyecto.
+export const obtenerResumenDelPerfil = async (proyectoId, perfilId) => {
   const response = await api.get(`/proyectos/${proyectoId}`)
   const perfil = (response.data.perfiles ?? []).find(
     (perfil) => perfil.id === perfilId,
   )
 
   return {
-    limite: perfil?.limiteColaboraciones ?? null,
-    aceptadas: perfil?.postulacionesAceptadas?.length ?? 0,
+    proyecto: { id: response.data.id, titulo: response.data.titulo },
+    perfil: perfil
+      ? {
+          nombre: perfil.nombre,
+          limite: perfil.limiteColaboraciones ?? null,
+          aceptadas: perfil.postulacionesAceptadas?.length ?? 0,
+        }
+      : null,
   }
 }

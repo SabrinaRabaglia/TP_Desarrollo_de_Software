@@ -3,10 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { MemoryRouter, Route, Routes } from "react-router-dom"
 import { buscarCandidatas } from "../../service/colaboradorasService"
 import { enviarMensaje } from "../../service/mensajesService"
-import {
-  obtenerNombresDelPerfil,
-  obtenerProyecto,
-} from "../../service/proyectosService"
+import { obtenerProyecto } from "../../service/proyectosService"
 import PaginaCandidatas from "./PaginaCandidatas"
 
 jest.mock("../../service/colaboradorasService")
@@ -49,10 +46,6 @@ const tarjetaDe = async (nombreFantasia) =>
 
 beforeEach(() => {
   obtenerProyecto.mockResolvedValue(proyecto)
-  obtenerNombresDelPerfil.mockResolvedValue({
-    proyecto: proyecto.titulo,
-    perfil: "Frontend",
-  })
   buscarCandidatas.mockResolvedValue([
     candidata("p1", "anag", true),
     candidata("p2", "beto", false),
@@ -69,6 +62,12 @@ describe("PaginaCandidatas", () => {
       }),
     ).toBeInTheDocument()
     expect(buscarCandidatas).toHaveBeenCalledWith("pf1")
+    // Las migas usan el proyecto que ya trajo la página, sin pedirlo de nuevo
+    const migas = screen.getByRole("navigation", { name: "Ubicación" })
+    expect(
+      within(migas).getByRole("link", { name: "Sitio web de la huerta" }),
+    ).toHaveAttribute("href", "/proyectos/pr1")
+    expect(obtenerProyecto).toHaveBeenCalledTimes(1)
     expect(
       within(await tarjetaDe("anag")).getByRole("link", { name: "Ver perfil" }),
     ).toHaveAttribute("href", "/colaboradoras/p1")

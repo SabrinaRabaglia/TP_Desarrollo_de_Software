@@ -9,16 +9,12 @@ import {
   obtenerPostulacionesPerfil,
   rechazarPostulacion,
 } from "../../service/postulacionesService"
-import { obtenerCuposDelPerfil } from "../../service/proyectosService"
+import { obtenerResumenDelPerfil } from "../../service/proyectosService"
 import PostulacionesPerfil from "./PostulacionesPerfil"
 
 jest.mock("../../service/proyectosService", () => ({
   ...jest.requireActual("../../service/proyectosService"),
-  obtenerNombresDelPerfil: async () => ({
-    proyecto: "Sitio web de la huerta",
-    perfil: "Frontend",
-  }),
-  obtenerCuposDelPerfil: jest.fn(),
+  obtenerResumenDelPerfil: jest.fn(),
 }))
 
 jest.mock("../../service/postulacionesService", () => ({
@@ -129,7 +125,10 @@ const esperarQueCierreElDialogo = () =>
   waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument())
 
 beforeEach(() => {
-  obtenerCuposDelPerfil.mockResolvedValue({ limite: 1, aceptadas: 0 })
+  obtenerResumenDelPerfil.mockResolvedValue({
+    proyecto: { id: "pr1", titulo: "Sitio web de la huerta" },
+    perfil: { nombre: "Frontend", limite: 1, aceptadas: 0 },
+  })
 })
 
 afterEach(() => {
@@ -156,7 +155,7 @@ describe("PostulacionesPerfil", () => {
     expect(screen.getAllByRole("button", { name: "Aceptar" })).toHaveLength(1)
   })
 
-  test("muestra los cupos del perfil", async () => {
+  test("con un solo pedido muestra las migas y los cupos del perfil", async () => {
     obtenerPostulacionesPerfil.mockResolvedValue([pendiente])
 
     renderizar()
@@ -164,7 +163,13 @@ describe("PostulacionesPerfil", () => {
     expect(
       await screen.findByText("1 cupo disponible de 1"),
     ).toBeInTheDocument()
-    expect(obtenerCuposDelPerfil).toHaveBeenCalledWith("pr1", "pe1")
+    const migas = screen.getByRole("navigation", { name: "Ubicación" })
+    expect(within(migas).getByText("Frontend")).toBeInTheDocument()
+    expect(
+      within(migas).getByRole("link", { name: "Sitio web de la huerta" }),
+    ).toHaveAttribute("href", "/proyectos/pr1")
+    expect(obtenerResumenDelPerfil).toHaveBeenCalledTimes(1)
+    expect(obtenerResumenDelPerfil).toHaveBeenCalledWith("pr1", "pe1")
   })
 
   test("los datos de contacto aparecen solo en la aceptada y Telegram no muestra el id", async () => {

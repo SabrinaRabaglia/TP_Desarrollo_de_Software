@@ -19,7 +19,7 @@ import {
   obtenerPostulacionesPerfil,
   rechazarPostulacion,
 } from "../../service/postulacionesService"
-import { obtenerCuposDelPerfil } from "../../service/proyectosService"
+import { obtenerResumenDelPerfil } from "../../service/proyectosService"
 import "./PostulacionesPerfil.css"
 
 // Lo que hace cada acción, cómo se le pide confirmación al colectivo y qué
@@ -208,7 +208,8 @@ const PostulacionesPerfil = () => {
   const { proyectoId, perfilId } = useParams()
   const { mostrarAviso } = useAvisos()
   const [postulaciones, setPostulaciones] = useState([])
-  const [cupos, setCupos] = useState(null)
+  // Nombres para las migas y cupos del perfil
+  const [resumen, setResumen] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
   const [intento, setIntento] = useState(0)
@@ -223,13 +224,13 @@ const PostulacionesPerfil = () => {
       setCargando(true)
       setError(null)
       try {
-        const [postulacionesCargadas, cuposCargados] = await Promise.all([
+        const [postulacionesCargadas, resumenCargado] = await Promise.all([
           obtenerPostulacionesPerfil(proyectoId, perfilId),
-          // Los cupos son un dato extra: si no llegan, la lista sigue.
-          obtenerCuposDelPerfil(proyectoId, perfilId).catch(() => null),
+          // Migas y cupos son un dato extra: si no llegan, la lista sigue.
+          obtenerResumenDelPerfil(proyectoId, perfilId).catch(() => null),
         ])
         setPostulaciones(postulacionesCargadas)
-        setCupos(cuposCargados)
+        setResumen(resumenCargado)
       } catch (e) {
         setError(mensajeDeError(e))
       } finally {
@@ -316,8 +317,10 @@ const PostulacionesPerfil = () => {
     <section className="revision-pagina">
       <Migas
         proyectoId={proyectoId}
-        perfilId={perfilId}
+        proyecto={resumen?.proyecto.titulo}
+        perfil={resumen?.perfil?.nombre}
         actual="Postulaciones"
+        cargando={cargando && !resumen}
       />
       <header className="revision-encabezado">
         <h1>Postulaciones</h1>
@@ -325,7 +328,12 @@ const PostulacionesPerfil = () => {
           Revisá quién se postuló a este perfil. Los datos de contacto aparecen
           cuando aceptás a la persona.
         </p>
-        {cupos && <Cupos limite={cupos.limite} aceptadas={cupos.aceptadas} />}
+        {resumen?.perfil && (
+          <Cupos
+            limite={resumen.perfil.limite}
+            aceptadas={resumen.perfil.aceptadas}
+          />
+        )}
       </header>
 
       {renderPostulaciones()}

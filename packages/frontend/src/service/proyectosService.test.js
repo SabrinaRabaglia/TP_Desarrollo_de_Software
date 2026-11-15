@@ -2,9 +2,8 @@ import api from "./api"
 import { obtenerHabilidades } from "./habilidadesService"
 import {
   buscarProyectos,
-  obtenerCuposDelPerfil,
-  obtenerNombresDelPerfil,
   obtenerProyecto,
+  obtenerResumenDelPerfil,
 } from "./proyectosService"
 
 jest.mock("./api", () => ({ __esModule: true, default: { get: jest.fn() } }))
@@ -159,48 +158,33 @@ test("un proyecto sin hitos tiene avance 0", async () => {
   expect(proyecto.avance).toBe(0)
 })
 
-test("para las migas trae el título del proyecto y el nombre del perfil", async () => {
+test("el resumen del perfil trae los nombres y los cupos con un solo pedido", async () => {
   api.get.mockResolvedValue({
     data: {
+      id: "proyecto-1",
       titulo: "Sitio web de la huerta",
-      perfiles: [
-        { id: "perfil-1", nombre: "Frontend" },
-        { id: "perfil-2", nombre: "Tester" },
-      ],
-    },
-  })
-
-  expect(await obtenerNombresDelPerfil("proyecto-1", "perfil-2")).toEqual({
-    proyecto: "Sitio web de la huerta",
-    perfil: "Tester",
-  })
-  expect(api.get).toHaveBeenCalledWith("/proyectos/proyecto-1")
-  expect(await obtenerNombresDelPerfil("proyecto-1", "otro")).toEqual({
-    proyecto: "Sitio web de la huerta",
-    perfil: null,
-  })
-})
-
-test("los cupos del perfil dicen el límite y cuántas aceptadas ocupan lugar", async () => {
-  api.get.mockResolvedValue({
-    data: {
       perfiles: [
         {
           id: "perfil-1",
+          nombre: "Tester",
           limiteColaboraciones: 2,
           postulacionesAceptadas: ["a1"],
         },
-        { id: "perfil-2", limiteColaboraciones: null },
+        { id: "perfil-2", nombre: "Frontend", limiteColaboraciones: null },
       ],
     },
   })
 
-  expect(await obtenerCuposDelPerfil("proyecto-1", "perfil-1")).toEqual({
-    limite: 2,
-    aceptadas: 1,
+  expect(await obtenerResumenDelPerfil("proyecto-1", "perfil-1")).toEqual({
+    proyecto: { id: "proyecto-1", titulo: "Sitio web de la huerta" },
+    perfil: { nombre: "Tester", limite: 2, aceptadas: 1 },
   })
-  expect(await obtenerCuposDelPerfil("proyecto-1", "perfil-2")).toEqual({
-    limite: null,
-    aceptadas: 0,
-  })
+  expect(api.get).toHaveBeenCalledTimes(1)
+  expect(api.get).toHaveBeenCalledWith("/proyectos/proyecto-1")
+  expect(
+    (await obtenerResumenDelPerfil("proyecto-1", "perfil-2")).perfil,
+  ).toEqual({ nombre: "Frontend", limite: null, aceptadas: 0 })
+  expect(
+    (await obtenerResumenDelPerfil("proyecto-1", "otro")).perfil,
+  ).toBeNull()
 })

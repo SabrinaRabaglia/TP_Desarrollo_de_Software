@@ -73,7 +73,12 @@ const PaginaCandidatas = () => {
 
   return (
     <section className="pagina-candidatas">
-      <Migas proyectoId={id} perfilId={perfilId} actual="Candidatas" />
+      <Migas
+        proyectoId={proyecto.id}
+        proyecto={proyecto.titulo}
+        perfil={perfil.nombre}
+        actual="Candidatas"
+      />
       <header className="pagina-candidatas-encabezado">
         <h1>Personas para el perfil {perfil.nombre}</h1>
         <p>
