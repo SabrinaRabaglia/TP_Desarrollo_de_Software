@@ -46,6 +46,13 @@ export default class Perfil {
     }
   }
 
+  // Al darse de baja, la postulación deja de ocupar un lugar en el perfil.
+  quitarPostulacion(postulacionId) {
+    this.postulacionesAceptadas = this.postulacionesAceptadas.filter(
+      (id) => id.toString() !== postulacionId.toString(),
+    )
+  }
+
   asignar({
     nombre = null,
     descripcion,

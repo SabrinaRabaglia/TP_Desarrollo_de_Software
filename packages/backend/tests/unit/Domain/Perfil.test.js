@@ -138,4 +138,20 @@ describe("Perfil", () => {
     expect(perfil.estaCubiertoPor(["cypress"])).toBe(false)
     expect(perfil.estaCubiertoPor([])).toBe(false)
   })
+
+  test("quitar una postulación aceptada libera su lugar en el límite", () => {
+    const aceptada = new mongoose.Types.ObjectId()
+    const otra = new mongoose.Types.ObjectId()
+    const perfil = new Perfil({ ...datos, limiteColaboraciones: 2 })
+    perfil.agregarPostulacion(aceptada)
+    perfil.agregarPostulacion(otra)
+    expect(() => perfil.assertPuedeAceptarPostulaciones()).toThrow(
+      DomainValidationError,
+    )
+
+    perfil.quitarPostulacion(aceptada.toString())
+
+    expect(perfil.postulacionesAceptadas).toEqual([otra])
+    expect(() => perfil.assertPuedeAceptarPostulaciones()).not.toThrow()
+  })
 })
