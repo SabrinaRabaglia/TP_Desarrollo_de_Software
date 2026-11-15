@@ -27,3 +27,5 @@ export class BadRequestError extends ApplicationError {
     this.details = details
   }
 }
+
+export class ServicioNoDisponible extends ApplicationError {}

@@ -7,7 +7,10 @@ import {
 import validateId, { validateIdParam } from "../middlewares/validateId.js"
 import { autenticar, autorizarEntidad } from "../middlewares/autenticar.js"
 import { RolUsuario } from "../domain/enums/RolUsuario.js"
-import { personaColaboradoraController } from "../dependencias.js"
+import {
+  personaColaboradoraController,
+  telegramController,
+} from "../dependencias.js"
 
 const routes = Router()
 
@@ -55,5 +58,12 @@ routes.delete(
   validateIdParam("contactoId"),
   autorizarEntidad(RolUsuario.PERSONA_COLABORADORA),
   personaColaboradoraController.deleteMedioDeContacto,
+)
+routes.post(
+  "/personas-colaboradoras/:id/telegram/enlace",
+  autenticar,
+  validateId,
+  autorizarEntidad(RolUsuario.PERSONA_COLABORADORA),
+  telegramController.crearEnlace,
 )
 export default routes

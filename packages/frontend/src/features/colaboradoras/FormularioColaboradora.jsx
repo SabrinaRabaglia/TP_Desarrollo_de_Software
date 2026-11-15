@@ -9,7 +9,7 @@ import {
 import FilasTipoValor from "../../components/filasTipoValor/FilasTipoValor"
 import {
   TIPOS_DE_CUENTA,
-  TIPOS_DE_MEDIO,
+  TIPOS_DE_MEDIO_MANUALES,
 } from "../../service/colaboradorasService"
 import "./FormularioColaboradora.css"
 
@@ -33,6 +33,7 @@ const FormularioColaboradora = ({
   error,
   exito,
   alGuardar,
+  telegram,
   children,
 }) => {
   const [datos, setDatos] = useState(datosIniciales)
@@ -141,12 +142,14 @@ const FormularioColaboradora = ({
       <FilasTipoValor
         titulo="Medios de contacto"
         ayuda="No se muestran públicamente. Solo los ve un colectivo con el que colabores."
-        tipos={TIPOS_DE_MEDIO}
+        tipos={TIPOS_DE_MEDIO_MANUALES}
         filas={datos.mediosDeContacto}
         alCambiar={setFilasDe("mediosDeContacto")}
         etiquetaValor="Dato de contacto"
         nombreFila="medio de contacto"
-      />
+      >
+        {telegram}
+      </FilasTipoValor>
 
       <FormControlLabel
         label="Acepto que los colectivos me contacten por la mensajería interna"

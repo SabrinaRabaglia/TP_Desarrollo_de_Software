@@ -80,6 +80,11 @@ const RegistroColaboradora = () => {
         enviando={enviando}
         error={error}
         alGuardar={registrarse}
+        telegram={
+          <p className="registro-colaboradora-telegram">
+            Telegram se conecta desde Mi perfil, después de registrarte.
+          </p>
+        }
       >
         <fieldset className="registro-colaboradora-cuenta">
           <legend>Tu cuenta</legend>

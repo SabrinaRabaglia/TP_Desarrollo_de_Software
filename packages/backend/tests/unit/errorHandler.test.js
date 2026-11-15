@@ -8,6 +8,7 @@ import {
   InvalidReference,
   NoAutenticado,
   NoAutorizado,
+  ServicioNoDisponible,
 } from "../../src/errors/ApplicationErrors.js"
 import {
   DomainRuleError,
@@ -59,6 +60,7 @@ test.each([
   [new CredencialesInvalidas("Email o contraseña incorrectos"), 401],
   [new NoAutenticado("Falta el token"), 401],
   [new NoAutorizado("Rol no permitido"), 403],
+  [new ServicioNoDisponible("Telegram no está disponible"), 503],
 ])("traduce %s al status HTTP correspondiente", (error, status) => {
   const res = mockRes()
 

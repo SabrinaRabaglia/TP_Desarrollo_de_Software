@@ -9,6 +9,7 @@ import {
   InvalidReference,
   NoAutenticado,
   NoAutorizado,
+  ServicioNoDisponible,
 } from "../errors/ApplicationErrors.js"
 import {
   DomainValidationError,
@@ -69,6 +70,10 @@ export default function errorHandler(error, _req, res, next) {
 
   if (error instanceof NoAutorizado) {
     return jsonError(res, 403, error.message)
+  }
+
+  if (error instanceof ServicioNoDisponible) {
+    return jsonError(res, 503, error.message)
   }
 
   if (error instanceof BadRequestError) {

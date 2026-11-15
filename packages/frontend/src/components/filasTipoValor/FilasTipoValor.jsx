@@ -11,6 +11,7 @@ const FilasTipoValor = ({
   alCambiar,
   etiquetaValor,
   nombreFila,
+  children,
 }) => {
   const botonAgregar = useRef(null)
 
@@ -77,6 +78,7 @@ const FilasTipoValor = ({
       >
         Agregar {nombreFila}
       </Button>
+      {children}
     </fieldset>
   )
 }

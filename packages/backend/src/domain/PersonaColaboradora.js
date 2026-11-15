@@ -2,6 +2,9 @@ import {
   DomainRuleError,
   DomainValidationError,
 } from "./errors/DomainErrors.js"
+import MedioDeContacto from "./MedioDeContacto.js"
+import { TipoMedioContacto } from "./enums/TipoMedioContacto.js"
+
 export default class PersonaColaboradora {
   constructor(
     nombreFantasia,
@@ -41,6 +44,15 @@ export default class PersonaColaboradora {
 
   agregarCuenta(cuenta) {
     this.cuentas.push(cuenta)
+  }
+
+  conectarTelegram(chatId) {
+    this.mediosDeContacto = [
+      ...this.mediosDeContacto.filter(
+        (medio) => medio.tipo !== TipoMedioContacto.TELEGRAM,
+      ),
+      new MedioDeContacto(TipoMedioContacto.TELEGRAM, chatId),
+    ]
   }
 
   assertAceptaMensajeriaInterna() {
