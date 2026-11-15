@@ -72,7 +72,7 @@ const PaginaProyecto = () => {
         ) : (
           <div className="pagina-proyecto-grilla">
             {proyecto.perfiles.map((perfil) => (
-              <PerfilRequerido key={perfil.id} perfil={perfil} />
+              <PerfilRequerido key={perfil.id} perfil={perfil} proyectoId={proyecto.id} />
             ))}
           </div>
         )}

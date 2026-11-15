@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, expect, test } from "@jest/globals"
 import { once } from "node:events"
 import app from "../../src/app.js"
-import ColaboracionModel from "../../src/schemas/colaboracionSchema.js"
+import PostulacionModel from "../../src/schemas/postulacionSchema.js"
 import ProvinciaModel from "../../src/schemas/provinciaSchema.js"
 import { conectar, desconectar } from "./mongo.js"
 
@@ -65,7 +65,7 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
       fechaCierre: null,
     }
     let proyecto = await request("POST", "/proyectos", proyectoDatos, 201)
-    await request(
+    const perfil = await request(
       "POST",
       `/proyectos/${proyecto.id}/perfiles`,
       {
@@ -79,18 +79,20 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
       201,
     )
     proyecto = await request("GET", `/proyectos/${proyecto.id}`)
-    const colaboracion = await request(
+    const postulacion = await request(
       "POST",
-      "/colaboraciones",
-      {
-        proyectoId: proyecto.id,
-        personaColaboradoraId: persona.id,
-      },
+      `/proyectos/${proyecto.id}/perfiles/${perfil.id}/postulaciones`,
+      { esAnonima: false },
       201,
+      { Authorization: `Bearer ${token}` },
     )
-    expect(colaboracion).toEqual({
+    expect(postulacion).toEqual({
       id: expect.any(String),
-      fechaInscripcion: expect.any(String),
+      fechaPostulacion: expect.any(String),
+      fechaRevision: null,
+      estado: "PENDIENTE",
+      fechaBaja: null,
+      origenBaja: null,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
       esAnonima: false,
@@ -98,44 +100,61 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
         id: persona.id,
         nombreFantasia: persona.nombreFantasia,
       },
-      proyecto: { id: proyecto.id, titulo: proyecto.titulo },
+      perfil: perfil.id,
     })
-    const personaAnonima = await request(
+    const credencialesAnonima = {
+      email: "anonima@persona.test",
+      contrasena: "secreto123",
+    }
+    const usuarioAnonimo = await request(
       "POST",
-      "/personas-colaboradoras",
-      { ...personaDatos, nombreFantasia: "Persona anónima" },
-      201,
-    )
-    const anonima = await request(
-      "POST",
-      "/colaboraciones",
+      "/auth/registro/persona-colaboradora",
       {
-        proyectoId: proyecto.id,
-        personaColaboradoraId: personaAnonima.id,
-        esAnonima: true,
+        ...credencialesAnonima,
+        persona: { ...personaDatos, nombreFantasia: "Persona anónima" },
       },
       201,
     )
+    const { token: tokenAnonimo } = await request(
+      "POST",
+      "/auth/login",
+      credencialesAnonima,
+    )
+    const anonima = await request(
+      "POST",
+      `/proyectos/${proyecto.id}/perfiles/${perfil.id}/postulaciones`,
+      { esAnonima: true },
+      201,
+      { Authorization: `Bearer ${tokenAnonimo}` },
+    )
     expect(anonima).toEqual({
-      ...colaboracion,
+      ...postulacion,
       id: expect.any(String),
-      fechaInscripcion: expect.any(String),
+      fechaPostulacion: expect.any(String),
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
       esAnonima: true,
       personaColaboradora: null,
     })
-    const guardada = await ColaboracionModel.findById(anonima.id)
-    expect(guardada.personaColaboradora.toString()).toBe(personaAnonima.id)
-    expect(await request("GET", "/colaboraciones")).toEqual([
-      colaboracion,
-      anonima,
-    ])
+    const guardada = await PostulacionModel.findById(anonima.id)
+    expect(guardada.personaColaboradora.toString()).toBe(
+      usuarioAnonimo.entidad.id,
+    )
+    const misPostulaciones = await request(
+      "GET",
+      "/postulaciones",
+      undefined,
+      200,
+      { Authorization: `Bearer ${token}` },
+    )
+    expect(misPostulaciones).toHaveLength(1)
+    expect(misPostulaciones[0]._id).toBe(postulacion.id)
+
     for (const ruta of [
       `/proyectos/${proyecto.id}`,
       `/personas-colaboradoras/${persona.id}`,
     ]) {
-      expect(await request("GET", ruta)).not.toHaveProperty("colaboraciones")
+      expect(await request("GET", ruta)).not.toHaveProperty("postulaciones")
     }
 
     const detalleColectivo = await request("GET", `/colectivos/${colectivo.id}`)
@@ -169,15 +188,7 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
     await request("PATCH", `/colectivos/${colectivo.id}`, {
       descripcion: "Descripción actualizada",
     })
-    const otraPersona = await request(
-      "POST",
-      "/personas-colaboradoras",
-      {
-        ...personaDatos,
-        nombreFantasia: "Otra persona",
-      },
-      201,
-    )
+
     const cerrado = await request("PATCH", `/proyectos/${proyecto.id}`, {
       estado: "CERRADO",
     })
@@ -193,25 +204,37 @@ test("inscribir permite consultar y actualizar las entidades persistidas", async
     const despues = await request("GET", `/proyectos/${proyecto.id}`)
     expect(despues.estado).toBe("CERRADO")
     expect(despues.fechaCierre).toBe(cerrado.fechaCierre)
+
+    const credencialesOtra = {
+      email: "otra@persona.test",
+      contrasena: "secreto123",
+    }
     await request(
       "POST",
-      "/colaboraciones",
+      "/auth/registro/persona-colaboradora",
       {
-        proyectoId: proyecto.id,
-        personaColaboradoraId: otraPersona.id,
+        ...credencialesOtra,
+        persona: { ...personaDatos, nombreFantasia: "Otra persona" },
       },
-      409,
+      201,
     )
-    expect(await request("GET", "/colaboraciones")).toEqual([
-      colaboracion,
-      anonima,
-    ])
+    const { token: tokenOtra } = await request(
+      "POST",
+      "/auth/login",
+      credencialesOtra,
+    )
+    await request(
+      "POST",
+      `/proyectos/${proyecto.id}/perfiles/${perfil.id}/postulaciones`,
+      { esAnonima: false },
+      409,
+      { Authorization: `Bearer ${tokenOtra}` },
+    )
 
     const borrado = await fetch(`${base}/proyectos/${proyecto.id}`, {
       method: "DELETE",
     })
     expect(borrado.status).toBe(204)
-    expect(await request("GET", "/colaboraciones")).toEqual([])
   } finally {
     await new Promise((resolve, reject) =>
       server.close((error) => (error ? reject(error) : resolve())),

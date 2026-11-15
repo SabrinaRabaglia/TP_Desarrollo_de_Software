@@ -24,10 +24,9 @@ const datosDelProyecto = ({
 })
 
 export default class ProyectoService {
-  constructor(proyectoRepository, colectivoRepository, colaboracionRepository) {
+  constructor(proyectoRepository, colectivoRepository) {
     this.proyectoRepository = proyectoRepository
     this.colectivoRepository = colectivoRepository
-    this.colaboracionRepository = colaboracionRepository
   }
 
 
@@ -111,7 +110,6 @@ export default class ProyectoService {
 
   delete = async (id) => {
     await this.getById(id)
-    await this.colaboracionRepository.deleteByProyecto(id)
     await this.proyectoRepository.deleteById(id)
   }
 

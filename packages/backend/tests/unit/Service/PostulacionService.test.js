@@ -1,0 +1,140 @@
+import { beforeEach, describe, expect, test } from "@jest/globals"
+import PostulacionService from "../../../src/services/PostulacionService.js"
+import PostulacionRepository from "../../fakes/PostulacionRepository.js"
+import ProyectoRepository from "../../fakes/ProyectoRepository.js"
+import ColectivoRepository from "../../fakes/ColectivoRepository.js"
+import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraRepository.js"
+import Proyecto from "../../../src/domain/Proyecto.js"
+import Perfil from "../../../src/domain/Perfil.js"
+import PersonaColaboradora from "../../../src/domain/PersonaColaboradora.js"
+import Habilidad from "../../../src/domain/Habilidad.js"
+import { UnidadCompromiso } from "../../../src/domain/enums/UnidadCompromiso.js"
+import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColaboracion.js"
+import {
+  AlreadyExists,
+  InvalidReference,
+} from "../../../src/errors/ApplicationErrors.js"
+import { DomainRuleError } from "../../../src/domain/errors/DomainErrors.js"
+
+describe("PostulacionService", () => {
+  let service,
+    postulacionRepository,
+    proyectoRepository,
+    personaRepository,
+    colectivoRepository,
+    proyecto,
+    perfil,
+    persona,
+    datos
+
+  beforeEach(() => {
+    proyectoRepository = new ProyectoRepository()
+    personaRepository = new PersonaColaboradoraRepository()
+    colectivoRepository = new ColectivoRepository()
+    postulacionRepository = new PostulacionRepository()
+
+    proyectoRepository.deleteAll()
+    personaRepository.deleteAll()
+    postulacionRepository.deleteAll()
+
+    service = new PostulacionService(
+      colectivoRepository,
+      postulacionRepository,
+      proyectoRepository,
+      personaRepository,
+    )
+
+    const habilidad = new Habilidad(
+      "JavaScript",
+      "javascript",
+      "Desarrollo web",
+    )
+    habilidad.id = "habilidad-1"
+    persona = new PersonaColaboradora("Ana")
+    persona.id = "persona-1"
+    persona.agregarHabilidad(habilidad)
+    personaRepository.save(persona)
+
+    perfil = new Perfil({
+      descripcion: "Desarrollo frontend",
+      unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
+      cantidadHoras: 5,
+      modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
+      habilidadesRequeridas: [habilidad.id],
+      habilidadesOpcionales: [habilidad.id],
+    })
+    perfil.id = "perfil-1"
+
+    proyecto = new Proyecto("Plataforma", "Desarrollo web", "colectivo-1")
+    proyecto.id = "proyecto-1"
+    proyecto.perfiles = [perfil]
+    proyectoRepository.save(proyecto)
+
+    datos = {
+      perfilId: perfil.id,
+      personaColaboradoraId: persona.id,
+      esAnonima: false,
+    }
+  })
+
+  test("registra una postulación entre la persona y el perfil", async () => {
+    const postulacion = await service.create(datos)
+
+    expect(postulacion.personaColaboradora).toBe(persona)
+    expect(postulacion.perfil).toBe(perfil)
+    await expect(service.create(datos)).rejects.toThrow(AlreadyExists)
+    expect(await postulacionRepository.findAll()).toEqual([postulacion])
+  })
+
+  test.each([
+    [
+      "perfil inexistente",
+      async () => {
+        datos.perfilId = "inexistente"
+      },
+      InvalidReference,
+    ],
+    [
+      "persona inexistente",
+      async () => await personaRepository.deleteById(persona.id),
+      InvalidReference,
+    ],
+    [
+      "proyecto cerrado",
+      async () => {
+        proyecto.estado = "CERRADO"
+      },
+      DomainRuleError,
+    ],
+    [
+      "habilidades sin coincidencia",
+      async () => {
+        persona.habilidades = []
+      },
+      DomainRuleError,
+    ],
+  ])(
+    "rechaza %s sin registrar la postulación",
+    async (_caso, preparar, error) => {
+      await preparar()
+
+      await expect(service.create(datos)).rejects.toThrow(error)
+      expect(await postulacionRepository.findAll()).toEqual([])
+    },
+  )
+
+  test("aceptar una postulación actualiza su estado y la agrega al perfil", async () => {
+    const postulacion = await service.create(datos)
+    const aceptada = await service.aceptar(postulacion.id)
+
+    expect(aceptada.estado).toBe("ACEPTADA")
+    expect(perfil.postulacionesAceptadas).toContain(postulacion.id)
+  })
+
+  test("rechazar una postulación actualiza su estado a rechazada", async () => {
+    const postulacion = await service.create(datos)
+    const rechazada = await service.rechazar(postulacion.id)
+
+    expect(rechazada.estado).toBe("RECHAZADA")
+  })
+})

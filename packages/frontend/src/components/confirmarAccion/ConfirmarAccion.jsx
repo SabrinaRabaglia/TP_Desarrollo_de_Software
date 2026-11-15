@@ -12,7 +12,9 @@ const ConfirmarAccion = ({
   titulo,
   mensaje,
   textoConfirmar = "Confirmar",
+  textoAlternativo,
   alConfirmar,
+  alAlternativo,
   alCancelar,
 }) => {
   return (
@@ -25,6 +27,11 @@ const ConfirmarAccion = ({
         <Button onClick={alCancelar} autoFocus>
           Cancelar
         </Button>
+        {textoAlternativo && (
+          <Button onClick={alAlternativo}>
+            {textoAlternativo}
+          </Button>
+        )}
         <Button onClick={alConfirmar} color="error" variant="contained">
           {textoConfirmar}
         </Button>

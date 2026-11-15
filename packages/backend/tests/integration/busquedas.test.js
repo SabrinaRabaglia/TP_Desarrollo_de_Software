@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "@jest/globals"
 import { once } from "node:events"
 import app from "../../src/app.js"
+import PostulacionModel from "../../src/schemas/postulacionSchema.js"
 import { conectar, desconectar } from "./mongo.js"
 
 let server
@@ -185,15 +186,11 @@ describe("búsqueda de colaboradores según un perfil", () => {
   })
 
   test("no sugiere a quienes ya están inscriptos en el proyecto", async () => {
-    await request(
-      "POST",
-      "/colaboraciones",
-      {
-        personaColaboradoraId: personas.lucho.id,
-        proyectoId: proyectos.mapa.id,
-      },
-      201,
-    )
+    await PostulacionModel.create({
+      personaColaboradora: personas.lucho.id,
+      perfil: proyectos.mapa.perfil.id,
+      fechaPostulacion: new Date(),
+    })
 
     expect(
       (await colaboradores(proyectos.mapa.perfil)).data.map((persona) => persona.id),
@@ -223,16 +220,13 @@ describe("búsqueda de colaboradores según un perfil", () => {
   })
 })
 
-describe("inscripción según la consigna", () => {
-  test("alcanza con tener al menos una de las habilidades requeridas, aunque la búsqueda no la sugiera", async () => {
-    await request(
-      "POST",
-      "/colaboraciones",
-      {
-        personaColaboradoraId: personas.lucho.id,
-        proyectoId: proyectos.web.id,
-      },
-      201,
-    )
+describe("postulación a un perfil", () => {
+  test("puede registrar una postulación a un perfil cubierto", async () => {
+    const postulacion = await PostulacionModel.create({
+      personaColaboradora: personas.ana.id,
+      perfil: proyectos.mapa.perfil.id,
+      fechaPostulacion: new Date(),
+    })
+    expect(postulacion).toBeDefined()
   })
 })

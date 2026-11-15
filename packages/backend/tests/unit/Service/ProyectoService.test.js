@@ -6,7 +6,6 @@ import ColectivoRepository from "../../fakes/ColectivoRepository.js"
 import TipoColectivoRepository from "../../fakes/TipoColectivoRepository.js"
 import ProvinciaRepository from "../../fakes/ProvinciaRepository.js"
 import PaisRepository from "../../fakes/PaisRepository.js"
-import ColaboracionRepository from "../../fakes/ColaboracionRepository.js"
 import {
   AlreadyExists,
   EntityNotFound,
@@ -25,7 +24,6 @@ describe("ProyectoService", () => {
   let service
   let colectivoService
   let proyectoRepository
-  let colaboracionRepository
   let dtoProyectoValido
 
   const obtenerDatos = (respuesta) => respuesta.data
@@ -45,11 +43,9 @@ describe("ProyectoService", () => {
       new ProvinciaRepository(),
       new PaisRepository(),
     )
-    colaboracionRepository = new ColaboracionRepository()
     service = new ProyectoService(
       proyectoRepository,
       colectivoRepository,
-      colaboracionRepository,
     )
 
     const colectivo = await colectivoService.create({

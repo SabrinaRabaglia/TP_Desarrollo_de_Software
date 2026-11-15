@@ -30,6 +30,7 @@ const aPerfil = (perfilBack, titulosDeHabilidades) => ({
   habilidadesOpcionales: perfilBack.habilidadesOpcionales.map(
     (id) => titulosDeHabilidades[id],
   ),
+  limiteColaboraciones: perfilBack.limiteColaboraciones,
 })
 
 const aProyecto = (proyectoBack, colectivo, titulosDeHabilidades) => ({

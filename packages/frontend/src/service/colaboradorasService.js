@@ -32,20 +32,29 @@ const aPersonaBack = (persona) => ({
   aceptaMensajeriaInterna: persona.aceptaMensajeriaInterna,
 })
 
-const aColaboradora = (personaBack) => ({
-  id: personaBack.id,
-  nombreFantasia: personaBack.nombreFantasia,
-  nombreCompleto:
-    [personaBack.nombre, personaBack.apellido].filter(Boolean).join(" ") ||
-    null,
-  pronombres: personaBack.pronombres ?? [],
-  presentacion: personaBack.presentacion ?? null,
-  habilidades: personaBack.habilidades.map((habilidad) => habilidad.titulo),
-  cuentas: personaBack.cuentas.map((cuenta) => ({
-    tipo: cuenta.tipo,
-    usuario: cuenta.nombreUsuario,
-  })),
-})
+const aColaboradora = (personaBack) => {
+  if (personaBack.esAnonima) {
+    return {
+      esAnonima: true,
+    }
+  }
+
+  return {
+    id: personaBack.id,
+    esAnonima: false,
+    nombreFantasia: personaBack.nombreFantasia,
+    nombreCompleto:
+      [personaBack.nombre, personaBack.apellido].filter(Boolean).join(" ") ||
+      null,
+    pronombres: personaBack.pronombres ?? [],
+    presentacion: personaBack.presentacion ?? null,
+    habilidades: personaBack.habilidades.map((habilidad) => habilidad.titulo),
+    cuentas: personaBack.cuentas.map((cuenta) => ({
+      tipo: cuenta.tipo,
+      usuario: cuenta.nombreUsuario,
+    })),
+  }
+}
 
 const aMedioDeContacto = (medioBack) => ({
   id: medioBack.id,
@@ -71,6 +80,13 @@ const aPersonaDelFormulario = (personaBack, mediosBack) => ({
 export const obtenerColaboradora = async (id) => {
   const response = await api.get(`/personas-colaboradoras/${id}`)
   return aColaboradora(response.data)
+}
+
+export const obtenerColaboradoresPerfil = async (proyectoId, perfilId) => {
+  const response = await api.get(`/proyectos/${proyectoId}/perfiles/${perfilId}/colaboradores`)
+  return response.data.map((persona) =>
+    aColaboradora(persona)
+  )
 }
 
 export const obtenerMediosDeContacto = async (id) => {

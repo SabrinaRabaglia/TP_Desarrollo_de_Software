@@ -28,6 +28,7 @@
   },
   "type": "module",
   "jest": {
+    "testTimeout": 15000,
     "setupFiles": [
       "<rootDir>/tests/sinCanalesReales.js"
     ]

@@ -41,7 +41,7 @@
       "description": "Perfiles que necesita un proyecto: habilidades requeridas y opcionales, compromiso y modalidad de colaboración."
     },
     {
-      "name": "Colaboraciones",
+      "name": "Postulaciones",
       "description": "Inscripción de personas a proyectos"
     },
     {
@@ -696,7 +696,7 @@
       "delete": {
         "tags": ["Personas colaboradoras"],
         "summary": "Eliminar persona colaboradora",
-        "description": "Elimina una persona colaboradora por id, junto con sus colaboraciones, las notificaciones que recibió y su usuario, que ya no puede iniciar sesión. Solo puede borrarla la propia persona; cualquier otro usuario recibe `403`.",
+        "description": "Elimina una persona colaboradora por id, las notificaciones que recibió y su usuario, que ya no puede iniciar sesión. Solo puede borrarla la propia persona; cualquier otro usuario recibe `403`.",
         "operationId": "eliminarPersonaColaboradora",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
@@ -830,6 +830,43 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/proyectos/{id}/perfiles/{perfilId}/colaboradores": {
+      "get": {
+        "tags": ["Personas colaboradoras"],
+        "summary": "Ver colaboradores inscriptos en un perfil",
+        "description": "Algun usuario desea ver los colaboradores inscriptos en un perfil, estos puede no mostrarse si se desea ser anonimo.",
+        "operationId": "verColaboradores",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          },
+          {
+            "$ref": "#/components/parameters/PerfilIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de colaboradores por perfil devuelta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PersonaColaboradora"
+                  }
+                }
+              }
+            }
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -1618,6 +1655,43 @@
         }
       }
     },
+    "/proyectos/{id}/perfiles/{perfilId}/postulaciones": {
+      "get": {
+        "tags": ["Postulaciones"],
+        "summary": "Revisar las postulaciones de un perfil",
+        "description": "Un colectivo desea revisar las postulaciones que tiene, pudiendolas aceptar, rechazar o dar de baja.",
+        "operationId": "verPostulaciones",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          },
+          {
+            "$ref": "#/components/parameters/PerfilIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de postulaciones devuelta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Postulacion"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
     "/proyectos/{proyectoId}/hitos": {
       "get": {
         "summary": "Obtener todos los hitos de un proyecto",
@@ -1770,21 +1844,21 @@
         }
       }
     },
-    "/colaboraciones": {
+    "/postulaciones": {
       "get": {
-        "tags": ["Colaboraciones"],
-        "summary": "Listar colaboraciones",
-        "description": "Devuelve todas las colaboraciones en forma resumida.",
-        "operationId": "listarColaboraciones",
+        "tags": ["Postulaciones"],
+        "summary": "Listar postulaciones",
+        "description": "Devuelve todas las postulaciones en forma resumida.",
+        "operationId": "listarPostulaciones",
         "responses": {
           "200": {
-            "description": "Lista de colaboraciones",
+            "description": "Lista de postulaciones",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Colaboracion"
+                    "$ref": "#/components/schemas/Postulacion"
                   }
                 }
               }
@@ -1793,20 +1867,20 @@
         }
       },
       "post": {
-        "tags": ["Colaboraciones"],
+        "tags": ["Postulaciones"],
         "summary": "Inscribir una persona en un proyecto",
         "description": "Crea una colaboración. Responde 404 si el proyecto o la persona no existen; 409 si el proyecto está cerrado, si la persona no tiene al menos una habilidad requerida por el proyecto o si ya colabora en él.",
-        "operationId": "crearColaboracion",
+        "operationId": "crearPostulacion",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ColaboracionInput"
+                "$ref": "#/components/schemas/PostulacionInput"
               },
               "example": {
                 "personaColaboradoraId": "64f1a2b3c4d5e6f7a8b9c003",
-                "proyectoId": "64f1a2b3c4d5e6f7a8b9c004",
+                "perfilId": "64f1a2b3c4d5e6f7a8b9c004",
                 "esAnonima": false
               }
             }
@@ -1818,7 +1892,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Colaboracion"
+                  "$ref": "#/components/schemas/Postulacion"
                 }
               }
             }
@@ -2599,15 +2673,15 @@
           }
         }
       },
-      "ColaboracionInput": {
+      "PostulacionInput": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["personaColaboradoraId", "proyectoId"],
+        "required": ["personaColaboradoraId", "perfilId"],
         "properties": {
           "personaColaboradoraId": {
             "$ref": "#/components/schemas/ObjectId"
           },
-          "proyectoId": {
+          "perfilId": {
             "$ref": "#/components/schemas/ObjectId"
           },
           "esAnonima": {
@@ -2617,13 +2691,13 @@
           }
         }
       },
-      "Colaboracion": {
+      "Postulacion": {
         "type": "object",
         "required": [
           "id",
           "fechaInscripcion",
           "personaColaboradora",
-          "proyecto",
+          "perfil",
           "esAnonima"
         ],
         "properties": {
@@ -2651,14 +2725,14 @@
             "nullable": true,
             "description": "`null` si la colaboración es anónima."
           },
-          "proyecto": {
+          "perfil": {
             "type": "object",
-            "required": ["id", "titulo"],
+            "required": ["id", "nombre"],
             "properties": {
               "id": {
                 "$ref": "#/components/schemas/ObjectId"
               },
-              "titulo": {
+              "nombre": {
                 "type": "string"
               }
             }

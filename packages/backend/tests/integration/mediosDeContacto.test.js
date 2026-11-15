@@ -5,6 +5,7 @@ import AuthService from "../../src/services/AuthService.js"
 import ColectivoRepository from "../../src/repositories/ColectivoRepository.js"
 import PersonaColaboradoraRepository from "../../src/repositories/PersonaColaboradoraRepository.js"
 import UsuarioRepository from "../../src/repositories/UsuarioRepository.js"
+import PostulacionModel from "../../src/schemas/postulacionSchema.js"
 import { conectar, desconectar } from "./mongo.js"
 
 let server
@@ -98,19 +99,23 @@ beforeAll(async () => {
     estado: "PUBLICADO",
     fechaCierre: null,
   })
-  await enviar("POST", `/proyectos/${proyecto.id}/perfiles`, {
-    descripcion: "Desarrollo web",
-    unidadCompromiso: "HORAS_TOTALES",
-    cantidadHoras: 5,
-    modalidadesColaboracion: ["GRATUITA"],
-    habilidadesRequeridas: [habilidad.id],
-    habilidadesOpcionales: [habilidad.id],
+  const { body: perfil } = await enviar(
+    "POST",
+    `/proyectos/${proyecto.id}/perfiles`,
+    {
+      descripcion: "Desarrollo web",
+      unidadCompromiso: "HORAS_TOTALES",
+      cantidadHoras: 5,
+      modalidadesColaboracion: ["GRATUITA"],
+      habilidadesRequeridas: [habilidad.id],
+      habilidadesOpcionales: [habilidad.id],
+    },
+  )
+  await PostulacionModel.create({
+    personaColaboradora: ana.id,
+    perfil: perfil.id,
+    fechaPostulacion: new Date(),
   })
-  const colaboracion = await enviar("POST", "/colaboraciones", {
-    proyectoId: proyecto.id,
-    personaColaboradoraId: ana.id,
-  })
-  expect(colaboracion.status).toBe(201)
 
   for (const email of [
     "huerta@colectivo.test",

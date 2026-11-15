@@ -23,6 +23,10 @@ const perfilSchema = new mongoose.Schema(
     habilidadesOpcionales: [
       { type: mongoose.Schema.Types.ObjectId, ref: "Habilidad" },
     ],
+    postulacionesAceptadas: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Postulacion" },
+    ],
+    limiteColaboraciones: { type: Number, default: null },
   },
   { toJSON: opcionesJSON },
 )
