@@ -1,20 +1,67 @@
+/*
+  Estilo B · Colectivo
+  Este archivo NO define colores: solo renombra las variables que publica MUI
+  (theme.js con cssVariables: true) y agrega espaciado y anchos.
+  Breakpoints (no se pueden usar variables en @media): 768px y 1024px.
+*/
+
 :root {
-  --color-primario: var(--mui-palette-primary-main);
-  --color-primario-contraste: var(--mui-palette-primary-contrastText);
-  --color-acento: var(--mui-palette-secondary-main);
-  --color-texto: var(--mui-palette-text-primary);
-  --color-texto-secundario: var(--mui-palette-text-secondary);
+  /* Color — superficies y texto */
   --color-fondo: var(--mui-palette-background-default);
   --color-superficie: var(--mui-palette-background-paper);
-  --color-resaltado: var(--mui-palette-action-selected);
+  --color-superficie-alt: var(--mui-palette-superficie-alt);
   --color-borde: var(--mui-palette-divider);
+  --color-borde-control: var(--mui-palette-bordeControl-main);
+  --color-texto: var(--mui-palette-text-primary);
+  --color-texto-secundario: var(--mui-palette-text-secondary);
+  --color-texto-deshabilitado: var(--mui-palette-text-disabled);
+
+  /* Color — marca */
+  --color-primario: var(--mui-palette-primary-main);
+  --color-primario-hover: var(--mui-palette-primary-dark);
+  --color-primario-fondo: var(--mui-palette-primarioFondo-main);
+  --color-sobre-primario: var(--mui-palette-primary-contrastText);
+  --color-acento: var(
+    --mui-palette-secondary-main
+  ); /* se mantiene el nombre: ahora es el verde */
+  --color-acento-hover: var(--mui-palette-secondary-dark);
+  --color-enlace: var(--mui-palette-enlace-main);
+  --color-foco: var(--mui-palette-enlace-main);
+
+  /* Color — estados (texto / fondo suave) */
   --color-exito: var(--mui-palette-success-main);
+  --color-exito-fondo: var(--mui-palette-estado-exitoFondo);
   --color-advertencia: var(--mui-palette-warning-main);
+  --color-advertencia-fondo: var(--mui-palette-estado-advertenciaFondo);
   --color-error: var(--mui-palette-error-main);
-  --fuente: var(--mui-font-body1);
-  --radio: var(--mui-shape-borderRadius);
-  --espacio: 1rem;
-  /* Escala de espaciado (base 4px): --espacio-N = N × 4px */
+  --color-error-fondo: var(--mui-palette-estado-errorFondo);
+  --color-info: var(--mui-palette-info-main);
+  --color-info-fondo: var(--mui-palette-estado-infoFondo);
+  --color-skeleton: var(--mui-palette-skeleton-main);
+
+  /* Tipografía */
+  --fuente-texto:
+    "Geist", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fuente-titulos: "Fraunces", Georgia, "Times New Roman", serif;
+  --texto-chico: 0.875rem;
+  --texto-mini: 0.78rem;
+  --interlineado: 1.5;
+
+  /* Forma */
+  --radio: var(
+    --mui-shape-borderRadius
+  ); /* 14px: inputs, alerts, bloques internos */
+  --radio-grande: 22px; /* tarjetas, diálogos */
+  --radio-pill: 999px; /* botones, chips, paginación */
+  --borde: 1px solid var(--color-borde);
+  --borde-control: 1px solid var(--color-borde-control);
+  --sombra: var(--mui-shadows-2);
+  --sombra-flotante: var(--mui-shadows-8);
+  --sombra-dialogo: var(--mui-shadows-24);
+  --anillo-foco: 2px solid var(--color-foco);
+
+  /* Espaciado — base 4px, escala en múltiplos */
+  --espacio: 8px; /* compatibilidad con el nombre actual = theme.spacing(1) */
   --espacio-1: 4px;
   --espacio-2: 8px;
   --espacio-3: 12px;
@@ -25,9 +72,39 @@
   --espacio-10: 40px;
   --espacio-12: 48px;
   --espacio-16: 64px;
-  --ancho-maximo: 72rem;
+
+  /* Layout */
+  --ancho-maximo: 1180px;
+  --ancho-lectura: 65ch;
+  --margen-pagina: var(--espacio-4); /* 16px móvil */
+  --separacion-grilla: var(--espacio-4);
+  --alto-navbar: 64px;
+  --alto-tactil: 44px;
   --ancho-formulario: 48rem;
-  --borde: 1px solid var(--color-borde);
+
+  /* Nombres anteriores al estilo Colectivo (se sacan cuando nadie los use) */
+  --color-primario-contraste: var(--color-sobre-primario);
+  --color-resaltado: var(--color-superficie-alt);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --margen-pagina: var(--espacio-6); /* 24px tablet */
+    --separacion-grilla: var(--espacio-5);
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --margen-pagina: var(--espacio-8); /* 32px desktop */
+    --separacion-grilla: var(--espacio-6);
+  }
+}
+
+/* ---------- Base ---------- */
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 *,
@@ -37,11 +114,17 @@
 }
 
 body {
-  margin: 0;
-  font: var(--fuente);
+  font-family: var(--fuente-texto);
+  line-height: var(--interlineado);
   color: var(--color-texto);
-  background-color: var(--color-fondo);
-  -webkit-font-smoothing: antialiased;
+  background: var(--color-fondo);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--fuente-titulos);
+  text-wrap: balance;
 }
 
 h1,
@@ -56,7 +139,17 @@ a {
   color: var(--color-primario);
 }
 
-img {
+p {
+  text-wrap: pretty;
+}
+
+:focus-visible {
+  outline: var(--anillo-foco);
+  outline-offset: 2px;
+}
+
+img,
+svg {
   max-width: 100%;
 }
 
@@ -69,11 +162,84 @@ fieldset {
 }
 
 legend {
-  padding: 0 0.5rem;
+  padding: 0 var(--espacio-2);
   font-weight: 600;
 }
 
-:focus-visible {
-  outline: 3px solid var(--color-acento);
-  outline-offset: 2px;
+/* ---------- Utilidades de layout (mobile-first) ---------- */
+
+.contenedor {
+  width: 100%;
+  max-width: var(--ancho-maximo);
+  margin-inline: auto;
+  padding-inline: var(--margen-pagina);
+}
+
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-6);
+  padding-block: var(--espacio-6) var(--espacio-10);
+}
+
+@media (min-width: 1024px) {
+  .pagina {
+    gap: var(--espacio-8);
+    padding-block: var(--espacio-8) var(--espacio-16);
+  }
+}
+
+/* Grilla de tarjetas: 1 → 2 → 3 columnas */
+.grilla-tarjetas {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--separacion-grilla);
+}
+
+@media (min-width: 768px) {
+  .grilla-tarjetas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grilla-tarjetas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Layout con barra lateral (filtros a la izquierda / resumen a la derecha) */
+.layout-lateral {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--separacion-grilla);
+}
+
+@media (min-width: 1024px) {
+  .layout-lateral {
+    grid-template-columns: 280px minmax(0, 1fr);
+  }
+
+  .layout-lateral--derecha {
+    grid-template-columns: minmax(0, 1fr) 340px;
+  }
+}
+
+.texto-lectura {
+  max-width: var(--ancho-lectura);
+}
+
+.saltar-contenido {
+  position: absolute;
+  left: var(--espacio-2);
+  top: -48px;
+  z-index: 1300;
+  padding: var(--espacio-2) var(--espacio-3);
+  border-radius: var(--radio);
+  background: var(--color-primario);
+  color: var(--color-sobre-primario);
+}
+
+.saltar-contenido:focus {
+  top: var(--espacio-2);
 }
