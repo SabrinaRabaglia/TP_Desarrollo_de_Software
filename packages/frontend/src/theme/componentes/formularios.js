@@ -31,9 +31,24 @@ const componentes = {
         "&.Mui-disabled": {
           backgroundColor: v(theme).palette.superficie.alt,
         },
+        // El hueco del borde se mide con el texto de la etiqueta achicada:
+        // misma letra que la etiqueta (0.9rem × 0.75) para que calce justo.
+        "& .MuiOutlinedInput-notchedOutline legend": {
+          fontSize: "0.675rem",
+          fontWeight: 600,
+        },
       }),
       input: { minHeight: 24, paddingBlock: 10 },
+      // El relleno ya lo pone el texto: así la primera línea queda a la
+      // altura de la etiqueta, como en los campos de una línea.
+      multiline: { paddingBlock: 0 },
     },
+  },
+
+  // MUI le da al select una altura propia de 23px: se iguala a los campos de
+  // texto para que una fila "tipo + valor" quede pareja.
+  MuiSelect: {
+    styleOverrides: { select: { minHeight: 24, lineHeight: "24px" } },
   },
 
   MuiFormHelperText: {
@@ -44,6 +59,20 @@ const componentes = {
 
   MuiFormLabel: {
     styleOverrides: { root: { fontWeight: 600, fontSize: "0.9rem" } },
+  },
+
+  // MUI ubica la etiqueta para un campo de 56px con letra de 1rem; los
+  // nuestros miden 44px (24 de texto + 10 arriba y abajo) y la etiqueta va en
+  // 0.9rem. Centrada adentro del campo y, achicada, sobre la línea del borde.
+  MuiInputLabel: {
+    styleOverrides: {
+      outlined: {
+        transform: "translate(14px, 12px) scale(1)",
+        "&.MuiInputLabel-shrink": {
+          transform: "translate(14px, -8px) scale(0.75)",
+        },
+      },
+    },
   },
 
   MuiAutocomplete: {
