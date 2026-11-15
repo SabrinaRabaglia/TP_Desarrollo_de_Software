@@ -2,6 +2,7 @@ import api from "./api"
 import { obtenerHabilidades } from "./habilidadesService"
 import {
   buscarProyectos,
+  obtenerCuposDelPerfil,
   obtenerNombresDelPerfil,
   obtenerProyecto,
 } from "./proyectosService"
@@ -177,5 +178,29 @@ test("para las migas trae el título del proyecto y el nombre del perfil", async
   expect(await obtenerNombresDelPerfil("proyecto-1", "otro")).toEqual({
     proyecto: "Sitio web de la huerta",
     perfil: null,
+  })
+})
+
+test("los cupos del perfil dicen el límite y cuántas aceptadas ocupan lugar", async () => {
+  api.get.mockResolvedValue({
+    data: {
+      perfiles: [
+        {
+          id: "perfil-1",
+          limiteColaboraciones: 2,
+          postulacionesAceptadas: ["a1"],
+        },
+        { id: "perfil-2", limiteColaboraciones: null },
+      ],
+    },
+  })
+
+  expect(await obtenerCuposDelPerfil("proyecto-1", "perfil-1")).toEqual({
+    limite: 2,
+    aceptadas: 1,
+  })
+  expect(await obtenerCuposDelPerfil("proyecto-1", "perfil-2")).toEqual({
+    limite: null,
+    aceptadas: 0,
   })
 })

@@ -1,19 +1,120 @@
-/* Las tarjetas y las etiquetas de estado están en PaginaPostulaciones.css.
-   Acá va solo lo propio de la revisión de postulaciones de un perfil. */
+.revision-pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-6);
+}
 
-.presentacion-colaborador,
-.datos-contacto {
+.revision-encabezado {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espacio-2);
+}
+
+.revision-encabezado p {
   color: var(--color-texto-secundario);
 }
 
-.datos-contacto span {
+.revision-lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.revision {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-3);
+  height: 100%;
+  padding: var(--espacio-5);
+  border: var(--borde);
+  border-radius: var(--radio-grande);
+  background-color: var(--color-superficie);
+}
+
+.revision-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.revision-nombre {
+  font-size: 1.25rem;
+  overflow-wrap: anywhere;
+}
+
+.revision-nombre a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.revision-nombre a:hover,
+.revision-nombre a:focus-visible {
+  text-decoration: underline;
+}
+
+.revision-pronombres,
+.revision-baja {
+  color: var(--color-texto-secundario);
+}
+
+.revision-grupo h3,
+.revision-contacto h3 {
+  margin: 0 0 var(--espacio-2);
+  font-family: var(--fuente-texto);
+  font-size: var(--texto-chico);
+  color: var(--color-texto-secundario);
+}
+
+.revision-fechas {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--espacio-1) var(--espacio-3);
+  margin: 0;
+}
+
+/* Etiqueta arriba y valor abajo: un email largo entra sin cortarse */
+.revision-contacto dl {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+  margin: 0;
+}
+
+.revision-fechas {
+  font-size: var(--texto-chico);
+}
+
+.revision-fechas dt {
   font-weight: 600;
 }
 
-.acciones-postulacion {
+.revision-contacto dt {
+  font-size: var(--texto-chico);
+  color: var(--color-texto-secundario);
+}
+
+.revision-fechas dd,
+.revision-contacto dd {
+  margin: 0;
+  overflow-wrap: break-word;
+}
+
+.revision-medio {
+  display: flex;
+  flex-direction: column;
+}
+
+.revision-contacto {
+  padding: var(--espacio-4);
+  border-radius: var(--radio);
+  background-color: var(--color-superficie-alt);
+}
+
+.revision-acciones {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  margin-top: var(--espacio-4);
+  gap: var(--espacio-2);
+  margin-top: auto;
+  padding-top: var(--espacio-2);
 }

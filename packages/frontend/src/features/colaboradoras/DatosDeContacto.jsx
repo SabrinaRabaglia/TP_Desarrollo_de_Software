@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom"
 import { Alert } from "@mui/material"
 import Cargando from "../../components/cargando/Cargando"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
+import ValorDelMedio from "../../components/valorDelMedio/ValorDelMedio"
 import { useAuth } from "../../context/AuthContext"
 import { mensajeDeError } from "../../service/api"
 import {
@@ -10,16 +11,6 @@ import {
   TIPOS_DE_MEDIO,
 } from "../../service/colaboradorasService"
 import "./DatosDeContacto.css"
-
-const ValorDelMedio = ({ medio }) => {
-  if (medio.tipo === "TELEGRAM") {
-    return "Conectado"
-  }
-  if (medio.tipo === "EMAIL") {
-    return <a href={`mailto:${medio.valor}`}>{medio.valor}</a>
-  }
-  return medio.valor
-}
 
 const DatosDeContacto = ({ personaId }) => {
   const { usuario } = useAuth()

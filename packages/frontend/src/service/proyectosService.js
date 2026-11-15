@@ -136,3 +136,17 @@ export const obtenerNombresDelPerfil = async (proyectoId, perfilId) => {
 
   return { proyecto: response.data.titulo, perfil: perfil?.nombre ?? null }
 }
+
+// Para revisar postulaciones: cuántos lugares tiene el perfil y cuántos ocupa.
+// `limite` en null es un perfil sin límite.
+export const obtenerCuposDelPerfil = async (proyectoId, perfilId) => {
+  const response = await api.get(`/proyectos/${proyectoId}`)
+  const perfil = (response.data.perfiles ?? []).find(
+    (perfil) => perfil.id === perfilId,
+  )
+
+  return {
+    limite: perfil?.limiteColaboraciones ?? null,
+    aceptadas: perfil?.postulacionesAceptadas?.length ?? 0,
+  }
+}
