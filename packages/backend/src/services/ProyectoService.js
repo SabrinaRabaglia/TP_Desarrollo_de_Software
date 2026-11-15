@@ -114,7 +114,9 @@ export default class ProyectoService {
   }
 
   async getAll(queryParams = {}) {
-    const { page=1, limit=10, ...criterios } = queryParams
+    console.log("1. TODO lo que llega al servicio:", queryParams);
+    const { page=1, limit=10,orden, ...criterios } = queryParams
+    console.log("2. Criterios armados:", criterios, " | Orden:", orden);
     const query = {}
 
     if (criterios.q) {
@@ -124,9 +126,6 @@ export default class ProyectoService {
       ]
     }
 
-    if (criterios.habilidades && criterios.habilidades.length > 0) {
-      query["perfiles.habilidadesRequeridas"] = { $in: criterios.habilidades }
-    }
 
     if (criterios.busquedaAbierta !== undefined) {
       query.busquedaAbierta = criterios.busquedaAbierta
@@ -138,15 +137,48 @@ export default class ProyectoService {
       }
     }
 
+const filtroPerfil = {};
+
+    if (criterios.habilidades && criterios.habilidades.length > 0) {
+      filtroPerfil.habilidadesRequeridas = { $in: criterios.habilidades };
+    }
+
+    if (criterios.modalidad) {
+      // ⚠️ ATENCIÓN ACÁ: 
+      // Revisá en Mongo Compass si la propiedad adentro de 'perfiles' se llama 'modalidad' (singular) 
+      // o 'modalidades' (plural). Si es plural o un array, cambialo acá:
+      filtroPerfil.modalidadesColaboracion = criterios.modalidad; 
+    }
+
+    if (Object.keys(filtroPerfil).length > 0) {
+      query.perfiles = { $elemMatch: filtroPerfil };
+    }
+
+    let sortConfig = { createdAt: -1 } // Por defecto: más recientes primero (como pide el TP)
+    if (orden === "antiguos") {
+      sortConfig = { createdAt: 1 }
+    }
+
     const skip = (page - 1) * limit
     const { proyectos, total } = await this.proyectoRepository.findAll(
       query,
       skip,
       limit,
+      sortConfig
     )
+
+    const proyectosMapeados = proyectos.map(p => {
+      // Si es un documento de Mongoose, lo pasamos a JSON normal
+      const proyectoObj = p.toJSON ? p.toJSON() : p;
+      return {
+        ...proyectoObj,
+        id: proyectoObj.id || proyectoObj._id // Aseguramos que exista 'id'
+      };
+    });
+
     return {
       metadata: { page, limit, total },
-      data: proyectos,
+      data: proyectosMapeados,
     }
   }
 }

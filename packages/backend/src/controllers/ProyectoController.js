@@ -5,9 +5,15 @@ export default class ProyectoController {
 
   getAll = async (req, res, next) => {
     try {
-      const { habilidades, q, busquedaAbierta } = req.query
+      const { habilidades, q, orden, modalidad,busquedaAbierta } = req.query
 
-      if (habilidades && !q && busquedaAbierta === undefined) {
+      if (
+        habilidades && 
+        !q && 
+        busquedaAbierta === undefined && 
+        !modalidad && // Si mandó modalidad, salta el if
+        !orden        // Si mandó orden, salta el if
+      ) {
         const resultados =
           await this.proyectoService.getAllByHabilidades(habilidades)
         return res.status(200).json({

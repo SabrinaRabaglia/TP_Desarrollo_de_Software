@@ -22,6 +22,8 @@ export const busquedaProyectosSchema = z.object({
 
   q: z.string().trim().optional(),
   busquedaAbierta: z.coerce.boolean().optional(),
+  modalidad: z.string().optional(),
+  orden: z.string().optional(),
 
   //para la paginación pongo valores por defecto.
   page: z.coerce.number().int().min(1).default(1),

@@ -127,10 +127,11 @@ export default class ProyectoRepository {
     return matchedCount === 1
   }
 
-  async findAll(query, skip, limit) {
+  async findAll(query, skip, limit, sortConfig={}) {
     const [proyectos, total] = await Promise.all([
       this.model
         .find(query)
+        .sort(sortConfig)
         .populate("perfiles.habilidadesRequeridas")
         .skip(skip)
         .limit(limit)
