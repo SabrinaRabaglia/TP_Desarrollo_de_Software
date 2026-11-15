@@ -42,7 +42,7 @@
     },
     {
       "name": "Postulaciones",
-      "description": "Inscripción de personas a proyectos"
+      "description": "Postulación de personas a los perfiles de un proyecto: revisión, aceptación, rechazo y baja"
     },
     {
       "name": "Notificaciones",
@@ -1760,8 +1760,13 @@
       "get": {
         "tags": ["Postulaciones"],
         "summary": "Revisar las postulaciones de un perfil",
-        "description": "Un colectivo desea revisar las postulaciones que tiene, pudiendolas aceptar, rechazar o dar de baja.",
+        "description": "Solo el colectivo dueño del proyecto. Trae todas las postulaciones del perfil, en cualquier estado, con los datos de la persona. Las anónimas también traen a la persona: el anonimato es hacia el público, no hacia el colectivo. Los medios de contacto vienen solo en las aceptadas.",
         "operationId": "verPostulaciones",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/IdPath"
@@ -1772,20 +1777,128 @@
         ],
         "responses": {
           "200": {
-            "description": "Lista de postulaciones devuelta",
+            "description": "Postulaciones del perfil",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Postulacion"
+                    "$ref": "#/components/schemas/PostulacionDelPerfil"
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o el proyecto no es del colectivo autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Postulaciones"],
+        "summary": "Postularse a un perfil",
+        "description": "La persona colaboradora autenticada se postula al perfil. Queda `PENDIENTE` hasta que el colectivo la acepte o la rechace. Con `esAnonima: true`, las respuestas no muestran a la persona (`personaColaboradora: null`).",
+        "operationId": "crearPostulacion",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          },
+          {
+            "$ref": "#/components/parameters/PerfilIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostulacionInput"
+              },
+              "example": {
+                "esAnonima": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Postulación creada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Postulacion"
+                },
+                "example": {
+                  "id": "6650a1b2c3d4e5f6a7b8c9f1",
+                  "fechaPostulacion": "2026-11-10T14:00:00.000Z",
+                  "fechaRevision": null,
+                  "estado": "PENDIENTE",
+                  "esAnonima": false,
+                  "fechaBaja": null,
+                  "origenBaja": null,
+                  "personaColaboradora": {
+                    "id": "64f1a2b3c4d5e6f7a8b9c030",
+                    "nombreFantasia": "anag"
+                  },
+                  "perfil": "64f1a2b3c4d5e6f7a8b9c021",
+                  "createdAt": "2026-11-10T14:00:00.000Z",
+                  "updatedAt": "2026-11-10T14:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Solo una persona colaboradora puede postularse.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "La persona ya se postuló a este perfil (también si después se dio de baja), el proyecto está cerrado o la persona no tiene ninguna de las habilidades del perfil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
@@ -1948,52 +2061,174 @@
     "/postulaciones": {
       "get": {
         "tags": ["Postulaciones"],
-        "summary": "Listar postulaciones",
-        "description": "Devuelve todas las postulaciones en forma resumida.",
+        "summary": "Listar mis postulaciones",
+        "description": "Las postulaciones de la persona colaboradora autenticada, en cualquier estado, con el proyecto y el perfil a los que se postuló. Las anónimas también traen su id: es la propia persona.",
         "operationId": "listarPostulaciones",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Lista de postulaciones",
+            "description": "Postulaciones de la persona",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Postulacion"
+                    "$ref": "#/components/schemas/PostulacionDeLaPersona"
                   }
                 }
               }
             }
-          }
-        }
-      },
-      "post": {
-        "tags": ["Postulaciones"],
-        "summary": "Inscribir una persona en un proyecto",
-        "description": "Crea una colaboración. Responde 404 si el proyecto o la persona no existen; 409 si el proyecto está cerrado, si la persona no tiene al menos una habilidad requerida por el proyecto o si ya colabora en él.",
-        "operationId": "crearPostulacion",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PostulacionInput"
-              },
-              "example": {
-                "personaColaboradoraId": "64f1a2b3c4d5e6f7a8b9c003",
-                "perfilId": "64f1a2b3c4d5e6f7a8b9c004",
-                "esAnonima": false
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Solo una persona colaboradora tiene postulaciones.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
-        },
+        }
+      }
+    },
+    "/postulaciones/{id}/aceptar": {
+      "patch": {
+        "tags": ["Postulaciones"],
+        "summary": "Aceptar una postulación",
+        "description": "El colectivo dueño del proyecto acepta una postulación pendiente. La persona pasa a colaborar en el perfil: figura en sus colaboradores y el colectivo puede ver sus datos de contacto.",
+        "operationId": "aceptarPostulacion",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
         "responses": {
-          "201": {
-            "description": "Colaboración creada",
+          "200": {
+            "description": "Postulación aceptada",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Postulacion"
+                },
+                "example": {
+                  "id": "6650a1b2c3d4e5f6a7b8c9f1",
+                  "fechaPostulacion": "2026-11-10T14:00:00.000Z",
+                  "fechaRevision": "2026-11-11T10:00:00.000Z",
+                  "estado": "ACEPTADA",
+                  "esAnonima": false,
+                  "fechaBaja": null,
+                  "origenBaja": null,
+                  "personaColaboradora": {
+                    "id": "64f1a2b3c4d5e6f7a8b9c030",
+                    "nombreFantasia": "anag"
+                  },
+                  "perfil": "64f1a2b3c4d5e6f7a8b9c021",
+                  "createdAt": "2026-11-10T14:00:00.000Z",
+                  "updatedAt": "2026-11-11T10:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Id inválido, o el perfil ya alcanzó su límite de colaboradores.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o la postulación es de un proyecto de otro colectivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "La postulación no está pendiente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/postulaciones/{id}/rechazar": {
+      "patch": {
+        "tags": ["Postulaciones"],
+        "summary": "Rechazar una postulación",
+        "description": "El colectivo dueño del proyecto rechaza una postulación pendiente.",
+        "operationId": "rechazarPostulacion",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Postulación rechazada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Postulacion"
+                },
+                "example": {
+                  "id": "6650a1b2c3d4e5f6a7b8c9f1",
+                  "fechaPostulacion": "2026-11-10T14:00:00.000Z",
+                  "fechaRevision": "2026-11-11T10:00:00.000Z",
+                  "estado": "RECHAZADA",
+                  "esAnonima": false,
+                  "fechaBaja": null,
+                  "origenBaja": null,
+                  "personaColaboradora": {
+                    "id": "64f1a2b3c4d5e6f7a8b9c030",
+                    "nombreFantasia": "anag"
+                  },
+                  "perfil": "64f1a2b3c4d5e6f7a8b9c021",
+                  "createdAt": "2026-11-10T14:00:00.000Z",
+                  "updatedAt": "2026-11-11T10:00:00.000Z"
                 }
               }
             }
@@ -2001,11 +2236,31 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o la postulación es de un proyecto de otro colectivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
           "409": {
-            "$ref": "#/components/responses/Conflict"
+            "description": "La postulación no está pendiente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
@@ -2027,7 +2282,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PostulacionDadaDeBaja"
+                  "$ref": "#/components/schemas/Postulacion"
                 },
                 "example": {
                   "id": "6650a1b2c3d4e5f6a7b8c9f1",
@@ -2037,7 +2292,10 @@
                   "esAnonima": false,
                   "fechaBaja": "2026-11-15T18:30:00.000Z",
                   "origenBaja": "PERSONA_COLABORADORA",
-                  "personaColaboradora": "64f1a2b3c4d5e6f7a8b9c030",
+                  "personaColaboradora": {
+                    "id": "64f1a2b3c4d5e6f7a8b9c030",
+                    "nombreFantasia": "anag"
+                  },
                   "perfil": "64f1a2b3c4d5e6f7a8b9c021",
                   "createdAt": "2026-11-10T14:00:00.000Z",
                   "updatedAt": "2026-11-15T18:30:00.000Z"
@@ -2832,38 +3090,34 @@
       "PostulacionInput": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["personaColaboradoraId", "perfilId"],
+        "description": "La persona y el perfil salen del token y de la ruta.",
         "properties": {
-          "personaColaboradoraId": {
-            "$ref": "#/components/schemas/ObjectId"
-          },
-          "perfilId": {
-            "$ref": "#/components/schemas/ObjectId"
-          },
           "esAnonima": {
             "type": "boolean",
             "default": false,
-            "description": "Si es `true`, la colaboración se registra igual, pero las respuestas no indican quién la realizó."
+            "description": "Si es `true`, la postulación se registra igual, pero las respuestas no indican quién la hizo."
           }
         }
       },
-      "PostulacionDadaDeBaja": {
+      "Postulacion": {
         "type": "object",
-        "description": "La postulación tal como queda guardada después de la baja. `personaColaboradora` y `perfil` son ids.",
+        "description": "La postulación guardada. La devuelven crear, aceptar, rechazar y dar de baja.",
         "required": [
           "id",
-          "estado",
           "fechaPostulacion",
+          "fechaRevision",
+          "estado",
+          "esAnonima",
           "fechaBaja",
           "origenBaja",
-          "esAnonima",
-          "perfil"
+          "personaColaboradora",
+          "perfil",
+          "createdAt",
+          "updatedAt"
         ],
         "properties": {
-          "id": { "$ref": "#/components/schemas/ObjectId" },
-          "estado": {
-            "type": "string",
-            "enum": ["BAJA"]
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
           },
           "fechaPostulacion": {
             "type": "string",
@@ -2872,24 +3126,45 @@
           "fechaRevision": {
             "type": "string",
             "format": "date-time",
-            "description": "Cuándo el colectivo la aceptó."
+            "nullable": true,
+            "description": "Cuándo el colectivo la aceptó o la rechazó. `null` mientras está pendiente."
+          },
+          "estado": {
+            "type": "string",
+            "enum": ["PENDIENTE", "ACEPTADA", "RECHAZADA", "BAJA"]
           },
           "fechaBaja": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true,
+            "description": "`null` si no se dio de baja."
           },
           "origenBaja": {
             "type": "string",
             "enum": ["PERSONA_COLABORADORA", "COLECTIVO"],
-            "description": "Quién la dio de baja: la propia persona o el colectivo dueño del proyecto."
-          },
-          "esAnonima": { "type": "boolean" },
-          "personaColaboradora": {
-            "allOf": [{ "$ref": "#/components/schemas/ObjectId" }],
             "nullable": true,
+            "description": "Quién la dio de baja: la propia persona o el colectivo dueño del proyecto. `null` si no se dio de baja."
+          },
+          "esAnonima": {
+            "type": "boolean"
+          },
+          "personaColaboradora": {
+            "type": "object",
+            "nullable": true,
+            "required": ["id", "nombreFantasia"],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/ObjectId"
+              },
+              "nombreFantasia": {
+                "type": "string"
+              }
+            },
             "description": "`null` si la postulación es anónima."
           },
-          "perfil": { "$ref": "#/components/schemas/ObjectId" },
+          "perfil": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -2900,42 +3175,74 @@
           }
         }
       },
-      "Postulacion": {
+      "PostulacionDeLaPersona": {
         "type": "object",
+        "description": "Una postulación en el listado de la propia persona. Usa `_id` en lugar de `id`.",
         "required": [
-          "id",
-          "fechaInscripcion",
+          "_id",
+          "fechaPostulacion",
+          "fechaRevision",
+          "estado",
+          "esAnonima",
+          "fechaBaja",
+          "origenBaja",
           "personaColaboradora",
-          "perfil",
-          "esAnonima"
+          "proyecto",
+          "perfil"
         ],
         "properties": {
-          "id": {
+          "_id": {
             "$ref": "#/components/schemas/ObjectId"
           },
-          "fechaInscripcion": {
+          "fechaPostulacion": {
             "type": "string",
             "format": "date-time"
+          },
+          "fechaRevision": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Cuándo el colectivo la aceptó o la rechazó. `null` mientras está pendiente."
+          },
+          "estado": {
+            "type": "string",
+            "enum": ["PENDIENTE", "ACEPTADA", "RECHAZADA", "BAJA"]
+          },
+          "fechaBaja": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "`null` si no se dio de baja."
+          },
+          "origenBaja": {
+            "type": "string",
+            "enum": ["PERSONA_COLABORADORA", "COLECTIVO"],
+            "nullable": true,
+            "description": "Quién la dio de baja: la propia persona o el colectivo dueño del proyecto. `null` si no se dio de baja."
           },
           "esAnonima": {
             "type": "boolean"
           },
           "personaColaboradora": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "proyecto": {
             "type": "object",
-            "required": ["id", "nombreFantasia"],
+            "nullable": true,
+            "required": ["id", "titulo"],
             "properties": {
               "id": {
                 "$ref": "#/components/schemas/ObjectId"
               },
-              "nombreFantasia": {
+              "titulo": {
                 "type": "string"
               }
             },
-            "nullable": true,
-            "description": "`null` si la colaboración es anónima."
+            "description": "`null` si el proyecto se borró."
           },
           "perfil": {
             "type": "object",
+            "nullable": true,
             "required": ["id", "nombre"],
             "properties": {
               "id": {
@@ -2943,6 +3250,125 @@
               },
               "nombre": {
                 "type": "string"
+              }
+            },
+            "description": "`null` si el perfil se borró."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "__v": {
+            "type": "integer"
+          }
+        }
+      },
+      "PostulacionDelPerfil": {
+        "type": "object",
+        "description": "Una postulación en la revisión del colectivo. Usa `_id` en lugar de `id`.",
+        "required": [
+          "_id",
+          "fechaPostulacion",
+          "fechaRevision",
+          "estado",
+          "fechaBaja",
+          "origenBaja",
+          "esAnonima",
+          "personaColaboradora"
+        ],
+        "properties": {
+          "_id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "fechaPostulacion": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fechaRevision": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Cuándo el colectivo la aceptó o la rechazó. `null` mientras está pendiente."
+          },
+          "estado": {
+            "type": "string",
+            "enum": ["PENDIENTE", "ACEPTADA", "RECHAZADA", "BAJA"]
+          },
+          "fechaBaja": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "`null` si no se dio de baja."
+          },
+          "origenBaja": {
+            "type": "string",
+            "enum": ["PERSONA_COLABORADORA", "COLECTIVO"],
+            "nullable": true,
+            "description": "Quién la dio de baja: la propia persona o el colectivo dueño del proyecto. `null` si no se dio de baja."
+          },
+          "esAnonima": {
+            "type": "boolean",
+            "description": "Si la persona pidió no figurar. El colectivo la ve igual: el anonimato es hacia el público."
+          },
+          "personaColaboradora": {
+            "type": "object",
+            "nullable": true,
+            "description": "`null` si la persona ya no existe.",
+            "required": [
+              "id",
+              "nombreFantasia",
+              "pronombres",
+              "habilidades",
+              "cuentas",
+              "mediosDeContacto"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/ObjectId"
+              },
+              "nombre": {
+                "type": "string",
+                "nullable": true
+              },
+              "apellido": {
+                "type": "string",
+                "nullable": true
+              },
+              "nombreFantasia": {
+                "type": "string"
+              },
+              "pronombres": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "presentacion": {
+                "type": "string",
+                "nullable": true
+              },
+              "habilidades": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Habilidad"
+                }
+              },
+              "cuentas": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Cuenta"
+                }
+              },
+              "mediosDeContacto": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MedioDeContacto"
+                },
+                "description": "Vacío salvo que la postulación esté aceptada."
               }
             }
           }
