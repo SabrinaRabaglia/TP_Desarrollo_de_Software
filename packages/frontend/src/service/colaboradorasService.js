@@ -128,3 +128,20 @@ export const obtenerPerfilPropio = async (id) => {
 export const actualizarColaboradora = async (id, persona) => {
   await api.put(`/personas-colaboradoras/${id}`, aPersonaBack(persona))
 }
+
+export const buscarColaboradoras = async ({ texto, page = 1, limit = 10 } = {}) => {
+  const params = { page, limit };
+
+  // Fijate qué variable espera tu backend en esta ruta (ej: nombre, q, busqueda)
+  if (texto) {
+    params.nombre = texto; 
+  }
+
+  const response = await api.get("/personas-colaboradoras", { params });
+
+  // Recordá extraer el array de .data.data por la paginación, igual que en proyectos
+  return {
+    colaboradoras: response.data.data, 
+    metadata: response.data.metadata
+  };
+};

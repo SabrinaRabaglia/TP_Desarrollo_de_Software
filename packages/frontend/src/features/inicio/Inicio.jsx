@@ -19,6 +19,7 @@ const Inicio = () => {
 
   const [textoBusqueda, setTextoBusqueda] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
 
   useEffect(() => {
     const cargar = async () => {
@@ -27,10 +28,13 @@ const Inicio = () => {
       try {
         const respuesta = await buscarProyectos({
           q: textoBusqueda,
-          page: paginaActual
+          page: paginaActual,
+          limit:2 // TODO BORRAR
         })
         // EXTRAEMOS SOLO EL ARRAY PARA QUE EL .map() FUNCIONE
         setProyectos(respuesta.proyectos) 
+        const { total, limit } = respuesta.metadata;
+        setTotalPaginas(Math.ceil(total / limit) || 1)
       } catch (e) {
         setError(mensajeDeError(e))
       } finally {
@@ -101,6 +105,29 @@ const Inicio = () => {
       />
 
       {renderProyectos()}
+      {!cargando && totalPaginas > 1 && (
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', margin: '30px 0' }}>
+          <button 
+            disabled={paginaActual === 1} 
+            onClick={() => setPaginaActual(paginaActual - 1)}
+            style={{ padding: '8px 16px', cursor: paginaActual === 1 ? 'not-allowed' : 'pointer' }}
+          >
+            ← Anterior
+          </button>
+          
+          <span style={{ alignSelf: 'center', fontWeight: 'bold' }}>
+            Página {paginaActual} de {totalPaginas}
+          </span>
+          
+          <button 
+            disabled={paginaActual >= totalPaginas} 
+            onClick={() => setPaginaActual(paginaActual + 1)}
+            style={{ padding: '8px 16px', cursor: paginaActual >= totalPaginas ? 'not-allowed' : 'pointer' }}
+          >
+            Siguiente →
+          </button>
+        </div>
+      )}
     </section>
   )
 }
