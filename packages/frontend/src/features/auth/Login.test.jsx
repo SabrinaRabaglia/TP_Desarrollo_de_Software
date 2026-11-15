@@ -53,6 +53,18 @@ describe("Login", () => {
     )
   })
 
+  test("mientras ingresa no deja volver a enviar", async () => {
+    iniciarSesion.mockReturnValue(new Promise(() => {}))
+
+    renderizarLogin()
+    completarYEnviar()
+
+    expect(
+      await screen.findByRole("button", { name: /ingresar/i }),
+    ).toBeDisabled()
+    expect(iniciarSesion).toHaveBeenCalledTimes(1)
+  })
+
   test("muestra el mensaje del backend si las credenciales son inválidas", async () => {
     iniciarSesion.mockRejectedValue({
       response: { data: { message: "Credenciales inválidas" } },

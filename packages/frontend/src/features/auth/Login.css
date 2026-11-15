@@ -4,12 +4,24 @@
 }
 
 .login-tarjeta {
+  width: 100%;
+  max-width: 28rem;
+}
+
+.login-contenido {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio-4);
-  width: 100%;
-  max-width: 26rem;
-  padding: var(--espacio-6);
+  gap: var(--espacio-5);
+}
+
+.login-encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+}
+
+.login-bajada {
+  color: var(--color-texto-secundario);
 }
 
 .login-formulario {
@@ -19,6 +31,9 @@
 }
 
 .login-registro {
-  font-size: 0.875rem;
+  padding-top: var(--espacio-4);
+  border-top: var(--borde);
+  font-size: var(--texto-chico);
   text-align: center;
+  color: var(--color-texto-secundario);
 }

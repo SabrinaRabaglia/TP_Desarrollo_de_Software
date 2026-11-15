@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link, Navigate, useLocation } from "react-router-dom"
-import { Alert, Button, Card, TextField } from "@mui/material"
+import { Alert, Button, Card, CardContent, TextField } from "@mui/material"
 import { useAuth } from "../../context/AuthContext"
 import { mensajeDeError } from "../../service/api"
 import "./Login.css"
@@ -33,38 +33,44 @@ const Login = () => {
   return (
     <div className="login">
       <Card className="login-tarjeta">
-        <h1>Ingresar</h1>
+        <CardContent className="login-contenido">
+          <div className="login-encabezado">
+            <h1>Ingresar</h1>
+            <p className="login-bajada">
+              Entrá para postularte a proyectos o revisar las postulaciones de
+              tu colectivo.
+            </p>
+          </div>
 
-        {error && <Alert severity="error">{error}</Alert>}
+          {error && <Alert severity="error">{error}</Alert>}
 
-        <form onSubmit={ingresar} className="login-formulario">
-          <TextField
-            label="Email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            fullWidth
-          />
-          <TextField
-            label="Contraseña"
-            type="password"
-            autoComplete="current-password"
-            value={contrasena}
-            onChange={(e) => setContrasena(e.target.value)}
-            required
-            fullWidth
-          />
-          <Button type="submit" variant="contained" disabled={enviando}>
-            {enviando ? "Ingresando..." : "Ingresar"}
-          </Button>
-        </form>
+          <form onSubmit={ingresar} className="login-formulario">
+            <TextField
+              label="Email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <TextField
+              label="Contraseña"
+              type="password"
+              autoComplete="current-password"
+              value={contrasena}
+              onChange={(e) => setContrasena(e.target.value)}
+              required
+            />
+            <Button type="submit" variant="contained" loading={enviando}>
+              Ingresar
+            </Button>
+          </form>
 
-        <p className="login-registro">
-          ¿No tenés cuenta?{" "}
-          <Link to="/colaboradoras/nueva">Registrate como colaboradora</Link>
-        </p>
+          <p className="login-registro">
+            ¿No tenés cuenta?{" "}
+            <Link to="/colaboradoras/nueva">Registrate como colaboradora</Link>
+          </p>
+        </CardContent>
       </Card>
     </div>
   )
