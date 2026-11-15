@@ -348,12 +348,20 @@ En el frontend, el colectivo llega a las candidatas desde "Ver candidatas" en ca
 | `codigoabierto@colectivo.test` | `COLECTIVO` | Fundación Código Abierto | `secreto123` |
 | `litoral@colectivo.test` | `COLECTIVO` | Asamblea Ambiental del Litoral | `secreto123` |
 | `redsolidariasur@colectivo.test` | `COLECTIVO` | Red Solidaria Sur | `secreto123` |
+| `losceibos@colectivo.test` | `COLECTIVO` | Asamblea Barrial Los Ceibos | `secreto123` |
+| `raices@colectivo.test` | `COLECTIVO` | Fundación Raíces | `secreto123` |
 | `anag@persona.test` | `PERSONA_COLABORADORA` | anag | `secreto123` |
 | `lucho_dev@persona.test` | `PERSONA_COLABORADORA` | lucho_dev | `secreto123` |
 | `sol.datos@persona.test` | `PERSONA_COLABORADORA` | sol.datos | `secreto123` |
 | `anon123@persona.test` | `PERSONA_COLABORADORA` | anon123 | `secreto123` |
 | `nube@persona.test` | `PERSONA_COLABORADORA` | Nube | `secreto123` |
 | `pampa@persona.test` | `PERSONA_COLABORADORA` | Pampa | `secreto123` |
+| `ceibo@persona.test` | `PERSONA_COLABORADORA` | Ceibo | `secreto123` |
+| `hornero@persona.test` | `PERSONA_COLABORADORA` | Hornero | `secreto123` |
+| `yacare@persona.test` | `PERSONA_COLABORADORA` | Yacaré | `secreto123` |
+| `calden@persona.test` | `PERSONA_COLABORADORA` | Calden | `secreto123` |
+| `tero@persona.test` | `PERSONA_COLABORADORA` | Tero | `secreto123` |
+| `zorzal@persona.test` | `PERSONA_COLABORADORA` | Zorzal | `secreto123` |
 
 ### Obtener un token sin pasar por el front
 

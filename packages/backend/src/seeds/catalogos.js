@@ -60,6 +60,21 @@ const HABILIDADES = [
     "uso_de_soap_ui",
     "Pruebas de servicios web con SoapUI",
   ),
+  new Habilidad(
+    "Conocimientos de Pandas",
+    "conocimientos_de_pandas",
+    "Procesamiento de datos tabulares con Pandas",
+  ),
+  new Habilidad(
+    "Estadística descriptiva",
+    "estadistica_descriptiva",
+    "Resumen e interpretación de conjuntos de datos",
+  ),
+  new Habilidad(
+    "Visualización de datos",
+    "visualizacion_de_datos",
+    "Gráficos y tableros para comunicar datos",
+  ),
 ]
 
 export const sembrar = (model, claves, documentos) => {
