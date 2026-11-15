@@ -50,11 +50,11 @@ const crearColectivoConUsuario = async (nombre, email) => {
   return colectivo
 }
 
-const postularse = (email) =>
+const postularse = (email, esAnonima = false) =>
   enviar(
     "POST",
     `/proyectos/${proyecto.id}/perfiles/${perfil.id}/postulaciones`,
-    { esAnonima: false },
+    { esAnonima },
     tokens[email],
   )
 
@@ -75,6 +75,7 @@ beforeAll(async () => {
   for (const [email, nombreFantasia] of [
     ["ana@persona.test", "anag"],
     ["lucho@persona.test", "lucho_dev"],
+    ["caro@persona.test", "caro"],
   ]) {
     await enviar("POST", "/auth/registro/persona-colaboradora", {
       email,
@@ -109,6 +110,7 @@ beforeAll(async () => {
     "otro@colectivo.test",
     "ana@persona.test",
     "lucho@persona.test",
+    "caro@persona.test",
   ]) {
     tokens[email] = await iniciarSesion(email)
   }
@@ -188,5 +190,25 @@ describe("revisión de postulaciones", () => {
 
     expect(rechazada.status).toBe(200)
     expect(rechazada.body.estado).toBe("RECHAZADA")
+  })
+
+  test("el colectivo ve a quien se postuló de forma anónima y sabe que lo es", async () => {
+    await postularse("caro@persona.test", true)
+
+    const { status, body } = await enviar(
+      "GET",
+      `/proyectos/${proyecto.id}/perfiles/${perfil.id}/postulaciones`,
+      undefined,
+      tokens["huerta@colectivo.test"],
+    )
+
+    expect(status).toBe(200)
+    const anonimaDe = Object.fromEntries(
+      body.map((postulacion) => [
+        postulacion.personaColaboradora.nombreFantasia,
+        postulacion.esAnonima,
+      ]),
+    )
+    expect(anonimaDe).toEqual({ anag: false, lucho_dev: false, caro: true })
   })
 })

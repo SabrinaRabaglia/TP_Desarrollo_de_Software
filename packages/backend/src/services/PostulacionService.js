@@ -112,6 +112,9 @@ export default class PostulacionService {
         return {
           _id: postulacion._id,
           estado: postulacion.estado,
+          // El colectivo ve a la persona igual (el anonimato es hacia el
+          // público), pero tiene que saber que pidió no figurar.
+          esAnonima: postulacion.esAnonima,
           fechaPostulacion: postulacion.fechaPostulacion,
           fechaRevision: postulacion.fechaRevision,
           fechaBaja: postulacion.fechaBaja,
