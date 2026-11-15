@@ -1,7 +1,7 @@
 .registro-colaboradora {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--espacio) * 1.5);
+  gap: var(--espacio-6);
   width: 100%;
   max-width: var(--ancho-formulario);
   margin: 0 auto;
@@ -16,5 +16,5 @@
 .registro-colaboradora-cuenta {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio);
+  gap: var(--espacio-4);
 }

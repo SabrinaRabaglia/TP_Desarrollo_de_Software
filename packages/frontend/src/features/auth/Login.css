@@ -6,16 +6,16 @@
 .login-tarjeta {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio);
+  gap: var(--espacio-4);
   width: 100%;
   max-width: 26rem;
-  padding: calc(var(--espacio) * 1.5);
+  padding: var(--espacio-6);
 }
 
 .login-formulario {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio);
+  gap: var(--espacio-4);
 }
 
 .login-registro {

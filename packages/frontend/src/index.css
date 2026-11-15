@@ -14,6 +14,17 @@
   --fuente: var(--mui-font-body1);
   --radio: var(--mui-shape-borderRadius);
   --espacio: 1rem;
+  /* Escala de espaciado (base 4px): --espacio-N = N × 4px */
+  --espacio-1: 4px;
+  --espacio-2: 8px;
+  --espacio-3: 12px;
+  --espacio-4: 16px;
+  --espacio-5: 20px;
+  --espacio-6: 24px;
+  --espacio-8: 32px;
+  --espacio-10: 40px;
+  --espacio-12: 48px;
+  --espacio-16: 64px;
   --ancho-maximo: 72rem;
   --ancho-formulario: 48rem;
   --borde: 1px solid var(--color-borde);
@@ -52,7 +63,7 @@ img {
 fieldset {
   min-width: 0;
   margin: 0;
-  padding: var(--espacio);
+  padding: var(--espacio-4);
   border: var(--borde);
   border-radius: var(--radio);
 }

@@ -1,7 +1,7 @@
 .filas-tipo-valor {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio);
+  gap: var(--espacio-4);
 }
 
 .filas-tipo-valor-ayuda {

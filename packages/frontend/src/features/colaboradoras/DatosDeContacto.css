@@ -1,7 +1,7 @@
 .datos-de-contacto {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio);
+  gap: var(--espacio-4);
 }
 
 .datos-de-contacto-lista {
@@ -24,7 +24,7 @@
   .datos-de-contacto-lista {
     display: grid;
     grid-template-columns: max-content 1fr;
-    gap: 0.75rem calc(var(--espacio) * 2);
+    gap: 0.75rem var(--espacio-8);
   }
 
   .datos-de-contacto-medio {

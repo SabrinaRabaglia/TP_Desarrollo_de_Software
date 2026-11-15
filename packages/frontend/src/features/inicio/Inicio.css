@@ -1,7 +1,7 @@
 .inicio {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio);
+  gap: var(--espacio-4);
 }
 
 .inicio-bajada {
@@ -13,7 +13,7 @@
 .inicio-proyectos {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--espacio);
+  gap: var(--espacio-4);
   padding: 0;
   list-style: none;
 }

@@ -1,7 +1,7 @@
 .pagina-colaboradora {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--espacio) * 1.5);
+  gap: var(--espacio-6);
 }
 
 .pagina-colaboradora h1 {
@@ -22,7 +22,7 @@
 .pagina-colaboradora-seccion {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio);
+  gap: var(--espacio-4);
 }
 
 .pagina-colaboradora-cuentas {

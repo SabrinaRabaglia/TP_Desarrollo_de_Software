@@ -1,19 +1,19 @@
 .formulario-colaboradora {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--espacio) * 1.5);
+  gap: var(--espacio-6);
 }
 
 .formulario-colaboradora-seccion {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio);
+  gap: var(--espacio-4);
 }
 
 .formulario-colaboradora-nombre {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--espacio);
+  gap: var(--espacio-4);
 }
 
 .formulario-colaboradora-habilidades {

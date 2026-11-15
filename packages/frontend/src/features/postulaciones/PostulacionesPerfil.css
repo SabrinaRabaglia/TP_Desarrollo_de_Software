@@ -15,5 +15,5 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.5rem;
-  margin-top: var(--espacio);
+  margin-top: var(--espacio-4);
 }

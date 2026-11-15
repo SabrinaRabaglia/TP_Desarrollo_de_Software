@@ -9,7 +9,7 @@
   gap: 0.5rem;
   max-width: var(--ancho-maximo);
   margin: 0 auto;
-  padding: 0.75rem var(--espacio);
+  padding: 0.75rem var(--espacio-4);
 }
 
 .navbar-marca {
@@ -26,7 +26,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem var(--espacio);
+  gap: 0.5rem var(--espacio-4);
 }
 
 .navbar-link {

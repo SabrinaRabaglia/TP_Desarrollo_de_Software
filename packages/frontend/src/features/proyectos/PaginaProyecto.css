@@ -1,7 +1,7 @@
 .pagina-proyecto {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--espacio) * 1.5);
+  gap: var(--espacio-6);
 }
 
 .pagina-proyecto-encabezado {
@@ -27,13 +27,13 @@
 .pagina-proyecto-perfiles {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio);
+  gap: var(--espacio-4);
 }
 
 .pagina-proyecto-grilla {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--espacio);
+  gap: var(--espacio-4);
 }
 
 @media (min-width: 768px) {
