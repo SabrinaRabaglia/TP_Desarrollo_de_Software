@@ -2013,6 +2013,61 @@
         }
       }
     },
+    "/postulaciones/{id}/baja": {
+      "patch": {
+        "tags": ["Postulaciones"],
+        "summary": "Dar de baja una postulación aceptada (desanotar)",
+        "description": "La persona se da de baja de su propia postulación, o el colectivo dueño del proyecto desanota a la persona. Solo se da de baja una postulación aceptada, y la baja es permanente: la persona no puede volver a postularse a ese perfil ni la postulación puede volver a aceptarse. Al darse de baja, deja de figurar entre los colaboradores del perfil, libera su lugar en el límite de colaboraciones y el colectivo pierde el acceso a sus datos de contacto. `origenBaja` registra quién la dio de baja.",
+        "operationId": "darDeBajaPostulacion",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/IdPath" }],
+        "responses": {
+          "200": {
+            "description": "Postulación dada de baja",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostulacionDadaDeBaja"
+                },
+                "example": {
+                  "id": "6650a1b2c3d4e5f6a7b8c9f1",
+                  "fechaPostulacion": "2026-11-10T14:00:00.000Z",
+                  "fechaRevision": "2026-11-11T10:00:00.000Z",
+                  "estado": "BAJA",
+                  "esAnonima": false,
+                  "fechaBaja": "2026-11-15T18:30:00.000Z",
+                  "origenBaja": "PERSONA_COLABORADORA",
+                  "personaColaboradora": "64f1a2b3c4d5e6f7a8b9c030",
+                  "perfil": "64f1a2b3c4d5e6f7a8b9c021",
+                  "createdAt": "2026-11-10T14:00:00.000Z",
+                  "updatedAt": "2026-11-15T18:30:00.000Z"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": {
+            "description": "No es la propia postulación de la persona ni una postulación de un proyecto del colectivo.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": {
+            "description": "La postulación no está aceptada (pendiente, rechazada o ya dada de baja).",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
     "/paises": {
       "get": {
         "tags": ["Catálogos"],
@@ -2789,6 +2844,59 @@
             "type": "boolean",
             "default": false,
             "description": "Si es `true`, la colaboración se registra igual, pero las respuestas no indican quién la realizó."
+          }
+        }
+      },
+      "PostulacionDadaDeBaja": {
+        "type": "object",
+        "description": "La postulación tal como queda guardada después de la baja. `personaColaboradora` y `perfil` son ids.",
+        "required": [
+          "id",
+          "estado",
+          "fechaPostulacion",
+          "fechaBaja",
+          "origenBaja",
+          "esAnonima",
+          "perfil"
+        ],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/ObjectId" },
+          "estado": {
+            "type": "string",
+            "enum": ["BAJA"]
+          },
+          "fechaPostulacion": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fechaRevision": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Cuándo el colectivo la aceptó."
+          },
+          "fechaBaja": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "origenBaja": {
+            "type": "string",
+            "enum": ["PERSONA_COLABORADORA", "COLECTIVO"],
+            "description": "Quién la dio de baja: la propia persona o el colectivo dueño del proyecto."
+          },
+          "esAnonima": { "type": "boolean" },
+          "personaColaboradora": {
+            "allOf": [{ "$ref": "#/components/schemas/ObjectId" }],
+            "nullable": true,
+            "description": "`null` si la postulación es anónima."
+          },
+          "perfil": { "$ref": "#/components/schemas/ObjectId" },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
