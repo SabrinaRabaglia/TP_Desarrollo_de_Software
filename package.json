@@ -15,6 +15,7 @@
     "test": "npm run test:backend && npm run test:frontend",
     "seed:backend": "npm run seed --workspace=backend",
     "reiniciar:demo": "npm run reiniciar:demo --workspace=backend",
+    "reiniciar:demo:simular": "npm run reiniciar:demo:simular --workspace=backend",
     "lint": "eslint .",
     "format": "prettier . --write",
     "format:check": "prettier . --check"

@@ -2,10 +2,13 @@ import "dotenv/config"
 import mongoose from "mongoose"
 import MongoDBClient from "../config/database.js"
 import { EstadoPostulacion } from "../domain/enums/EstadoPostulacion.js"
+import ColectivoModel from "../schemas/colectivoSchema.js"
 import NotificacionModel from "../schemas/notificacionSchema.js"
 import PersonaColaboradoraModel from "../schemas/personaColaboradoraSchema.js"
 import PostulacionModel from "../schemas/postulacionSchema.js"
 import ProyectoModel from "../schemas/proyectoSchema.js"
+import UsuarioModel from "../schemas/usuarioSchema.js"
+import { EMAILS_DE_PRUEBA, PROYECTOS_DE_PRUEBA } from "./datosDePrueba.js"
 
 // Los perfiles que se usan en los tres flujos y en los casos borde, como los
 // deja el seed. Las personas que no figuran acá quedan sin postulación.
@@ -115,15 +118,96 @@ const reiniciar = async (partida) => {
   return `${partida.nombre}: ${postulaciones} postulaciones y ${mensajes} mensajes borrados`
 }
 
-// Para repetir la demo. Es el único comando que borra algo, y solo borra
-// postulaciones y mensajes de estos perfiles.
+const ids = (documentos) => documentos.map(({ _id }) => _id)
+
+// Lo que se creó en un ensayo y el seed no conoce: proyectos, colectivos y
+// personas. Si falta algo del seed no devuelve nada y falla, para no tomar
+// por ajeno un dato de prueba.
+const buscarLoAjeno = async () => {
+  const delSeed = await UsuarioModel.find({
+    email: { $in: EMAILS_DE_PRUEBA },
+  }).distinct("entidad")
+  const proyectosDelSeed = await ProyectoModel.distinct("titulo", {
+    titulo: { $in: PROYECTOS_DE_PRUEBA },
+  })
+  if (
+    delSeed.length !== EMAILS_DE_PRUEBA.length ||
+    proyectosDelSeed.length !== PROYECTOS_DE_PRUEBA.length
+  ) {
+    throw new Error(
+      "Faltan usuarios o proyectos de prueba. ¿Corriste npm run seed:backend?",
+    )
+  }
+  const ajenos = { _id: { $nin: delSeed } }
+  const [proyectos, colectivos, personas] = await Promise.all([
+    ProyectoModel.find({
+      $or: [
+        { titulo: { $nin: PROYECTOS_DE_PRUEBA } },
+        { colectivo: { $nin: delSeed } },
+      ],
+    }),
+    ColectivoModel.find(ajenos),
+    PersonaColaboradoraModel.find(ajenos),
+  ])
+  return { delSeed, proyectos, colectivos, personas }
+}
+
+const nombres = (documentos, campo) =>
+  documentos.map((documento) => documento[campo]).join(", ") || "ninguno"
+
+const describir = ({ proyectos, colectivos, personas }) =>
+  [
+    `Proyectos fuera del seed: ${nombres(proyectos, "titulo")}`,
+    `Colectivos fuera del seed: ${nombres(colectivos, "nombre")}`,
+    `Personas fuera del seed: ${nombres(personas, "nombreFantasia")}`,
+  ].join("\n")
+
+const borrar = async ({ delSeed, proyectos, colectivos, personas }) => {
+  const deLoAjeno = [
+    { perfil: { $in: proyectos.flatMap(({ perfiles }) => ids(perfiles)) } },
+    { personaColaboradora: { $in: ids(personas) } },
+  ]
+  const postulaciones = await PostulacionModel.find({
+    $or: deLoAjeno,
+  }).distinct("_id")
+  await PostulacionModel.deleteMany({ _id: { $in: postulaciones } })
+  await NotificacionModel.deleteMany({
+    $or: [...deLoAjeno, { colectivo: { $in: ids(colectivos) } }],
+  })
+  await ProyectoModel.deleteMany({ _id: { $in: ids(proyectos) } })
+  // Una persona borrada deja de ocupar lugar en los perfiles que quedan.
+  await ProyectoModel.updateMany(
+    {},
+    {
+      $pull: { "perfiles.$[].postulacionesAceptadas": { $in: postulaciones } },
+    },
+    { timestamps: false },
+  )
+  await ColectivoModel.deleteMany({ _id: { $in: ids(colectivos) } })
+  await PersonaColaboradoraModel.deleteMany({ _id: { $in: ids(personas) } })
+  await UsuarioModel.deleteMany({ entidad: { $nin: delSeed } })
+}
+
+// Para repetir la demo. Es el único comando que borra algo: lo que no es del
+// seed, y las postulaciones y mensajes de los perfiles de la demo. Con
+// --simular solo muestra qué borraría de lo que no es del seed.
+const soloSimular = process.argv.includes("--simular")
 await MongoDBClient.connect()
 try {
   const partidas = await Promise.all(PUNTOS_DE_PARTIDA.map(resolver))
-  for (const partida of partidas) {
-    console.log(await reiniciar(partida))
+  const ajeno = await buscarLoAjeno()
+  console.log(describir(ajeno))
+  if (soloSimular) {
+    console.log("Simulación: no se borró ni se cambió nada.")
+  } else {
+    await borrar(ajeno)
+    for (const partida of partidas) {
+      console.log(await reiniciar(partida))
+    }
+    console.log(
+      "Demo reiniciada: quedó solo lo del seed y los perfiles como los deja.",
+    )
   }
-  console.log("Demo reiniciada: los perfiles quedaron como los deja el seed.")
 } catch (error) {
   console.error(error.message)
   process.exitCode = 1

@@ -52,6 +52,31 @@ const emailDe = (nombreFantasia) =>
     .replace(/\p{M}/gu, "")
     .toLowerCase()}@persona.test`
 
+const COLECTIVOS_CON_USUARIO = {
+  "huerta@colectivo.test": "Huerta Comunitaria Sur",
+  "codigoabierto@colectivo.test": "Fundación Código Abierto",
+  "litoral@colectivo.test": "Asamblea Ambiental del Litoral",
+  "redsolidariasur@colectivo.test": "Red Solidaria Sur",
+  "losceibos@colectivo.test": "Asamblea Barrial Los Ceibos",
+  "raices@colectivo.test": "Fundación Raíces",
+}
+
+// Lo que identifica a los datos de prueba: reiniciar:demo borra los colectivos,
+// personas y proyectos que no figuran acá.
+export const EMAILS_DE_PRUEBA = [
+  ...Object.keys(COLECTIVOS_CON_USUARIO),
+  ...PERSONAS_CON_USUARIO.map(emailDe),
+]
+export const PROYECTOS_DE_PRUEBA = [
+  "Sitio web de la huerta",
+  "API de donaciones",
+  "Mapa de humedales",
+  "Rediseño de la app de voluntariado",
+  "Mapa de comedores comunitarios",
+  "Sistema de reservas del salón comunitario",
+  "Portal de voluntariados",
+]
+
 const usuario = async (email, rol, entidad) => ({
   email,
   hashContrasena: await hashear(CONTRASENA_DE_PRUEBA),
@@ -368,6 +393,12 @@ export default async function sembrarDatosDePrueba() {
       ],
     },
   ]
+  const titulos = proyectos.map(({ titulo }) => titulo)
+  if (titulos.toSorted().join() !== PROYECTOS_DE_PRUEBA.toSorted().join()) {
+    throw new Error(
+      "PROYECTOS_DE_PRUEBA tiene que listar los mismos títulos que los proyectos del seed.",
+    )
+  }
   await sembrar(ProyectoModel, ["titulo"], proyectos)
   // Un proyecto que ya existía no se vuelve a insertar: si le falta alguno de
   // los perfiles de prueba (por nombre), se le agrega sin tocar los demás.
@@ -650,35 +681,8 @@ export default async function sembrarDatosDePrueba() {
     UsuarioModel,
     ["email"],
     await Promise.all([
-      usuario(
-        "huerta@colectivo.test",
-        RolUsuario.COLECTIVO,
-        colectivos["Huerta Comunitaria Sur"],
-      ),
-      usuario(
-        "codigoabierto@colectivo.test",
-        RolUsuario.COLECTIVO,
-        colectivos["Fundación Código Abierto"],
-      ),
-      usuario(
-        "litoral@colectivo.test",
-        RolUsuario.COLECTIVO,
-        colectivos["Asamblea Ambiental del Litoral"],
-      ),
-      usuario(
-        "redsolidariasur@colectivo.test",
-        RolUsuario.COLECTIVO,
-        colectivos["Red Solidaria Sur"],
-      ),
-      usuario(
-        "losceibos@colectivo.test",
-        RolUsuario.COLECTIVO,
-        colectivos["Asamblea Barrial Los Ceibos"],
-      ),
-      usuario(
-        "raices@colectivo.test",
-        RolUsuario.COLECTIVO,
-        colectivos["Fundación Raíces"],
+      ...Object.entries(COLECTIVOS_CON_USUARIO).map(([email, nombre]) =>
+        usuario(email, RolUsuario.COLECTIVO, colectivos[nombre]),
       ),
       ...PERSONAS_CON_USUARIO.map((nombreFantasia) =>
         usuario(
