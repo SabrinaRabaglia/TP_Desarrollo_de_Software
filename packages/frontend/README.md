@@ -301,3 +301,5 @@ Los tests van al lado del componente, con el nombre `<Componente>.test.jsx`. Par
 - Interactuá con `userEvent.type` y `userEvent.click`.
 
 `features/proyectos/PaginaProyecto.test.jsx` y `features/auth/Login.test.jsx` son los ejemplos.
+
+El test de integración que pide el enunciado es `features/busqueda/BuscarProyectos.integracion.test.jsx`. No mockea ningún service: usa la pantalla, la sesión, los services y el cliente de axios reales, y solo simula el backend reemplazando el adaptador de axios (`api.defaults.adapter`). Comprueba que el pedido sale con el token y los filtros, y que la pantalla muestra lo que respondió el backend.

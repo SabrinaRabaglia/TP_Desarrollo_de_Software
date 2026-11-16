@@ -28,6 +28,36 @@ enum TipoMedioContacto{
     SMS
     TELEGRAM
 }
+
+enum EstadoPostulacion {
+    PENDIENTE
+    ACEPTADA
+    RECHAZADA
+    BAJA
+}
+
+enum OrigenBaja {
+    COLECTIVO
+    PERSONA_COLABORADORA
+}
+
+enum NivelCoincidencia {
+    TOTAL
+    PARCIAL
+}
+
+enum RolUsuario {
+    COLECTIVO
+    PERSONA_COLABORADORA
+}
+
+class Usuario {
+    email: String
+    hashContrasena: String
+    rol: RolUsuario
+    entidad: Colectivo o PersonaColaboradora
+}
+
 class Colectivo {
     nombre: String
     descripcion: String
@@ -45,17 +75,29 @@ class Proyecto {
     estado: EstadoProyecto
     fechaAlta: Date
     fechaCierre: Date
+    enlaceSistemaEnFuncionamiento: String
+    enlaceCodigoFuente: String
     colectivo: Colectivo
     perfiles: Perfil[]
-    colaboraciones: Colaboracion[]
+    hitos: Hito[]
 
     cerrar():void
-    buscarPerfil(perfilId: String): Perfil
-    contactar(perfil: Perfil, personaColaboradora: PersonaColaboradora, contenido: String): Notificacion
-    agregarColaboracion(colaboracion: Colaboracion): void
-    poseeHabilidadNecesaria(personaColaboradora: PersonaColaboradora): boolean
     proyectoCerrado(): boolean
+    esDelColectivo(colectivoId: String): boolean
+    buscarPerfil(perfilId: String): Perfil
+    getPorcentajeConcrecionActual(): int
+    assertPuedeBuscarColaboradores(): void
+    assertPuedeModificarPerfiles(): void
+    assertAdmiteHito(hito: Hito): void
+    contactar(perfil: Perfil, personaColaboradora: PersonaColaboradora, contenido: String): Notificacion
+    poseeHabilidadNecesaria(personaColaboradora: PersonaColaboradora): boolean
+}
 
+class Hito {
+    fecha: Date
+    porcentajeConcrecion: int
+    descripcion: String
+    proyecto: Proyecto
 }
 class Perfil {
     nombre: String
@@ -65,8 +107,20 @@ class Perfil {
     modalidadesColaboracion: ModalidadColaboracion[]
     habilidadesRequeridas: Habilidad[]
     habilidadesOpcionales: Habilidad[]
+    limiteColaboraciones: int
+    busquedaAbierta: boolean
+    busquedaAbiertaHasta: Date
+    postulacionesAceptadas: Postulacion[]
 
-    actualizar(datos): void
+    coincidenciaCon(habilidades: Habilidad[]): Object
+    cuposDisponibles(): int
+    admiteModalidad(modalidad: ModalidadColaboracion): boolean
+    tieneBusquedaAbierta(ahora: Date): boolean
+    assertBusquedaAbierta(ahora: Date): void
+    assertPuedeAceptarPostulaciones(): void
+    agregarPostulacion(postulacion: Postulacion): void
+    quitarPostulacion(postulacion: Postulacion): void
+    reemplazarDatos(datos, ahora: Date): Perfil
 }
 
 class MedioDeContacto{
@@ -81,12 +135,12 @@ class PersonaColaboradora {
     presentacion: String
     cuentas: Cuenta[]
     habilidades: Habilidad[]
-    colaboraciones: Colaboracion[]
     aceptaMensajeriaInterna: Boolean
     mediosDeContacto: MedioDeContacto[]
     notificacionesRecibidas: Notificacion[]
 
     assertAceptaMensajeriaInterna(): void
+    conectarTelegram(chatId: String): void
 }
 
 enum EstadoEnvio {
@@ -121,11 +175,21 @@ class Notificacion {
     liberar(reintentarDesde: Date): void
 }
 
-class Colaboracion {
-    fechainscripcion: Date
-    esAnonima :  boolean
+class Postulacion {
+    fechaPostulacion: Date
+    fechaRevision: Date
+    estado: EstadoPostulacion
+    esAnonima: boolean
+    fechaBaja: Date
+    origenBaja: OrigenBaja
     personaColaboradora: PersonaColaboradora
-    proyecto: Proyecto
+    perfil: Perfil
+
+    esDe(personaId: String): boolean
+    assertPendiente(accion: String): void
+    aceptar(): void
+    rechazar(): void
+    darDeBaja(origen: OrigenBaja): void
 }
 
 class Habilidad {
@@ -159,13 +223,19 @@ Colectivo --> Provincia
 Colectivo --> Proyecto 
 Proyecto --> Colectivo 
 Proyecto *-- Perfil
+Proyecto *-- Hito
 Perfil --> Habilidad
-Proyecto --> Colaboracion 
-Colaboracion --> PersonaColaboradora 
-Colaboracion --> Proyecto 
+Perfil --> Postulacion
+Perfil ..> NivelCoincidencia
+Postulacion --> Perfil
+Postulacion --> PersonaColaboradora
+Postulacion --> EstadoPostulacion
+Postulacion --> OrigenBaja
+Usuario --> RolUsuario
+Usuario --> Colectivo
+Usuario --> PersonaColaboradora
 PersonaColaboradora --> Cuenta 
 PersonaColaboradora --> Habilidad
-PersonaColaboradora --> Colaboracion 
 PersonaColaboradora --> MedioDeContacto
 MedioDeContacto --> TipoMedioContacto
 Colectivo --> Notificacion
