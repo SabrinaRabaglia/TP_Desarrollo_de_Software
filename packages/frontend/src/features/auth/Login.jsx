@@ -68,7 +68,8 @@ const Login = () => {
 
           <p className="login-registro">
             ¿No tenés cuenta?{" "}
-            <Link to="/colaboradoras/nueva">Registrate como colaboradora</Link>
+            <Link to="/colaboradoras/nueva">Registrate como colaboradora</Link>{" "}
+            o <Link to="/colectivos/nuevo">registrá tu colectivo</Link>
           </p>
         </CardContent>
       </Card>

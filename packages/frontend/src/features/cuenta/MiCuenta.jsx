@@ -6,6 +6,17 @@ import { obtenerUsuarioActual, ROLES } from "../../service/authService"
 import { mensajeDeError } from "../../service/api"
 import "./MiCuenta.css"
 
+const ENLACES_POR_ROL = {
+  PERSONA_COLABORADORA: (id) => [
+    { a: `/colaboradoras/${id}`, texto: "Ver mi perfil público" },
+    { a: "/mi-perfil", texto: "Editar mi perfil" },
+  ],
+  COLECTIVO: (id) => [
+    { a: `/colectivos/${id}`, texto: "Ver la página de mi colectivo" },
+    { a: "/mi-colectivo", texto: "Editar mi colectivo" },
+  ],
+}
+
 const MiCuenta = () => {
   const [usuario, setUsuario] = useState(null)
   const [cargando, setCargando] = useState(true)
@@ -52,12 +63,15 @@ const MiCuenta = () => {
         <dt>Rol</dt>
         <dd>{ROLES[usuario.rol]}</dd>
       </dl>
-      {usuario.rol === "PERSONA_COLABORADORA" && usuario.entidad && (
+      {usuario.entidad && (
         <p className="mi-cuenta-enlaces">
-          <Link to={`/colaboradoras/${usuario.entidad.id}`}>
-            Ver mi perfil público
-          </Link>
-          <Link to="/mi-perfil">Editar mi perfil</Link>
+          {ENLACES_POR_ROL[usuario.rol](usuario.entidad.id).map(
+            ({ a, texto }) => (
+              <Link key={a} to={a}>
+                {texto}
+              </Link>
+            ),
+          )}
         </p>
       )}
     </section>

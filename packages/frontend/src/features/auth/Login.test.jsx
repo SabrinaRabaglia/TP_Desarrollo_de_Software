@@ -65,6 +65,17 @@ describe("Login", () => {
     expect(iniciarSesion).toHaveBeenCalledTimes(1)
   })
 
+  test("ofrece registrarse como colaboradora o registrar un colectivo", () => {
+    renderizarLogin()
+
+    expect(
+      screen.getByRole("link", { name: "Registrate como colaboradora" }),
+    ).toHaveAttribute("href", "/colaboradoras/nueva")
+    expect(
+      screen.getByRole("link", { name: "registrá tu colectivo" }),
+    ).toHaveAttribute("href", "/colectivos/nuevo")
+  })
+
   test("muestra el mensaje del backend si las credenciales son inválidas", async () => {
     iniciarSesion.mockRejectedValue({
       response: { data: { message: "Credenciales inválidas" } },
