@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent } from "@mui/material"
+import { LuUsers } from "react-icons/lu"
 import Cargando from "../../components/cargando/Cargando"
+import EstadoVacio from "../../components/estadoVacio/EstadoVacio"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
 import { mensajeDeError } from "../../service/api"
 import "./ColaboradoresPerfil.css"
@@ -67,10 +69,21 @@ const ColaboradoresPerfil = () => {
       )
     }
 
+    if (colaboradores.length === 0) {
+      return (
+        <EstadoVacio
+          icono={<LuUsers />}
+          titulo="Todavía no hay colaboradores en este perfil"
+          texto="Cuando el colectivo acepte una postulación, la persona va a aparecer acá."
+        />
+      )
+    }
+
     return (
       <ul className="todos-los-colaboradores">
-        {colaboradores.map((colaborador) => (
-          <li key={colaborador.id}>
+        {colaboradores.map((colaborador, indice) => (
+          // Las contribuciones anónimas llegan sin id.
+          <li key={colaborador.id ?? `anonima-${indice}`}>
             <Card variant="outlined" className="colaborador">
               <CardContent>
                 {colaborador.esAnonima ? (
@@ -113,11 +126,10 @@ const ColaboradoresPerfil = () => {
         actual="Colaboradores"
         cargando={cargando && !resumen}
       />
-      <h1>Colaboradores Activos</h1>
+      <h1>Colaboradores</h1>
       <p className="colaboradores-bajada">
-        Aca veran todos los usuarios que ya estan colaborando en este perfil
+        Las personas que ya están colaborando en este perfil.
       </p>
-      <h2>Colaboradores</h2>
       {renderColaboradores()}
     </section>
   )
