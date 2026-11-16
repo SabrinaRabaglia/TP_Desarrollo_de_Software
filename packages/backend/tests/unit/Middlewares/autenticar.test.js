@@ -2,6 +2,7 @@ import { describe, expect, jest, test } from "@jest/globals"
 import {
   autenticar,
   autorizar,
+  autorizarColectivoDelBody,
   autorizarEntidad,
 } from "../../../src/middlewares/autenticar.js"
 import { firmar } from "../../../src/auth/tokens.js"
@@ -117,5 +118,29 @@ describe("autorizarEntidad", () => {
     )
 
     expect(next).toHaveBeenCalledWith(undefined)
+  })
+})
+
+describe("autorizarColectivoDelBody", () => {
+  const conBody = (body) => {
+    const next = jest.fn()
+    autorizarColectivoDelBody({ usuario, body }, {}, next)
+    return next
+  }
+
+  test("deja pasar un body a nombre del colectivo del token", () => {
+    expect(conBody({ colectivo: usuario.entidad })).toHaveBeenCalledWith(
+      undefined,
+    )
+  })
+
+  test("deja pasar un body que no nombra ningún colectivo", () => {
+    expect(conBody({ titulo: "Mapa" })).toHaveBeenCalledWith(undefined)
+  })
+
+  test("con el id de otro colectivo pasa NoAutorizado", () => {
+    expect(
+      conBody({ colectivo: "65f1a2b3c4d5e6f708192a02" }),
+    ).toHaveBeenCalledWith(expect.any(NoAutorizado))
   })
 })

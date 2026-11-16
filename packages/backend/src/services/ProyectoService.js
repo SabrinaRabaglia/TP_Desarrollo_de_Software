@@ -2,6 +2,7 @@ import {
   AlreadyExists,
   EntityNotFound,
   InvalidReference,
+  NoAutorizado,
 } from "../errors/ApplicationErrors.js"
 import Proyecto from "../domain/Proyecto.js"
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
@@ -35,6 +36,21 @@ export default class ProyectoService {
       throw new EntityNotFound("Proyecto no encontrado")
     }
 
+    return proyecto
+  }
+
+  // Solo el colectivo dueño escribe en un proyecto, sus perfiles y sus hitos.
+  assertEsDelColectivo = (proyecto, colectivoId) => {
+    if (!proyecto.esDelColectivo(colectivoId)) {
+      throw new NoAutorizado(
+        "El proyecto no pertenece al colectivo autenticado",
+      )
+    }
+  }
+
+  getDelColectivo = async (id, colectivoId) => {
+    const proyecto = await this.getById(id)
+    this.assertEsDelColectivo(proyecto, colectivoId)
     return proyecto
   }
 

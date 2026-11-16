@@ -50,7 +50,7 @@
     },
     {
       "name": "Catálogos",
-      "description": "Catálogos precargados de solo lectura. Sus ids se usan como país y provincia de un colectivo."
+      "description": "Catálogos precargados de solo lectura. Los ids de país y provincia y el nombre del tipo se usan en los datos de un colectivo."
     },
     {
       "name": "Hitos",
@@ -243,6 +243,82 @@
                 }
               }
             }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/auth/registro/colectivo": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Registrar un colectivo",
+        "description": "Crea el colectivo y su usuario de login con rol `COLECTIVO`. No devuelve token: para iniciar sesión hay que llamar a `POST /auth/login`. Si el email o el nombre del colectivo ya están usados responde `409` sin crear nada. El `tipo` debe ser uno de `GET /tipos-de-colectivo`, y el país y la provincia, si vienen, deben existir; si no, responde `404`.",
+        "operationId": "registrarColectivo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistroColectivo"
+              },
+              "example": {
+                "email": "asamblea@colectivo.test",
+                "contrasena": "secreto123",
+                "colectivo": {
+                  "nombre": "Asamblea Ambiental",
+                  "descripcion": "Protección de humedales",
+                  "tipo": "Asamblea",
+                  "provincia": "64f1a2b3c4d5e6f7a8b9c00b",
+                  "ciudad": "La Plata"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Colectivo y usuario creados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                },
+                "example": {
+                  "id": "6650a1b2c3d4e5f6a7b8c9d4",
+                  "email": "asamblea@colectivo.test",
+                  "rol": "COLECTIVO",
+                  "entidad": {
+                    "id": "6650a1b2c3d4e5f6a7b8c9d5",
+                    "nombre": "Asamblea Ambiental"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Ya existe un usuario con ese email o un colectivo con ese nombre",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Ya existe un colectivo con ese nombre",
+                  "details": []
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
@@ -1098,7 +1174,7 @@
       "put": {
         "tags": ["Colectivos"],
         "summary": "Reemplazar colectivo",
-        "description": "Reemplaza todos los datos del colectivo. País, provincia y ciudad omitidos o `null` se borran.",
+        "description": "Reemplaza todos los datos del colectivo. País, provincia y ciudad omitidos o `null` se borran. Requiere la sesión del propio colectivo: sin token responde 401 y con otro usuario 403.",
         "operationId": "reemplazarColectivo",
         "parameters": [
           {
@@ -1137,6 +1213,19 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o es otro colectivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -1149,12 +1238,17 @@
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "patch": {
         "tags": ["Colectivos"],
         "summary": "Actualizar parcialmente un colectivo",
-        "description": "Modifica solo los campos enviados; los demás conservan su valor. Se valida el resultado final igual que en PUT.",
+        "description": "Modifica solo los campos enviados; los demás conservan su valor. Se valida el resultado final igual que en PUT. Requiere la sesión del propio colectivo: sin token responde 401 y con otro usuario 403.",
         "operationId": "actualizarColectivo",
         "parameters": [
           {
@@ -1188,6 +1282,19 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o es otro colectivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -1200,12 +1307,17 @@
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "delete": {
         "tags": ["Colectivos"],
         "summary": "Eliminar colectivo",
-        "description": "Elimina un colectivo por id. Responde 409 si el colectivo todavía tiene proyectos.",
+        "description": "Elimina un colectivo por id. Responde 409 si el colectivo todavía tiene proyectos. Requiere la sesión del propio colectivo: sin token responde 401 y con otro usuario 403.",
         "operationId": "eliminarColectivo",
         "parameters": [
           {
@@ -1219,6 +1331,19 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o es otro colectivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -1228,7 +1353,12 @@
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/colectivos/{id}/notificaciones": {
@@ -1345,7 +1475,7 @@
       "post": {
         "tags": ["Proyectos"],
         "summary": "Crear proyecto",
-        "description": "Crea un proyecto. El colectivo debe existir (404 si no). El titulo es único.",
+        "description": "Crea un proyecto. El colectivo debe existir (404 si no). El titulo es único. Requiere la sesión de un colectivo, y `colectivo` tiene que ser ese mismo: sin token responde 401 y con otro usuario, o a nombre de otro colectivo, 403.",
         "operationId": "crearProyecto",
         "requestBody": {
           "required": true,
@@ -1378,6 +1508,19 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o `colectivo` no es el del token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -1390,7 +1533,12 @@
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/proyectos/{id}": {
@@ -1429,7 +1577,7 @@
       "put": {
         "tags": ["Proyectos"],
         "summary": "Reemplazar proyecto",
-        "description": "Reemplaza los datos del proyecto; todos los campos son obligatorios. Enviar `estado: CERRADO` cierra el proyecto y fija `fechaCierre` en el momento actual. Un proyecto cerrado no se puede reabrir (409).",
+        "description": "Reemplaza los datos del proyecto; todos los campos son obligatorios. Enviar `estado: CERRADO` cierra el proyecto y fija `fechaCierre` en el momento actual. Un proyecto cerrado no se puede reabrir (409). Requiere la sesión del colectivo dueño del proyecto: sin token responde 401 y con otro usuario 403. Si el body trae `colectivo`, tiene que ser ese mismo.",
         "operationId": "reemplazarProyecto",
         "parameters": [
           {
@@ -1467,6 +1615,19 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, el proyecto es de otro colectivo o `colectivo` no es el del token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -1479,12 +1640,17 @@
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "patch": {
         "tags": ["Proyectos"],
         "summary": "Actualizar parcialmente un proyecto",
-        "description": "Modifica solo los campos enviados. Mismas reglas de cierre que PUT.",
+        "description": "Modifica solo los campos enviados. Mismas reglas de cierre que PUT. Requiere la sesión del colectivo dueño del proyecto: sin token responde 401 y con otro usuario 403. Si el body trae `colectivo`, tiene que ser ese mismo.",
         "operationId": "actualizarProyecto",
         "parameters": [
           {
@@ -1518,6 +1684,19 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, el proyecto es de otro colectivo o `colectivo` no es el del token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -1530,12 +1709,17 @@
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "delete": {
         "tags": ["Proyectos"],
         "summary": "Eliminar proyecto",
-        "description": "Elimina un proyecto por id.",
+        "description": "Elimina un proyecto por id. Requiere la sesión del colectivo dueño del proyecto: sin token responde 401 y con otro usuario 403.",
         "operationId": "eliminarProyecto",
         "parameters": [
           {
@@ -1549,13 +1733,31 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o el proyecto es de otro colectivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/proyectos/{id}/perfiles": {
@@ -2165,6 +2367,7 @@
       },
       "post": {
         "summary": "Crear un nuevo hito para un proyecto",
+        "description": "Requiere la sesión del colectivo dueño del proyecto: sin token responde 401 y con otro usuario 403.",
         "tags": ["Hitos"],
         "parameters": [
           {
@@ -2201,18 +2404,37 @@
           "400": {
             "description": "Datos inválidos (falla la validación de Zod)"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o el proyecto es de otro colectivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Proyecto no encontrado"
           },
           "422": {
             "description": "La fecha del hito es anterior al alta del proyecto"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/hitos/{id}": {
       "patch": {
         "summary": "Actualizar parcialmente un hito",
+        "description": "Requiere la sesión del colectivo dueño del proyecto del hito: sin token responde 401 y con otro usuario 403.",
         "tags": ["Hitos"],
         "parameters": [
           {
@@ -2249,16 +2471,35 @@
           "400": {
             "description": "Datos inválidos"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o el hito es de un proyecto de otro colectivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Hito no encontrado"
           },
           "422": {
             "description": "La fecha del hito es anterior al alta del proyecto"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "delete": {
         "summary": "Eliminar un hito",
+        "description": "Requiere la sesión del colectivo dueño del proyecto del hito: sin token responde 401 y con otro usuario 403.",
         "tags": ["Hitos"],
         "parameters": [
           {
@@ -2275,10 +2516,28 @@
           "204": {
             "description": "Hito eliminado exitosamente (Sin contenido)"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o el hito es de un proyecto de otro colectivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Hito no encontrado"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/postulaciones": {
@@ -2626,6 +2885,50 @@
                   {
                     "id": "64f1a2b3c4d5e6f7a8b9c012",
                     "nombre": "Catamarca"
+                  }
+                ]
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/tipos-de-colectivo": {
+      "get": {
+        "tags": ["Catálogos"],
+        "summary": "Listar tipos de colectivo",
+        "description": "Devuelve los tipos de colectivo del catálogo ordenados por nombre. El `nombre` es el valor que se envía como `tipo` de un colectivo.",
+        "operationId": "listarTiposDeColectivo",
+        "responses": {
+          "200": {
+            "description": "Lista de tipos de colectivo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TipoDeColectivo"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "64f1a2b3c4d5e6f7a8b9c020",
+                    "nombre": "Asamblea"
+                  },
+                  {
+                    "id": "64f1a2b3c4d5e6f7a8b9c021",
+                    "nombre": "Asociación barrial"
+                  },
+                  {
+                    "id": "64f1a2b3c4d5e6f7a8b9c022",
+                    "nombre": "Fundación"
+                  },
+                  {
+                    "id": "64f1a2b3c4d5e6f7a8b9c023",
+                    "nombre": "ONG"
                   }
                 ]
               }
@@ -3053,6 +3356,26 @@
           }
         }
       },
+      "RegistroColectivo": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["email", "contrasena", "colectivo"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "asamblea@colectivo.test"
+          },
+          "contrasena": {
+            "type": "string",
+            "minLength": 8,
+            "example": "secreto123"
+          },
+          "colectivo": {
+            "$ref": "#/components/schemas/ColectivoInput"
+          }
+        }
+      },
       "Usuario": {
         "type": "object",
         "required": ["id", "email", "rol", "entidad"],
@@ -3326,7 +3649,7 @@
           },
           "tipo": {
             "type": "string",
-            "description": "Nombre de un tipo del catálogo (se compara sin distinguir mayúsculas ni tildes).",
+            "description": "Nombre de un tipo del catálogo, los de `GET /tipos-de-colectivo` (se compara sin distinguir mayúsculas ni tildes).",
             "enum": ["Fundación", "Asociación barrial", "ONG", "Asamblea"],
             "example": "Asamblea"
           },
@@ -3391,6 +3714,19 @@
           "nombre": {
             "type": "string",
             "example": "Argentina"
+          }
+        }
+      },
+      "TipoDeColectivo": {
+        "type": "object",
+        "required": ["id", "nombre"],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Asamblea"
           }
         }
       },
@@ -3460,7 +3796,7 @@
                 "$ref": "#/components/schemas/ObjectId"
               }
             ],
-            "description": "Id de un colectivo existente."
+            "description": "Id del colectivo autenticado."
           },
           "estado": {
             "$ref": "#/components/schemas/EstadoProyecto"

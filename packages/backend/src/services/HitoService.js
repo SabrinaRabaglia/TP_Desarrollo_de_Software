@@ -15,6 +15,15 @@ export default class HitoService {
     return proyecto.hitos
   }
 
+  // El hito no dice de quién es: es del colectivo dueño de su proyecto.
+  assertEsDelColectivo = async (hitoId, colectivoId) => {
+    const proyecto = await this.proyectoRepository.findByHitoId(hitoId)
+    if (!proyecto) {
+      throw new EntityNotFound("Hito no encontrado")
+    }
+    this.proyectoService.assertEsDelColectivo(proyecto, colectivoId)
+  }
+
   rechazar = (proyecto, hito) => {
     proyecto.assertAdmiteHito(hito)
     throw new ConcurrentModification(

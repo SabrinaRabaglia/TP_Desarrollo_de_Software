@@ -119,13 +119,17 @@ beforeAll(async () => {
     })
   }
 
-  proyecto = await crearConJson("/proyectos", {
-    titulo: "Sitio web de la huerta",
-    descripcion: "Calendario de talleres",
-    colectivo: huerta.id,
-    estado: "PUBLICADO",
-    fechaCierre: null,
-  })
+  proyecto = await crearConJson(
+    "/proyectos",
+    {
+      titulo: "Sitio web de la huerta",
+      descripcion: "Calendario de talleres",
+      colectivo: huerta.id,
+      estado: "PUBLICADO",
+      fechaCierre: null,
+    },
+    tokenDeColectivo(huerta.id),
+  )
   perfil = await crearConJson(
     `/proyectos/${proyecto.id}/perfiles`,
     {

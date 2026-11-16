@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test } from "@jest/globals"
 import AuthService from "../../../src/services/AuthService.js"
+import ColectivoService from "../../../src/services/ColectivoService.js"
 import HabilidadService from "../../../src/services/HabilidadService.js"
 import PersonaColaboradoraService from "../../../src/services/PersonaColaboradoraService.js"
 import Colectivo from "../../../src/domain/Colectivo.js"
@@ -17,8 +18,11 @@ import PostulacionRepository from "../../fakes/PostulacionRepository.js"
 import ColectivoRepository from "../../fakes/ColectivoRepository.js"
 import HabilidadRepository from "../../fakes/HabilidadRepository.js"
 import NotificacionRepository from "../../fakes/NotificacionRepository.js"
+import PaisRepository from "../../fakes/PaisRepository.js"
 import PersonaColaboradoraRepository from "../../fakes/PersonaColaboradoraRepository.js"
+import ProvinciaRepository from "../../fakes/ProvinciaRepository.js"
 import ProyectoRepository from "../../fakes/ProyectoRepository.js"
+import TipoColectivoRepository from "../../fakes/TipoColectivoRepository.js"
 import UsuarioRepository from "../../fakes/UsuarioRepository.js"
 
 const crearService = (usuarioRepository = new UsuarioRepository()) =>
@@ -26,6 +30,14 @@ const crearService = (usuarioRepository = new UsuarioRepository()) =>
     usuarioRepository,
     new ColectivoRepository(),
     new PersonaColaboradoraRepository(),
+    new ColectivoService(
+      new ColectivoRepository(),
+      new TipoColectivoRepository(),
+      new ProyectoRepository(),
+      new ProvinciaRepository(),
+      new PaisRepository(),
+      usuarioRepository,
+    ),
     new PersonaColaboradoraService(
       new ProyectoRepository(),
       new PersonaColaboradoraRepository(),
@@ -195,6 +207,97 @@ describe("AuthService", () => {
         ).registrarPersonaColaboradora(registro()),
       ).rejects.toBe(caida)
       expect(await personasGuardadas()).toEqual(antes)
+    })
+  })
+
+  describe("registrarColectivo", () => {
+    const registro = () => ({
+      email: "asamblea@colectivo.test",
+      contrasena: "secreto123",
+      colectivo: {
+        nombre: "Asamblea Ambiental",
+        descripcion: "Protección de humedales",
+        tipo: "Asamblea",
+        ciudad: "La Plata",
+      },
+    })
+
+    const colectivosGuardados = () => new ColectivoRepository().findAll()
+
+    test("crea el colectivo y devuelve su usuario público con el nombre", async () => {
+      const usuario = await crearService().registrarColectivo(registro())
+
+      expect(usuario).toEqual({
+        id: expect.any(String),
+        email: "asamblea@colectivo.test",
+        rol: RolUsuario.COLECTIVO,
+        entidad: { id: expect.any(String), nombre: "Asamblea Ambiental" },
+      })
+      const creado = await new ColectivoRepository().findById(
+        usuario.entidad.id,
+      )
+      expect(creado).toMatchObject({
+        descripcion: "Protección de humedales",
+        tipo: "Asamblea",
+        ciudad: "La Plata",
+      })
+    })
+
+    test("después de registrarse puede iniciar sesión con esas credenciales", async () => {
+      const service = crearService()
+      const registrado = await service.registrarColectivo(registro())
+
+      const { usuario } = await service.login(
+        "asamblea@colectivo.test",
+        "secreto123",
+      )
+
+      expect(usuario).toEqual(registrado)
+    })
+
+    test("con un email ya usado lanza AlreadyExists sin crear el colectivo", async () => {
+      const service = crearService()
+      await service.registrar(datosDeHuerta())
+      const antes = [...(await colectivosGuardados())]
+
+      await expect(
+        service.registrarColectivo({
+          ...registro(),
+          email: "Huerta@Colectivo.test",
+        }),
+      ).rejects.toThrow(AlreadyExists)
+      expect(await colectivosGuardados()).toEqual(antes)
+    })
+
+    test("con el nombre de otro colectivo lanza AlreadyExists sin crear el usuario", async () => {
+      const service = crearService()
+
+      await expect(
+        service.registrarColectivo({
+          ...registro(),
+          colectivo: { ...registro().colectivo, nombre: colectivo.nombre },
+        }),
+      ).rejects.toThrow(AlreadyExists)
+      await expect(
+        service.login("asamblea@colectivo.test", "secreto123"),
+      ).rejects.toThrow(CredencialesInvalidas)
+    })
+
+    test("si no puede guardar el usuario borra el colectivo creado y propaga el error", async () => {
+      const caida = new Error("Se cayó la base")
+      class UsuarioRepositoryQueFalla extends UsuarioRepository {
+        async save() {
+          throw caida
+        }
+      }
+      const antes = [...(await colectivosGuardados())]
+
+      await expect(
+        crearService(new UsuarioRepositoryQueFalla()).registrarColectivo(
+          registro(),
+        ),
+      ).rejects.toBe(caida)
+      expect(await colectivosGuardados()).toEqual(antes)
     })
   })
 

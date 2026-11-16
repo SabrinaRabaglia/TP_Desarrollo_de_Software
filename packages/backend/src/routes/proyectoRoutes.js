@@ -18,12 +18,24 @@ import {
   postulacionController,
   personaColaboradoraController,
 } from "../dependencias.js"
-import { autenticar, autorizar } from "../middlewares/autenticar.js"
+import {
+  autenticar,
+  autorizar,
+  autorizarColectivoDelBody,
+} from "../middlewares/autenticar.js"
 import { RolUsuario } from "../domain/enums/RolUsuario.js"
 
 const routes = Router()
 
-routes.post("/proyectos", validar(proyectoSchema), proyectoController.create)
+// Los proyectos los escribe solo el colectivo dueño, y siempre a su nombre.
+routes.post(
+  "/proyectos",
+  autenticar,
+  autorizar(RolUsuario.COLECTIVO),
+  validar(proyectoSchema),
+  autorizarColectivoDelBody,
+  proyectoController.create,
+)
 routes.get(
   "/proyectos",
   validar(busquedaProyectosSchema, "query"),
@@ -32,15 +44,27 @@ routes.get(
 routes.get("/proyectos/:id", validateId, proyectoController.getById)
 routes.put(
   "/proyectos/:id",
+  autenticar,
   validateId,
+  autorizar(RolUsuario.COLECTIVO),
   validar(proyectoSchema),
+  autorizarColectivoDelBody,
   proyectoController.update,
 )
-routes.delete("/proyectos/:id", validateId, proyectoController.delete)
+routes.delete(
+  "/proyectos/:id",
+  autenticar,
+  validateId,
+  autorizar(RolUsuario.COLECTIVO),
+  proyectoController.delete,
+)
 routes.patch(
   "/proyectos/:id",
+  autenticar,
   validateId,
+  autorizar(RolUsuario.COLECTIVO),
   validar(proyectoSchema.partial()),
+  autorizarColectivoDelBody,
   proyectoController.patch,
 )
 
@@ -119,9 +143,12 @@ routes.post(
   postulacionController.create,
 )
 
+// Los hitos, igual que los perfiles: solo el colectivo dueño del proyecto.
 routes.post(
   "/proyectos/:id/hitos",
+  autenticar,
   validateId,
+  autorizar(RolUsuario.COLECTIVO),
   validar(hitoSchema),
   hitoController.create,
 )

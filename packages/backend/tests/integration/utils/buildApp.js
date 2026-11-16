@@ -40,6 +40,7 @@ export default async function buildApp() {
     proyectoRepository,
     new ProvinciaRepository(),
     new PaisRepository(),
+    new UsuarioRepository(),
   )
   const proyectoService = new ProyectoService(
     proyectoRepository,

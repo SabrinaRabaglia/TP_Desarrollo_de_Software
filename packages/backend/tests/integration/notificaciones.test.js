@@ -65,6 +65,7 @@ const crearProyectoConPerfil = async (titulo) => {
       fechaCierre: null,
     },
     201,
+    tokenDeColectivo(colectivo.id),
   )
   const habilidad = await request(
     "POST",
@@ -286,9 +287,13 @@ describe("notificaciones", () => {
 
   test("un proyecto cerrado no puede contactar personas", async () => {
     const cerrado = await crearProyectoConPerfil("Cerrado")
-    await request("PATCH", `/proyectos/${cerrado.proyecto.id}`, {
-      estado: "CERRADO",
-    })
+    await request(
+      "PATCH",
+      `/proyectos/${cerrado.proyecto.id}`,
+      { estado: "CERRADO" },
+      200,
+      tokenDeColectivo(colectivo.id),
+    )
 
     await request(
       "POST",

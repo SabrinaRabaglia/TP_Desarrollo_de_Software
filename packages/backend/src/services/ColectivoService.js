@@ -13,12 +13,14 @@ export default class ColectivoService {
     proyectoRepository,
     provinciaRepository,
     paisRepository,
+    usuarioRepository,
   ) {
     this.colectivoRepository = colectivoRepository
     this.tipoColectivoRepository = tipoColectivoRepository
     this.proyectoRepository = proyectoRepository
     this.provinciaRepository = provinciaRepository
     this.paisRepository = paisRepository
+    this.usuarioRepository = usuarioRepository
   }
 
   getAll = async () => {
@@ -125,6 +127,7 @@ export default class ColectivoService {
         "No se puede eliminar un colectivo con proyectos; eliminá sus proyectos primero",
       )
     }
+    await this.usuarioRepository.deleteByEntidad(id)
     await this.colectivoRepository.deleteById(id)
   }
 }

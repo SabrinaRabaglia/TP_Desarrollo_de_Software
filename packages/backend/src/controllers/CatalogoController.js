@@ -18,4 +18,12 @@ export default class CatalogoController {
       next(error)
     }
   }
+
+  getTiposDeColectivo = async (_req, res, next) => {
+    try {
+      res.status(200).json(await this.catalogoService.getTiposDeColectivo())
+    } catch (error) {
+      next(error)
+    }
+  }
 }

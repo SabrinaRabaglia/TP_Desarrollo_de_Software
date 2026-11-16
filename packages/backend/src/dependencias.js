@@ -58,7 +58,11 @@ const proyectoRepository = new ProyectoRepository()
 const tipoColectivoRepository = new TipoColectivoRepository()
 const usuarioRepository = new UsuarioRepository()
 
-const catalogoService = new CatalogoService(paisRepository, provinciaRepository)
+const catalogoService = new CatalogoService(
+  paisRepository,
+  provinciaRepository,
+  tipoColectivoRepository,
+)
 const habilidadService = new HabilidadService(
   habilidadRepository,
   personaColaboradoraRepository,
@@ -70,6 +74,7 @@ const colectivoService = new ColectivoService(
   proyectoRepository,
   provinciaRepository,
   paisRepository,
+  usuarioRepository,
 )
 const proyectoService = new ProyectoService(
   proyectoRepository,
@@ -130,6 +135,7 @@ const authService = new AuthService(
   usuarioRepository,
   colectivoRepository,
   personaColaboradoraRepository,
+  colectivoService,
   personaColaboradoraService,
 )
 
@@ -141,12 +147,15 @@ export const habilidadController = new HabilidadController(habilidadService)
 export const notificacionController = new NotificacionController(
   notificacionService,
 )
-export const perfilController = new PerfilController(perfilService)
+export const perfilController = new PerfilController(
+  perfilService,
+  proyectoService,
+)
 export const personaColaboradoraController = new PersonaColaboradoraController(
   personaColaboradoraService,
 )
 export const proyectoController = new ProyectoController(proyectoService)
-export const hitoController = new HitoController(hitoService)
+export const hitoController = new HitoController(hitoService, proyectoService)
 export const postulacionController = new PostulacionController(
   postulacionService,
 )

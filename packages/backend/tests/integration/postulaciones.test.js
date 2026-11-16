@@ -42,6 +42,9 @@ test("postularse permite consultar y actualizar las entidades persistidas", asyn
       provincia: cordoba.id,
     }
     const colectivo = await request("POST", "/colectivos", colectivoDatos, 201)
+    const comoColectivo = {
+      Authorization: `Bearer ${tokenDeColectivo(colectivo.id)}`,
+    }
     const personaDatos = {
       nombreFantasia: "Ana HTTP",
       habilidades: [habilidad.id],
@@ -65,7 +68,13 @@ test("postularse permite consultar y actualizar las entidades persistidas", asyn
       estado: "PUBLICADO",
       fechaCierre: null,
     }
-    let proyecto = await request("POST", "/proyectos", proyectoDatos, 201)
+    let proyecto = await request(
+      "POST",
+      "/proyectos",
+      proyectoDatos,
+      201,
+      comoColectivo,
+    )
     const perfil = await request(
       "POST",
       `/proyectos/${proyecto.id}/perfiles`,
@@ -78,7 +87,7 @@ test("postularse permite consultar y actualizar las entidades persistidas", asyn
         habilidadesOpcionales: [habilidad.id],
       },
       201,
-      { Authorization: `Bearer ${tokenDeColectivo(colectivo.id)}` },
+      comoColectivo,
     )
     proyecto = await request("GET", `/proyectos/${proyecto.id}`)
     const postulacion = await request(
@@ -169,14 +178,14 @@ test("postularse permite consultar y actualizar las entidades persistidas", asyn
     expect(detalleColectivo.proyectos).toEqual([proyecto])
 
     for (const [ruta, id, datos, headers] of [
-      ["proyectos", proyecto.id, proyectoDatos],
+      ["proyectos", proyecto.id, proyectoDatos, comoColectivo],
       [
         "personas-colaboradoras",
         persona.id,
         personaDatos,
         { Authorization: `Bearer ${token}` },
       ],
-      ["colectivos", colectivo.id, colectivoDatos],
+      ["colectivos", colectivo.id, colectivoDatos, comoColectivo],
     ]) {
       const actualizado = await request(
         "PUT",
@@ -187,13 +196,21 @@ test("postularse permite consultar y actualizar las entidades persistidas", asyn
       )
       expect(actualizado.id).toBe(id)
     }
-    await request("PATCH", `/colectivos/${colectivo.id}`, {
-      descripcion: "Descripción actualizada",
-    })
+    await request(
+      "PATCH",
+      `/colectivos/${colectivo.id}`,
+      { descripcion: "Descripción actualizada" },
+      200,
+      comoColectivo,
+    )
 
-    const cerrado = await request("PATCH", `/proyectos/${proyecto.id}`, {
-      estado: "CERRADO",
-    })
+    const cerrado = await request(
+      "PATCH",
+      `/proyectos/${proyecto.id}`,
+      { estado: "CERRADO" },
+      200,
+      comoColectivo,
+    )
     expect(cerrado.estado).toBe("CERRADO")
     expect(cerrado.fechaCierre).toEqual(expect.any(String))
     await request(
@@ -201,8 +218,15 @@ test("postularse permite consultar y actualizar las entidades persistidas", asyn
       `/proyectos/${proyecto.id}`,
       { estado: "CERRADO" },
       409,
+      comoColectivo,
     )
-    await request("PUT", `/proyectos/${proyecto.id}`, proyectoDatos, 409)
+    await request(
+      "PUT",
+      `/proyectos/${proyecto.id}`,
+      proyectoDatos,
+      409,
+      comoColectivo,
+    )
     const despues = await request("GET", `/proyectos/${proyecto.id}`)
     expect(despues.estado).toBe("CERRADO")
     expect(despues.fechaCierre).toBe(cerrado.fechaCierre)
@@ -235,6 +259,7 @@ test("postularse permite consultar y actualizar las entidades persistidas", asyn
 
     const borrado = await fetch(`${base}/proyectos/${proyecto.id}`, {
       method: "DELETE",
+      headers: comoColectivo,
     })
     expect(borrado.status).toBe(204)
   } finally {

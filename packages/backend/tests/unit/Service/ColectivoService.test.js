@@ -11,6 +11,7 @@ import TipoColectivoRepository from "../../fakes/TipoColectivoRepository.js"
 import ProyectoRepository from "../../fakes/ProyectoRepository.js"
 import ProvinciaRepository from "../../fakes/ProvinciaRepository.js"
 import PaisRepository from "../../fakes/PaisRepository.js"
+import UsuarioRepository from "../../fakes/UsuarioRepository.js"
 import TipoColectivo from "../../../src/domain/TipoColectivo.js"
 describe("ColectivoService", () => {
   beforeEach(() => {
@@ -246,23 +247,35 @@ describe("ColectivoService", () => {
         new ProyectoRepository().deleteAll()
       })
 
-      test("elimina el colectivo correctamente si existe", async () => {
+      test("elimina el colectivo y su usuario, sin tocar los de otros", async () => {
+        const usuarioRepository = new UsuarioRepository()
+        usuarioRepository.deleteAll()
         const service = new ColectivoService(
           new ColectivoRepository(),
           new TipoColectivoRepository(),
           new ProyectoRepository(),
           new ProvinciaRepository(),
           new PaisRepository(),
+          usuarioRepository,
         )
         const colectivo = await service.create({
           nombre: "Asamblea Ambiental",
           descripcion: "Protección de humedales locales",
           tipo: "Asamblea",
         })
+        await usuarioRepository.save({
+          email: "asamblea@colectivo.test",
+          entidad: colectivo.id,
+        })
+        const ajeno = await usuarioRepository.save({
+          email: "otro@colectivo.test",
+          entidad: "otro-colectivo",
+        })
 
         await service.delete(colectivo.id)
 
         expect(await service.getAll()).toHaveLength(0)
+        expect(UsuarioRepository.usuarios).toEqual([ajeno])
       })
 
       test("lanza EntityInUse y no lo borra si el colectivo tiene proyectos", async () => {

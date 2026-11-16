@@ -206,3 +206,123 @@ describe("registro de una persona colaboradora", () => {
     )
   })
 })
+
+describe("registro de un colectivo", () => {
+  const registrar = (body) => enviar("POST", "/auth/registro/colectivo", body)
+
+  const nombresDeColectivos = async () =>
+    (await (await enviar("GET", "/colectivos")).json()).map(
+      (guardado) => guardado.nombre,
+    )
+
+  const registroDeAsamblea = {
+    email: "asamblea@colectivo.test",
+    contrasena: "secreto123",
+    colectivo: {
+      nombre: "Asamblea Ambiental",
+      descripcion: "Protección de humedales",
+      tipo: "Asamblea",
+      ciudad: "La Plata",
+    },
+  }
+
+  test("crea el colectivo y su usuario, que después puede iniciar sesión", async () => {
+    const [provincia] = await (await enviar("GET", "/provincias")).json()
+
+    const respuesta = await registrar({
+      ...registroDeAsamblea,
+      colectivo: { ...registroDeAsamblea.colectivo, provincia: provincia.id },
+    })
+
+    expect(respuesta.status).toBe(201)
+    const usuario = await respuesta.json()
+    expect(usuario).toEqual({
+      id: expect.any(String),
+      email: "asamblea@colectivo.test",
+      rol: "COLECTIVO",
+      entidad: { id: expect.any(String), nombre: "Asamblea Ambiental" },
+    })
+
+    const sesion = await login("asamblea@colectivo.test", "secreto123")
+    expect(sesion.status).toBe(200)
+    const { token } = await sesion.json()
+    expect(await (await me(`Bearer ${token}`)).json()).toEqual(usuario)
+
+    const creado = await (
+      await enviar("GET", `/colectivos/${usuario.entidad.id}`)
+    ).json()
+    expect(creado).toMatchObject({
+      nombre: "Asamblea Ambiental",
+      descripcion: "Protección de humedales",
+      tipo: "Asamblea",
+      ciudad: "La Plata",
+      provincia: { id: provincia.id, nombre: provincia.nombre },
+    })
+  })
+
+  test("con un email ya usado responde 409 sin crear el colectivo", async () => {
+    const antes = await nombresDeColectivos()
+
+    const respuesta = await registrar({
+      ...registroDeAsamblea,
+      email: "huerta@colectivo.test",
+      colectivo: { ...registroDeAsamblea.colectivo, nombre: "Otra asamblea" },
+    })
+
+    expect(respuesta.status).toBe(409)
+    expect(await nombresDeColectivos()).toEqual(antes)
+  })
+
+  test("con el nombre de otro colectivo responde 409 sin crear el usuario", async () => {
+    const respuesta = await registrar({
+      ...registroDeAsamblea,
+      email: "repetido@colectivo.test",
+      colectivo: {
+        ...registroDeAsamblea.colectivo,
+        nombre: "Huerta Comunitaria Sur",
+      },
+    })
+
+    expect(respuesta.status).toBe(409)
+    expect((await login("repetido@colectivo.test", "secreto123")).status).toBe(
+      401,
+    )
+  })
+
+  test.each([
+    ["sin contraseña", { contrasena: undefined }],
+    ["sin colectivo", { colectivo: undefined }],
+    [
+      "con un campo que el colectivo no admite",
+      { colectivo: { ...registroDeAsamblea.colectivo, proyectos: [] } },
+    ],
+  ])("un body %s responde 400", async (_caso, cambios) => {
+    const respuesta = await registrar({
+      ...registroDeAsamblea,
+      email: "invalido@colectivo.test",
+      ...cambios,
+    })
+
+    expect(respuesta.status).toBe(400)
+  })
+
+  test("un tipo fuera del catálogo responde 404 sin dejar colectivo ni usuario", async () => {
+    const antes = await nombresDeColectivos()
+
+    const respuesta = await registrar({
+      email: "cooperativa@colectivo.test",
+      contrasena: "secreto123",
+      colectivo: {
+        nombre: "Cooperativa de trabajo",
+        descripcion: "Cooperativa textil",
+        tipo: "Cooperativa",
+      },
+    })
+
+    expect(respuesta.status).toBe(404)
+    expect(await nombresDeColectivos()).toEqual(antes)
+    expect(
+      (await login("cooperativa@colectivo.test", "secreto123")).status,
+    ).toBe(401)
+  })
+})
