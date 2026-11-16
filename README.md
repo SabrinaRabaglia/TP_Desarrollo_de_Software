@@ -194,7 +194,7 @@ La persistencia usa MongoDB con Mongoose, siguiendo la guía de la cátedra. Cad
 
 Los dos procesos son idempotentes. Insertan lo que falta por su clave natural, nunca borran y no modifican lo que ya existe, así que se pueden correr cualquier cantidad de veces, también en producción.
 
-Para repetir una demo del flujo de postulación, `npm run reiniciar:postulacion` lo vuelve al punto de partida: borra la postulación de Nube, deja la de Pampa pendiente y deja el perfil Tester sin lugares ocupados, con límite 1 y la búsqueda abierta. Es el único comando que borra algo, y no toca ningún otro dato.
+Para repetir la demo, `npm run reiniciar:demo` vuelve al punto de partida los cuatro perfiles que se usan en los flujos y en los casos borde: Tester y Analista de Datos del mapa de comedores, Desarrollador/a Web del sistema de reservas y QA Automation del portal de voluntariados. En cada uno borra las postulaciones que no vienen del seed y los mensajes enviados, y le deja la descripción, el límite, la búsqueda abierta y las colaboraciones aceptadas como las carga el seed. Es el único comando que borra algo, y no toca ningún otro dato.
 
 ### Migraciones
 
