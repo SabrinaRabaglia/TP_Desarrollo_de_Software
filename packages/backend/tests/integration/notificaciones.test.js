@@ -15,6 +15,7 @@ import PersonaColaboradoraRepository from "../../src/repositories/PersonaColabor
 import UsuarioRepository from "../../src/repositories/UsuarioRepository.js"
 import NotificacionModel from "../../src/schemas/notificacionSchema.js"
 import { conectar, desconectar } from "./mongo.js"
+import { tokenDeColectivo } from "./tokens.js"
 
 let server
 let base
@@ -87,6 +88,7 @@ const crearProyectoConPerfil = async (titulo) => {
       habilidadesOpcionales: [habilidad.id],
     },
     201,
+    tokenDeColectivo(colectivo.id),
   )
   return { proyecto: creado, perfil: perfilCreado }
 }
@@ -331,6 +333,7 @@ describe("notificaciones", () => {
       `/proyectos/${borrado.proyecto.id}/perfiles/${borrado.perfil.id}`,
       undefined,
       204,
+      tokens.colectivo,
     )
 
     const mensajes = await request(

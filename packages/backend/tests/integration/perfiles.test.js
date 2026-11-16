@@ -1,12 +1,14 @@
 import { afterAll, beforeAll, describe, expect, test } from "@jest/globals"
 import { once } from "node:events"
 import app from "../../src/app.js"
+import { firmar } from "../../src/auth/tokens.js"
 import ProyectoModel from "../../src/schemas/proyectoSchema.js"
 import { conectar, desconectar } from "./mongo.js"
 
 let server
 let base
 let colectivo
+let token
 let habilidades
 let datos
 
@@ -36,6 +38,7 @@ beforeAll(async () => {
     { nombre: "Colectivo", descripcion: "Desarrollo comunitario", tipo: "ONG" },
     201,
   )
+  token = tokenDe("COLECTIVO", colectivo.id)
   datos = {
     nombre: "Tester",
     descripcion: "Testing E2E con Cypress",
@@ -52,12 +55,23 @@ afterAll(async () => {
   await desconectar()
 })
 
-const request = async (method, path, body, status = 200) => {
-  const response = await fetch(base + path, {
+const tokenDe = (rol, entidad) =>
+  firmar({ id: "64f1a2b3c4d5e6f7a8b9c0aa", rol, entidad })
+
+// Los pedidos van como el colectivo dueño de los proyectos, salvo que se
+// indique otro token (null: sin sesión).
+const enviar = (method, path, body, como = token) =>
+  fetch(base + path, {
     method,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(como ? { Authorization: `Bearer ${como}` } : {}),
+    },
     body: body === undefined ? undefined : JSON.stringify(body),
   })
+
+const request = async (method, path, body, status = 200) => {
+  const response = await enviar(method, path, body)
   expect(response.status).toBe(status)
   return response.status === 204 ? null : response.json()
 }
@@ -84,6 +98,8 @@ describe("perfiles de un proyecto", () => {
       ...datos,
       limiteColaboraciones: null,
       postulacionesAceptadas: [],
+      busquedaAbierta: true,
+      busquedaAbiertaHasta: null,
     })
     expect(await request("GET", perfiles)).toEqual([perfil])
     expect(await request("GET", `${perfiles}/${perfil.id}`)).toEqual(perfil)
@@ -103,6 +119,8 @@ describe("perfiles de un proyecto", () => {
       ...cambios,
       limiteColaboraciones: null,
       postulacionesAceptadas: [],
+      busquedaAbierta: true,
+      busquedaAbiertaHasta: null,
     })
     expect(await request("GET", perfiles)).toEqual([editado])
 
@@ -159,6 +177,116 @@ describe("perfiles de un proyecto", () => {
     ])
   })
 
+  test("editar un perfil con colaboraciones no las pierde ni deja bajar el límite", async () => {
+    const proyecto = await crearProyecto("Proyecto con colaboraciones")
+    const perfiles = `/proyectos/${proyecto.id}/perfiles`
+    const perfil = await request(
+      "POST",
+      perfiles,
+      { ...datos, limiteColaboraciones: 2 },
+      201,
+    )
+    const aceptadas = ["64f1a2b3c4d5e6f7a8b9c001", "64f1a2b3c4d5e6f7a8b9c002"]
+    await ProyectoModel.updateOne(
+      { "perfiles._id": perfil.id },
+      { $set: { "perfiles.$.postulacionesAceptadas": aceptadas } },
+    )
+
+    const rechazo = await request(
+      "PATCH",
+      `${perfiles}/${perfil.id}`,
+      { limiteColaboraciones: 1 },
+      409,
+    )
+    expect(rechazo.message).toBe(
+      "El límite no puede ser menor a las colaboraciones ya aceptadas (2).",
+    )
+
+    const editado = await request("PATCH", `${perfiles}/${perfil.id}`, {
+      descripcion: "Con más lugar",
+      limiteColaboraciones: 3,
+    })
+    expect(editado).toEqual({
+      ...perfil,
+      descripcion: "Con más lugar",
+      limiteColaboraciones: 3,
+      postulacionesAceptadas: aceptadas,
+    })
+
+    const reemplazado = await request("PUT", `${perfiles}/${perfil.id}`, {
+      ...datos,
+      limiteColaboraciones: 2,
+    })
+    expect(reemplazado.postulacionesAceptadas).toEqual(aceptadas)
+  })
+
+  test("cerrar la búsqueda de un perfil y ponerle fecha límite", async () => {
+    const proyecto = await crearProyecto("Proyecto con búsqueda")
+    const ruta = `/proyectos/${proyecto.id}/perfiles`
+    const perfil = await request("POST", ruta, datos, 201)
+
+    const cerrado = await request("PATCH", `${ruta}/${perfil.id}`, {
+      busquedaAbierta: false,
+    })
+    expect(cerrado).toEqual({ ...perfil, busquedaAbierta: false })
+
+    const conFecha = await request("PATCH", `${ruta}/${perfil.id}`, {
+      busquedaAbierta: true,
+      busquedaAbiertaHasta: "2999-12-31",
+    })
+    expect(conFecha.busquedaAbiertaHasta).toBe("2999-12-31T00:00:00.000Z")
+  })
+
+  test("rechaza límites, horas y fechas inválidas con un mensaje que lo explica", async () => {
+    const proyecto = await crearProyecto("Proyecto datos inválidos")
+    const ruta = `/proyectos/${proyecto.id}/perfiles`
+
+    const invalido = async (cambios, status) =>
+      (await request("POST", ruta, { ...datos, ...cambios }, status)).message
+
+    expect(await invalido({ limiteColaboraciones: -1 }, 422)).toBe(
+      "El límite de colaboraciones debe ser un entero positivo.",
+    )
+    expect(await invalido({ cantidadHoras: -5 }, 422)).toBe(
+      "La cantidad de horas debe ser un entero positivo.",
+    )
+    expect(await invalido({ habilidadesRequeridas: [] }, 422)).toBe(
+      "El perfil debe tener al menos una habilidad requerida.",
+    )
+    expect(await invalido({ busquedaAbiertaHasta: "2020-01-01" }, 422)).toBe(
+      "La fecha límite de búsqueda no puede ser anterior a la actual.",
+    )
+    expect(await invalido({ limiteColaboraciones: "dos" }, 400)).toBe(
+      "Datos inválidos",
+    )
+    expect(await invalido({ busquedaAbiertaHasta: "mañana" }, 400)).toBe(
+      "Datos inválidos",
+    )
+    expect(await request("GET", ruta)).toEqual([])
+  })
+
+  test("solo el colectivo dueño del proyecto escribe sus perfiles", async () => {
+    const proyecto = await crearProyecto("Proyecto con dueño")
+    const ruta = `/proyectos/${proyecto.id}/perfiles`
+    const perfil = await request("POST", ruta, datos, 201)
+    const otroColectivo = tokenDe("COLECTIVO", "64f1a2b3c4d5e6f7a8b9c0bb")
+    const persona = tokenDe("PERSONA_COLABORADORA", "64f1a2b3c4d5e6f7a8b9c0cc")
+    const cambios = { descripcion: "Cambiado por otro" }
+
+    const intentos = (como) =>
+      Promise.all([
+        enviar("POST", ruta, datos, como),
+        enviar("PUT", `${ruta}/${perfil.id}`, { ...datos, ...cambios }, como),
+        enviar("PATCH", `${ruta}/${perfil.id}`, cambios, como),
+        enviar("DELETE", `${ruta}/${perfil.id}`, undefined, como),
+      ]).then((respuestas) => respuestas.map((respuesta) => respuesta.status))
+
+    expect(await intentos(null)).toEqual([401, 401, 401, 401])
+    expect(await intentos(persona)).toEqual([403, 403, 403, 403])
+    expect(await intentos(otroColectivo)).toEqual([403, 403, 403, 403])
+    expect(await request("GET", ruta)).toEqual([perfil])
+  })
+
   test("un proyecto cerrado no admite cambios en sus perfiles", async () => {
     const proyecto = await crearProyecto("Proyecto cerrado")
     const perfiles = `/proyectos/${proyecto.id}/perfiles`
@@ -179,12 +307,6 @@ describe("perfiles de un proyecto", () => {
 
 describe("cambios simultáneos sobre los perfiles de un proyecto", () => {
   const REPETICIONES = 5
-  const enviar = (method, path, body) =>
-    fetch(base + path, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    })
   const descripciones = async (perfiles) =>
     (await request("GET", perfiles)).map((perfil) => perfil.descripcion).sort()
 
@@ -259,6 +381,8 @@ describe("cambios simultáneos sobre los perfiles de un proyecto", () => {
           descripcion: "Editado",
           limiteColaboraciones: null,
           postulacionesAceptadas: [],
+          busquedaAbierta: true,
+          busquedaAbiertaHasta: null,
         },
       ])
     }

@@ -33,23 +33,23 @@ export default class Postulacion {
     return String(this.personaColaboradora) === String(personaId)
   }
 
-  aceptar() {
+  assertPendiente(accion) {
     if (this.estado !== EstadoPostulacion.PENDIENTE) {
       throw new DomainRuleError(
-        "Solo se pueden aceptar postulaciones pendientes",
+        `Solo se pueden ${accion} postulaciones pendientes`,
       )
     }
+  }
+
+  aceptar() {
+    this.assertPendiente("aceptar")
 
     this.estado = EstadoPostulacion.ACEPTADA
     this.fechaRevision = new Date()
   }
 
   rechazar() {
-    if (this.estado !== EstadoPostulacion.PENDIENTE) {
-      throw new DomainRuleError(
-        "Solo se pueden rechazar postulaciones pendientes",
-      )
-    }
+    this.assertPendiente("rechazar")
 
     this.estado = EstadoPostulacion.RECHAZADA
     this.fechaRevision = new Date()

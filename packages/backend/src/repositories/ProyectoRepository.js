@@ -63,6 +63,18 @@ export default class ProyectoRepository {
     })
   }
 
+  // Como el anterior, con el colectivo y las habilidades requeridas completas:
+  // la búsqueda de perfiles muestra sus nombres.
+  async findConPerfilesQueRequieran(estado, habilidadesIds) {
+    return await this.model
+      .find({
+        estado,
+        "perfiles.habilidadesRequeridas": { $in: habilidadesIds },
+      })
+      .populate("colectivo")
+      .populate("perfiles.habilidadesRequeridas")
+  }
+
   async agregarPerfil(proyectoId, perfil) {
     const _id = new mongoose.Types.ObjectId()
     const proyecto = await this.model.findOneAndUpdate(
@@ -73,10 +85,19 @@ export default class ProyectoRepository {
     return proyecto?.perfiles.id(_id) ?? null
   }
 
+  // Se guardan los datos editables, campo por campo: quiénes ocupan el perfil
+  // lo escriben las aceptaciones y las bajas, y una edición no debe pisarlo.
   async actualizarPerfil(proyectoId, perfilId, perfil) {
     const proyecto = await this.model.findOneAndUpdate(
       { _id: proyectoId, "perfiles._id": perfilId, ...abierto },
-      { $set: { "perfiles.$": { ...perfil, _id: perfilId } } },
+      {
+        $set: Object.fromEntries(
+          Object.entries(perfil.datosEditables()).map(([campo, valor]) => [
+            `perfiles.$.${campo}`,
+            valor,
+          ]),
+        ),
+      },
       { new: true, runValidators: true },
     )
     return proyecto?.perfiles.id(perfilId) ?? null

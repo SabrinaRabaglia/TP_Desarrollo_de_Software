@@ -2,11 +2,15 @@ import api from "./api"
 import { obtenerHabilidades } from "./habilidadesService"
 import {
   buscarProyectos,
+  modificarPerfil,
   obtenerProyecto,
   obtenerResumenDelPerfil,
 } from "./proyectosService"
 
-jest.mock("./api", () => ({ __esModule: true, default: { get: jest.fn() } }))
+jest.mock("./api", () => ({
+  __esModule: true,
+  default: { get: jest.fn(), patch: jest.fn() },
+}))
 jest.mock("./habilidadesService", () => ({ obtenerHabilidades: jest.fn() }))
 
 const respuestas = {
@@ -59,13 +63,88 @@ test("lista los proyectos aunque un perfil tenga campos en null", async () => {
       nombre: "Perfil sin nombre",
       descripcion: "Perfil cargado antes de las validaciones",
       compromiso: "Sin especificar",
+      cantidadHoras: null,
       modalidades: [],
-      habilidadesRequeridas: ["JavaScript"],
+      habilidadesRequeridas: [{ id: "habilidad-1", titulo: "JavaScript" }],
       habilidadesOpcionales: [],
       postulacionesAceptadas: [],
       limiteColaboraciones: undefined,
+      busquedaAbierta: true,
+      busquedaAbiertaHasta: null,
     },
   ])
+})
+
+test("el perfil trae lo que hace falta para mostrar y editar su búsqueda", async () => {
+  api.get.mockImplementation(async (url) => ({
+    data:
+      url === "/proyectos/proyecto-1"
+        ? {
+            ...respuestas["/proyectos"].data[0],
+            perfiles: [
+              {
+                id: "perfil-1",
+                nombre: "Tester",
+                descripcion: "Probar la app",
+                unidadCompromiso: "HORAS_SEMANALES",
+                cantidadHoras: 4,
+                modalidadesColaboracion: ["GRATUITA"],
+                habilidadesRequeridas: ["habilidad-1"],
+                habilidadesOpcionales: [],
+                postulacionesAceptadas: ["postulacion-1"],
+                limiteColaboraciones: 2,
+                busquedaAbierta: false,
+                busquedaAbiertaHasta: "2026-11-20T02:59:59.000Z",
+              },
+            ],
+          }
+        : { id: "colectivo-1", nombre: "Huerta Comunitaria Sur" },
+  }))
+
+  const {
+    perfiles: [perfil],
+  } = await obtenerProyecto("proyecto-1")
+
+  expect(perfil).toEqual({
+    id: "perfil-1",
+    nombre: "Tester",
+    descripcion: "Probar la app",
+    compromiso: "4 horas por semana",
+    cantidadHoras: 4,
+    modalidades: ["Gratuita"],
+    habilidadesRequeridas: [{ id: "habilidad-1", titulo: "JavaScript" }],
+    habilidadesOpcionales: [],
+    postulacionesAceptadas: ["postulacion-1"],
+    limiteColaboraciones: 2,
+    busquedaAbierta: false,
+    busquedaAbiertaHasta: new Date("2026-11-20T02:59:59.000Z"),
+  })
+})
+
+test("modificar un perfil manda solo los cambios al perfil del proyecto", async () => {
+  api.patch.mockResolvedValue({ data: { id: "perfil-1" } })
+
+  await modificarPerfil("proyecto-1", "perfil-1", {
+    limiteColaboraciones: null,
+    busquedaAbierta: false,
+  })
+
+  expect(api.patch).toHaveBeenCalledTimes(1)
+  expect(api.patch).toHaveBeenCalledWith(
+    "/proyectos/proyecto-1/perfiles/perfil-1",
+    { limiteColaboraciones: null, busquedaAbierta: false },
+  )
+})
+
+test("si el back rechaza la modificación del perfil, propaga el error", async () => {
+  const error = new Error(
+    "El límite no puede ser menor a las colaboraciones ya aceptadas (2).",
+  )
+  api.patch.mockRejectedValue(error)
+
+  await expect(
+    modificarPerfil("proyecto-1", "perfil-1", { limiteColaboraciones: 1 }),
+  ).rejects.toBe(error)
 })
 
 test("pide la página indicada y calcula cuántas páginas hay", async () => {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link, useParams } from "react-router-dom"
-import { Alert } from "@mui/material"
+import { Alert, Button } from "@mui/material"
 import Cargando from "../../components/cargando/Cargando"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
 import { mensajeDeError } from "../../service/api"
@@ -19,12 +19,34 @@ const PaginaCandidatas = () => {
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
   const [intento, setIntento] = useState(0)
-  const [contactada, setContactada] = useState(null)
+  const [seleccionadas, setSeleccionadas] = useState([])
+  // A quiénes se les está escribiendo; null con el formulario cerrado.
+  const [destinatarias, setDestinatarias] = useState(null)
   const [aviso, setAviso] = useState(null)
+  const [rechazadas, setRechazadas] = useState([])
 
-  const avisarEnvio = (candidata) => {
-    setContactada(null)
-    setAviso(`Le enviaste el mensaje a ${candidata.nombreFantasia}.`)
+  const seleccionar = (candidata, marcada) =>
+    setSeleccionadas((anteriores) =>
+      marcada
+        ? [...anteriores, candidata.id]
+        : anteriores.filter((id) => id !== candidata.id),
+    )
+
+  const escribirles = (elegidas) => {
+    setAviso(null)
+    setRechazadas([])
+    setDestinatarias(elegidas)
+  }
+
+  const avisarEnvio = ({ enviadas, rechazadas: sinEnviar }) => {
+    setDestinatarias(null)
+    setSeleccionadas([])
+    setAviso(
+      enviadas.length === 1
+        ? `El mensaje fue enviado a ${enviadas[0].nombreFantasia}.`
+        : `El mensaje fue enviado a ${enviadas.length} colaboradoras.`,
+    )
+    setRechazadas(sinEnviar)
   }
 
   useEffect(() => {
@@ -84,8 +106,9 @@ const PaginaCandidatas = () => {
         <p>
           Del proyecto{" "}
           <Link to={`/proyectos/${proyecto.id}`}>{proyecto.titulo}</Link>.
-          Tienen todas las habilidades requeridas; primero aparecen las que
-          tienen más de las opcionales.
+          Tienen al menos una de las habilidades requeridas. Primero aparecen
+          las de coincidencia total y, entre ellas, las que tienen más de las
+          opcionales.
         </p>
       </header>
 
@@ -94,34 +117,60 @@ const PaginaCandidatas = () => {
           {aviso}
         </Alert>
       )}
+      {rechazadas.map(({ candidata, motivo }) => (
+        <Alert key={candidata.id} severity="error">
+          No se envió a {candidata.nombreFantasia}: {motivo}
+        </Alert>
+      ))}
 
       {candidatas.length === 0 ? (
         <p className="pagina-candidatas-vacia">
-          Todavía no hay personas con todas las habilidades que pide este
-          perfil.
+          Todavía no hay personas con alguna de las habilidades requeridas de
+          este perfil.
         </p>
       ) : (
-        <ul className="pagina-candidatas-lista">
-          {candidatas.map((candidata) => (
-            <li key={candidata.id}>
-              <Candidata
-                candidata={candidata}
-                alContactar={(elegida) => {
-                  setAviso(null)
-                  setContactada(elegida)
-                }}
-              />
-            </li>
-          ))}
-        </ul>
+        <>
+          <div className="pagina-candidatas-seleccion">
+            <p aria-live="polite">
+              {seleccionadas.length === 1
+                ? "1 persona seleccionada"
+                : `${seleccionadas.length} personas seleccionadas`}
+            </p>
+            <Button
+              variant="contained"
+              disabled={seleccionadas.length === 0}
+              onClick={() =>
+                escribirles(
+                  candidatas.filter((candidata) =>
+                    seleccionadas.includes(candidata.id),
+                  ),
+                )
+              }
+            >
+              Enviar mensaje a las seleccionadas
+            </Button>
+          </div>
+          <ul className="pagina-candidatas-lista">
+            {candidatas.map((candidata) => (
+              <li key={candidata.id}>
+                <Candidata
+                  candidata={candidata}
+                  seleccionada={seleccionadas.includes(candidata.id)}
+                  alSeleccionar={seleccionar}
+                  alContactar={(elegida) => escribirles([elegida])}
+                />
+              </li>
+            ))}
+          </ul>
+        </>
       )}
 
-      {contactada && (
+      {destinatarias && (
         <FormularioDeContacto
-          candidata={contactada}
+          candidatas={destinatarias}
           proyectoId={proyecto.id}
           perfilId={perfil.id}
-          alCerrar={() => setContactada(null)}
+          alCerrar={() => setDestinatarias(null)}
           alEnviar={avisarEnvio}
         />
       )}

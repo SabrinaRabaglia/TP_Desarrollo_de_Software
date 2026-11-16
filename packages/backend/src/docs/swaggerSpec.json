@@ -471,14 +471,14 @@
       "get": {
         "tags": ["Personas colaboradoras"],
         "summary": "Listar personas colaboradoras",
-        "description": "Devuelve todas las personas colaboradoras. Las habilidades vuelven como objetos completos. Con el parámetro `perfiles` busca colaboradores para esos perfiles: devuelve a quienes tienen todas las habilidades requeridas de alguno de ellos, ordenadas primero por quienes tienen más habilidades opcionales del perfil. Tener solo opcionales no alcanza para aparecer, y no se sugiere a quienes ya están inscriptos en el proyecto del perfil. Responde 404 si algún perfil no existe y 409 si su proyecto está cerrado.",
+        "description": "Lista personas colaboradoras. Con `perfiles` devuelve las candidatas para esos perfiles: quienes tienen al menos una de sus habilidades requeridas y no están ya inscriptas en el proyecto. Cada una trae `coincidencia` (`TOTAL` si tiene todas las requeridas, `PARCIAL` si le faltan), `habilidadesCoincidentes`, `habilidadesRequeridasFaltantes` y `habilidadesOpcionalesCubiertas`. Primero van las de coincidencia total y, a igual nivel, las que cubren más opcionales. Nunca se devuelve el valor de los medios de contacto. Sin `perfiles` es el listado paginado, con `q` y `habilidades` como filtros. Responde 404 si algún perfil no existe.",
         "operationId": "listarPersonasColaboradoras",
         "parameters": [
           {
             "name": "perfiles",
             "in": "query",
             "required": false,
-            "description": "Ids de perfiles para los que se buscan colaboradores. Se puede repetir.",
+            "description": "Ids de perfiles para los que se buscan candidatas. Se puede repetir. Un proyecto cerrado responde 409.",
             "schema": {
               "type": "array",
               "items": {
@@ -621,7 +621,11 @@
         "summary": "Actualizar persona colaboradora",
         "description": "Reemplaza los datos de la persona. Los campos opcionales omitidos quedan en `null` (o lista vacía), salvo `mediosDeContacto`, que se conserva si se omite. Si viene, reemplaza la lista: un medio que trae su `id` lo conserva y uno sin `id` recibe uno nuevo. Solo puede editarla la propia persona; cualquier otro usuario recibe `403`.",
         "operationId": "actualizarPersonaColaboradora",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/IdPath"
@@ -698,7 +702,11 @@
         "summary": "Eliminar persona colaboradora",
         "description": "Elimina una persona colaboradora por id, las notificaciones que recibió y su usuario, que ya no puede iniciar sesión. Solo puede borrarla la propia persona; cualquier otro usuario recibe `403`.",
         "operationId": "eliminarPersonaColaboradora",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/IdPath"
@@ -732,7 +740,11 @@
         "summary": "Datos de contacto de una persona",
         "description": "Devuelve los medios de contacto de la persona con su valor. Pueden verlos la propia persona y los colectivos con un proyecto en el que la persona colabora, aunque la colaboración sea anónima. Cualquier otro usuario recibe `403`.",
         "operationId": "obtenerMediosDeContacto",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/IdPath"
@@ -776,10 +788,18 @@
         "summary": "Eliminar un medio de contacto",
         "description": "Quita un medio de contacto de la persona por su id. Los ids de los medios vienen en `mediosDeContacto` de la persona. La operación es atómica: dos borrados simultáneos de medios distintos aplican los dos. Solo puede borrarlo la propia persona; cualquier otro usuario recibe `403`.",
         "operationId": "eliminarMedioDeContacto",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/IdPath" },
-          { "$ref": "#/components/parameters/ContactoIdPath" }
+          {
+            "$ref": "#/components/parameters/IdPath"
+          },
+          {
+            "$ref": "#/components/parameters/ContactoIdPath"
+          }
         ],
         "responses": {
           "204": {
@@ -809,27 +829,49 @@
         "summary": "Crear un enlace para conectar Telegram",
         "description": "Devuelve un enlace al bot de Telegram con un código firmado que vence a los 15 minutos. Cuando la persona lo abre y toca Iniciar, el bot guarda su chat id como medio de contacto `TELEGRAM` y reemplaza el anterior si había uno. Para desconectarse se borra ese medio con `DELETE /personas-colaboradoras/{id}/medios-de-contacto/{contactoId}`. Solo puede pedirlo la propia persona; cualquier otro usuario recibe `403`.",
         "operationId": "crearEnlaceDeTelegram",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "$ref": "#/components/parameters/IdPath" }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
         "responses": {
           "201": {
             "description": "Enlace creado.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/EnlaceDeTelegram" }
+                "schema": {
+                  "$ref": "#/components/schemas/EnlaceDeTelegram"
+                }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/BadRequest" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "403": { "$ref": "#/components/responses/Forbidden" },
-          "404": { "$ref": "#/components/responses/NotFound" },
-          "500": { "$ref": "#/components/responses/InternalServerError" },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
           "503": {
             "description": "El servidor no tiene configurado `TELEGRAM_BOT_TOKEN`.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Error" },
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
                 "example": {
                   "message": "Telegram no está disponible en este servidor",
                   "details": []
@@ -846,7 +888,11 @@
         "summary": "Bandeja de una persona colaboradora",
         "description": "Devuelve los mensajes internos que recibió la persona, del más nuevo al más viejo, con el nombre del colectivo, el título del proyecto y el nombre del perfil. Si el proyecto o el perfil ya no existen, ese dato viene en `null`. Solo puede leerla la propia persona; cualquier otro usuario recibe `403`. Responde 404 si la persona no existe.",
         "operationId": "listarNotificacionesDePersona",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/IdPath"
@@ -1191,7 +1237,11 @@
         "summary": "Mensajes enviados por un colectivo",
         "description": "Devuelve los mensajes internos que envió el colectivo, del más nuevo al más viejo, con el nombre de fantasía de la destinataria, el título del proyecto y el nombre del perfil. Si el proyecto o el perfil ya no existen, ese dato viene en `null`. Los medios de contacto de la persona no se exponen. Solo puede leerlos el propio colectivo; cualquier otro usuario recibe `403`.",
         "operationId": "listarNotificacionesDeColectivo",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/IdPath"
@@ -1546,7 +1596,7 @@
       "post": {
         "tags": ["Perfiles"],
         "summary": "Agregar un perfil a un proyecto",
-        "description": "Responde 404 si el proyecto o alguna habilidad no existen y 422 si el perfil no cumple las reglas del dominio. Un proyecto cerrado no admite cambios en sus perfiles: responde 409.",
+        "description": "Responde 404 si el proyecto o alguna habilidad no existen y 422 si el perfil no cumple las reglas del dominio. Un proyecto cerrado no admite cambios en sus perfiles: responde 409. Requiere la sesión del colectivo dueño del proyecto: sin token responde 401 y con otro usuario 403.",
         "operationId": "crearPerfil",
         "parameters": [
           {
@@ -1586,6 +1636,19 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o el proyecto es de otro colectivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -1598,7 +1661,12 @@
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/proyectos/{id}/perfiles/{perfilId}": {
@@ -1640,7 +1708,7 @@
       "put": {
         "tags": ["Perfiles"],
         "summary": "Actualizar un perfil",
-        "description": "Reemplaza los datos del perfil. Si se omite el nombre queda en null. Un proyecto cerrado no admite cambios en sus perfiles: responde 409.",
+        "description": "Reemplaza los datos del perfil. Lo que se omite vuelve a su valor por defecto: nombre en null, sin límite, búsqueda abierta y sin fecha límite. Las colaboraciones aceptadas se conservan. El límite no puede quedar por debajo de las colaboraciones ya aceptadas (409) y una fecha límite nueva tiene que ser futura (422). Un proyecto cerrado no admite cambios en sus perfiles: responde 409. Requiere la sesión del colectivo dueño del proyecto: sin token responde 401 y con otro usuario 403.",
         "operationId": "actualizarPerfil",
         "parameters": [
           {
@@ -1683,6 +1751,19 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o el proyecto es de otro colectivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -1695,12 +1776,95 @@
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": ["Perfiles"],
+        "summary": "Modificar algunos datos de un perfil",
+        "description": "Cambia solo los datos que llegan y deja el resto como estaba. Sirve para cerrar o reabrir la búsqueda, ponerle fecha límite o cambiar el límite de colaboraciones. Valen las mismas reglas que en el reemplazo: el límite no puede quedar por debajo de las colaboraciones ya aceptadas (409) y una fecha límite nueva tiene que ser futura (422). Requiere la sesión del colectivo dueño del proyecto: sin token responde 401 y con otro usuario 403.",
+        "operationId": "modificarPerfil",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          },
+          {
+            "$ref": "#/components/parameters/PerfilIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PerfilInput"
+                  }
+                ],
+                "description": "Cualquier subconjunto de los datos del perfil.",
+                "required": []
+              },
+              "example": {
+                "busquedaAbierta": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Perfil modificado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Perfil"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o el proyecto es de otro colectivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "delete": {
         "tags": ["Perfiles"],
         "summary": "Eliminar un perfil",
-        "description": "Un proyecto cerrado no admite cambios en sus perfiles: responde 409.",
+        "description": "Un proyecto cerrado no admite cambios en sus perfiles: responde 409. Requiere la sesión del colectivo dueño del proyecto: sin token responde 401 y con otro usuario 403.",
         "operationId": "eliminarPerfil",
         "parameters": [
           {
@@ -1717,6 +1881,19 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es un colectivo, o el proyecto es de otro colectivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -1726,7 +1903,12 @@
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/proyectos/{id}/perfiles/{perfilId}/notificaciones": {
@@ -1735,7 +1917,11 @@
         "summary": "Contactar a una persona por un perfil",
         "description": "El colectivo dueño del proyecto le envía un mensaje interno a una persona colaboradora por uno de sus perfiles, y el mensaje se replica por todos los medios de contacto de la persona. Si algún medio externo falla, el mensaje interno se guarda igual y se replica por los demás. Exige el token de un colectivo: responde 403 si el usuario es una persona colaboradora o si el proyecto es de otro colectivo. Responde 409 si la persona no acepta mensajería interna o si el proyecto está cerrado, y 404 si el proyecto, el perfil o la persona no existen.",
         "operationId": "contactarPersonaPorPerfil",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/IdPath"
@@ -1853,7 +2039,7 @@
       "post": {
         "tags": ["Postulaciones"],
         "summary": "Postularse a un perfil",
-        "description": "La persona colaboradora autenticada se postula al perfil. Queda `PENDIENTE` hasta que el colectivo la acepte o la rechace. Con `esAnonima: true`, las respuestas no muestran a la persona (`personaColaboradora: null`).",
+        "description": "La persona colaboradora autenticada se postula al perfil. Queda `PENDIENTE` hasta que el colectivo la acepte o la rechace. Con `esAnonima: true`, las respuestas no muestran a la persona (`personaColaboradora: null`). Si el proyecto está cerrado, o la búsqueda del perfil se cerró o pasó su fecha límite, responde 409 y no crea la postulación.",
         "operationId": "crearPostulacion",
         "security": [
           {
@@ -2311,8 +2497,16 @@
         "summary": "Dar de baja una postulación aceptada (desanotar)",
         "description": "La persona se da de baja de su propia postulación, o el colectivo dueño del proyecto desanota a la persona. Solo se da de baja una postulación aceptada, y la baja es permanente: la persona no puede volver a postularse a ese perfil ni la postulación puede volver a aceptarse. Al darse de baja, deja de figurar entre los colaboradores del perfil, libera su lugar en el límite de colaboraciones y el colectivo pierde el acceso a sus datos de contacto. `origenBaja` registra quién la dio de baja.",
         "operationId": "darDeBajaPostulacion",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "$ref": "#/components/parameters/IdPath" }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Postulación dada de baja",
@@ -2340,26 +2534,38 @@
               }
             }
           },
-          "400": { "$ref": "#/components/responses/BadRequest" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
           "403": {
             "description": "No es la propia postulación de la persona ni una postulación de un proyecto del colectivo.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Error" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           },
-          "404": { "$ref": "#/components/responses/NotFound" },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
           "409": {
             "description": "La postulación no está aceptada (pendiente, rechazada o ya dada de baja).",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Error" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           },
-          "500": { "$ref": "#/components/responses/InternalServerError" }
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
         }
       }
     },
@@ -2422,6 +2628,253 @@
                     "nombre": "Catamarca"
                   }
                 ]
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/perfiles": {
+      "get": {
+        "tags": ["Perfiles"],
+        "summary": "Buscar perfiles con búsqueda abierta",
+        "description": "Una persona colaboradora busca perfiles a los que postularse. Devuelve los perfiles de proyectos publicados, con la búsqueda abierta, que piden al menos una de las habilidades indicadas. Cada resultado trae la `coincidencia` contra esas habilidades (`TOTAL` si cubren todas las requeridas del perfil, `PARCIAL` si falta alguna, con cuáles faltan) y los `cuposDisponibles` del perfil (`null` es sin límite). Una combinación sin resultados devuelve la lista vacía.",
+        "operationId": "buscarPerfiles",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "habilidades",
+            "in": "query",
+            "required": true,
+            "description": "Ids de habilidades. Se puede repetir. Contra ellas se calcula la coincidencia.",
+            "schema": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "modalidad",
+            "in": "query",
+            "required": false,
+            "description": "Solo perfiles que admiten esa modalidad de colaboración.",
+            "schema": {
+              "$ref": "#/components/schemas/ModalidadColaboracion"
+            }
+          },
+          {
+            "name": "orden",
+            "in": "query",
+            "required": false,
+            "description": "Por fecha de alta del proyecto.",
+            "schema": {
+              "type": "string",
+              "enum": ["recientes", "antiguos"],
+              "default": "recientes"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Perfiles encontrados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["metadata", "data"],
+                  "properties": {
+                    "metadata": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer"
+                        },
+                        "limit": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "proyecto": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "$ref": "#/components/schemas/ObjectId"
+                              },
+                              "titulo": {
+                                "type": "string"
+                              },
+                              "fechaAlta": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "colectivo": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "$ref": "#/components/schemas/ObjectId"
+                                  },
+                                  "nombre": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "perfil": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "$ref": "#/components/schemas/ObjectId"
+                              },
+                              "nombre": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "descripcion": {
+                                "type": "string"
+                              },
+                              "unidadCompromiso": {
+                                "$ref": "#/components/schemas/UnidadCompromiso"
+                              },
+                              "cantidadHoras": {
+                                "type": "integer"
+                              },
+                              "modalidadesColaboracion": {
+                                "type": "array",
+                                "items": {
+                                  "$ref": "#/components/schemas/ModalidadColaboracion"
+                                }
+                              },
+                              "limiteColaboraciones": {
+                                "type": "integer",
+                                "nullable": true
+                              },
+                              "cuposDisponibles": {
+                                "type": "integer",
+                                "nullable": true,
+                                "description": "Límite menos colaboraciones aceptadas. `null` es sin límite."
+                              }
+                            }
+                          },
+                          "coincidencia": {
+                            "type": "string",
+                            "enum": ["TOTAL", "PARCIAL"]
+                          },
+                          "habilidadesRequeridasFaltantes": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "$ref": "#/components/schemas/ObjectId"
+                                },
+                                "titulo": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "metadata": {
+                    "page": 1,
+                    "limit": 10,
+                    "total": 1
+                  },
+                  "data": [
+                    {
+                      "proyecto": {
+                        "id": "64f1a2b3c4d5e6f7a8b9c010",
+                        "titulo": "Sistema de reservas del salón comunitario",
+                        "fechaAlta": "2026-10-10T00:00:00.000Z",
+                        "colectivo": {
+                          "id": "64f1a2b3c4d5e6f7a8b9c020",
+                          "nombre": "Asamblea Barrial Los Ceibos"
+                        }
+                      },
+                      "perfil": {
+                        "id": "64f1a2b3c4d5e6f7a8b9c030",
+                        "nombre": "Desarrollador/a Web",
+                        "descripcion": "Construir la pantalla de reservas y su API",
+                        "unidadCompromiso": "HORAS_SEMANALES",
+                        "cantidadHoras": 10,
+                        "modalidadesColaboracion": [
+                          "GRATUITA",
+                          "CON_POSIBILIDAD_CONTRATACION"
+                        ],
+                        "limiteColaboraciones": null,
+                        "cuposDisponibles": null
+                      },
+                      "coincidencia": "PARCIAL",
+                      "habilidadesRequeridasFaltantes": [
+                        {
+                          "id": "64f1a2b3c4d5e6f7a8b9c003",
+                          "titulo": "Node.js"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "No es una persona colaboradora.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           },
@@ -2973,8 +3426,14 @@
               "$ref": "#/components/schemas/Proyecto"
             }
           },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       },
       "ProyectoInput": {
@@ -3464,6 +3923,31 @@
             "items": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          "limiteColaboraciones": {
+            "type": "integer",
+            "minimum": 1,
+            "nullable": true,
+            "description": "Cuántas colaboraciones aceptadas admite el perfil. `null` es sin límite.",
+            "example": 2
+          },
+          "busquedaAbierta": {
+            "type": "boolean",
+            "description": "`false` cuando el colectivo cerró la búsqueda a mano.",
+            "example": true
+          },
+          "busquedaAbiertaHasta": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Fecha límite de la búsqueda. Pasada esa fecha el perfil deja de admitir postulaciones. `null` es sin fecha límite."
+          },
+          "postulacionesAceptadas": {
+            "type": "array",
+            "description": "Ids de las postulaciones aceptadas que ocupan un lugar del perfil.",
+            "items": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
           }
         }
       },
@@ -3517,6 +4001,24 @@
             "items": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          "limiteColaboraciones": {
+            "type": "integer",
+            "minimum": 1,
+            "nullable": true,
+            "description": "Cuántas colaboraciones aceptadas admite el perfil. `null` es sin límite.",
+            "example": 2
+          },
+          "busquedaAbierta": {
+            "type": "boolean",
+            "description": "`false` cuando el colectivo cerró la búsqueda a mano.",
+            "example": true
+          },
+          "busquedaAbiertaHasta": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Fecha límite de la búsqueda, como `2026-12-31` o con hora. Tiene que ser futura."
           }
         }
       },

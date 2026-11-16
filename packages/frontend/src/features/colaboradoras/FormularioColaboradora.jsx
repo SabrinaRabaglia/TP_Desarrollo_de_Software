@@ -7,6 +7,7 @@ import {
   TextField,
 } from "@mui/material"
 import FilasTipoValor from "../../components/filasTipoValor/FilasTipoValor"
+import SelectorDeHabilidades from "../../components/selectorDeHabilidades/SelectorDeHabilidades"
 import {
   TIPOS_DE_CUENTA,
   TIPOS_DE_MEDIO_MANUALES,
@@ -51,13 +52,6 @@ const FormularioColaboradora = ({
 
   const setFilasDe = (campo) => (filas) => {
     setDatos({ ...datos, [campo]: filas })
-  }
-
-  const alternarHabilidad = (id) => {
-    const habilidadesElegidas = datos.habilidades.includes(id)
-      ? datos.habilidades.filter((elegida) => elegida !== id)
-      : [...datos.habilidades, id]
-    setDatos({ ...datos, habilidades: habilidadesElegidas })
   }
 
   const guardar = (evento) => {
@@ -112,23 +106,12 @@ const FormularioColaboradora = ({
         />
       </fieldset>
 
-      <fieldset className="formulario-colaboradora-seccion">
-        <legend>Habilidades</legend>
-        <div className="formulario-colaboradora-habilidades">
-          {habilidades.map((habilidad) => (
-            <FormControlLabel
-              key={habilidad.id}
-              label={habilidad.titulo}
-              control={
-                <Checkbox
-                  checked={datos.habilidades.includes(habilidad.id)}
-                  onChange={() => alternarHabilidad(habilidad.id)}
-                />
-              }
-            />
-          ))}
-        </div>
-      </fieldset>
+      <SelectorDeHabilidades
+        titulo="Habilidades"
+        habilidades={habilidades}
+        elegidas={datos.habilidades}
+        alCambiar={(elegidas) => setDatos({ ...datos, habilidades: elegidas })}
+      />
 
       <FilasTipoValor
         titulo="Cuentas de código"

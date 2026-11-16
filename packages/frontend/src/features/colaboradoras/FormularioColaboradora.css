@@ -16,18 +16,12 @@
   gap: var(--espacio-4);
 }
 
-.formulario-colaboradora-habilidades {
-  display: grid;
-  grid-template-columns: 1fr;
-}
-
 .formulario-colaboradora-enviar {
   align-self: flex-start;
 }
 
 @media (min-width: 768px) {
-  .formulario-colaboradora-nombre,
-  .formulario-colaboradora-habilidades {
+  .formulario-colaboradora-nombre {
     grid-template-columns: repeat(2, 1fr);
   }
 }

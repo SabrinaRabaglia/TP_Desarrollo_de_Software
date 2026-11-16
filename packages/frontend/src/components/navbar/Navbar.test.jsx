@@ -70,31 +70,55 @@ describe("Navbar", () => {
     ).not.toBeInTheDocument()
   })
 
-  test("una persona colaboradora ve sus postulaciones y su perfil", () => {
+  test("una persona colaboradora ve la búsqueda, sus postulaciones y sus mensajes", () => {
     iniciarSesionComo("PERSONA_COLABORADORA", "Nube")
 
     renderizar()
 
     expect(textosDeEnlaces(barra())).toEqual([
       "Proyectos",
+      "Buscar proyectos",
       "Mis postulaciones",
       "Mensajes",
-      "Mi perfil",
-      "Mi cuenta",
     ])
     expect(within(barra()).getByText("Nube")).toBeInTheDocument()
   })
 
-  test("un colectivo ve mensajes y su cuenta, pero no postulaciones ni perfil", () => {
+  test("el perfil, la cuenta y cerrar sesión están en el menú de quien tiene la sesión", async () => {
+    iniciarSesionComo("PERSONA_COLABORADORA", "Nube")
+    renderizar()
+
+    await userEvent.click(
+      within(barra()).getByRole("button", { name: "Cuenta de Nube" }),
+    )
+
+    const menu = await screen.findByRole("menu")
+    expect(
+      within(menu)
+        .getAllByRole("menuitem")
+        .map((opcion) => opcion.textContent),
+    ).toEqual(["Mi perfil", "Mi cuenta", "Cerrar sesión"])
+    expect(
+      within(menu).getByRole("menuitem", { name: "Mi perfil" }),
+    ).toHaveAttribute("href", "/mi-perfil")
+  })
+
+  test("un colectivo ve mensajes y su cuenta, pero no postulaciones ni perfil", async () => {
     iniciarSesionComo("COLECTIVO", "Red Solidaria Sur")
 
     renderizar()
 
-    expect(textosDeEnlaces(barra())).toEqual([
-      "Proyectos",
-      "Mensajes",
-      "Mi cuenta",
-    ])
+    expect(textosDeEnlaces(barra())).toEqual(["Proyectos", "Mensajes"])
+    await userEvent.click(
+      within(barra()).getByRole("button", {
+        name: "Cuenta de Red Solidaria Sur",
+      }),
+    )
+    expect(
+      within(await screen.findByRole("menu"))
+        .getAllByRole("menuitem")
+        .map((opcion) => opcion.textContent),
+    ).toEqual(["Mi cuenta", "Cerrar sesión"])
   })
 
   test("marca la sección en la que está", () => {
@@ -149,7 +173,12 @@ describe("Navbar", () => {
     iniciarSesionComo("PERSONA_COLABORADORA", "Nube")
     renderizar()
 
-    await userEvent.click(screen.getByRole("button", { name: "Cerrar sesión" }))
+    await userEvent.click(
+      within(barra()).getByRole("button", { name: "Cuenta de Nube" }),
+    )
+    await userEvent.click(
+      await screen.findByRole("menuitem", { name: "Cerrar sesión" }),
+    )
 
     expect(
       await screen.findByRole("heading", { name: "Inicio" }),

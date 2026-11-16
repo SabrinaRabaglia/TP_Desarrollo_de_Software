@@ -15,8 +15,15 @@ import "./FormularioDeContacto.css"
 // Mismo máximo que valida el back.
 const MAXIMO_DE_CARACTERES = 4096
 
+const nombres = (candidatas) =>
+  new Intl.ListFormat("es", { type: "conjunction" }).format(
+    candidatas.map((candidata) => candidata.nombreFantasia),
+  )
+
+// El mismo mensaje sale una vez por destinataria. El back decide a quién se
+// le puede escribir: las que rechaza vuelven con su motivo.
 const FormularioDeContacto = ({
-  candidata,
+  candidatas,
   proyectoId,
   perfilId,
   alCerrar,
@@ -24,7 +31,7 @@ const FormularioDeContacto = ({
 }) => {
   const [contenido, setContenido] = useState("")
   const [enviando, setEnviando] = useState(false)
-  const [error, setError] = useState(null)
+  const [rechazadas, setRechazadas] = useState([])
 
   const vacio = contenido.trim() === ""
 
@@ -38,19 +45,31 @@ const FormularioDeContacto = ({
   const enviar = async (evento) => {
     evento.preventDefault()
     setEnviando(true)
-    setError(null)
-    try {
-      await enviarMensaje({
-        proyectoId,
-        perfilId,
-        personaId: candidata.id,
-        contenido,
-      })
-      alEnviar(candidata)
-    } catch (e) {
-      setError(mensajeDeError(e))
-      setEnviando(false)
+    setRechazadas([])
+    const resultados = await Promise.allSettled(
+      candidatas.map((candidata) =>
+        enviarMensaje({
+          proyectoId,
+          perfilId,
+          personaId: candidata.id,
+          contenido,
+        }),
+      ),
+    )
+    const enviadas = candidatas.filter(
+      (_candidata, indice) => resultados[indice].status === "fulfilled",
+    )
+    const sinEnviar = candidatas.flatMap((candidata, indice) =>
+      resultados[indice].status === "rejected"
+        ? [{ candidata, motivo: mensajeDeError(resultados[indice].reason) }]
+        : [],
+    )
+    if (enviadas.length > 0) {
+      alEnviar({ enviadas, rechazadas: sinEnviar })
+      return
     }
+    setRechazadas(sinEnviar)
+    setEnviando(false)
   }
 
   return (
@@ -61,7 +80,7 @@ const FormularioDeContacto = ({
       maxWidth="sm"
       slotProps={{ paper: { component: "form", onSubmit: enviar } }}
     >
-      <DialogTitle>Escribirle a {candidata.nombreFantasia}</DialogTitle>
+      <DialogTitle>Escribirle a {nombres(candidatas)}</DialogTitle>
       <DialogContent className="formulario-de-contacto">
         <TextField
           label="Mensaje"
@@ -75,7 +94,11 @@ const FormularioDeContacto = ({
           helperText={`${contenido.length} de ${MAXIMO_DE_CARACTERES} caracteres`}
           slotProps={{ htmlInput: { maxLength: MAXIMO_DE_CARACTERES } }}
         />
-        {error && <Alert severity="error">{error}</Alert>}
+        {rechazadas.map(({ candidata, motivo }) => (
+          <Alert key={candidata.id} severity="error">
+            No se envió a {candidata.nombreFantasia}: {motivo}
+          </Alert>
+        ))}
       </DialogContent>
       <DialogActions>
         <Button onClick={cerrar} disabled={enviando}>

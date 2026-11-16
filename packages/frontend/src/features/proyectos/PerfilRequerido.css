@@ -53,7 +53,7 @@
   gap: var(--espacio-2);
 }
 
-/* Postularse, revisar postulaciones, ver candidatas y ver colaboradores.
+/* Postularse, lo que gestiona el colectivo dueño y ver colaboradores.
    Quedan abajo de todo aunque las tarjetas de la grilla midan distinto. */
 .perfil-acciones {
   display: flex;
@@ -64,6 +64,7 @@
   padding-top: var(--espacio-2);
 }
 
+.perfil-busqueda,
 .perfil-motivo {
   font-size: var(--texto-chico);
   color: var(--color-texto-secundario);

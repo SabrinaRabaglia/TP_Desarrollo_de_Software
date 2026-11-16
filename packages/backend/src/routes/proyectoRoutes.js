@@ -1,6 +1,9 @@
 import { Router } from "express"
 import validar from "../middlewares/validar.js"
-import { perfilSchema } from "../validations/perfil.js"
+import {
+  busquedaDePerfilesSchema,
+  perfilSchema,
+} from "../validations/perfil.js"
 import {
   busquedaProyectosSchema,
   proyectoSchema,
@@ -41,9 +44,22 @@ routes.patch(
   proyectoController.patch,
 )
 
+// Una persona colaboradora busca perfiles con búsqueda abierta según sus
+// habilidades.
+routes.get(
+  "/perfiles",
+  autenticar,
+  autorizar(RolUsuario.PERSONA_COLABORADORA),
+  validar(busquedaDePerfilesSchema, "query"),
+  perfilController.buscar,
+)
+
+// Los perfiles los escribe solo el colectivo dueño del proyecto.
 routes.post(
   "/proyectos/:id/perfiles",
+  autenticar,
   validateId,
+  autorizar(RolUsuario.COLECTIVO),
   validar(perfilSchema),
   perfilController.create,
 )
@@ -59,13 +75,25 @@ routes.get(
 )
 routes.put(
   "/proyectos/:id/perfiles/:perfilId",
+  autenticar,
   validateId,
+  autorizar(RolUsuario.COLECTIVO),
   validar(perfilSchema),
   perfilController.update,
 )
+routes.patch(
+  "/proyectos/:id/perfiles/:perfilId",
+  autenticar,
+  validateId,
+  autorizar(RolUsuario.COLECTIVO),
+  validar(perfilSchema.partial()),
+  perfilController.modificar,
+)
 routes.delete(
   "/proyectos/:id/perfiles/:perfilId",
+  autenticar,
   validateId,
+  autorizar(RolUsuario.COLECTIVO),
   perfilController.delete,
 )
 

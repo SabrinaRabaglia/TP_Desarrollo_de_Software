@@ -66,25 +66,32 @@
 
 /* ---------- Usuario ---------- */
 
-.navbar-usuario {
+/* Es un botón de MUI: se le pisa el alto mínimo y el relleno para que mida lo
+   mismo que los enlaces de la barra. */
+.navbar .navbar-usuario {
   display: flex;
   align-items: center;
   gap: var(--espacio-2);
+  min-height: var(--alto-tactil);
   margin-left: auto;
+  padding-inline: var(--espacio-2);
+  border-radius: var(--radio-pill);
+  color: var(--color-texto-secundario);
+  font-weight: 500;
   white-space: nowrap;
+  text-transform: none;
 }
 
 .navbar-usuario-nombre {
   display: none;
-  max-width: 12ch;
+  max-width: 20ch;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: var(--texto-chico);
-  color: var(--color-texto-secundario);
 }
 
-.navbar-cerrar-sesion {
-  display: none;
+.navbar-link svg,
+.navbar-usuario svg {
+  flex-shrink: 0;
 }
 
 /* ---------- Menú lateral (móvil y tablet) ---------- */
@@ -132,23 +139,5 @@
   .navbar-links {
     display: flex;
     margin-left: var(--espacio-4);
-  }
-
-  .navbar-cerrar-sesion {
-    display: inline-flex;
-  }
-
-  /* Con todas las secciones en la barra no entran el texto del logo ni el
-     nombre: quedan el monograma y el avatar hasta que haya más lugar. */
-  .navbar-logo-texto,
-  .navbar-usuario-nombre {
-    display: none;
-  }
-}
-
-@media (min-width: 1280px) {
-  .navbar-logo-texto,
-  .navbar-usuario-nombre {
-    display: inline-block;
   }
 }

@@ -16,15 +16,19 @@ const proyecto = {
   perfiles: [{ id: "pf1", nombre: "Frontend" }],
 }
 
-const candidata = (id, nombreFantasia, aceptaMensajeriaInterna) => ({
+const candidata = (id, nombreFantasia, extras = {}) => ({
   id,
   nombreFantasia,
   nombreCompleto: null,
   pronombres: [],
-  presentacion: null,
-  habilidades: ["React"],
+  presentacion: `Presentación de ${nombreFantasia}`,
+  habilidades: ["Pandas", "Estadística", "Cocina"],
   cuentas: [],
-  aceptaMensajeriaInterna,
+  aceptaMensajeriaInterna: true,
+  coincidencia: "TOTAL",
+  habilidadesCoincidentes: ["Pandas", "Estadística"],
+  opcionalesCubiertas: 0,
+  ...extras,
 })
 
 const renderizar = () =>
@@ -44,16 +48,41 @@ const tarjetaDe = async (nombreFantasia) =>
     "article",
   )
 
+const rechazoDelBack = {
+  response: {
+    data: { message: "La persona colaboradora no acepta mensajería interna." },
+  },
+}
+
 beforeEach(() => {
   obtenerProyecto.mockResolvedValue(proyecto)
   buscarCandidatas.mockResolvedValue([
-    candidata("p1", "anag", true),
-    candidata("p2", "beto", false),
+    candidata("p1", "Yacaré", { opcionalesCubiertas: 1 }),
+    candidata("p2", "Calden"),
+    candidata("p3", "Tero", {
+      aceptaMensajeriaInterna: false,
+      coincidencia: "PARCIAL",
+      habilidadesCoincidentes: ["Pandas"],
+    }),
   ])
 })
 
+const seleccionarA = async (nombreFantasia) =>
+  userEvent.click(
+    within(await tarjetaDe(nombreFantasia)).getByRole("checkbox", {
+      name: `Seleccionar a ${nombreFantasia}`,
+    }),
+  )
+
+const escribirYEnviar = async (titulo, mensaje) => {
+  const formulario = await screen.findByRole("dialog", { name: titulo })
+  userEvent.type(within(formulario).getByLabelText("Mensaje"), mensaje)
+  userEvent.click(within(formulario).getByRole("button", { name: "Enviar" }))
+  return formulario
+}
+
 describe("PaginaCandidatas", () => {
-  test("lista las personas que encajan con el perfil", async () => {
+  test("lista las personas que encajan con el perfil, con su coincidencia y sin medios de contacto", async () => {
     renderizar()
 
     expect(
@@ -68,27 +97,43 @@ describe("PaginaCandidatas", () => {
       within(migas).getByRole("link", { name: "Sitio web de la huerta" }),
     ).toHaveAttribute("href", "/proyectos/pr1")
     expect(obtenerProyecto).toHaveBeenCalledTimes(1)
-    expect(
-      within(await tarjetaDe("anag")).getByRole("link", { name: "Ver perfil" }),
-    ).toHaveAttribute("href", "/colaboradoras/p1")
+
+    const yacare = within(await tarjetaDe("Yacaré"))
+    expect(yacare.getByText("Presentación de Yacaré")).toBeInTheDocument()
+    expect(yacare.getByText("Coincidencia total")).toBeInTheDocument()
+    expect(yacare.getByText("Tiene 1 habilidad opcional")).toBeInTheDocument()
+    expect(yacare.getByText("Estadística")).toBeInTheDocument()
+    // Solo las habilidades que coinciden con el perfil, no todas las suyas
+    expect(yacare.queryByText("Cocina")).not.toBeInTheDocument()
+    expect(yacare.getByRole("link", { name: "Ver perfil" })).toHaveAttribute(
+      "href",
+      "/colaboradoras/p1",
+    )
+
+    const tero = within(await tarjetaDe("Tero"))
+    expect(tero.getByText("Coincidencia parcial")).toBeInTheDocument()
+    expect(tero.getByText("No acepta mensajes internos.")).toBeInTheDocument()
   })
 
-  test("abre el formulario, envía el mensaje y muestra la confirmación", async () => {
+  test("envía un mismo mensaje a las personas seleccionadas y dice a cuántas llegó", async () => {
     enviarMensaje.mockResolvedValue()
     renderizar()
 
-    userEvent.click(
-      within(await tarjetaDe("anag")).getByRole("button", {
-        name: "Contactar",
-      }),
-    )
+    const enviarALasSeleccionadas = await screen.findByRole("button", {
+      name: "Enviar mensaje a las seleccionadas",
+    })
+    expect(enviarALasSeleccionadas).toBeDisabled()
+
+    await seleccionarA("Yacaré")
+    await seleccionarA("Calden")
+    expect(screen.getByText("2 personas seleccionadas")).toBeInTheDocument()
+    userEvent.click(enviarALasSeleccionadas)
 
     const formulario = await screen.findByRole("dialog", {
-      name: "Escribirle a anag",
+      name: "Escribirle a Yacaré y Calden",
     })
     const enviar = within(formulario).getByRole("button", { name: "Enviar" })
     expect(enviar).toBeDisabled()
-
     userEvent.type(
       within(formulario).getByLabelText("Mensaje"),
       "¿Te sumás al proyecto?",
@@ -99,52 +144,67 @@ describe("PaginaCandidatas", () => {
     userEvent.click(enviar)
 
     expect(
-      await screen.findByText("Le enviaste el mensaje a anag."),
+      await screen.findByText("El mensaje fue enviado a 2 colaboradoras."),
     ).toBeInTheDocument()
-    expect(enviarMensaje).toHaveBeenCalledWith({
-      proyectoId: "pr1",
-      perfilId: "pf1",
-      personaId: "p1",
-      contenido: "¿Te sumás al proyecto?",
-    })
+    expect(enviarMensaje.mock.calls.map(([envio]) => envio)).toEqual([
+      {
+        proyectoId: "pr1",
+        perfilId: "pf1",
+        personaId: "p1",
+        contenido: "¿Te sumás al proyecto?",
+      },
+      {
+        proyectoId: "pr1",
+        perfilId: "pf1",
+        personaId: "p2",
+        contenido: "¿Te sumás al proyecto?",
+      },
+    ])
     await waitFor(() => expect(formulario).not.toBeInTheDocument())
+    expect(screen.getByText("0 personas seleccionadas")).toBeInTheDocument()
   })
 
-  test("si el back rechaza el mensaje muestra su error y conserva lo escrito", async () => {
-    enviarMensaje.mockRejectedValue({
-      response: {
-        data: { message: "La persona no acepta mensajería interna." },
-      },
-    })
+  test("si el back rechaza a la única destinataria, muestra el motivo y conserva lo escrito", async () => {
+    enviarMensaje.mockRejectedValue(rechazoDelBack)
     renderizar()
 
     userEvent.click(
-      within(await tarjetaDe("anag")).getByRole("button", {
-        name: "Contactar",
+      within(await tarjetaDe("Tero")).getByRole("button", {
+        name: "Enviar mensaje",
       }),
     )
-    const formulario = await screen.findByRole("dialog")
-    userEvent.type(within(formulario).getByLabelText("Mensaje"), "Hola")
-    userEvent.click(within(formulario).getByRole("button", { name: "Enviar" }))
+    const formulario = await escribirYEnviar("Escribirle a Tero", "Hola")
 
     expect(
       await within(formulario).findByText(
-        "La persona no acepta mensajería interna.",
+        "No se envió a Tero: La persona colaboradora no acepta mensajería interna.",
       ),
     ).toBeInTheDocument()
     expect(within(formulario).getByLabelText("Mensaje")).toHaveValue("Hola")
   })
 
-  test("el botón Contactar está deshabilitado para quien no acepta mensajería", async () => {
+  test("si el back rechaza a una de varias, avisa a quiénes llegó y a quién no", async () => {
+    enviarMensaje.mockImplementation(({ personaId }) =>
+      personaId === "p3" ? Promise.reject(rechazoDelBack) : Promise.resolve(),
+    )
     renderizar()
 
-    const contactar = within(await tarjetaDe("beto")).getByRole("button", {
-      name: "Contactar",
-    })
-
-    expect(contactar).toBeDisabled()
-    expect(contactar).toHaveAccessibleDescription(
-      "No acepta mensajes internos.",
+    await seleccionarA("Yacaré")
+    await seleccionarA("Tero")
+    userEvent.click(
+      screen.getByRole("button", {
+        name: "Enviar mensaje a las seleccionadas",
+      }),
     )
+    await escribirYEnviar("Escribirle a Yacaré y Tero", "Hola")
+
+    expect(
+      await screen.findByText("El mensaje fue enviado a Yacaré."),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        "No se envió a Tero: La persona colaboradora no acepta mensajería interna.",
+      ),
+    ).toBeInTheDocument()
   })
 })

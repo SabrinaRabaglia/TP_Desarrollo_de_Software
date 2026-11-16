@@ -194,7 +194,7 @@ La persistencia usa MongoDB con Mongoose, siguiendo la guía de la cátedra. Cad
 
 Los dos procesos son idempotentes. Insertan lo que falta por su clave natural, nunca borran y no modifican lo que ya existe, así que se pueden correr cualquier cantidad de veces, también en producción.
 
-Para repetir una demo del flujo de postulación, `npm run reiniciar:postulacion` lo vuelve al punto de partida: borra la postulación de Nube, deja la de Pampa pendiente y libera el lugar del perfil Tester. Es el único comando que borra algo, y no toca ningún otro dato.
+Para repetir una demo del flujo de postulación, `npm run reiniciar:postulacion` lo vuelve al punto de partida: borra la postulación de Nube, deja la de Pampa pendiente y deja el perfil Tester sin lugares ocupados, con límite 1 y la búsqueda abierta. Es el único comando que borra algo, y no toca ningún otro dato.
 
 ### Migraciones
 
@@ -301,6 +301,29 @@ Para un colectivo sería `autorizarEntidad(RolUsuario.COLECTIVO)` en `/colectivo
 
 El perfil de una persona es público, pero el valor de sus medios de contacto no. `GET /personas-colaboradoras/:id/medios-de-contacto` exige token y devuelve `[{ id, tipo, valor }]` solo a la propia persona y a los colectivos con algún proyecto en el que la persona colabora (tiene una postulación aceptada), aunque la postulación sea anónima: el anonimato es hacia el público, no hacia el colectivo. Cualquier otro usuario recibe `403`, y una persona inexistente, `404`. La regla vive en `PersonaColaboradoraService.puedeVerContactoDe`.
 
+### Buscar perfiles a los que postularse
+
+`GET /perfiles?habilidades=<id>&habilidades=<id>` es la búsqueda de una persona colaboradora. Pide su token y al menos una habilidad.
+
+- Devuelve los perfiles de proyectos publicados, con la búsqueda abierta, que piden al menos una de esas habilidades.
+- Cada resultado trae el proyecto con su colectivo, el perfil, la `coincidencia` (`TOTAL` si las habilidades cubren todas las requeridas, `PARCIAL` con las que faltan) y los `cuposDisponibles` (`null` es sin límite).
+- `modalidad` deja solo los perfiles que admiten esa modalidad. `orden` es `recientes` (por defecto) o `antiguos`, por fecha de alta del proyecto.
+- Un filtro inválido responde `400`. Una combinación sin resultados responde `200` con la lista vacía.
+
+### Búsqueda y límite de un perfil
+
+Cada perfil tiene su propia búsqueda de colaboraciones. Nace abierta y se cierra de dos formas: el colectivo la cierra a mano (`busquedaAbierta: false`) o pasa su fecha límite (`busquedaAbiertaHasta`). Sin fecha límite queda abierta hasta que el colectivo la cierre.
+
+- Postularse a un perfil con la búsqueda cerrada o vencida responde `409` y no crea la postulación. Lo mismo si el proyecto está cerrado.
+- `limiteColaboraciones` es cuántas colaboraciones aceptadas admite el perfil. En `null` no hay límite.
+- `PUT /proyectos/:id/perfiles/:perfilId` reemplaza los datos del perfil y `PATCH` cambia solo los que llegan. Ninguno de los dos toca las colaboraciones ya aceptadas.
+- Crear, editar y borrar perfiles pide la sesión del colectivo dueño del proyecto: sin token responde `401`, y una persona colaboradora u otro colectivo reciben `403`.
+- El límite no puede quedar por debajo de las colaboraciones aceptadas: responde `409` y dice cuántas hay. Subirlo o quitarlo siempre se puede.
+- Una fecha límite nueva tiene que ser futura: si no, `422`. Un perfil con la búsqueda ya vencida se puede seguir editando mientras no se le cambie la fecha.
+- Al aceptar una postulación primero se mira su estado y después el lugar. Aceptar una que ya fue rechazada responde `409` por su estado, esté o no lleno el perfil.
+
+Las reglas viven en `Perfil` (`tieneBusquedaAbierta`, `reemplazarDatos`) y en `Postulacion.assertPendiente`.
+
 ### Desanotaciones
 
 Una persona deja de colaborar en un perfil cuando se da de baja ella misma o cuando el colectivo del proyecto la desanota. Las dos cosas son la misma ruta, `PATCH /postulaciones/:id/baja`, sin body y con token:
@@ -333,7 +356,7 @@ Un mensaje interno es una notificación que un colectivo le envía a una persona
 - Cualquier otro usuario recibe `403`, y un pedido sin token, `401`. Una persona colaboradora no puede enviar mensajes.
 - Enviar responde `409` si la persona no acepta mensajería interna (`aceptaMensajeriaInterna`) o si el proyecto está cerrado, y `404` si el proyecto, el perfil o la persona no existen.
 - Los listados devuelven nombres en lugar de ids: `colectivo: { id, nombre }`, `proyecto: { id, titulo }` y `perfil: { id, nombre }`. Si el proyecto o el perfil se borraron, ese dato viene en `null` y el mensaje se lista igual. Los enviados traen además `personaColaboradora: { id, nombreFantasia }`, sin sus medios de contacto.
-- Para elegir a quién escribirle, `GET /personas-colaboradoras?perfiles=<perfilId>` devuelve las personas que encajan con el perfil, con su `aceptaMensajeriaInterna`.
+- Para elegir a quién escribirle, `GET /personas-colaboradoras?perfiles=<perfilId>` devuelve las personas que tienen al menos una habilidad requerida del perfil, con su `aceptaMensajeriaInterna` y su `coincidencia`: `TOTAL` si tienen todas las requeridas, `PARCIAL` si les falta alguna. Van primero las de coincidencia total y, a igual nivel, las que cubren más habilidades opcionales. Tener solo opcionales no alcanza para aparecer.
 
 En el frontend, el colectivo llega a las candidatas desde "Ver candidatas" en cada perfil de su proyecto, y cualquier sesión ve sus mensajes en `/mensajes` (ver [`packages/frontend/README.md`](packages/frontend/README.md)).
 
@@ -348,12 +371,20 @@ En el frontend, el colectivo llega a las candidatas desde "Ver candidatas" en ca
 | `codigoabierto@colectivo.test` | `COLECTIVO` | Fundación Código Abierto | `secreto123` |
 | `litoral@colectivo.test` | `COLECTIVO` | Asamblea Ambiental del Litoral | `secreto123` |
 | `redsolidariasur@colectivo.test` | `COLECTIVO` | Red Solidaria Sur | `secreto123` |
+| `losceibos@colectivo.test` | `COLECTIVO` | Asamblea Barrial Los Ceibos | `secreto123` |
+| `raices@colectivo.test` | `COLECTIVO` | Fundación Raíces | `secreto123` |
 | `anag@persona.test` | `PERSONA_COLABORADORA` | anag | `secreto123` |
 | `lucho_dev@persona.test` | `PERSONA_COLABORADORA` | lucho_dev | `secreto123` |
 | `sol.datos@persona.test` | `PERSONA_COLABORADORA` | sol.datos | `secreto123` |
 | `anon123@persona.test` | `PERSONA_COLABORADORA` | anon123 | `secreto123` |
 | `nube@persona.test` | `PERSONA_COLABORADORA` | Nube | `secreto123` |
 | `pampa@persona.test` | `PERSONA_COLABORADORA` | Pampa | `secreto123` |
+| `ceibo@persona.test` | `PERSONA_COLABORADORA` | Ceibo | `secreto123` |
+| `hornero@persona.test` | `PERSONA_COLABORADORA` | Hornero | `secreto123` |
+| `yacare@persona.test` | `PERSONA_COLABORADORA` | Yacaré | `secreto123` |
+| `calden@persona.test` | `PERSONA_COLABORADORA` | Calden | `secreto123` |
+| `tero@persona.test` | `PERSONA_COLABORADORA` | Tero | `secreto123` |
+| `zorzal@persona.test` | `PERSONA_COLABORADORA` | Zorzal | `secreto123` |
 
 ### Obtener un token sin pasar por el front
 

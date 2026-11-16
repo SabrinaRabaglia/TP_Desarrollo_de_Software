@@ -6,6 +6,7 @@ import ColectivoRepository from "../../src/repositories/ColectivoRepository.js"
 import PersonaColaboradoraRepository from "../../src/repositories/PersonaColaboradoraRepository.js"
 import UsuarioRepository from "../../src/repositories/UsuarioRepository.js"
 import { conectar, desconectar } from "./mongo.js"
+import { tokenDeColectivo } from "./tokens.js"
 
 // Contra Mongo real: la postulación guarda el perfil como ObjectId, cosa que
 // los repositorios falsos no reproducen del todo.
@@ -94,15 +95,20 @@ beforeAll(async () => {
     })
   ).body
   perfil = (
-    await enviar("POST", `/proyectos/${proyecto.id}/perfiles`, {
-      nombre: "Frontend",
-      descripcion: "Desarrollo web",
-      unidadCompromiso: "HORAS_TOTALES",
-      cantidadHoras: 5,
-      modalidadesColaboracion: ["GRATUITA"],
-      habilidadesRequeridas: [habilidad.id],
-      habilidadesOpcionales: [habilidad.id],
-    })
+    await enviar(
+      "POST",
+      `/proyectos/${proyecto.id}/perfiles`,
+      {
+        nombre: "Frontend",
+        descripcion: "Desarrollo web",
+        unidadCompromiso: "HORAS_TOTALES",
+        cantidadHoras: 5,
+        modalidadesColaboracion: ["GRATUITA"],
+        habilidadesRequeridas: [habilidad.id],
+        habilidadesOpcionales: [habilidad.id],
+      },
+      tokenDeColectivo(huerta.id),
+    )
   ).body
 
   for (const email of [

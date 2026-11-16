@@ -28,6 +28,30 @@ const idsPor = async (model, campo) => {
 
 const CONTRASENA_DE_PRUEBA = "secreto123"
 
+const ENLACES = ["enlaceSistemaEnFuncionamiento", "enlaceCodigoFuente"]
+
+const PERSONAS_CON_USUARIO = [
+  "anag",
+  "lucho_dev",
+  "sol.datos",
+  "anon123",
+  "Nube",
+  "Pampa",
+  "Ceibo",
+  "Hornero",
+  "Yacaré",
+  "Calden",
+  "Tero",
+  "Zorzal",
+]
+
+// "Yacaré" inicia sesión como yacare@persona.test: el mail va sin tildes.
+const emailDe = (nombreFantasia) =>
+  `${nombreFantasia
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()}@persona.test`
+
 const usuario = async (email, rol, entidad) => ({
   email,
   hashContrasena: await hashear(CONTRASENA_DE_PRUEBA),
@@ -75,6 +99,22 @@ export default async function sembrarDatosDePrueba() {
         pais: paises["Argentina"],
         provincia: provincias["Buenos Aires"],
         ciudad: "Quilmes",
+      },
+      {
+        nombre: "Asamblea Barrial Los Ceibos",
+        descripcion: "Vecinas y vecinos que gestionan el salón del barrio",
+        tipo: "Asamblea",
+        pais: paises["Argentina"],
+        provincia: provincias["Buenos Aires"],
+        ciudad: "Lomas de Zamora",
+      },
+      {
+        nombre: "Fundación Raíces",
+        descripcion: "Voluntariado en escuelas y centros comunitarios",
+        tipo: "Fundación",
+        pais: paises["Argentina"],
+        provincia: provincias["Córdoba"],
+        ciudad: "Río Cuarto",
       },
     ],
   )
@@ -229,6 +269,20 @@ export default async function sembrarDatosDePrueba() {
           habilidadesOpcionales: [habilidades["uso_de_soap_ui"]],
           limiteColaboraciones: 1,
         },
+        {
+          nombre: "Analista de Datos",
+          descripcion: "Analizar la demanda de cada comedor de la red",
+          unidadCompromiso: UnidadCompromiso.HORAS_MENSUALES,
+          cantidadHoras: 15,
+          modalidadesColaboracion: [
+            ModalidadColaboracion.CON_INCENTIVO_ECONOMICO,
+          ],
+          habilidadesRequeridas: [
+            habilidades["conocimientos_de_pandas"],
+            habilidades["estadistica_descriptiva"],
+          ],
+          habilidadesOpcionales: [habilidades["visualizacion_de_datos"]],
+        },
       ],
       hitos: [
         {
@@ -240,6 +294,76 @@ export default async function sembrarDatosDePrueba() {
           fecha: new Date("2026-11-12T00:00:00.000Z"),
           porcentajeConcrecion: 60,
           descripcion: "Primera versión del mapa publicada",
+        },
+      ],
+      enlaceSistemaEnFuncionamiento: "https://mapa-comedores.example.org",
+      enlaceCodigoFuente:
+        "https://git.example.org/red-solidaria-sur/mapa-comedores",
+    },
+    // Los dos que siguen se dieron de alta antes que el mapa de comedores: así
+    // el mapa queda primero al ordenar por los más recientes.
+    {
+      titulo: "Sistema de reservas del salón comunitario",
+      descripcion: "Reservar turnos del salón para talleres y reuniones",
+      estado: EstadoProyecto.PUBLICADO,
+      fechaAlta: new Date("2026-10-10T00:00:00.000Z"),
+      colectivo: colectivos["Asamblea Barrial Los Ceibos"],
+      perfiles: [
+        {
+          nombre: "Desarrollador/a Web",
+          descripcion: "Construir la pantalla de reservas y su API",
+          unidadCompromiso: UnidadCompromiso.HORAS_SEMANALES,
+          cantidadHoras: 10,
+          modalidadesColaboracion: [
+            ModalidadColaboracion.GRATUITA,
+            ModalidadColaboracion.CON_POSIBILIDAD_CONTRATACION,
+          ],
+          habilidadesRequeridas: [habilidades["react"], habilidades["node_js"]],
+          habilidadesOpcionales: [habilidades["typescript"]],
+        },
+      ],
+      hitos: [
+        {
+          fecha: new Date("2026-10-30T00:00:00.000Z"),
+          porcentajeConcrecion: 10,
+          descripcion: "Reglas de uso del salón acordadas en asamblea",
+        },
+      ],
+    },
+    {
+      titulo: "Portal de voluntariados",
+      descripcion: "Publicar las convocatorias y anotar a quienes se suman",
+      estado: EstadoProyecto.PUBLICADO,
+      fechaAlta: new Date("2026-10-05T00:00:00.000Z"),
+      colectivo: colectivos["Fundación Raíces"],
+      perfiles: [
+        {
+          nombre: "QA Automation",
+          descripcion: "Automatizar las pruebas del alta de voluntariados",
+          unidadCompromiso: UnidadCompromiso.HORAS_TOTALES,
+          cantidadHoras: 20,
+          modalidadesColaboracion: [ModalidadColaboracion.GRATUITA],
+          habilidadesRequeridas: [habilidades["testing_e2e_con_cypress"]],
+          habilidadesOpcionales: [habilidades["uso_de_soap_ui"]],
+          limiteColaboraciones: 3,
+        },
+        {
+          nombre: "Desarrollo frontend",
+          descripcion: "Maquetar el listado de convocatorias",
+          unidadCompromiso: UnidadCompromiso.HORAS_SEMANALES,
+          cantidadHoras: 6,
+          modalidadesColaboracion: [
+            ModalidadColaboracion.CON_INCENTIVO_ECONOMICO,
+          ],
+          habilidadesRequeridas: [habilidades["react"]],
+          habilidadesOpcionales: [habilidades["typescript"]],
+        },
+      ],
+      hitos: [
+        {
+          fecha: new Date("2026-10-28T00:00:00.000Z"),
+          porcentajeConcrecion: 40,
+          descripcion: "Alta de convocatorias funcionando",
         },
       ],
     },
@@ -254,6 +378,18 @@ export default async function sembrarDatosDePrueba() {
         { $push: { perfiles: perfil } },
         { runValidators: true, timestamps: false },
       )
+    }
+  }
+  // Lo mismo con los enlaces: se completan solo si el proyecto no tiene.
+  for (const proyecto of proyectos) {
+    for (const enlace of ENLACES) {
+      if (proyecto[enlace]) {
+        await ProyectoModel.updateOne(
+          { titulo: proyecto.titulo, [enlace]: null },
+          { $set: { [enlace]: proyecto[enlace] } },
+          { timestamps: false },
+        )
+      }
     }
   }
 
@@ -325,6 +461,56 @@ export default async function sembrarDatosDePrueba() {
           { tipo: TipoMedioContacto.EMAIL, valor: "pampa@example.com" },
         ],
       },
+      // Ya colaboran en el perfil QA Automation del portal de voluntariados.
+      {
+        nombreFantasia: "Ceibo",
+        presentacion: "Automatización de pruebas de regresión",
+        habilidades: [habilidades["testing_e2e_con_cypress"]],
+      },
+      {
+        nombreFantasia: "Hornero",
+        presentacion: "Pruebas de punta a punta y de servicios",
+        habilidades: [
+          habilidades["testing_e2e_con_cypress"],
+          habilidades["uso_de_soap_ui"],
+        ],
+      },
+      // Las cuatro que el colectivo encuentra, o no, para Analista de Datos.
+      {
+        nombreFantasia: "Yacaré",
+        presentacion: "Análisis y visualización de datos sociales",
+        habilidades: [
+          habilidades["conocimientos_de_pandas"],
+          habilidades["estadistica_descriptiva"],
+          habilidades["visualizacion_de_datos"],
+        ],
+        aceptaMensajeriaInterna: true,
+        mediosDeContacto: [
+          { tipo: TipoMedioContacto.EMAIL, valor: "yacare@example.com" },
+          { tipo: TipoMedioContacto.WHATSAPP, valor: "+54 9 11 5555-0145" },
+        ],
+      },
+      {
+        nombreFantasia: "Calden",
+        presentacion: "Estadística aplicada a organizaciones sociales",
+        habilidades: [
+          habilidades["conocimientos_de_pandas"],
+          habilidades["estadistica_descriptiva"],
+        ],
+        aceptaMensajeriaInterna: true,
+      },
+      {
+        nombreFantasia: "Tero",
+        presentacion: "Limpieza y procesamiento de datos con Pandas",
+        habilidades: [habilidades["conocimientos_de_pandas"]],
+        aceptaMensajeriaInterna: false,
+      },
+      {
+        nombreFantasia: "Zorzal",
+        presentacion: "Tableros y gráficos para comunicar datos",
+        habilidades: [habilidades["visualizacion_de_datos"]],
+        aceptaMensajeriaInterna: true,
+      },
     ],
   )
   const personas = await idsPor(PersonaColaboradoraModel, "nombreFantasia")
@@ -387,6 +573,18 @@ export default async function sembrarDatosDePrueba() {
       fecha: "2026-09-16",
       persona: "sol.datos",
       perfil: await perfilDe("Mapa de humedales", "Análisis de datos"),
+      esAnonima: true,
+    },
+    // QA Automation tiene límite 3: con estas dos le queda un cupo.
+    {
+      fecha: "2026-10-12",
+      persona: "Ceibo",
+      perfil: await perfilDe("Portal de voluntariados", "QA Automation"),
+    },
+    {
+      fecha: "2026-10-14",
+      persona: "Hornero",
+      perfil: await perfilDe("Portal de voluntariados", "QA Automation"),
       esAnonima: true,
     },
   ]
@@ -472,13 +670,22 @@ export default async function sembrarDatosDePrueba() {
         RolUsuario.COLECTIVO,
         colectivos["Red Solidaria Sur"],
       ),
-      ...["anag", "lucho_dev", "sol.datos", "anon123", "Nube", "Pampa"].map(
-        (nombreFantasia) =>
-          usuario(
-            `${nombreFantasia.toLowerCase()}@persona.test`,
-            RolUsuario.PERSONA_COLABORADORA,
-            personas[nombreFantasia],
-          ),
+      usuario(
+        "losceibos@colectivo.test",
+        RolUsuario.COLECTIVO,
+        colectivos["Asamblea Barrial Los Ceibos"],
+      ),
+      usuario(
+        "raices@colectivo.test",
+        RolUsuario.COLECTIVO,
+        colectivos["Fundación Raíces"],
+      ),
+      ...PERSONAS_CON_USUARIO.map((nombreFantasia) =>
+        usuario(
+          emailDe(nombreFantasia),
+          RolUsuario.PERSONA_COLABORADORA,
+          personas[nombreFantasia],
+        ),
       ),
     ]),
   )

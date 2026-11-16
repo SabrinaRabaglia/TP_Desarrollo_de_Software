@@ -12,6 +12,7 @@ import PaginaProyecto from "./features/proyectos/PaginaProyecto"
 import PaginaMensajes from "./features/mensajes/PaginaMensajes"
 import PaginaCandidatas from "./features/contacto/PaginaCandidatas"
 import NoEncontrado from "./features/noEncontrado/NoEncontrado"
+import BuscarProyectos from "./features/busqueda/BuscarProyectos"
 import PaginaPostulaciones from "./features/postulaciones/PaginaPostulaciones.jsx"
 import PostulacionesPerfil from "./features/postulaciones/PostulacionesPerfil.jsx"
 import ColaboradoresPerfil from "./features/colaboradoras/ColaboradoresPerfil.jsx"
@@ -31,6 +32,7 @@ const App = () => {
           <Route path="/proyectos/:id" element={<PaginaProyecto />} />
           <Route element={<RutaPrivada rol="PERSONA_COLABORADORA" />}>
             <Route path="/postulaciones" element={<PaginaPostulaciones />} />
+            <Route path="/buscar" element={<BuscarProyectos />} />
           </Route>
           <Route element={<RutaPrivada rol="COLECTIVO" />}>
             <Route

@@ -7,6 +7,7 @@ import PersonaColaboradoraRepository from "../../src/repositories/PersonaColabor
 import UsuarioRepository from "../../src/repositories/UsuarioRepository.js"
 import PostulacionModel from "../../src/schemas/postulacionSchema.js"
 import { conectar, desconectar } from "./mongo.js"
+import { tokenDeColectivo } from "./tokens.js"
 
 let server
 let base
@@ -117,6 +118,7 @@ beforeAll(async () => {
       habilidadesRequeridas: [habilidad.id],
       habilidadesOpcionales: [habilidad.id],
     },
+    tokenDeColectivo(huerta.id),
   )
   perfil = perfilCreado
   // Ana colabora (aceptada); Lucho solo se postuló (pendiente).

@@ -1,0 +1,117 @@
+.buscar-proyectos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-6);
+}
+
+.buscar-proyectos-encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.buscar-proyectos-encabezado p,
+.buscar-proyectos-ayuda {
+  color: var(--color-texto-secundario);
+}
+
+.buscar-proyectos-filtros {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espacio-4);
+  padding: var(--espacio-4);
+  border: var(--borde);
+  border-radius: var(--radio);
+  background-color: var(--color-superficie);
+}
+
+.buscar-proyectos-filtros fieldset {
+  width: 100%;
+}
+
+.buscar-proyectos-opciones {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espacio-4);
+  width: 100%;
+}
+
+.buscar-proyectos-listado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-4);
+}
+
+.buscar-proyectos-resultados {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espacio-4);
+  padding: 0;
+  list-style: none;
+}
+
+.resultado-de-busqueda {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  height: 100%;
+  padding: var(--espacio-4);
+  border: var(--borde);
+  border-radius: var(--radio);
+  background-color: var(--color-superficie);
+}
+
+.resultado-de-busqueda h3 {
+  font-size: 1.125rem;
+  overflow-wrap: anywhere;
+}
+
+.resultado-de-busqueda-colectivo,
+.resultado-de-busqueda-faltantes {
+  font-size: 0.875rem;
+  color: var(--color-texto-secundario);
+}
+
+.resultado-de-busqueda-perfil {
+  font-weight: 600;
+}
+
+.resultado-de-busqueda-datos {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem var(--espacio-4);
+  margin: 0;
+}
+
+.resultado-de-busqueda-datos dt {
+  font-weight: 600;
+}
+
+.resultado-de-busqueda-datos dd {
+  margin: 0;
+}
+
+.resultado-de-busqueda-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.resultado-de-busqueda-accion {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+@media (min-width: 768px) {
+  .buscar-proyectos-opciones,
+  .buscar-proyectos-resultados {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .buscar-proyectos-resultados {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

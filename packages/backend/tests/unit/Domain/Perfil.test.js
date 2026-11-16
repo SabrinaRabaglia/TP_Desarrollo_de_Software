@@ -4,7 +4,10 @@ import Perfil from "../../../src/domain/Perfil.js"
 import HabilidadModel from "../../../src/schemas/habilidadSchema.js"
 import { UnidadCompromiso } from "../../../src/domain/enums/UnidadCompromiso.js"
 import { ModalidadColaboracion } from "../../../src/domain/enums/ModalidadColaboracion.js"
-import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
+import {
+  DomainRuleError,
+  DomainValidationError,
+} from "../../../src/domain/errors/DomainErrors.js"
 
 describe("Perfil", () => {
   let datos
@@ -20,6 +23,8 @@ describe("Perfil", () => {
       habilidadesOpcionales: ["soap_ui"],
       postulacionesAceptadas: [],
       limiteColaboraciones: null,
+      busquedaAbierta: true,
+      busquedaAbiertaHasta: null,
     }
   })
 
@@ -193,5 +198,120 @@ describe("Perfil", () => {
 
     expect(perfil.postulacionesAceptadas).toEqual([otra])
     expect(() => perfil.assertPuedeAceptarPostulaciones()).not.toThrow()
+  })
+
+  describe("búsqueda de colaboraciones", () => {
+    const hoy = new Date("2026-11-15T12:00:00.000Z")
+    const ayer = new Date("2026-11-14T12:00:00.000Z")
+    const manana = new Date("2026-11-16T12:00:00.000Z")
+
+    test("sin fecha límite queda abierta hasta que se cierra a mano", () => {
+      expect(new Perfil(datos).tieneBusquedaAbierta(hoy)).toBe(true)
+      expect(
+        new Perfil({ ...datos, busquedaAbierta: false }).tieneBusquedaAbierta(
+          hoy,
+        ),
+      ).toBe(false)
+    })
+
+    test("con fecha límite se cierra sola cuando la fecha pasa", () => {
+      const perfil = new Perfil({ ...datos, busquedaAbiertaHasta: manana })
+
+      expect(perfil.tieneBusquedaAbierta(hoy)).toBe(true)
+      expect(perfil.tieneBusquedaAbierta(new Date(manana.getTime() + 1))).toBe(
+        false,
+      )
+    })
+
+    test("con la búsqueda cerrada no admite postulaciones", () => {
+      const cerrado = new Perfil({ ...datos, busquedaAbierta: false })
+      const vencido = new Perfil({ ...datos, busquedaAbiertaHasta: ayer })
+
+      expect(() => cerrado.assertBusquedaAbierta(hoy)).toThrow(DomainRuleError)
+      expect(() => vencido.assertBusquedaAbierta(hoy)).toThrow(
+        "La búsqueda de colaboraciones para este perfil está cerrada.",
+      )
+      expect(() => new Perfil(datos).assertBusquedaAbierta(hoy)).not.toThrow()
+    })
+
+    test("rechaza una fecha límite que no es una fecha", () => {
+      expect(
+        () => new Perfil({ ...datos, busquedaAbiertaHasta: "mañana" }),
+      ).toThrow(DomainValidationError)
+    })
+  })
+
+  describe("reemplazar los datos de un perfil con colaboraciones", () => {
+    const hoy = new Date("2026-11-15T12:00:00.000Z")
+    const ayer = new Date("2026-11-14T12:00:00.000Z")
+    const manana = new Date("2026-11-16T12:00:00.000Z")
+    let perfil, aceptadas
+
+    beforeEach(() => {
+      aceptadas = [new mongoose.Types.ObjectId(), new mongoose.Types.ObjectId()]
+      perfil = new Perfil({
+        ...datos,
+        limiteColaboraciones: 2,
+        postulacionesAceptadas: aceptadas,
+      })
+    })
+
+    test("no deja bajar el límite por debajo de las aceptadas", () => {
+      expect(() =>
+        perfil.reemplazarDatos({ ...datos, limiteColaboraciones: 1 }, hoy),
+      ).toThrow(
+        new DomainRuleError(
+          "El límite no puede ser menor a las colaboraciones ya aceptadas (2).",
+        ),
+      )
+    })
+
+    test("un cambio válido conserva las colaboraciones aceptadas", () => {
+      const editado = perfil.reemplazarDatos(
+        { ...datos, descripcion: "Otra descripción", limiteColaboraciones: 3 },
+        hoy,
+      )
+
+      expect(editado.descripcion).toBe("Otra descripción")
+      expect(editado.limiteColaboraciones).toBe(3)
+      expect(editado.postulacionesAceptadas).toEqual(aceptadas)
+      expect(() => editado.assertPuedeAceptarPostulaciones()).not.toThrow()
+    })
+
+    test("quitar el límite siempre se puede", () => {
+      const editado = perfil.reemplazarDatos(
+        { ...datos, limiteColaboraciones: null },
+        hoy,
+      )
+
+      expect(editado.limiteColaboraciones).toBeNull()
+      expect(editado.postulacionesAceptadas).toEqual(aceptadas)
+    })
+
+    test("una fecha límite nueva tiene que ser futura", () => {
+      expect(() =>
+        perfil.reemplazarDatos({ ...datos, busquedaAbiertaHasta: ayer }, hoy),
+      ).toThrow(
+        new DomainValidationError(
+          "La fecha límite de búsqueda no puede ser anterior a la actual.",
+        ),
+      )
+      expect(
+        perfil.reemplazarDatos({ ...datos, busquedaAbiertaHasta: manana }, hoy)
+          .busquedaAbiertaHasta,
+      ).toEqual(manana)
+    })
+
+    test("una búsqueda ya vencida se puede seguir editando sin tocar su fecha", () => {
+      const vencido = new Perfil({ ...datos, busquedaAbiertaHasta: ayer })
+
+      const editado = vencido.reemplazarDatos(
+        { ...vencido.datosEditables(), descripcion: "Otra descripción" },
+        hoy,
+      )
+
+      expect(editado.descripcion).toBe("Otra descripción")
+      expect(editado.busquedaAbiertaHasta).toEqual(ayer)
+    })
   })
 })
