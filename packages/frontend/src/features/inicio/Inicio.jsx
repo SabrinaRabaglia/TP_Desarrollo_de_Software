@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import { Card, CardContent, Pagination } from "@mui/material"
+import { Button, Card, CardContent, Pagination } from "@mui/material"
+import { LuPlus } from "react-icons/lu"
 import Cargando from "../../components/cargando/Cargando"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
+import { useAuth } from "../../context/AuthContext"
 import {
   buscarProyectos,
   ESTADOS_DE_PROYECTO,
@@ -11,6 +13,7 @@ import { mensajeDeError } from "../../service/api"
 import "./Inicio.css"
 
 const Inicio = () => {
+  const { usuario } = useAuth()
   const [proyectos, setProyectos] = useState([])
   const [pagina, setPagina] = useState(1)
   const [totalPaginas, setTotalPaginas] = useState(1)
@@ -96,7 +99,19 @@ const Inicio = () => {
         Conectamos colectivos sociales que necesitan software con personas que
         quieren colaborar con su tiempo y sus habilidades.
       </p>
-      <h2>Proyectos</h2>
+      <div className="inicio-proyectos-encabezado">
+        <h2>Proyectos</h2>
+        {usuario?.rol === "COLECTIVO" && (
+          <Button
+            variant="contained"
+            component={Link}
+            to="/proyectos/nuevo"
+            startIcon={<LuPlus aria-hidden="true" />}
+          >
+            Crear proyecto
+          </Button>
+        )}
+      </div>
       {renderProyectos()}
       {renderPaginacion()}
     </section>

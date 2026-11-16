@@ -1,0 +1,17 @@
+.formulario-proyecto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-6);
+}
+
+.formulario-proyecto-enlaces {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-4);
+}
+
+.formulario-proyecto-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}

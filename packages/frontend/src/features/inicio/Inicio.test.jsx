@@ -1,6 +1,7 @@
 import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router-dom"
+import { AuthProvider } from "../../context/AuthContext"
 import { buscarProyectos } from "../../service/proyectosService"
 import Inicio from "./Inicio"
 
@@ -26,10 +27,25 @@ const pagina = (numero, proyectos, totalPaginas) => ({
 
 const renderizar = () =>
   render(
-    <MemoryRouter>
-      <Inicio />
-    </MemoryRouter>,
+    <AuthProvider>
+      <MemoryRouter>
+        <Inicio />
+      </MemoryRouter>
+    </AuthProvider>,
   )
+
+const iniciarSesionCon = (rol) =>
+  localStorage.setItem(
+    "sesion",
+    JSON.stringify({
+      token: "token",
+      usuario: { id: "u1", rol, entidad: { id: "e1" } },
+    }),
+  )
+
+afterEach(() => {
+  localStorage.clear()
+})
 
 describe("Inicio", () => {
   test("con una sola página lista los proyectos sin paginación", async () => {
@@ -85,6 +101,40 @@ describe("Inicio", () => {
     expect(await screen.findByText("Se cayó la base")).toBeInTheDocument()
     expect(
       screen.queryByRole("navigation", { name: "Páginas de proyectos" }),
+    ).not.toBeInTheDocument()
+  })
+
+  test("a un colectivo con sesión le ofrece crear un proyecto", async () => {
+    iniciarSesionCon("COLECTIVO")
+    buscarProyectos.mockResolvedValue(
+      pagina(1, [proyecto("p1", "Sitio web de la huerta")], 1),
+    )
+
+    renderizar()
+
+    await screen.findByRole("link", { name: "Sitio web de la huerta" })
+    expect(
+      screen.getByRole("link", { name: "Crear proyecto" }),
+    ).toHaveAttribute("href", "/proyectos/nuevo")
+  })
+
+  test("sin sesión o con una persona colaboradora no ofrece crear proyectos", async () => {
+    buscarProyectos.mockResolvedValue(
+      pagina(1, [proyecto("p1", "Sitio web de la huerta")], 1),
+    )
+
+    const sinSesion = renderizar()
+    await screen.findByRole("link", { name: "Sitio web de la huerta" })
+    expect(
+      screen.queryByRole("link", { name: "Crear proyecto" }),
+    ).not.toBeInTheDocument()
+    sinSesion.unmount()
+
+    iniciarSesionCon("PERSONA_COLABORADORA")
+    renderizar()
+    await screen.findByRole("link", { name: "Sitio web de la huerta" })
+    expect(
+      screen.queryByRole("link", { name: "Crear proyecto" }),
     ).not.toBeInTheDocument()
   })
 })

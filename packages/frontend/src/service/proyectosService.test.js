@@ -1,15 +1,26 @@
 import api from "./api"
 import { obtenerHabilidades } from "./habilidadesService"
 import {
+  agregarPerfil,
   buscarProyectos,
+  cerrarProyecto,
+  crearProyecto,
+  eliminarPerfil,
+  eliminarProyecto,
   modificarPerfil,
+  modificarProyecto,
   obtenerProyecto,
   obtenerResumenDelPerfil,
 } from "./proyectosService"
 
 jest.mock("./api", () => ({
   __esModule: true,
-  default: { get: jest.fn(), patch: jest.fn() },
+  default: {
+    get: jest.fn(),
+    post: jest.fn(),
+    patch: jest.fn(),
+    delete: jest.fn(),
+  },
 }))
 jest.mock("./habilidadesService", () => ({ obtenerHabilidades: jest.fn() }))
 
@@ -64,7 +75,9 @@ test("lista los proyectos aunque un perfil tenga campos en null", async () => {
       descripcion: "Perfil cargado antes de las validaciones",
       compromiso: "Sin especificar",
       cantidadHoras: null,
+      unidadCompromiso: null,
       modalidades: [],
+      modalidadesColaboracion: [],
       habilidadesRequeridas: [{ id: "habilidad-1", titulo: "JavaScript" }],
       habilidadesOpcionales: [],
       postulacionesAceptadas: [],
@@ -111,7 +124,9 @@ test("el perfil trae lo que hace falta para mostrar y editar su búsqueda", asyn
     descripcion: "Probar la app",
     compromiso: "4 horas por semana",
     cantidadHoras: 4,
+    unidadCompromiso: "HORAS_SEMANALES",
     modalidades: ["Gratuita"],
+    modalidadesColaboracion: ["GRATUITA"],
     habilidadesRequeridas: [{ id: "habilidad-1", titulo: "JavaScript" }],
     habilidadesOpcionales: [],
     postulacionesAceptadas: ["postulacion-1"],
@@ -145,6 +160,78 @@ test("si el back rechaza la modificación del perfil, propaga el error", async (
   await expect(
     modificarPerfil("proyecto-1", "perfil-1", { limiteColaboraciones: 1 }),
   ).rejects.toBe(error)
+})
+
+test("crear un proyecto lo publica a nombre del colectivo y devuelve su id", async () => {
+  api.post.mockResolvedValue({ data: { id: "proyecto-9" } })
+
+  const id = await crearProyecto("colectivo-1", {
+    titulo: "Mapa de humedales",
+    descripcion: "Relevar los humedales del barrio",
+    enlaceSistema: "https://humedales.example.org",
+    enlaceRepositorio: null,
+  })
+
+  expect(id).toBe("proyecto-9")
+  expect(api.post).toHaveBeenCalledWith("/proyectos", {
+    titulo: "Mapa de humedales",
+    descripcion: "Relevar los humedales del barrio",
+    enlaceSistemaEnFuncionamiento: "https://humedales.example.org",
+    colectivo: "colectivo-1",
+    estado: "PUBLICADO",
+    fechaCierre: null,
+  })
+})
+
+test("modificar un proyecto manda solo los cambios, con los nombres del back", async () => {
+  api.patch.mockResolvedValue({ data: {} })
+
+  await modificarProyecto("proyecto-1", {
+    titulo: "Mapa de humedales",
+    enlaceSistema: null,
+    enlaceRepositorio: "https://git.example.org/humedales",
+  })
+
+  expect(api.patch).toHaveBeenCalledWith("/proyectos/proyecto-1", {
+    titulo: "Mapa de humedales",
+    enlaceSistemaEnFuncionamiento: null,
+    enlaceCodigoFuente: "https://git.example.org/humedales",
+  })
+})
+
+test("cerrar un proyecto le cambia el estado a cerrado", async () => {
+  api.patch.mockResolvedValue({ data: {} })
+
+  await cerrarProyecto("proyecto-1")
+
+  expect(api.patch).toHaveBeenCalledWith("/proyectos/proyecto-1", {
+    estado: "CERRADO",
+  })
+})
+
+test("eliminar un proyecto lo borra en el back", async () => {
+  api.delete.mockResolvedValue({})
+
+  await eliminarProyecto("proyecto-1")
+
+  expect(api.delete).toHaveBeenCalledWith("/proyectos/proyecto-1")
+})
+
+test("agregar y eliminar un perfil van contra los perfiles del proyecto", async () => {
+  api.post.mockResolvedValue({ data: { id: "perfil-2" } })
+  api.delete.mockResolvedValue({})
+  const perfil = { nombre: "Tester", descripcion: "Probar la app" }
+
+  await agregarPerfil("proyecto-1", perfil)
+  await eliminarPerfil("proyecto-1", "perfil-2")
+
+  expect(api.post).toHaveBeenCalledWith(
+    "/proyectos/proyecto-1/perfiles",
+    perfil,
+  )
+  expect(api.delete).toHaveBeenCalledWith(
+    "/proyectos/proyecto-1/perfiles/perfil-2",
+  )
 })
 
 test("pide la página indicada y calcula cuántas páginas hay", async () => {

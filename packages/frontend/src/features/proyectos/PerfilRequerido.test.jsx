@@ -9,13 +9,17 @@ import {
   crearPostulacion,
   obtenerPostulacionesColaborador,
 } from "../../service/postulacionesService"
-import { modificarPerfil } from "../../service/proyectosService"
+import { eliminarPerfil, modificarPerfil } from "../../service/proyectosService"
 import PerfilRequerido from "./PerfilRequerido"
 
 jest.mock("../../service/colaboradorasService")
 jest.mock("../../service/habilidadesService")
 jest.mock("../../service/postulacionesService")
-jest.mock("../../service/proyectosService")
+jest.mock("../../service/proyectosService", () => ({
+  ...jest.requireActual("../../service/proyectosService"),
+  eliminarPerfil: jest.fn(),
+  modificarPerfil: jest.fn(),
+}))
 
 const perfil = {
   id: "p1",
@@ -23,7 +27,9 @@ const perfil = {
   descripcion: "Probar la app antes de cada entrega",
   compromiso: "4 horas por semana",
   cantidadHoras: 4,
+  unidadCompromiso: "HORAS_SEMANALES",
   modalidades: ["Gratuita"],
+  modalidadesColaboracion: ["GRATUITA"],
   habilidadesRequeridas: [{ id: "h1", titulo: "Testing manual" }],
   habilidadesOpcionales: [{ id: "h2", titulo: "Cypress" }],
   postulacionesAceptadas: [],
@@ -75,6 +81,7 @@ beforeEach(() => {
     { id: "h2", titulo: "Cypress" },
   ])
   modificarPerfil.mockResolvedValue()
+  eliminarPerfil.mockResolvedValue()
   alModificar.mockResolvedValue()
 })
 
@@ -255,10 +262,14 @@ describe("PerfilRequerido", () => {
     ).toHaveAttribute("href", "/proyectos/abc/perfiles/p1/candidatas")
   })
 
-  test("quien no es el colectivo dueño no puede gestionar la búsqueda ni editar el perfil", () => {
+  test("quien no es el colectivo dueño no puede gestionar la búsqueda ni editar o quitar el perfil", () => {
     iniciarSesionComo(colaboradora)
 
     renderizar()
+
+    expect(
+      screen.queryByRole("button", { name: "Quitar perfil" }),
+    ).not.toBeInTheDocument()
 
     expect(
       screen.queryByRole("button", { name: "Cerrar búsqueda" }),
@@ -282,6 +293,9 @@ describe("PerfilRequerido", () => {
     ).not.toBeInTheDocument()
     expect(
       screen.queryByRole("button", { name: "Editar perfil" }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Quitar perfil" }),
     ).not.toBeInTheDocument()
   })
 
@@ -406,5 +420,57 @@ describe("PerfilRequerido", () => {
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     )
+  })
+
+  test("el dueño quita el perfil después de confirmar que no se puede deshacer", async () => {
+    renderizar({ esDueno: true })
+
+    userEvent.click(screen.getByRole("button", { name: "Quitar perfil" }))
+
+    const dialogo = await screen.findByRole("dialog", {
+      name: "Quitar perfil",
+    })
+    expect(dialogo).toHaveTextContent(
+      "Vas a quitar el perfil Tester de este proyecto. Esta acción no se puede deshacer.",
+    )
+    expect(eliminarPerfil).not.toHaveBeenCalled()
+
+    userEvent.click(within(dialogo).getByRole("button", { name: "Sí, quitar" }))
+
+    expect(
+      await screen.findByText("Quitaste el perfil Tester del proyecto."),
+    ).toBeInTheDocument()
+    expect(eliminarPerfil).toHaveBeenCalledWith("abc", "p1")
+    expect(alModificar).toHaveBeenCalledTimes(1)
+  })
+
+  test("si cancela, el perfil no se quita", async () => {
+    renderizar({ esDueno: true })
+
+    userEvent.click(screen.getByRole("button", { name: "Quitar perfil" }))
+    userEvent.click(await screen.findByRole("button", { name: "Cancelar" }))
+
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    )
+    expect(eliminarPerfil).not.toHaveBeenCalled()
+  })
+
+  test("si el back no deja quitarlo muestra el motivo en la tarjeta", async () => {
+    eliminarPerfil.mockRejectedValue({
+      response: {
+        status: 403,
+        data: { message: "El proyecto no pertenece al colectivo autenticado" },
+      },
+    })
+    renderizar({ esDueno: true })
+
+    userEvent.click(screen.getByRole("button", { name: "Quitar perfil" }))
+    userEvent.click(await screen.findByRole("button", { name: "Sí, quitar" }))
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "El proyecto no pertenece al colectivo autenticado",
+    )
+    expect(alModificar).not.toHaveBeenCalled()
   })
 })

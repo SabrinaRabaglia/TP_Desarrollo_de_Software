@@ -63,6 +63,16 @@
   padding-top: var(--espacio-6);
 }
 
+.pagina-proyecto-perfiles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-4);
+}
+
+.pagina-proyecto-agregar {
+  align-self: flex-start;
+}
+
 .pagina-proyecto-grilla {
   display: grid;
   grid-template-columns: 1fr;
