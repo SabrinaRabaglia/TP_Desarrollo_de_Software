@@ -5,7 +5,9 @@ describe("ValorDelMedio", () => {
   test("de Telegram no muestra el id del chat", () => {
     render(<ValorDelMedio medio={{ tipo: "TELEGRAM", valor: "987654321" }} />)
 
-    expect(screen.getByText("Conectado")).toBeInTheDocument()
+    expect(
+      screen.getByText("Solo para avisos de la plataforma"),
+    ).toBeInTheDocument()
     expect(screen.queryByText("987654321")).not.toBeInTheDocument()
   })
 
