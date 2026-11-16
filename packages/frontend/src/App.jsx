@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom"
+import { Navigate, Route, Routes } from "react-router-dom"
 import { AuthProvider } from "./context/AuthContext"
 import Layout from "./features/layout/Layout"
 import Inicio from "./features/inicio/Inicio"
@@ -30,6 +30,8 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Inicio />} />
+          {/* El listado de proyectos vive en el inicio: /proyectos lleva ahí. */}
+          <Route path="/proyectos" element={<Navigate to="/" replace />} />
           <Route path="/login" element={<Login />} />
           <Route
             path="/colaboradoras/nueva"
