@@ -55,14 +55,14 @@ const presentacion = () => screen.getByLabelText(/^presentación/i)
 
 const cambiarPresentacion = (texto) => {
   userEvent.clear(presentacion())
-  userEvent.type(presentacion(), texto)
+  userEvent.paste(presentacion(), texto)
 }
 
 const agregarMedio = (valor) => {
   userEvent.click(
     screen.getByRole("button", { name: "Agregar medio de contacto" }),
   )
-  userEvent.type(screen.getAllByLabelText(/^dato de contacto/i).at(-1), valor)
+  userEvent.paste(screen.getAllByLabelText(/^dato de contacto/i).at(-1), valor)
 }
 
 const guardar = () =>
@@ -104,10 +104,10 @@ describe("MiPerfil", () => {
     expect(obtenerPerfilPropio).toHaveBeenCalledWith("p1")
 
     userEvent.clear(nombreFantasia)
-    userEvent.type(nombreFantasia, "ana.dev")
+    userEvent.paste(nombreFantasia, "ana.dev")
     cambiarPresentacion("Frontend y accesibilidad")
     userEvent.clear(emailExistente)
-    userEvent.type(emailExistente, "ana@ejemplo.com")
+    userEvent.paste(emailExistente, "ana@ejemplo.com")
     agregarMedio("ana.gomez@example.com")
     guardar()
 
