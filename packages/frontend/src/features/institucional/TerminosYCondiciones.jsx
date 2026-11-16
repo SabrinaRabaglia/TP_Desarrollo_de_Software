@@ -47,8 +47,9 @@ const TerminosYCondiciones = () => {
             quieras compartir: el sitio no está pensado para guardarlos.
           </li>
           <li>
-            Los colectivos pueden ver tus datos de contacto para escribirte. Si
-            te postulás de forma anónima, tu nombre no aparece en el proyecto.
+            Un colectivo ve tus datos de contacto recién cuando acepta tu
+            postulación. Si te postulás de forma anónima, tu nombre no aparece
+            en el proyecto.
           </li>
           <li>
             La base de datos puede reiniciarse o borrarse en cualquier momento,

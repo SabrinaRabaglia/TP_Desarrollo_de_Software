@@ -182,7 +182,9 @@ describe("PostulacionesPerfil", () => {
     expect(
       within(deAna).getByRole("link", { name: "ana.gomez@example.com" }),
     ).toHaveAttribute("href", "mailto:ana.gomez@example.com")
-    expect(within(deAna).getByText("Conectado")).toBeInTheDocument()
+    expect(
+      within(deAna).getByText("Solo para avisos de la plataforma"),
+    ).toBeInTheDocument()
     expect(screen.queryByText(/987654321/)).not.toBeInTheDocument()
 
     const deNube = await tarjetaDe("Nube")
