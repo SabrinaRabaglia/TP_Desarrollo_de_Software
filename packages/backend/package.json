@@ -7,6 +7,7 @@
     "dev": "node --watch src/server.js",
     "seed": "node src/seeds/seed.js",
     "reiniciar:demo": "node src/seeds/reiniciarDemo.js",
+    "reiniciar:demo:simular": "node src/seeds/reiniciarDemo.js --simular",
     "token": "node src/scripts/token.js",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
     "test:unit": "cross-env NODE_OPTIONS=--experimental-vm-modules jest tests/unit",

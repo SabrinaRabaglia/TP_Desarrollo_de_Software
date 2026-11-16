@@ -194,7 +194,11 @@ La persistencia usa MongoDB con Mongoose, siguiendo la guía de la cátedra. Cad
 
 Los dos procesos son idempotentes. Insertan lo que falta por su clave natural, nunca borran y no modifican lo que ya existe, así que se pueden correr cualquier cantidad de veces, también en producción.
 
-Para repetir la demo, `npm run reiniciar:demo` vuelve al punto de partida los cuatro perfiles que se usan en los flujos y en los casos borde: Tester y Analista de Datos del mapa de comedores, Desarrollador/a Web del sistema de reservas y QA Automation del portal de voluntariados. En cada uno borra las postulaciones que no vienen del seed y los mensajes enviados, y le deja la descripción, el límite, la búsqueda abierta y las colaboraciones aceptadas como las carga el seed. Es el único comando que borra algo, y no toca ningún otro dato.
+Para repetir la demo, `npm run reiniciar:demo` vuelve al punto de partida los cuatro perfiles que se usan en los flujos y en los casos borde: Tester y Analista de Datos del mapa de comedores, Desarrollador/a Web del sistema de reservas y QA Automation del portal de voluntariados. En cada uno borra las postulaciones que no vienen del seed y los mensajes enviados, y le deja la descripción, el límite, la búsqueda abierta y las colaboraciones aceptadas como las carga el seed.
+
+También borra lo que se haya creado en un ensayo: los colectivos, las personas y los proyectos que no son del seed, con sus usuarios, postulaciones y mensajes. Los reconoce por los usuarios de prueba y por los títulos de los proyectos del seed, y si falta alguno no borra nada y avisa. No deshace lo que se haya editado en un dato del seed, como el perfil de una persona o el título de un proyecto.
+
+Es el único comando que borra algo. `npm run reiniciar:demo:simular` muestra qué colectivos, personas y proyectos borraría, sin tocar nada.
 
 ### Migraciones
 
