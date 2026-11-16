@@ -6,13 +6,13 @@ export const ESTADOS_DE_PROYECTO = {
   CERRADO: "Cerrado",
 }
 
-const UNIDADES_DE_COMPROMISO = {
+export const UNIDADES_DE_COMPROMISO = {
   HORAS_TOTALES: "horas en total",
   HORAS_SEMANALES: "horas por semana",
   HORAS_MENSUALES: "horas por mes",
 }
 
-const MODALIDADES = {
+export const MODALIDADES = {
   GRATUITA: "Gratuita",
   CON_INCENTIVO_ECONOMICO: "Con incentivo económico",
   CON_POSIBILIDAD_CONTRATACION: "Con posibilidad de contratación",
