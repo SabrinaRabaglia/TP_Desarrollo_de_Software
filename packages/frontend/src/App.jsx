@@ -17,6 +17,8 @@ import EditarProyecto from "./features/proyectos/EditarProyecto"
 import PaginaMensajes from "./features/mensajes/PaginaMensajes"
 import PaginaCandidatas from "./features/contacto/PaginaCandidatas"
 import NoEncontrado from "./features/noEncontrado/NoEncontrado"
+import AcercaDe from "./features/institucional/AcercaDe"
+import TerminosYCondiciones from "./features/institucional/TerminosYCondiciones"
 import BuscarProyectos from "./features/busqueda/BuscarProyectos"
 import PaginaPostulaciones from "./features/postulaciones/PaginaPostulaciones.jsx"
 import PostulacionesPerfil from "./features/postulaciones/PostulacionesPerfil.jsx"
@@ -37,6 +39,8 @@ const App = () => {
           <Route path="/colectivos/nuevo" element={<RegistroColectivo />} />
           <Route path="/colectivos/:id" element={<PaginaColectivo />} />
           <Route path="/proyectos/:id" element={<PaginaProyecto />} />
+          <Route path="/acerca-de" element={<AcercaDe />} />
+          <Route path="/terminos" element={<TerminosYCondiciones />} />
           <Route element={<RutaPrivada rol="PERSONA_COLABORADORA" />}>
             <Route path="/postulaciones" element={<PaginaPostulaciones />} />
             <Route path="/buscar" element={<BuscarProyectos />} />

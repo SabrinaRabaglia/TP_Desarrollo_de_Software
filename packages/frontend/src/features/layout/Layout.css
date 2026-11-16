@@ -32,6 +32,24 @@
   text-align: center;
 }
 
+.layout-pie-enlaces {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--espacio-1) var(--espacio-4);
+}
+
+.layout-pie-enlaces a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-tactil);
+  color: var(--color-texto-secundario);
+}
+
+.layout-pie-enlaces a:hover {
+  color: var(--color-texto);
+}
+
 .layout-pie-marca {
   font-family: var(--fuente-titulos);
   font-weight: 600;

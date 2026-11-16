@@ -129,7 +129,9 @@ describe("MiPerfil", () => {
     ])
     expect(persona.mediosDeContacto[1]).not.toHaveProperty("id")
     expect(
-      within(screen.getByRole("navigation")).getByText("ana.dev"),
+      within(screen.getByRole("navigation", { name: "Principal" })).getByText(
+        "ana.dev",
+      ),
     ).toBeInTheDocument()
   })
 
