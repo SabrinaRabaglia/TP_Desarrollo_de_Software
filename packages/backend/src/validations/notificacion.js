@@ -7,3 +7,8 @@ export const notificacionSchema = z
     contenido: z.string().max(4096),
   })
   .strict()
+
+// Por ahora solo se puede marcar como leída; desmarcar no está previsto.
+export const lecturaDeNotificacionesSchema = z
+  .object({ leida: z.literal(true) })
+  .strict()

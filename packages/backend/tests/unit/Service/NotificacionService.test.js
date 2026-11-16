@@ -228,6 +228,7 @@ describe("NotificacionService", () => {
           perfil: { id: perfil.id, nombre: perfil.nombre },
           pendienteDeEnvio: true,
           mediosExternosUtilizados: [],
+          leida: false,
         },
       ])
     })
@@ -267,6 +268,78 @@ describe("NotificacionService", () => {
     test("lanza EntityNotFound si la persona no existe", async () => {
       await expect(
         service.getAllByPersonaColaboradora("persona-inexistente"),
+      ).rejects.toThrow(EntityNotFound)
+    })
+  })
+
+  describe("contarSinLeer", () => {
+    test("cuenta solo las de la persona que todavía no leyó", async () => {
+      const sol = await personaColaboradoraService.create({
+        nombreFantasia: "sol.datos",
+        aceptaMensajeriaInterna: true,
+      })
+      await contactar(ana.id, "Primera")
+      await service.marcarComoLeidas(ana.id)
+      await contactar(ana.id, "Segunda")
+      await contactar(ana.id, "Tercera")
+      await contactar(sol.id)
+
+      expect(await service.contarSinLeer(ana.id)).toEqual({ cantidad: 2 })
+    })
+
+    test("sin notificaciones la cuenta es cero", async () => {
+      expect(await service.contarSinLeer(ana.id)).toEqual({ cantidad: 0 })
+    })
+
+    test("lanza EntityNotFound si la persona no existe", async () => {
+      await expect(
+        service.contarSinLeer("persona-inexistente"),
+      ).rejects.toThrow(EntityNotFound)
+    })
+  })
+
+  describe("marcarComoLeidas", () => {
+    test("marca como leídas todas las de la persona y dice cuántas estaban sin leer", async () => {
+      await contactar(ana.id, "Primera")
+      await contactar(ana.id, "Segunda")
+
+      expect(await service.marcarComoLeidas(ana.id)).toEqual({ marcadas: 2 })
+
+      const mensajes = await service.getAllByPersonaColaboradora(ana.id)
+      expect(mensajes.map((mensaje) => mensaje.leida)).toEqual([true, true])
+    })
+
+    test("las que ya estaban leídas no se vuelven a contar ni cambian de fecha", async () => {
+      const primera = await contactar(ana.id, "Primera")
+      await service.marcarComoLeidas(ana.id)
+      const leidaEn = primera.leidaEn
+      await contactar(ana.id, "Segunda")
+
+      expect(await service.marcarComoLeidas(ana.id)).toEqual({ marcadas: 1 })
+      expect(primera.leidaEn).toBe(leidaEn)
+    })
+
+    test("no toca las notificaciones de otras personas", async () => {
+      const sol = await personaColaboradoraService.create({
+        nombreFantasia: "sol.datos",
+        aceptaMensajeriaInterna: true,
+      })
+      await contactar(sol.id)
+      await contactar(ana.id)
+
+      await service.marcarComoLeidas(ana.id)
+
+      const [deSol] = await service.getAllByPersonaColaboradora(sol.id)
+      expect(deSol.leida).toBe(false)
+    })
+
+    test("sin notificaciones no marca nada", async () => {
+      expect(await service.marcarComoLeidas(ana.id)).toEqual({ marcadas: 0 })
+    })
+
+    test("lanza EntityNotFound si la persona no existe", async () => {
+      await expect(
+        service.marcarComoLeidas("persona-inexistente"),
       ).rejects.toThrow(EntityNotFound)
     })
   })

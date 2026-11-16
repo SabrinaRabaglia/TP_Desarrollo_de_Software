@@ -1,6 +1,9 @@
 import { Router } from "express"
 import validar from "../middlewares/validar.js"
-import { notificacionSchema } from "../validations/notificacion.js"
+import {
+  lecturaDeNotificacionesSchema,
+  notificacionSchema,
+} from "../validations/notificacion.js"
 import validateId from "../middlewares/validateId.js"
 import {
   autenticar,
@@ -29,6 +32,23 @@ routes.get(
   validateId,
   autorizarEntidad(RolUsuario.PERSONA_COLABORADORA),
   notificacionController.getAllByPersonaColaboradora,
+)
+// Cuántas tiene sin leer, para el contador de la navbar.
+routes.get(
+  "/personas-colaboradoras/:id/notificaciones/sin-leer",
+  autenticar,
+  validateId,
+  autorizarEntidad(RolUsuario.PERSONA_COLABORADORA),
+  notificacionController.contarSinLeer,
+)
+// Marca como leídas todas las de la bandeja: lo pide la propia persona.
+routes.patch(
+  "/personas-colaboradoras/:id/notificaciones",
+  autenticar,
+  validateId,
+  autorizarEntidad(RolUsuario.PERSONA_COLABORADORA),
+  validar(lecturaDeNotificacionesSchema),
+  notificacionController.marcarComoLeidas,
 )
 routes.get(
   "/colectivos/:id/notificaciones",

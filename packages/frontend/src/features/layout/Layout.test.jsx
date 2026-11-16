@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter, Route, Routes } from "react-router-dom"
 import { AuthProvider } from "../../context/AuthContext"
@@ -27,5 +27,19 @@ describe("Layout", () => {
     expect(saltar).toHaveFocus()
     expect(saltar).toHaveAttribute("href", "#contenido")
     expect(screen.getByRole("main")).toHaveAttribute("id", "contenido")
+  })
+
+  test("el pie lleva a Acerca de y a los Términos y Condiciones", () => {
+    renderizar()
+
+    const enlaces = screen.getByRole("navigation", {
+      name: "Información del sitio",
+    })
+    expect(
+      within(enlaces).getByRole("link", { name: "Acerca de" }),
+    ).toHaveAttribute("href", "/acerca-de")
+    expect(
+      within(enlaces).getByRole("link", { name: "Términos y Condiciones" }),
+    ).toHaveAttribute("href", "/terminos")
   })
 })

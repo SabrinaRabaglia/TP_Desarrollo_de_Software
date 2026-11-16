@@ -6,8 +6,14 @@
 
 /* El ancho y los márgenes laterales los pone .contenedor, igual que en la
    navbar, así el contenido queda alineado con el logo. */
+/* Ocupa al menos la pantalla menos la navbar: así el pie arranca fuera de la
+   vista y no salta hacia abajo cuando llega el contenido (mientras se ve
+   "Cargando..." la página es bajita). dvh descuenta las barras del navegador
+   del celular; vh queda para los navegadores que no lo conocen. */
 .layout-contenido {
   flex: 1;
+  min-height: calc(100vh - var(--alto-navbar));
+  min-height: calc(100dvh - var(--alto-navbar));
   padding-block: var(--espacio-6) var(--espacio-10);
 }
 
@@ -30,6 +36,24 @@
   gap: var(--espacio-1);
   padding-block: var(--espacio-6);
   text-align: center;
+}
+
+.layout-pie-enlaces {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--espacio-1) var(--espacio-4);
+}
+
+.layout-pie-enlaces a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-tactil);
+  color: var(--color-texto-secundario);
+}
+
+.layout-pie-enlaces a:hover {
+  color: var(--color-texto);
 }
 
 .layout-pie-marca {

@@ -126,7 +126,9 @@ describe("MiColectivo", () => {
       ciudad: "Lanús",
     })
     expect(
-      within(screen.getByRole("navigation")).getByText("Huerta Sur"),
+      within(screen.getByRole("navigation", { name: "Principal" })).getByText(
+        "Huerta Sur",
+      ),
     ).toBeInTheDocument()
   })
 

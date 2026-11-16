@@ -29,6 +29,7 @@ export default class Notificacion {
     }))
     this.procesandoDesde = null
     this.reintentarDesde = null
+    this.leidaEn = null
   }
 
   static validarDatos({ contenido, colectivo, personaColaboradora, perfil }) {
@@ -40,6 +41,11 @@ export default class Notificacion {
         "La notificación debe indicar colectivo, persona colaboradora y perfil.",
       )
     }
+  }
+
+  // La marca la propia persona desde su bandeja; los avisos externos no la tocan.
+  get leida() {
+    return Boolean(this.leidaEn)
   }
 
   get pendienteDeEnvio() {

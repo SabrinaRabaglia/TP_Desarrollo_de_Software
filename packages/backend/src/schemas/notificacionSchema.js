@@ -38,6 +38,7 @@ const notificacionSchema = new mongoose.Schema(
     envios: [envioSchema],
     procesandoDesde: { type: Date, default: null },
     reintentarDesde: { type: Date, default: null },
+    leidaEn: { type: Date, default: null },
   },
   {
     timestamps: true,
@@ -46,6 +47,9 @@ const notificacionSchema = new mongoose.Schema(
       delete json.envios
       delete json.procesandoDesde
       delete json.reintentarDesde
+      // Si la leyó es cosa de la destinataria: sale solo en su bandeja, como `leida`.
+      delete json.leidaEn
+      delete json.leida
       return json
     }),
   },
