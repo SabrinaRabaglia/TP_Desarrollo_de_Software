@@ -4,11 +4,16 @@ import {
   AppBar,
   Avatar,
   Button,
+  Divider,
   Drawer,
   IconButton,
+  ListItemIcon,
+  Menu,
+  MenuItem,
   Toolbar,
 } from "@mui/material"
 import {
+  LuChevronDown,
   LuCircleUser,
   LuClipboardList,
   LuFolderOpen,
@@ -16,6 +21,7 @@ import {
   LuLogOut,
   LuMenu,
   LuMessageSquare,
+  LuSearch,
   LuUserPen,
   LuUserPlus,
   LuX,
@@ -23,32 +29,50 @@ import {
 import { useAuth } from "../../context/AuthContext"
 import "./Navbar.css"
 
-// Qué secciones ve cada quien. Mis postulaciones y Mi perfil son solo de las
-// personas colaboradoras; Mensajes y Mi cuenta, de cualquiera con sesión.
+// Qué secciones ve cada quien. Las `principales` van en la barra. Las
+// `deLaCuenta` van en el menú de quien tiene la sesión, junto a cerrar sesión.
+// Buscar proyectos, Mis postulaciones y Mi perfil son solo de las personas
+// colaboradoras.
 const enlacesPara = (usuario) => {
   const proyectos = { a: "/", texto: "Proyectos", Icono: LuFolderOpen }
 
   if (!usuario) {
-    return [
-      proyectos,
-      { a: "/login", texto: "Ingresar", Icono: LuLogIn },
-      { a: "/colaboradoras/nueva", texto: "Registrarme", Icono: LuUserPlus },
-    ]
+    return {
+      principales: [
+        proyectos,
+        { a: "/login", texto: "Ingresar", Icono: LuLogIn },
+        { a: "/colaboradoras/nueva", texto: "Registrarme", Icono: LuUserPlus },
+      ],
+      deLaCuenta: [],
+    }
   }
 
   const esColaboradora = usuario.rol === "PERSONA_COLABORADORA"
 
-  return [
-    proyectos,
-    esColaboradora && {
-      a: "/postulaciones",
-      texto: "Mis postulaciones",
-      Icono: LuClipboardList,
-    },
-    { a: "/mensajes", texto: "Mensajes", Icono: LuMessageSquare },
-    esColaboradora && { a: "/mi-perfil", texto: "Mi perfil", Icono: LuUserPen },
-    { a: "/mi-cuenta", texto: "Mi cuenta", Icono: LuCircleUser },
-  ].filter(Boolean)
+  return {
+    principales: [
+      proyectos,
+      esColaboradora && {
+        a: "/buscar",
+        texto: "Buscar proyectos",
+        Icono: LuSearch,
+      },
+      esColaboradora && {
+        a: "/postulaciones",
+        texto: "Mis postulaciones",
+        Icono: LuClipboardList,
+      },
+      { a: "/mensajes", texto: "Mensajes", Icono: LuMessageSquare },
+    ].filter(Boolean),
+    deLaCuenta: [
+      esColaboradora && {
+        a: "/mi-perfil",
+        texto: "Mi perfil",
+        Icono: LuUserPen,
+      },
+      { a: "/mi-cuenta", texto: "Mi cuenta", Icono: LuCircleUser },
+    ].filter(Boolean),
+  }
 }
 
 const iniciales = (nombre = "") =>
@@ -59,16 +83,60 @@ const iniciales = (nombre = "") =>
     .map((parte) => parte[0].toUpperCase())
     .join("")
 
-// Avatar con las iniciales y el nombre de quien tiene la sesión. En la barra
-// suma el botón de cerrar sesión (children); en el menú lateral, ese botón va
-// al final de la lista.
-const UsuarioActual = ({ usuario, className, claseDelNombre, children }) => (
-  <div className={className}>
-    <Avatar aria-hidden="true">{iniciales(usuario.nombre)}</Avatar>
-    <span className={claseDelNombre}>{usuario.nombre}</span>
-    {children}
-  </div>
-)
+// En la barra: el avatar y el nombre de quien tiene la sesión abren un menú
+// con las secciones de su cuenta y cerrar sesión.
+const MenuDeLaCuenta = ({ usuario, enlaces, alCerrarSesion }) => {
+  const [ancla, setAncla] = useState(null)
+  const abierto = Boolean(ancla)
+  const cerrar = () => setAncla(null)
+
+  return (
+    <>
+      <Button
+        className="navbar-usuario"
+        color="inherit"
+        aria-label={`Cuenta de ${usuario.nombre}`}
+        aria-haspopup="menu"
+        aria-expanded={abierto}
+        aria-controls={abierto ? "navbar-menu-de-la-cuenta" : undefined}
+        onClick={(evento) => setAncla(evento.currentTarget)}
+      >
+        <Avatar aria-hidden="true">{iniciales(usuario.nombre)}</Avatar>
+        <span className="navbar-usuario-nombre">{usuario.nombre}</span>
+        <LuChevronDown aria-hidden="true" />
+      </Button>
+      <Menu
+        id="navbar-menu-de-la-cuenta"
+        anchorEl={ancla}
+        open={abierto}
+        onClose={cerrar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        {enlaces.map(({ a, texto, Icono }) => (
+          <MenuItem key={a} component={NavLink} to={a} onClick={cerrar}>
+            <ListItemIcon>
+              <Icono aria-hidden="true" />
+            </ListItemIcon>
+            {texto}
+          </MenuItem>
+        ))}
+        <Divider />
+        <MenuItem
+          onClick={() => {
+            cerrar()
+            alCerrarSesion()
+          }}
+        >
+          <ListItemIcon>
+            <LuLogOut aria-hidden="true" />
+          </ListItemIcon>
+          Cerrar sesión
+        </MenuItem>
+      </Menu>
+    </>
+  )
+}
 
 const Enlaces = ({ enlaces, alElegir }) =>
   enlaces.map(({ a, texto, Icono }) => (
@@ -88,7 +156,7 @@ const Navbar = () => {
   const { usuario, logout } = useAuth()
   const navigate = useNavigate()
   const [menuAbierto, setMenuAbierto] = useState(false)
-  const enlaces = enlacesPara(usuario)
+  const { principales, deLaCuenta } = enlacesPara(usuario)
 
   const cerrarMenu = () => setMenuAbierto(false)
 
@@ -97,18 +165,6 @@ const Navbar = () => {
     logout()
     navigate("/")
   }
-
-  const botonCerrarSesion = (
-    <Button
-      variant="outlined"
-      color="inherit"
-      size="small"
-      startIcon={<LuLogOut aria-hidden="true" />}
-      onClick={cerrarSesion}
-    >
-      Cerrar sesión
-    </Button>
-  )
 
   return (
     <AppBar component="header">
@@ -137,17 +193,15 @@ const Navbar = () => {
         </Link>
 
         <div className="navbar-links">
-          <Enlaces enlaces={enlaces} />
+          <Enlaces enlaces={principales} />
         </div>
 
         {usuario && (
-          <UsuarioActual
+          <MenuDeLaCuenta
             usuario={usuario}
-            className="navbar-usuario"
-            claseDelNombre="navbar-usuario-nombre"
-          >
-            <span className="navbar-cerrar-sesion">{botonCerrarSesion}</span>
-          </UsuarioActual>
+            enlaces={deLaCuenta}
+            alCerrarSesion={cerrarSesion}
+          />
         )}
       </Toolbar>
 
@@ -161,15 +215,28 @@ const Navbar = () => {
             <LuX aria-hidden="true" />
           </IconButton>
           {usuario && (
-            <UsuarioActual
-              usuario={usuario}
-              className="navbar-drawer-usuario"
-            />
+            <div className="navbar-drawer-usuario">
+              <Avatar aria-hidden="true">{iniciales(usuario.nombre)}</Avatar>
+              <span>{usuario.nombre}</span>
+            </div>
           )}
           <div className="navbar-drawer-links">
-            <Enlaces enlaces={enlaces} alElegir={cerrarMenu} />
+            <Enlaces
+              enlaces={[...principales, ...deLaCuenta]}
+              alElegir={cerrarMenu}
+            />
           </div>
-          {usuario && botonCerrarSesion}
+          {usuario && (
+            <Button
+              variant="outlined"
+              color="inherit"
+              size="small"
+              startIcon={<LuLogOut aria-hidden="true" />}
+              onClick={cerrarSesion}
+            >
+              Cerrar sesión
+            </Button>
+          )}
         </nav>
       </Drawer>
     </AppBar>
