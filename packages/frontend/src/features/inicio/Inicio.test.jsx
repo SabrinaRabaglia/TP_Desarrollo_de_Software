@@ -137,4 +137,49 @@ describe("Inicio", () => {
       screen.queryByRole("link", { name: "Crear proyecto" }),
     ).not.toBeInTheDocument()
   })
+
+  describe("con proyectos de dos colectivos", () => {
+    const tarjetaDe = async (titulo) =>
+      within((await screen.findByRole("link", { name: titulo })).closest("li"))
+
+    beforeEach(() => {
+      buscarProyectos.mockResolvedValue(
+        pagina(
+          1,
+          [
+            {
+              ...proyecto("p1", "Mapa de comedores comunitarios"),
+              colectivo: { id: "e1", nombre: "Red Solidaria Sur" },
+            },
+            proyecto("p2", "Sitio web de la huerta"),
+          ],
+          1,
+        ),
+      )
+    })
+
+    test("a un colectivo le marca cuáles son sus proyectos", async () => {
+      iniciarSesionCon("COLECTIVO")
+
+      renderizar()
+
+      const propio = await tarjetaDe("Mapa de comedores comunitarios")
+      expect(propio.getByText("Tu proyecto")).toBeInTheDocument()
+      const ajeno = await tarjetaDe("Sitio web de la huerta")
+      expect(ajeno.queryByText("Tu proyecto")).not.toBeInTheDocument()
+    })
+
+    test("sin sesión o con una persona colaboradora no marca ninguno", async () => {
+      const sinSesion = renderizar()
+      await screen.findByRole("link", { name: "Sitio web de la huerta" })
+      expect(screen.queryByText("Tu proyecto")).not.toBeInTheDocument()
+      sinSesion.unmount()
+
+      // El id de la persona coincide con el del colectivo: no alcanza.
+      iniciarSesionCon("PERSONA_COLABORADORA")
+      renderizar()
+      await screen.findByRole("link", { name: "Sitio web de la huerta" })
+      expect(screen.queryByText("Tu proyecto")).not.toBeInTheDocument()
+    })
+  })
 })

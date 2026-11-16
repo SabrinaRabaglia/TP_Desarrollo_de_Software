@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import { Button, Card, CardContent, Pagination } from "@mui/material"
+import { Button, Card, CardContent, Chip, Pagination } from "@mui/material"
 import { LuPlus } from "react-icons/lu"
 import Cargando from "../../components/cargando/Cargando"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
@@ -39,6 +39,11 @@ const Inicio = () => {
     cargar()
   }, [intento, pagina])
 
+  // Solo un colectivo tiene proyectos propios para distinguir en la lista.
+  const esPropio = (proyecto) =>
+    usuario?.rol === "COLECTIVO" &&
+    usuario.entidad?.id === proyecto.colectivo.id
+
   const renderProyectos = () => {
     if (cargando) {
       return <Cargando texto="Cargando proyectos..." />
@@ -63,6 +68,15 @@ const Inicio = () => {
                   {ESTADOS_DE_PROYECTO[proyecto.estado]} ·{" "}
                   {proyecto.colectivo.nombre}
                 </p>
+                {esPropio(proyecto) && (
+                  <Chip
+                    className="inicio-proyecto-propio"
+                    size="small"
+                    variant="suave"
+                    color="info"
+                    label="Tu proyecto"
+                  />
+                )}
                 <h3>
                   <Link to={`/proyectos/${proyecto.id}`}>
                     {proyecto.titulo}
