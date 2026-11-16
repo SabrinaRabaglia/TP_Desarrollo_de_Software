@@ -120,6 +120,10 @@ const RegistroColaboradora = () => {
         <p>
           ¿Ya tenés cuenta? <Link to="/login">Ingresá</Link>
         </p>
+        <p>
+          ¿Venís por un colectivo?{" "}
+          <Link to="/colectivos/nuevo">Registrá tu colectivo</Link>
+        </p>
       </header>
       {renderFormulario()}
     </section>

@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react"
-import { useParams, useSearchParams } from "react-router-dom"
+import { Link, useParams, useSearchParams } from "react-router-dom"
 import { Button, LinearProgress, Skeleton, Tab, Tabs } from "@mui/material"
-import { LuCode, LuExternalLink, LuFlag } from "react-icons/lu"
+import { LuCode, LuExternalLink, LuFlag, LuPlus } from "react-icons/lu"
 import EstadoChip from "../../components/estadoChip/EstadoChip"
 import EstadoVacio from "../../components/estadoVacio/EstadoVacio"
 import MensajeDeError from "../../components/mensajeDeError/MensajeDeError"
 import { useAuth } from "../../context/AuthContext"
+import { useAvisos } from "../../context/AvisosContext"
 import { obtenerProyecto } from "../../service/proyectosService"
 import { mensajeDeError } from "../../service/api"
+import FormularioDePerfil from "./FormularioDePerfil"
+import GestionDelProyecto from "./GestionDelProyecto"
 import PerfilRequerido from "./PerfilRequerido"
 import "./PaginaProyecto.css"
 
@@ -80,12 +83,14 @@ const Hitos = ({ hitos }) => {
 const PaginaProyecto = () => {
   const { id } = useParams()
   const { usuario } = useAuth()
+  const { mostrarAviso } = useAvisos()
   const [parametros, setParametros] = useSearchParams()
 
   const [proyecto, setProyecto] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
   const [intento, setIntento] = useState(0)
+  const [agregandoPerfil, setAgregandoPerfil] = useState(false)
 
   // La pestaña vive en la URL (?tab=avance) para poder compartir el link.
   const pestana = PESTANAS.includes(parametros.get("tab"))
@@ -118,8 +123,9 @@ const PaginaProyecto = () => {
     cargar()
   }, [id, intento])
 
-  // Después de modificar un perfil se piden los datos de nuevo, sin volver al
-  // esqueleto de carga: las tarjetas siguen en pantalla mientras tanto.
+  // Después de modificar el proyecto o un perfil se piden los datos de nuevo,
+  // sin volver al esqueleto de carga: las tarjetas siguen en pantalla mientras
+  // tanto.
   const refrescar = async () => {
     try {
       setProyecto(await obtenerProyecto(id))
@@ -142,10 +148,19 @@ const PaginaProyecto = () => {
   }
 
   // Solo el colectivo dueño revisa postulaciones, busca candidatas y gestiona
-  // los perfiles.
+  // el proyecto y sus perfiles.
   const esDueno =
     usuario?.rol === "COLECTIVO" &&
     usuario.entidad?.id === proyecto.colectivo.id
+  const proyectoAbierto = proyecto.estado === "PUBLICADO"
+  // Los perfiles de un proyecto cerrado no se pueden modificar.
+  const puedeAgregarPerfiles = esDueno && proyectoAbierto
+
+  const alAgregarPerfil = (nombre) => {
+    setAgregandoPerfil(false)
+    mostrarAviso(`Agregaste el perfil ${nombre} al proyecto.`)
+    return refrescar()
+  }
 
   const hayEnlaces = proyecto.enlaceSistema || proyecto.enlaceRepositorio
 
@@ -155,8 +170,14 @@ const PaginaProyecto = () => {
         <EstadoChip estado={proyecto.estado} />
         <h1>{proyecto.titulo}</h1>
         <p className="pagina-proyecto-colectivo">
-          Lo propone {proyecto.colectivo.nombre}
+          Lo propone{" "}
+          <Link to={`/colectivos/${proyecto.colectivo.id}`}>
+            {proyecto.colectivo.nombre}
+          </Link>
         </p>
+        {esDueno && (
+          <GestionDelProyecto proyecto={proyecto} alModificar={refrescar} />
+        )}
       </header>
 
       <div className="pagina-proyecto-resumen">
@@ -234,26 +255,51 @@ const PaginaProyecto = () => {
           aria-labelledby={`pestana-${pestana}`}
           className="pagina-proyecto-panel"
         >
-          {pestana === "perfiles" &&
-            (proyecto.perfiles.length === 0 ? (
-              <p>Este proyecto todavía no cargó perfiles.</p>
-            ) : (
-              <div className="pagina-proyecto-grilla">
-                {proyecto.perfiles.map((perfil) => (
-                  <PerfilRequerido
-                    key={perfil.id}
-                    perfil={perfil}
-                    proyectoId={proyecto.id}
-                    proyectoAbierto={proyecto.estado === "PUBLICADO"}
-                    esDueno={esDueno}
-                    alModificar={refrescar}
-                  />
-                ))}
-              </div>
-            ))}
+          {pestana === "perfiles" && (
+            <div className="pagina-proyecto-perfiles">
+              {puedeAgregarPerfiles && (
+                <Button
+                  variant="contained"
+                  onClick={() => setAgregandoPerfil(true)}
+                  startIcon={<LuPlus aria-hidden="true" />}
+                  className="pagina-proyecto-agregar"
+                >
+                  Agregar un perfil
+                </Button>
+              )}
+              {proyecto.perfiles.length === 0 ? (
+                <p>
+                  {puedeAgregarPerfiles
+                    ? "Este proyecto todavía no tiene perfiles. Agregá el primero para que las personas puedan postularse."
+                    : "Este proyecto todavía no cargó perfiles."}
+                </p>
+              ) : (
+                <div className="pagina-proyecto-grilla">
+                  {proyecto.perfiles.map((perfil) => (
+                    <PerfilRequerido
+                      key={perfil.id}
+                      perfil={perfil}
+                      proyectoId={proyecto.id}
+                      proyectoAbierto={proyectoAbierto}
+                      esDueno={esDueno}
+                      alModificar={refrescar}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           {pestana === "avance" && <Hitos hitos={proyecto.hitos} />}
         </div>
       </div>
+
+      {agregandoPerfil && (
+        <FormularioDePerfil
+          proyectoId={proyecto.id}
+          alCerrar={() => setAgregandoPerfil(false)}
+          alGuardar={alAgregarPerfil}
+        />
+      )}
     </article>
   )
 }

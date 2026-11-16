@@ -23,6 +23,14 @@ export default class AuthController {
     }
   }
 
+  registrarColectivo = async (req, res, next) => {
+    try {
+      res.status(201).json(await this.authService.registrarColectivo(req.body))
+    } catch (error) {
+      next(error)
+    }
+  }
+
   me = async (req, res, next) => {
     try {
       res.status(200).json(await this.authService.usuarioActual(req.usuario.id))

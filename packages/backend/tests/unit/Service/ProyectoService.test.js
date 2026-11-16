@@ -10,6 +10,7 @@ import {
   AlreadyExists,
   EntityNotFound,
   InvalidReference,
+  NoAutorizado,
 } from "../../../src/errors/ApplicationErrors.js"
 import {
   DomainValidationError,
@@ -140,6 +141,30 @@ describe("ProyectoService", () => {
       await expect(service.getById("id-inexistente")).rejects.toThrow(
         EntityNotFound,
       )
+    })
+  })
+
+  describe("getDelColectivo", () => {
+    test("devuelve el proyecto a su colectivo", async () => {
+      const creado = await service.create(dtoProyectoValido)
+
+      expect(
+        await service.getDelColectivo(creado.id, dtoProyectoValido.colectivo),
+      ).toBe(creado)
+    })
+
+    test("lanza NoAutorizado si el proyecto es de otro colectivo", async () => {
+      const creado = await service.create(dtoProyectoValido)
+
+      await expect(
+        service.getDelColectivo(creado.id, "otro-colectivo"),
+      ).rejects.toThrow(NoAutorizado)
+    })
+
+    test("lanza EntityNotFound si el proyecto no existe", async () => {
+      await expect(
+        service.getDelColectivo("id-inexistente", dtoProyectoValido.colectivo),
+      ).rejects.toThrow(EntityNotFound)
     })
   })
 

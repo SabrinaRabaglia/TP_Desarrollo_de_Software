@@ -99,13 +99,18 @@ beforeAll(async () => {
   })
 
   proyecto = (
-    await enviar("POST", "/proyectos", {
-      titulo: "Sitio web de la huerta",
-      descripcion: "Calendario de talleres",
-      colectivo: huerta.id,
-      estado: "PUBLICADO",
-      fechaCierre: null,
-    })
+    await enviar(
+      "POST",
+      "/proyectos",
+      {
+        titulo: "Sitio web de la huerta",
+        descripcion: "Calendario de talleres",
+        colectivo: huerta.id,
+        estado: "PUBLICADO",
+        fechaCierre: null,
+      },
+      tokenDeColectivo(huerta.id),
+    )
   ).body
   const { body: perfilCreado } = await enviar(
     "POST",

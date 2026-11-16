@@ -3,6 +3,9 @@ export default class ProyectoController {
     this.proyectoService = proyectoService
   }
 
+  assertEsDelColectivo = (req) =>
+    this.proyectoService.getDelColectivo(req.params.id, req.usuario.entidad)
+
   getAll = async (req, res, next) => {
     try {
       const { habilidades, q, busquedaAbierta } = req.query
@@ -45,6 +48,7 @@ export default class ProyectoController {
 
   update = async (req, res, next) => {
     try {
+      await this.assertEsDelColectivo(req)
       res
         .status(200)
         .json(await this.proyectoService.update(req.params.id, req.body))
@@ -55,6 +59,7 @@ export default class ProyectoController {
 
   patch = async (req, res, next) => {
     try {
+      await this.assertEsDelColectivo(req)
       res
         .status(200)
         .json(await this.proyectoService.update(req.params.id, req.body))
@@ -65,6 +70,7 @@ export default class ProyectoController {
 
   delete = async (req, res, next) => {
     try {
+      await this.assertEsDelColectivo(req)
       await this.proyectoService.delete(req.params.id)
       res.status(204).send()
     } catch (error) {

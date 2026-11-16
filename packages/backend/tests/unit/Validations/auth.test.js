@@ -3,6 +3,7 @@ import validar from "../../../src/middlewares/validar.js"
 import { BadRequestError } from "../../../src/errors/ApplicationErrors.js"
 import {
   loginSchema,
+  registroColectivoSchema,
   registroPersonaSchema,
 } from "../../../src/validations/auth.js"
 
@@ -65,6 +66,50 @@ describe("validación del registro de una persona colaboradora", () => {
     const next = jest.fn()
 
     validar(registroPersonaSchema)(
+      { body: { ...registro, ...cambios } },
+      {},
+      next,
+    )
+
+    expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
+  })
+})
+
+describe("validación del registro de un colectivo", () => {
+  const registro = {
+    email: "asamblea@colectivo.test",
+    contrasena: "secreto123",
+    colectivo: {
+      nombre: "Asamblea Ambiental",
+      descripcion: "Protección de humedales",
+      tipo: "Asamblea",
+    },
+  }
+
+  test("acepta email, contraseña y los datos del colectivo", () => {
+    const req = { body: registro }
+    const next = jest.fn()
+
+    validar(registroColectivoSchema)(req, {}, next)
+
+    expect(next).toHaveBeenCalledWith()
+    expect(req.body).toEqual(registro)
+  })
+
+  test.each([
+    ["sin colectivo", { colectivo: undefined }],
+    ["con un colectivo sin tipo", { colectivo: { nombre: "Asamblea" } }],
+    ["con un email mal formado", { email: "asamblea" }],
+    ["con una contraseña de menos de 8 caracteres", { contrasena: "1234567" }],
+    ["con un campo extra", { rol: "COLECTIVO" }],
+    [
+      "con un campo extra en el colectivo",
+      { colectivo: { ...registro.colectivo, proyectos: [] } },
+    ],
+  ])("rechaza el body %s", (_caso, cambios) => {
+    const next = jest.fn()
+
+    validar(registroColectivoSchema)(
       { body: { ...registro, ...cambios } },
       {},
       next,

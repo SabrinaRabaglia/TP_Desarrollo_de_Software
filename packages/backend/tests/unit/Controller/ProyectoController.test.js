@@ -3,6 +3,7 @@ import ProyectoController from "../../../src/controllers/ProyectoController.js"
 import validar from "../../../src/middlewares/validar.js"
 import { busquedaProyectosSchema } from "../../../src/validations/proyecto.js"
 import { EstadoProyecto } from "../../../src/domain/enums/EstadoProyecto.js"
+import { NoAutorizado } from "../../../src/errors/ApplicationErrors.js"
 
 const guardado = (proyecto) => ({ ...proyecto, id: "1", perfiles: [] })
 const mockRes = () => ({
@@ -16,6 +17,7 @@ const mockProyectoService = () => ({
   update: jest.fn(),
   delete: jest.fn(),
   getById: jest.fn(),
+  getDelColectivo: jest.fn(),
   getAll: jest.fn(),
   getAllByHabilidades: jest.fn(),
 })
@@ -29,6 +31,7 @@ describe("ProyectoController", () => {
     estado: EstadoProyecto.PUBLICADO,
     fechaCierre: null,
   }
+  const usuario = { rol: "COLECTIVO", entidad: proyectoValido.colectivo }
 
   describe("getAll", () => {
     test("responde con 200 y la lista de proyectos devuelta por el service", async () => {
@@ -132,7 +135,7 @@ describe("ProyectoController", () => {
       proyectoServiceMock.update.mockReturnValue(guardado(proyectoGuardado))
 
       const controller = new ProyectoController(proyectoServiceMock)
-      const req = { params: { id: "1" }, body: { ...proyectoValido } }
+      const req = { params: { id: "1" }, body: { ...proyectoValido }, usuario }
       const res = mockRes()
       const next = jest.fn()
 
@@ -155,7 +158,7 @@ describe("ProyectoController", () => {
       proyectoServiceMock.update.mockReturnValue(guardado(proyectoActualizado))
 
       const controller = new ProyectoController(proyectoServiceMock)
-      const req = { params: { id: "1" }, body: cambiosParciales }
+      const req = { params: { id: "1" }, body: cambiosParciales, usuario }
       const res = mockRes()
       const next = jest.fn()
 
@@ -174,7 +177,7 @@ describe("ProyectoController", () => {
     test("llama al delete del service y responde con 204", async () => {
       const proyectoServiceMock = mockProyectoService()
       const controller = new ProyectoController(proyectoServiceMock)
-      const req = { params: { id: "1" } }
+      const req = { params: { id: "1" }, usuario }
       const res = mockRes()
       const next = jest.fn()
 
@@ -185,4 +188,31 @@ describe("ProyectoController", () => {
       expect(res.send).toHaveBeenCalled()
     })
   })
+
+  test.each(["update", "patch", "delete"])(
+    "%s no escribe en el proyecto de otro colectivo y pasa el error",
+    async (accion) => {
+      const proyectoServiceMock = mockProyectoService()
+      const ajeno = new NoAutorizado("El proyecto es de otro colectivo")
+      proyectoServiceMock.getDelColectivo.mockRejectedValue(ajeno)
+      const controller = new ProyectoController(proyectoServiceMock)
+      const res = mockRes()
+      const next = jest.fn()
+
+      await controller[accion](
+        { params: { id: "1" }, body: { ...proyectoValido }, usuario },
+        res,
+        next,
+      )
+
+      expect(proyectoServiceMock.getDelColectivo).toHaveBeenCalledWith(
+        "1",
+        usuario.entidad,
+      )
+      expect(proyectoServiceMock.update).not.toHaveBeenCalled()
+      expect(proyectoServiceMock.delete).not.toHaveBeenCalled()
+      expect(res.status).not.toHaveBeenCalled()
+      expect(next).toHaveBeenCalledWith(ajeno)
+    },
+  )
 })

@@ -24,6 +24,17 @@ export function autorizar(...roles) {
   }
 }
 
+// Un colectivo escribe solo a su nombre: si el body dice de qué colectivo es
+// el recurso, tiene que ser el suyo.
+export function autorizarColectivoDelBody(req, _res, next) {
+  const { colectivo } = req.body
+  next(
+    colectivo === undefined || colectivo === req.usuario.entidad
+      ? undefined
+      : new NoAutorizado("No tenés permiso para esta acción"),
+  )
+}
+
 export function autorizarEntidad(rol, parametro = "id") {
   return (req, _res, next) => {
     const esLaMisma =

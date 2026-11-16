@@ -2,6 +2,13 @@ import { z } from "zod"
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
 import { objectIdSchema } from "./objectId.js"
 
+// Los enlaces se muestran como links: solo web, nunca "javascript:". Con null
+// se quita un enlace ya cargado.
+const enlaceSchema = z
+  .url({ protocol: /^https?$/ })
+  .nullable()
+  .optional()
+
 export const proyectoSchema = z
   .object({
     titulo: z.string(),
@@ -9,8 +16,8 @@ export const proyectoSchema = z
     colectivo: objectIdSchema,
     estado: z.enum(EstadoProyecto),
     fechaCierre: z.coerce.date().nullable(),
-    enlaceSistemaEnFuncionamiento: z.string().url().optional(),
-    enlaceCodigoFuente: z.string().url().optional(),
+    enlaceSistemaEnFuncionamiento: enlaceSchema,
+    enlaceCodigoFuente: enlaceSchema,
   })
   .strict()
 

@@ -1,0 +1,60 @@
+.pagina-colectivo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-8);
+}
+
+.pagina-colectivo-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--espacio-4);
+}
+
+.pagina-colectivo-identidad {
+  display: flex;
+  flex: 1 1 16rem;
+  flex-direction: column;
+  gap: var(--espacio-3);
+  min-width: 0;
+}
+
+.pagina-colectivo-identidad h1 {
+  overflow-wrap: anywhere;
+}
+
+.pagina-colectivo-datos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-4);
+}
+
+.pagina-colectivo-ubicacion {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  color: var(--color-texto-secundario);
+  overflow-wrap: anywhere;
+}
+
+.pagina-colectivo-ubicacion svg {
+  flex-shrink: 0;
+}
+
+.pagina-colectivo-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-3);
+}
+
+.pagina-colectivo-seccion h2 {
+  font-size: 1.25rem;
+}
+
+/* La descripción se escribe en un campo de varias líneas: se respetan sus
+   saltos. */
+.pagina-colectivo-descripcion {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}

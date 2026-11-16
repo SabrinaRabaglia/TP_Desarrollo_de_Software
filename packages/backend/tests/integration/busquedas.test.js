@@ -37,6 +37,7 @@ const crearProyectoConPerfil = async (titulo, colectivo, requeridas) => {
       fechaCierre: null,
     },
     201,
+    tokenDeColectivo(colectivo.id),
   )
   const perfil = await request(
     "POST",
@@ -107,9 +108,13 @@ beforeAll(async () => {
       habilidades.javascript,
     ]),
   }
-  await request("PATCH", `/proyectos/${proyectos.cerrado.id}`, {
-    estado: "CERRADO",
-  })
+  await request(
+    "PATCH",
+    `/proyectos/${proyectos.cerrado.id}`,
+    { estado: "CERRADO" },
+    200,
+    tokenDeColectivo(colectivo.id),
+  )
   personas = {
     ana: await crearPersona("anag", [
       habilidades.javascript,

@@ -250,6 +250,7 @@ Los usuarios del sistema son colectivos o personas colaboradoras. Cada usuario t
 
 - `POST /auth/login` recibe `{ email, contrasena }` y devuelve `{ token, usuario }`. Un email inexistente y una contraseña incorrecta responden el mismo `401`.
 - `POST /auth/registro/persona-colaboradora` recibe `{ email, contrasena, persona }`, donde `persona` tiene la misma forma que el body de `POST /personas-colaboradoras`. Crea la persona y su usuario y responde `201` con el usuario público, sin token. Si el email ya está usado responde `409` y no crea la persona.
+- `POST /auth/registro/colectivo` recibe `{ email, contrasena, colectivo }`, donde `colectivo` tiene la misma forma que el body de `POST /colectivos`. Crea el colectivo y su usuario y responde `201` con el usuario público, sin token. Si el email o el nombre del colectivo ya están usados responde `409` y no crea nada.
 - `GET /auth/me` devuelve el usuario del token enviado en `Authorization: Bearer <token>`.
 
 El usuario público tiene esta forma, donde `nombre` es el nombre del colectivo o el nombre de fantasía de la persona:
@@ -295,7 +296,9 @@ routes.put(
 )
 ```
 
-Para un colectivo sería `autorizarEntidad(RolUsuario.COLECTIVO)` en `/colectivos/:id`. Al borrar una persona colaboradora también se borra su usuario, así que después no puede iniciar sesión.
+Un colectivo se edita y se borra igual, con `autorizarEntidad(RolUsuario.COLECTIVO)` en `/colectivos/:id`. Al borrar una persona colaboradora o un colectivo también se borra su usuario, así que después no puede iniciar sesión.
+
+Crear, editar y borrar un proyecto, sus perfiles o sus hitos pide la sesión del colectivo dueño del proyecto: sin token responde `401`, y una persona colaboradora u otro colectivo reciben `403`. La regla vive en `ProyectoService.assertEsDelColectivo`. Además un colectivo escribe proyectos solo a su nombre: si el body trae `colectivo` tiene que ser el del token (`autorizarColectivoDelBody`), si no responde `403`. Leer sigue siendo público.
 
 ### Datos de contacto
 
@@ -418,6 +421,6 @@ En CI, el workflow de tests levanta un MongoDB como servicio.
 
 ## Tipo de colectivo y provincia
 
-El tipo de colectivo se valida contra la colección `tiposColectivo`, precargada con `Fundación`, `Asociación barrial`, `ONG` y `Asamblea`. La comparación ignora mayúsculas, tildes y espacios sobrantes. Para ampliar el catálogo, agregá el nombre en `src/seeds/catalogos.js`: se inserta en el próximo arranque.
+El tipo de colectivo se valida contra la colección `tiposColectivo`, precargada con `Fundación`, `Asociación barrial`, `ONG` y `Asamblea`. La comparación ignora mayúsculas, tildes y espacios sobrantes. `GET /tipos-de-colectivo` lista el catálogo como `[{ id, nombre }]`. Para ampliarlo, agregá el nombre en `src/seeds/catalogos.js`: se inserta en el próximo arranque.
 
 País y provincia son opcionales y se envían por id (el de la colección `paises` o `provincias`). La API los devuelve como `{ id, nombre }`. La ciudad o barrio sigue siendo texto libre.

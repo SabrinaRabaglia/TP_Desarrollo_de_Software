@@ -1,7 +1,7 @@
 import Perfil from "../domain/Perfil.js"
 import { EstadoProyecto } from "../domain/enums/EstadoProyecto.js"
 import { OrdenDeBusqueda } from "../validations/perfil.js"
-import { EntityNotFound, NoAutorizado } from "../errors/ApplicationErrors.js"
+import { EntityNotFound } from "../errors/ApplicationErrors.js"
 
 const idDe = (documento) => String(documento._id ?? documento.id ?? documento)
 
@@ -47,15 +47,6 @@ export default class PerfilService {
       throw new EntityNotFound("Perfil no encontrado")
     }
     return perfil
-  }
-
-  assertEsDelColectivo = async (proyectoId, colectivoId) => {
-    const proyecto = await this.proyectoService.getById(proyectoId)
-    if (!proyecto.esDelColectivo(colectivoId)) {
-      throw new NoAutorizado(
-        "El proyecto no pertenece al colectivo autenticado",
-      )
-    }
   }
 
   // Cambia los ids de habilidades por las habilidades, para rechazar los que

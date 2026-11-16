@@ -14,18 +14,20 @@ export default class AuthService {
     usuarioRepository,
     colectivoRepository,
     personaColaboradoraRepository,
+    colectivoService,
     personaColaboradoraService,
   ) {
     this.usuarioRepository = usuarioRepository
-    this.personaColaboradoraService = personaColaboradoraService
     this.entidades = {
       [RolUsuario.COLECTIVO]: {
         repositorio: colectivoRepository,
+        servicio: colectivoService,
         nombre: (colectivo) => colectivo.nombre,
         noEncontrada: "Colectivo no encontrado",
       },
       [RolUsuario.PERSONA_COLABORADORA]: {
         repositorio: personaColaboradoraRepository,
+        servicio: personaColaboradoraService,
         nombre: (persona) => persona.nombreFantasia,
         noEncontrada: "Persona colaboradora no encontrada",
       },
@@ -62,23 +64,29 @@ export default class AuthService {
     return await this.usuarioPublico(await this.usuarioRepository.save(usuario))
   }
 
-  registrarPersonaColaboradora = async ({ email, contrasena, persona }) => {
-    await this.validarEmailDisponible(email)
-    const creada = await this.personaColaboradoraService.create(persona)
+  registrarConEntidad = async (rol, credenciales, datos) => {
+    const { servicio } = this.entidades[rol]
+    await this.validarEmailDisponible(credenciales.email)
+    const creada = await servicio.create(datos)
     try {
-      return await this.registrar({
-        email,
-        contrasena,
-        rol: RolUsuario.PERSONA_COLABORADORA,
-        entidad: creada.id,
-      })
+      return await this.registrar({ ...credenciales, rol, entidad: creada.id })
     } catch (error) {
       // Mongo corre sin réplica, así que no hay transacciones: si el usuario
-      // no se guarda, borramos la persona para no dejarla huérfana.
-      await this.personaColaboradoraService.delete(creada.id)
+      // no se guarda, borramos la entidad para no dejarla huérfana.
+      await servicio.delete(creada.id)
       throw error
     }
   }
+
+  registrarPersonaColaboradora = ({ persona, ...credenciales }) =>
+    this.registrarConEntidad(
+      RolUsuario.PERSONA_COLABORADORA,
+      credenciales,
+      persona,
+    )
+
+  registrarColectivo = ({ colectivo, ...credenciales }) =>
+    this.registrarConEntidad(RolUsuario.COLECTIVO, credenciales, colectivo)
 
   login = async (email, contrasena) => {
     const usuario = await this.usuarioRepository.findByEmail(

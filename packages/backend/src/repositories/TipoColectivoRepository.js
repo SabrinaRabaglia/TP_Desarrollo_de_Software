@@ -6,6 +6,13 @@ export default class TipoColectivoRepository {
     this.model = TipoColectivoModel
   }
 
+  async findAll() {
+    return await this.model
+      .find()
+      .collation({ locale: "es" })
+      .sort({ nombre: 1 })
+  }
+
   async findByNombre(nombre) {
     const buscado = normalizarNombre(nombre)
     const tipos = await this.model.find()

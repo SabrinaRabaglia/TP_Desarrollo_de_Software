@@ -76,4 +76,30 @@ describe("validación de proyectos", () => {
     await validar(proyectoSchema)(req, res, next)
     expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
   })
+
+  test.each([
+    ["una dirección web", "https://mapa.example.org"],
+    ["null, para quitar el enlace", null],
+  ])("acepta como enlace %s", async (_caso, enlaceCodigoFuente) => {
+    const next = jest.fn()
+    await validar(proyectoSchema)(
+      { body: { ...proyectoValido, enlaceCodigoFuente } },
+      mockRes(),
+      next,
+    )
+    expect(next).toHaveBeenCalledWith()
+  })
+
+  test.each([
+    ["que no es una dirección", "mi repositorio"],
+    ["que ejecuta código", "javascript:alert(1)"],
+  ])("rechaza un enlace %s", async (_caso, enlaceCodigoFuente) => {
+    const next = jest.fn()
+    await validar(proyectoSchema)(
+      { body: { ...proyectoValido, enlaceCodigoFuente } },
+      mockRes(),
+      next,
+    )
+    expect(next).toHaveBeenCalledWith(expect.any(BadRequestError))
+  })
 })

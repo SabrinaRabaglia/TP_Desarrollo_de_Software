@@ -13,6 +13,7 @@ import {
   Toolbar,
 } from "@mui/material"
 import {
+  LuBuilding2,
   LuChevronDown,
   LuCircleUser,
   LuClipboardList,
@@ -32,7 +33,7 @@ import "./Navbar.css"
 // Qué secciones ve cada quien. Las `principales` van en la barra. Las
 // `deLaCuenta` van en el menú de quien tiene la sesión, junto a cerrar sesión.
 // Buscar proyectos, Mis postulaciones y Mi perfil son solo de las personas
-// colaboradoras.
+// colaboradoras. Mi colectivo lo ven solo los colectivos.
 const enlacesPara = (usuario) => {
   const proyectos = { a: "/", texto: "Proyectos", Icono: LuFolderOpen }
 
@@ -65,13 +66,15 @@ const enlacesPara = (usuario) => {
       { a: "/mensajes", texto: "Mensajes", Icono: LuMessageSquare },
     ].filter(Boolean),
     deLaCuenta: [
-      esColaboradora && {
-        a: "/mi-perfil",
-        texto: "Mi perfil",
-        Icono: LuUserPen,
-      },
+      esColaboradora
+        ? { a: "/mi-perfil", texto: "Mi perfil", Icono: LuUserPen }
+        : {
+            a: "/mi-colectivo",
+            texto: "Mi colectivo",
+            Icono: LuBuilding2,
+          },
       { a: "/mi-cuenta", texto: "Mi cuenta", Icono: LuCircleUser },
-    ].filter(Boolean),
+    ],
   }
 }
 

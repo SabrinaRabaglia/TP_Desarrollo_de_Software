@@ -13,8 +13,8 @@ import {
   crearPostulacion,
   obtenerPostulacionesColaborador,
 } from "../../service/postulacionesService"
-import { modificarPerfil } from "../../service/proyectosService"
-import EditarPerfil from "./EditarPerfil"
+import { eliminarPerfil, modificarPerfil } from "../../service/proyectosService"
+import FormularioDePerfil from "./FormularioDePerfil"
 import "./PerfilRequerido.css"
 
 const formatoDia = new Intl.DateTimeFormat("es-AR", {
@@ -72,7 +72,8 @@ const PerfilRequerido = ({
 }) => {
   const { usuario } = useAuth()
   const { mostrarAviso } = useAvisos()
-  // Qué diálogo está abierto: "POSTULARSE", "CERRAR_BUSQUEDA", "EDITAR" o null.
+  // Qué diálogo está abierto: "POSTULARSE", "CERRAR_BUSQUEDA", "EDITAR",
+  // "QUITAR" o null.
   const [dialogo, setDialogo] = useState(null)
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState(null)
@@ -158,12 +159,12 @@ const PerfilRequerido = ({
     return alModificar()
   }
 
-  const cambiarBusqueda = async (cambios, aviso) => {
+  const gestionar = async (accion, aviso) => {
     setDialogo(null)
     setEnviando(true)
     setError(null)
     try {
-      await modificarPerfil(proyectoId, perfil.id, cambios)
+      await accion()
       await avisarYRefrescar(aviso)
     } catch (e) {
       setError(mensajeDeError(e))
@@ -171,6 +172,15 @@ const PerfilRequerido = ({
       setEnviando(false)
     }
   }
+
+  const cambiarBusqueda = (cambios, aviso) =>
+    gestionar(() => modificarPerfil(proyectoId, perfil.id, cambios), aviso)
+
+  const quitar = () =>
+    gestionar(
+      () => eliminarPerfil(proyectoId, perfil.id),
+      `Quitaste el perfil ${perfil.nombre} del proyecto.`,
+    )
 
   const cerrarBusqueda = () =>
     cambiarBusqueda(
@@ -321,6 +331,17 @@ const PerfilRequerido = ({
             Editar perfil
           </Button>
         )}
+        {puedeGestionar && (
+          <Button
+            variant="outlined"
+            color="error"
+            size="small"
+            onClick={() => setDialogo("QUITAR")}
+            disabled={enviando}
+          >
+            Quitar perfil
+          </Button>
+        )}
         <Button
           variant="text"
           size="small"
@@ -358,15 +379,21 @@ const PerfilRequerido = ({
         alCancelar={() => setDialogo(null)}
         peligrosa={false}
       />
+      <ConfirmarAccion
+        abierto={dialogo === "QUITAR"}
+        titulo="Quitar perfil"
+        mensaje={`Vas a quitar el perfil ${perfil.nombre} de este proyecto. Esta acción no se puede deshacer.`}
+        textoConfirmar="Sí, quitar"
+        alConfirmar={quitar}
+        alCancelar={() => setDialogo(null)}
+      />
       {dialogo === "EDITAR" && (
-        <EditarPerfil
+        <FormularioDePerfil
           perfil={perfil}
           proyectoId={proyectoId}
           alCerrar={() => setDialogo(null)}
-          alGuardar={() =>
-            avisarYRefrescar(
-              `Guardaste los cambios del perfil ${perfil.nombre}.`,
-            )
+          alGuardar={(nombre) =>
+            avisarYRefrescar(`Guardaste los cambios del perfil ${nombre}.`)
           }
         />
       )}

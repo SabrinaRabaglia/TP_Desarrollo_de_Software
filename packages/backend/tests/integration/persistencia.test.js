@@ -131,3 +131,20 @@ test("GET /paises y GET /provincias listan los catálogos ordenados por nombre",
     expect(provincia).not.toHaveProperty("_id")
   }
 })
+
+test("GET /tipos-de-colectivo lista el catálogo ordenado por nombre", async () => {
+  const respuesta = await fetch(`${base}/tipos-de-colectivo`)
+
+  expect(respuesta.status).toBe(200)
+  const tipos = await respuesta.json()
+  expect(tipos.map((tipo) => tipo.nombre)).toEqual([
+    "Asamblea",
+    "Asociación barrial",
+    "Fundación",
+    "ONG",
+  ])
+  for (const tipo of tipos) {
+    expect(tipo.id).toMatch(/^[0-9a-f]{24}$/)
+    expect(tipo).not.toHaveProperty("_id")
+  }
+})

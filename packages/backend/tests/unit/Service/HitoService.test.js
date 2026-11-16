@@ -5,7 +5,10 @@ import Proyecto from "../../../src/domain/Proyecto.js"
 import { Hito } from "../../../src/domain/Hito.js"
 import ProyectoRepository from "../../fakes/ProyectoRepository.js"
 import ColectivoRepository from "../../fakes/ColectivoRepository.js"
-import { EntityNotFound } from "../../../src/errors/ApplicationErrors.js"
+import {
+  EntityNotFound,
+  NoAutorizado,
+} from "../../../src/errors/ApplicationErrors.js"
 import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
 import { EstadoProyecto } from "../../../src/domain/enums/EstadoProyecto.js"
 
@@ -138,6 +141,30 @@ describe("HitoService", () => {
         expect({ ...(await hitosDe(proyecto.id))[0] }).toEqual(antes)
       },
     )
+  })
+
+  describe("assertEsDelColectivo", () => {
+    test("deja pasar al colectivo dueño del proyecto del hito", async () => {
+      const hito = await service.create(proyecto.id, datos)
+
+      await expect(
+        service.assertEsDelColectivo(hito.id, "colectivo-1"),
+      ).resolves.toBeUndefined()
+    })
+
+    test("lanza NoAutorizado si el proyecto del hito es de otro colectivo", async () => {
+      const hito = await service.create(proyecto.id, datos)
+
+      await expect(
+        service.assertEsDelColectivo(hito.id, "colectivo-2"),
+      ).rejects.toThrow(NoAutorizado)
+    })
+
+    test("lanza EntityNotFound si el hito no existe", async () => {
+      await expect(
+        service.assertEsDelColectivo("hito-inexistente", "colectivo-1"),
+      ).rejects.toThrow(EntityNotFound)
+    })
   })
 
   describe("delete", () => {

@@ -32,9 +32,11 @@ const aPerfil = (perfilBack, titulosDeHabilidades) => ({
       ? `${perfilBack.cantidadHoras} ${UNIDADES_DE_COMPROMISO[perfilBack.unidadCompromiso]}`
       : "Sin especificar",
   cantidadHoras: perfilBack.cantidadHoras ?? null,
+  unidadCompromiso: perfilBack.unidadCompromiso ?? null,
   modalidades: (perfilBack.modalidadesColaboracion ?? []).map(
     (m) => MODALIDADES[m],
   ),
+  modalidadesColaboracion: perfilBack.modalidadesColaboracion ?? [],
   habilidadesRequeridas: aHabilidades(
     perfilBack.habilidadesRequeridas,
     titulosDeHabilidades,
@@ -137,10 +139,66 @@ export const obtenerProyecto = async (id) => {
   )
 }
 
+// Cómo se llama en el back cada dato del proyecto que se carga en el front.
+const CAMPO_DEL_BACK = {
+  titulo: "titulo",
+  descripcion: "descripcion",
+  enlaceSistema: "enlaceSistemaEnFuncionamiento",
+  enlaceRepositorio: "enlaceCodigoFuente",
+}
+
+const aProyectoBack = (datos) =>
+  Object.fromEntries(
+    Object.entries(datos).map(([campo, valor]) => [
+      CAMPO_DEL_BACK[campo],
+      valor,
+    ]),
+  )
+
+// `datos` es { titulo, descripcion, enlaceSistema, enlaceRepositorio }, con
+// los enlaces en null si no hay. Un enlace sin valor no viaja: al crear, el
+// back no acepta null. Devuelve el id del proyecto creado.
+export const crearProyecto = async (colectivoId, datos) => {
+  const conValor = Object.fromEntries(
+    Object.entries(datos).filter(([, valor]) => valor !== null),
+  )
+  const response = await api.post("/proyectos", {
+    ...aProyectoBack(conValor),
+    colectivo: colectivoId,
+    estado: "PUBLICADO",
+    fechaCierre: null,
+  })
+
+  return response.data.id
+}
+
+// `cambios` lleva solo los datos que se modifican, con los nombres del front.
+// Un enlace en null es un enlace que se quita.
+export const modificarProyecto = async (id, cambios) => {
+  await api.patch(`/proyectos/${id}`, aProyectoBack(cambios))
+}
+
+export const cerrarProyecto = async (id) => {
+  await api.patch(`/proyectos/${id}`, { estado: "CERRADO" })
+}
+
+export const eliminarProyecto = async (id) => {
+  await api.delete(`/proyectos/${id}`)
+}
+
+// `perfil` lleva todos los datos del perfil, con la forma que espera el back.
+export const agregarPerfil = async (proyectoId, perfil) => {
+  await api.post(`/proyectos/${proyectoId}/perfiles`, perfil)
+}
+
 // `cambios` lleva solo los campos del perfil que se modifican, con la forma
 // que espera el back.
 export const modificarPerfil = async (proyectoId, perfilId, cambios) => {
   await api.patch(`/proyectos/${proyectoId}/perfiles/${perfilId}`, cambios)
+}
+
+export const eliminarPerfil = async (proyectoId, perfilId) => {
+  await api.delete(`/proyectos/${proyectoId}/perfiles/${perfilId}`)
 }
 
 // Lo que necesitan las pantallas de un perfil (migas y cupos), con un único

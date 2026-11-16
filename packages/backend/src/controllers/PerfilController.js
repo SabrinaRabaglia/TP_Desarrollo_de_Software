@@ -1,10 +1,11 @@
 export default class PerfilController {
-  constructor(perfilService) {
+  constructor(perfilService, proyectoService) {
     this.perfilService = perfilService
+    this.proyectoService = proyectoService
   }
 
   assertEsDelColectivo = (req) =>
-    this.perfilService.assertEsDelColectivo(req.params.id, req.usuario.entidad)
+    this.proyectoService.getDelColectivo(req.params.id, req.usuario.entidad)
 
   create = async (req, res, next) => {
     try {

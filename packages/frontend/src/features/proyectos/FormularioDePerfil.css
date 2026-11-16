@@ -1,21 +1,21 @@
-.editar-perfil {
+.formulario-de-perfil {
   display: flex;
   flex-direction: column;
   gap: var(--espacio-4);
 }
 
-.editar-perfil-numeros {
+.formulario-de-perfil-par {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--espacio-4);
 }
 
-.editar-perfil-error {
+.formulario-de-perfil-aviso {
   padding: var(--espacio-2) var(--espacio-6) 0;
 }
 
 @media (min-width: 768px) {
-  .editar-perfil-numeros {
+  .formulario-de-perfil-par {
     grid-template-columns: repeat(2, 1fr);
   }
 }

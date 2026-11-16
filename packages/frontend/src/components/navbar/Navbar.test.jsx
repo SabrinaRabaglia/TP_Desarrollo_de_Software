@@ -103,7 +103,7 @@ describe("Navbar", () => {
     ).toHaveAttribute("href", "/mi-perfil")
   })
 
-  test("un colectivo ve mensajes y su cuenta, pero no postulaciones ni perfil", async () => {
+  test("un colectivo ve mensajes, su colectivo y su cuenta, pero no postulaciones ni perfil", async () => {
     iniciarSesionComo("COLECTIVO", "Red Solidaria Sur")
 
     renderizar()
@@ -114,11 +114,15 @@ describe("Navbar", () => {
         name: "Cuenta de Red Solidaria Sur",
       }),
     )
+    const menu = await screen.findByRole("menu")
     expect(
-      within(await screen.findByRole("menu"))
+      within(menu)
         .getAllByRole("menuitem")
         .map((opcion) => opcion.textContent),
-    ).toEqual(["Mi cuenta", "Cerrar sesión"])
+    ).toEqual(["Mi colectivo", "Mi cuenta", "Cerrar sesión"])
+    expect(
+      within(menu).getByRole("menuitem", { name: "Mi colectivo" }),
+    ).toHaveAttribute("href", "/mi-colectivo")
   })
 
   test("marca la sección en la que está", () => {

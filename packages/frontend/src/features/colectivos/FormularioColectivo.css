@@ -1,0 +1,32 @@
+.formulario-colectivo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-6);
+}
+
+.formulario-colectivo-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-4);
+}
+
+.formulario-colectivo-ayuda {
+  font-size: var(--texto-chico);
+  color: var(--color-texto-secundario);
+}
+
+.formulario-colectivo-region {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espacio-4);
+}
+
+.formulario-colectivo-enviar {
+  align-self: flex-start;
+}
+
+@media (min-width: 768px) {
+  .formulario-colectivo-region {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
