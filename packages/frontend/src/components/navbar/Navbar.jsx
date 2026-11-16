@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom"
 import {
   AppBar,
   Avatar,
+  Badge,
   Button,
   Divider,
   Drawer,
@@ -28,13 +29,15 @@ import {
   LuX,
 } from "react-icons/lu"
 import { useAuth } from "../../context/AuthContext"
+import { useMensajesSinLeer } from "../../context/MensajesSinLeerContext"
 import "./Navbar.css"
 
 // Qué secciones ve cada quien. Las `principales` van en la barra. Las
 // `deLaCuenta` van en el menú de quien tiene la sesión, junto a cerrar sesión.
 // Buscar proyectos, Mis postulaciones y Mi perfil son solo de las personas
-// colaboradoras. Mi colectivo lo ven solo los colectivos.
-const enlacesPara = (usuario) => {
+// colaboradoras. Mi colectivo lo ven solo los colectivos. Mensajes lleva el
+// contador de sin leer, que solo tienen las personas colaboradoras.
+const enlacesPara = (usuario, sinLeer) => {
   const proyectos = { a: "/", texto: "Proyectos", Icono: LuFolderOpen }
 
   if (!usuario) {
@@ -63,7 +66,12 @@ const enlacesPara = (usuario) => {
         texto: "Mis postulaciones",
         Icono: LuClipboardList,
       },
-      { a: "/mensajes", texto: "Mensajes", Icono: LuMessageSquare },
+      {
+        a: "/mensajes",
+        texto: "Mensajes",
+        Icono: LuMessageSquare,
+        contador: esColaboradora ? sinLeer : 0,
+      },
     ].filter(Boolean),
     deLaCuenta: [
       esColaboradora
@@ -141,8 +149,17 @@ const MenuDeLaCuenta = ({ usuario, enlaces, alCerrarSesion }) => {
   )
 }
 
+// El número se ve; para el lector de pantalla el enlace se lee
+// "Mensajes 3 sin leer". Con más de 99 se muestra "99+".
+const Contador = ({ cantidad }) => (
+  <span className="navbar-contador">
+    {cantidad > 99 ? "99+" : cantidad}
+    <span className="visualmente-oculto"> sin leer</span>
+  </span>
+)
+
 const Enlaces = ({ enlaces, alElegir }) =>
-  enlaces.map(({ a, texto, Icono }) => (
+  enlaces.map(({ a, texto, Icono, contador = 0 }) => (
     <NavLink
       key={a}
       to={a}
@@ -152,14 +169,16 @@ const Enlaces = ({ enlaces, alElegir }) =>
     >
       <Icono aria-hidden="true" />
       {texto}
+      {contador > 0 && <Contador cantidad={contador} />}
     </NavLink>
   ))
 
 const Navbar = () => {
   const { usuario, logout } = useAuth()
+  const { sinLeer } = useMensajesSinLeer()
   const navigate = useNavigate()
   const [menuAbierto, setMenuAbierto] = useState(false)
-  const { principales, deLaCuenta } = enlacesPara(usuario)
+  const { principales, deLaCuenta } = enlacesPara(usuario, sinLeer)
 
   const cerrarMenu = () => setMenuAbierto(false)
 
@@ -177,13 +196,19 @@ const Navbar = () => {
         className="navbar contenedor"
         disableGutters
       >
+        {/* En el celular los enlaces están dentro del menú: el punto avisa que
+            hay mensajes sin leer sin tener que abrirlo. */}
         <IconButton
           className="navbar-menu"
-          aria-label="Abrir menú"
+          aria-label={
+            sinLeer > 0 ? "Abrir menú (tenés mensajes sin leer)" : "Abrir menú"
+          }
           edge="start"
           onClick={() => setMenuAbierto(true)}
         >
-          <LuMenu aria-hidden="true" />
+          <Badge variant="dot" color="primary" invisible={sinLeer === 0}>
+            <LuMenu aria-hidden="true" />
+          </Badge>
         </IconButton>
 
         <Link to="/" className="navbar-logo" aria-label="Código a Voluntad">

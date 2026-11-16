@@ -20,6 +20,23 @@ export default class NotificacionRepository {
       .populate("personaColaboradora", "nombreFantasia")
   }
 
+  async contarSinLeerDe(personaColaboradoraId) {
+    return await this.model.countDocuments({
+      personaColaboradora: personaColaboradoraId,
+      leidaEn: null,
+    })
+  }
+
+  // Devuelve cuántas estaban sin leer. Las viejas, de antes de que existiera
+  // `leidaEn`, no tienen el campo: `null` también las encuentra.
+  async marcarLeidasDe(personaColaboradoraId, fecha) {
+    const { modifiedCount } = await this.model.updateMany(
+      { personaColaboradora: personaColaboradoraId, leidaEn: null },
+      { $set: { leidaEn: fecha } },
+    )
+    return modifiedCount
+  }
+
   async deleteByPersonaColaboradora(personaColaboradoraId) {
     await this.model.deleteMany({ personaColaboradora: personaColaboradoraId })
   }

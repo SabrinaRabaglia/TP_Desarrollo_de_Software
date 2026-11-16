@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { Chip } from "@mui/material"
 import "./Mensaje.css"
 
 const formatoDeFecha = new Intl.DateTimeFormat("es-AR", {
@@ -13,9 +14,17 @@ const Mensaje = ({ mensaje }) => {
     : `De ${mensaje.colectivo}`
 
   return (
-    <article className="mensaje">
+    <article
+      className={mensaje.noLeido ? "mensaje mensaje-no-leido" : "mensaje"}
+    >
       <header className="mensaje-encabezado">
-        <h2>{titulo}</h2>
+        <div className="mensaje-remitente">
+          <h2>{titulo}</h2>
+          {/* El texto del chip lo dice: no depende solo del borde de color */}
+          {mensaje.noLeido && (
+            <Chip size="small" variant="suave" color="info" label="Sin leer" />
+          )}
+        </div>
         <time dateTime={mensaje.fecha.toISOString()}>
           {formatoDeFecha.format(mensaje.fecha)}
         </time>

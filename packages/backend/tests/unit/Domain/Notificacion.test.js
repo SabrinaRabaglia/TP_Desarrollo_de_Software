@@ -33,7 +33,9 @@ describe("Notificacion", () => {
       fecha: expect.any(Date),
       procesandoDesde: null,
       reintentarDesde: null,
+      leidaEn: null,
     })
+    expect(notificacion.leida).toBe(false)
     expect(notificacion.fecha.getTime()).toBeGreaterThanOrEqual(antes.getTime())
     expect(notificacion.envios).toEqual([
       {

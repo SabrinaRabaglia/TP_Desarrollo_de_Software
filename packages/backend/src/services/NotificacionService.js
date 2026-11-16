@@ -84,7 +84,31 @@ export default class NotificacionService {
       await this.notificacionRepository.findByPersonaColaboradora(
         personaColaboradoraId,
       )
-    return await Promise.all(notificaciones.map(this.conNombres))
+    return await Promise.all(
+      notificaciones.map(async (notificacion) => ({
+        ...(await this.conNombres(notificacion)),
+        leida: notificacion.leida,
+      })),
+    )
+  }
+
+  // Para el contador de la navbar: solo cuenta, sin armar cada mensaje.
+  contarSinLeer = async (personaColaboradoraId) => {
+    await this.personaColaboradoraService.getById(personaColaboradoraId)
+    const cantidad = await this.notificacionRepository.contarSinLeerDe(
+      personaColaboradoraId,
+    )
+    return { cantidad }
+  }
+
+  // La persona marca toda su bandeja como leída de una vez.
+  marcarComoLeidas = async (personaColaboradoraId) => {
+    await this.personaColaboradoraService.getById(personaColaboradoraId)
+    const marcadas = await this.notificacionRepository.marcarLeidasDe(
+      personaColaboradoraId,
+      new Date(),
+    )
+    return { marcadas }
   }
 
   // Al borrar una persona se borran sus mensajes, así que la destinataria siempre existe.

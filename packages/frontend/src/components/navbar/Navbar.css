@@ -64,6 +64,21 @@
   font-weight: 600;
 }
 
+/* La cantidad de mensajes sin leer, en una pastilla al lado del texto. */
+.navbar-contador {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding-inline: 6px;
+  border-radius: var(--radio-pill);
+  background: var(--color-primario);
+  color: var(--color-sobre-primario);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
 /* ---------- Usuario ---------- */
 
 /* Es un botón de MUI: se le pisa el alto mínimo y el relleno para que mida lo

@@ -21,6 +21,26 @@ export default class NotificacionRepository {
       .toSorted((a, b) => b.fecha - a.fecha)
   }
 
+  async contarSinLeerDe(personaColaboradoraId) {
+    return this.notificaciones.filter(
+      (notificacion) =>
+        notificacion.personaColaboradora.id === personaColaboradoraId &&
+        !notificacion.leidaEn,
+    ).length
+  }
+
+  async marcarLeidasDe(personaColaboradoraId, fecha) {
+    const sinLeer = this.notificaciones.filter(
+      (notificacion) =>
+        notificacion.personaColaboradora.id === personaColaboradoraId &&
+        !notificacion.leidaEn,
+    )
+    for (const notificacion of sinLeer) {
+      notificacion.leidaEn = fecha
+    }
+    return sinLeer.length
+  }
+
   async deleteByPersonaColaboradora(personaColaboradoraId) {
     this.notificaciones = this.notificaciones.filter(
       (notificacion) =>

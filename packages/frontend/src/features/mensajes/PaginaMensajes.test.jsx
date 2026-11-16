@@ -1,8 +1,15 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router-dom"
 import { AuthProvider } from "../../context/AuthContext"
+import { ProveedorDeAvisos } from "../../context/AvisosContext"
 import {
+  ProveedorDeMensajesSinLeer,
+  useMensajesSinLeer,
+} from "../../context/MensajesSinLeerContext"
+import {
+  contarRecibidosSinLeer,
+  marcarRecibidosComoLeidos,
   obtenerEnviados,
   obtenerRecibidos,
 } from "../../service/mensajesService"
@@ -18,6 +25,7 @@ const mensaje = {
   destinataria: null,
   proyecto: { id: "pr1", titulo: "Sitio web de la huerta" },
   perfil: "Frontend",
+  noLeido: false,
 }
 
 const iniciarSesionCon = (usuario) => {
@@ -40,14 +48,28 @@ const iniciarSesionComoColectivo = () =>
     entidad: { id: "c1", nombre: "Huerta Comunitaria Sur" },
   })
 
+// Hace de navbar: muestra lo que tiene el contador de sin leer.
+const Contador = () => <p>Contador: {useMensajesSinLeer().sinLeer}</p>
+
 const renderizar = () =>
   render(
     <AuthProvider>
-      <MemoryRouter>
-        <PaginaMensajes />
-      </MemoryRouter>
+      <ProveedorDeAvisos>
+        <MemoryRouter>
+          <ProveedorDeMensajesSinLeer>
+            <Contador />
+            <PaginaMensajes />
+          </ProveedorDeMensajesSinLeer>
+        </MemoryRouter>
+      </ProveedorDeAvisos>
     </AuthProvider>,
   )
+
+const contador = () => screen.getByText(/^Contador:/)
+
+beforeEach(() => {
+  contarRecibidosSinLeer.mockResolvedValue(0)
+})
 
 afterEach(() => {
   localStorage.clear()
@@ -99,6 +121,129 @@ describe("PaginaMensajes", () => {
     ).toBeInTheDocument()
     expect(screen.getByText("Proyecto eliminado")).toBeInTheDocument()
     expect(screen.queryByRole("link")).not.toBeInTheDocument()
+  })
+
+  test("la persona ve cuáles no leyó y los marca todos como leídos con el botón", async () => {
+    iniciarSesionComoPersona()
+    obtenerRecibidos.mockResolvedValue([
+      { ...mensaje, id: "m1", noLeido: true },
+      { ...mensaje, id: "m2", noLeido: true },
+      { ...mensaje, id: "m3" },
+    ])
+    marcarRecibidosComoLeidos.mockResolvedValue(2)
+
+    renderizar()
+
+    expect(
+      await screen.findByText("Tenés 2 mensajes sin leer."),
+    ).toBeInTheDocument()
+    const [primero, segundo, tercero] = screen.getAllByRole("listitem")
+    expect(within(primero).getByText("Sin leer")).toBeInTheDocument()
+    expect(within(segundo).getByText("Sin leer")).toBeInTheDocument()
+    expect(within(tercero).queryByText("Sin leer")).not.toBeInTheDocument()
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Marcar todos como leídos" }),
+    )
+
+    expect(marcarRecibidosComoLeidos).toHaveBeenCalledWith("p1")
+    expect(
+      await screen.findByText("Marcaste 2 mensajes como leídos."),
+    ).toBeInTheDocument()
+    expect(screen.queryByText("Sin leer")).not.toBeInTheDocument()
+    expect(screen.getByText("Leíste todos tus mensajes.")).toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Marcar todos como leídos" }),
+    ).not.toBeInTheDocument()
+  })
+
+  test("el contador de la navbar sigue a la bandeja y vuelve a cero al marcarlos", async () => {
+    iniciarSesionComoPersona()
+    contarRecibidosSinLeer.mockResolvedValue(2)
+    obtenerRecibidos.mockResolvedValue([
+      { ...mensaje, id: "m1", noLeido: true },
+      { ...mensaje, id: "m2", noLeido: true },
+    ])
+    marcarRecibidosComoLeidos.mockResolvedValue(2)
+
+    renderizar()
+
+    await screen.findByText("Tenés 2 mensajes sin leer.")
+    expect(contador()).toHaveTextContent("2")
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Marcar todos como leídos" }),
+    )
+
+    await waitFor(() => expect(contador()).toHaveTextContent("0"))
+  })
+
+  test.each([
+    [1, "Marcaste 1 mensaje como leído."],
+    [0, "Tus mensajes ya estaban leídos."],
+  ])("si el back marcó %i, el aviso lo dice bien", async (marcadas, aviso) => {
+    iniciarSesionComoPersona()
+    obtenerRecibidos.mockResolvedValue([{ ...mensaje, noLeido: true }])
+    marcarRecibidosComoLeidos.mockResolvedValue(marcadas)
+
+    renderizar()
+
+    await userEvent.click(
+      await screen.findByRole("button", {
+        name: "Marcar todos como leídos",
+      }),
+    )
+
+    expect(await screen.findByText(aviso)).toBeInTheDocument()
+  })
+
+  test("abrir la bandeja no marca nada como leído", async () => {
+    iniciarSesionComoPersona()
+    obtenerRecibidos.mockResolvedValue([{ ...mensaje, noLeido: true }])
+
+    renderizar()
+
+    expect(
+      await screen.findByText("Tenés 1 mensaje sin leer."),
+    ).toBeInTheDocument()
+    expect(marcarRecibidosComoLeidos).not.toHaveBeenCalled()
+  })
+
+  test("si no se pueden marcar, muestra el error y siguen sin leer", async () => {
+    iniciarSesionComoPersona()
+    obtenerRecibidos.mockResolvedValue([{ ...mensaje, noLeido: true }])
+    marcarRecibidosComoLeidos.mockRejectedValue({
+      response: { data: { message: "No se pudo marcar" } },
+    })
+
+    renderizar()
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Marcar todos como leídos" }),
+    )
+
+    expect(await screen.findByText("No se pudo marcar")).toBeInTheDocument()
+    expect(screen.getByText("Sin leer")).toBeInTheDocument()
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Marcar todos como leídos" }),
+      ).toBeEnabled(),
+    )
+  })
+
+  test("el colectivo no tiene nada para marcar como leído", async () => {
+    iniciarSesionComoColectivo()
+    obtenerEnviados.mockResolvedValue([{ ...mensaje, destinataria: "anag" }])
+
+    renderizar()
+
+    expect(
+      await screen.findByRole("heading", { name: "Para anag" }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Marcar todos como leídos" }),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText(/sin leer/i)).not.toBeInTheDocument()
   })
 
   test("sin mensajes muestra el estado vacío", async () => {

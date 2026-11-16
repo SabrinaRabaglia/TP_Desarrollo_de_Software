@@ -4,3 +4,21 @@
   gap: var(--espacio-6);
   max-width: var(--ancho-formulario);
 }
+
+.pagina-mensajes-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--espacio-3) var(--espacio-4);
+}
+
+.pagina-mensajes-titulo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+}
+
+.pagina-mensajes-sin-leer {
+  color: var(--color-texto-secundario);
+}

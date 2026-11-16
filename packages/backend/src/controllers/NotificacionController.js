@@ -34,6 +34,26 @@ export default class NotificacionController {
     }
   }
 
+  contarSinLeer = async (req, res, next) => {
+    try {
+      res
+        .status(200)
+        .json(await this.notificacionService.contarSinLeer(req.params.id))
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  marcarComoLeidas = async (req, res, next) => {
+    try {
+      res
+        .status(200)
+        .json(await this.notificacionService.marcarComoLeidas(req.params.id))
+    } catch (error) {
+      next(error)
+    }
+  }
+
   getAllByColectivo = async (req, res, next) => {
     try {
       res

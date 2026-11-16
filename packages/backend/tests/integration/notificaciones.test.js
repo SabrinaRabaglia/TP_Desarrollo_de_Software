@@ -201,6 +201,7 @@ describe("notificaciones", () => {
       perfil: { id: perfil.id, nombre: null },
       pendienteDeEnvio: false,
       mediosExternosUtilizados: ["EMAIL", "WHATSAPP"],
+      leida: false,
     })
     expect(JSON.stringify(enviada)).not.toContain("ana@example.com")
     expect(
@@ -382,6 +383,124 @@ describe("notificaciones", () => {
   test("solo la propia persona puede leer su bandeja", async () => {
     await request("GET", bandeja(ana.id), undefined, 403, tokens.anon)
     await request("GET", bandeja(ana.id), undefined, 403, tokens.colectivo)
+  })
+
+  test("la persona marca toda su bandeja como leída", async () => {
+    await request(
+      "POST",
+      notificaciones(proyecto.id, perfil.id),
+      { personaColaboradora: ana.id, contenido: "Sin leer" },
+      201,
+      tokens.colectivo,
+    )
+
+    const { marcadas } = await request(
+      "PATCH",
+      bandeja(ana.id),
+      { leida: true },
+      200,
+      tokens.ana,
+    )
+
+    expect(marcadas).toBeGreaterThan(0)
+    const mensajes = await request(
+      "GET",
+      bandeja(ana.id),
+      undefined,
+      200,
+      tokens.ana,
+    )
+    expect(mensajes.every((mensaje) => mensaje.leida)).toBe(true)
+    expect(
+      await request("PATCH", bandeja(ana.id), { leida: true }, 200, tokens.ana),
+    ).toEqual({ marcadas: 0 })
+  })
+
+  test("la cuenta de sin leer sube con cada mensaje y vuelve a cero al marcarlos", async () => {
+    await request("PATCH", bandeja(ana.id), { leida: true }, 200, tokens.ana)
+    const sinLeer = `${bandeja(ana.id)}/sin-leer`
+
+    expect(await request("GET", sinLeer, undefined, 200, tokens.ana)).toEqual({
+      cantidad: 0,
+    })
+
+    for (const contenido of ["Uno", "Dos"]) {
+      await request(
+        "POST",
+        notificaciones(proyecto.id, perfil.id),
+        { personaColaboradora: ana.id, contenido },
+        201,
+        tokens.colectivo,
+      )
+    }
+
+    expect(await request("GET", sinLeer, undefined, 200, tokens.ana)).toEqual({
+      cantidad: 2,
+    })
+    await request("PATCH", bandeja(ana.id), { leida: true }, 200, tokens.ana)
+    expect(await request("GET", sinLeer, undefined, 200, tokens.ana)).toEqual({
+      cantidad: 0,
+    })
+  })
+
+  test("solo la propia persona ve cuántos mensajes tiene sin leer", async () => {
+    const sinLeer = `${bandeja(ana.id)}/sin-leer`
+
+    await request("GET", sinLeer, undefined, 401)
+    await request("GET", sinLeer, undefined, 403, tokens.anon)
+    await request("GET", sinLeer, undefined, 403, tokens.colectivo)
+  })
+
+  test("si la leyó solo lo sabe la destinataria, no el colectivo", async () => {
+    const enviada = await request(
+      "POST",
+      notificaciones(proyecto.id, perfil.id),
+      { personaColaboradora: ana.id, contenido: "Para leer" },
+      201,
+      tokens.colectivo,
+    )
+    await request("PATCH", bandeja(ana.id), { leida: true }, 200, tokens.ana)
+
+    const mensajes = await request(
+      "GET",
+      enviados(colectivo.id),
+      undefined,
+      200,
+      tokens.colectivo,
+    )
+
+    expect(enviada).not.toHaveProperty("leidaEn")
+    expect(enviada).not.toHaveProperty("leida")
+    expect(mensajes[0]).not.toHaveProperty("leida")
+    expect(mensajes[0]).not.toHaveProperty("leidaEn")
+  })
+
+  test("solo la propia persona marca su bandeja como leída, y solo como leída", async () => {
+    await request("PATCH", bandeja(ana.id), { leida: true }, 401)
+    await request("PATCH", bandeja(ana.id), { leida: true }, 403, tokens.anon)
+    await request(
+      "PATCH",
+      bandeja(ana.id),
+      { leida: true },
+      403,
+      tokens.colectivo,
+    )
+    await request("PATCH", bandeja(ana.id), { leida: false }, 400, tokens.ana)
+    await request("PATCH", bandeja(ana.id), {}, 400, tokens.ana)
+    await request(
+      "PATCH",
+      bandeja(ana.id),
+      { leida: true, otra: 1 },
+      400,
+      tokens.ana,
+    )
+    await request(
+      "PATCH",
+      bandeja("no-es-un-id"),
+      { leida: true },
+      400,
+      tokens.ana,
+    )
   })
 
   test("el colectivo lista sus mensajes enviados con el nombre de la destinataria, sin sus datos de contacto", async () => {

@@ -962,7 +962,7 @@
       "get": {
         "tags": ["Notificaciones"],
         "summary": "Bandeja de una persona colaboradora",
-        "description": "Devuelve los mensajes internos que recibió la persona, del más nuevo al más viejo, con el nombre del colectivo, el título del proyecto y el nombre del perfil. Si el proyecto o el perfil ya no existen, ese dato viene en `null`. Solo puede leerla la propia persona; cualquier otro usuario recibe `403`. Responde 404 si la persona no existe.",
+        "description": "Devuelve los mensajes internos que recibió la persona, del más nuevo al más viejo, indicando si ya los leyó, con el nombre del colectivo, el título del proyecto y el nombre del perfil. Si el proyecto o el perfil ya no existen, ese dato viene en `null`. Solo puede leerla la propia persona; cualquier otro usuario recibe `403`. Responde 404 si la persona no existe.",
         "operationId": "listarNotificacionesDePersona",
         "security": [
           {
@@ -982,7 +982,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/NotificacionConNombres"
+                    "$ref": "#/components/schemas/NotificacionRecibida"
                   }
                 },
                 "example": [
@@ -1003,9 +1003,114 @@
                       "nombre": "Frontend"
                     },
                     "pendienteDeEnvio": false,
-                    "mediosExternosUtilizados": ["EMAIL"]
+                    "mediosExternosUtilizados": ["EMAIL"],
+                    "leida": false
                   }
                 ]
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Notificaciones"],
+        "summary": "Marcar toda la bandeja como leída",
+        "description": "Marca como leídas todas las notificaciones sin leer de la persona y responde cuántas eran. Las que ya estaban leídas no cambian. Solo puede hacerlo la propia persona; cualquier otro usuario recibe `403`. El cuerpo solo admite `{ \"leida\": true }`. Responde 404 si la persona no existe.",
+        "operationId": "marcarNotificacionesComoLeidas",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LecturaDeNotificacionesInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bandeja marcada como leída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LecturaDeNotificaciones"
+                },
+                "example": {
+                  "marcadas": 2
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/personas-colaboradoras/{id}/notificaciones/sin-leer": {
+      "get": {
+        "tags": ["Notificaciones"],
+        "summary": "Cantidad de notificaciones sin leer",
+        "description": "Devuelve cuántas notificaciones de la bandeja todavía no se marcaron como leídas. Lo usa el contador de la navbar. Solo puede consultarlo la propia persona; cualquier otro usuario recibe `403`. Responde 404 si la persona no existe.",
+        "operationId": "contarNotificacionesSinLeer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cantidad sin leer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificacionesSinLeer"
+                },
+                "example": {
+                  "cantidad": 3
+                }
               }
             }
           },
@@ -4639,6 +4744,62 @@
             "type": "string",
             "minLength": 1,
             "example": "Actualización de la descripción del hito"
+          }
+        }
+      },
+      "NotificacionRecibida": {
+        "description": "Notificación como la ve la persona en su bandeja: la misma forma que `NotificacionConNombres`, más si ya la leyó. Ese dato es solo de la destinataria: el colectivo que la envió no lo ve.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NotificacionConNombres"
+          },
+          {
+            "type": "object",
+            "required": ["leida"],
+            "properties": {
+              "leida": {
+                "type": "boolean",
+                "description": "Si la persona ya marcó su bandeja como leída después de recibirla.",
+                "example": false
+              }
+            }
+          }
+        ]
+      },
+      "LecturaDeNotificacionesInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["leida"],
+        "properties": {
+          "leida": {
+            "type": "boolean",
+            "enum": [true],
+            "description": "Solo se puede marcar como leída: desmarcar no está previsto.",
+            "example": true
+          }
+        }
+      },
+      "LecturaDeNotificaciones": {
+        "type": "object",
+        "required": ["marcadas"],
+        "properties": {
+          "marcadas": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Cuántas notificaciones estaban sin leer y quedaron marcadas.",
+            "example": 2
+          }
+        }
+      },
+      "NotificacionesSinLeer": {
+        "type": "object",
+        "required": ["cantidad"],
+        "properties": {
+          "cantidad": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Cuántas notificaciones de la bandeja siguen sin leer.",
+            "example": 3
           }
         }
       }
